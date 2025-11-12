@@ -27,9 +27,15 @@ pub mod process_pool;
 pub mod io_scheduler;
 pub mod format_converter;
 
+pub use tool_manager::{ToolManager, ConversionTool, ToolInfo};
+pub use process_pool::{ProcessPool, CommandRequest, CommandResult};
+pub use io_scheduler::{IOScheduler, IORequest, IOResult};
+pub use format_converter::FormatConverter;
+
 use tool_manager::{ToolManager, ConversionTool};
 use process_pool::ProcessPool;
 use io_scheduler::IOScheduler;
+use format_converter::FormatConverter;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConversionRequest {
@@ -96,6 +102,7 @@ pub struct ConversionEngine {
     tool_manager: Arc<ToolManager>,
     process_pool: Arc<ProcessPool>,
     io_scheduler: Arc<IOScheduler>,
+    format_converter: Arc<FormatConverter>,
     config: ConversionEngineConfig,
     concurrency_limiter: Arc<Semaphore>,
     active_conversions: Arc<RwLock<HashMap<String, ConversionStatus>>>,
@@ -117,6 +124,7 @@ impl ConversionEngine {
         let tool_manager = Arc::new(ToolManager::new().await?);
         let process_pool = Arc::new(ProcessPool::new(config.max_concurrent_conversions));
         let io_scheduler = Arc::new(IOScheduler::new(config.enable_simd));
+        let format_converter = Arc::new(FormatConverter::new());
         
         let concurrency_limiter = Arc::new(Semaphore::new(config.max_concurrent_conversions));
         let active_conversions = Arc::new(RwLock::new(HashMap::new()));
@@ -128,6 +136,7 @@ impl ConversionEngine {
             tool_manager,
             process_pool,
             io_scheduler,
+            format_converter,
             config,
             concurrency_limiter,
             active_conversions,
@@ -408,6 +417,7 @@ impl Clone for ConversionEngine {
             tool_manager: Arc::clone(&self.tool_manager),
             process_pool: Arc::clone(&self.process_pool),
             io_scheduler: Arc::clone(&self.io_scheduler),
+            format_converter: Arc::clone(&self.format_converter),
             config: self.config.clone(),
             concurrency_limiter: Arc::clone(&self.concurrency_limiter),
             active_conversions: Arc::clone(&self.active_conversions),
