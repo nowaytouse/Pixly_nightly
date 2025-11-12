@@ -66,8 +66,8 @@
 | EX-011 | 模型版本管理器 | `model_manager.go` | `core/python/ai/model_manager.py` | 6h | 🔴 P0 | ✅ 已完成 |
 | EX-012 | 贝叶斯参数优化器 | `precision_modes.go` | `core/python/ai/bayesian_optimizer.py` | 7h | 🔴 P0 | ✅ 已完成 |
 | EX-013 | 增强视频处理器 | `video_handlers.go` | `core/python/video/enhanced_processor.py` | 5h | 🟡 P1 | ✅ 已完成 |
-| EX-014 | SQLite观测存储 | `storage/sqlite_store.go` | `core/python/storage/observation_store.py` | 4h | 🟡 P1 | ❌ 未开始 |
-| EX-015 | PPO强化学习架构 | `rl/ppo.go` | `tools/ppo_enhanced.py` | 6h | 🟢 P2 | ❌ 未开始 |
+| EX-014 | SQLite观测存储 | `storage/sqlite_store.go` | `core/python/storage/observation_store.py` | 4h | 🟡 P1 | ✅ 已完成 |
+| EX-015 | PPO强化学习架构 | `rl/ppo.go` | `tools/ppo_enhanced.py` | 6h | 🟢 P2 | ✅ 已完成 |
 
 **第一轮功能价值说明**:
 
@@ -163,17 +163,22 @@
   - 场景切换检测和编码难度评估
   - 分阶段模块化架构（3个子模块）
 
-- **EX-014 SQLite观测存储** ⚡⚡⚡
-  - 训练观测数据持久化
-  - 索引优化查询性能
-  - 时间序列数据管理
-  - 批量数据操作支持
+- **EX-014 SQLite观测存储** ⚡⚡⚡ ✅
+  - 训练观测数据持久化（线程安全）
+  - 索引优化查询性能（多重索引）
+  - 时间序列数据管理（时间范围过滤）
+  - 批量数据操作支持（高性能批量插入）
+  - WAL模式和缓存优化
+  - 统计信息和性能分析
+  - 跨平台SQLite实现
 
-- **EX-015 PPO强化学习架构** ⚡⚡⚡
-  - 完整的PPO算法实现（虽然Python已有，但Go版本架构更清晰）
-  - 经验回放和GAE优势估计
-  - 状态-动作-奖励建模
-  - 参数调优的RL方法
+- **EX-015 PPO强化学习架构** ⚡⚡⚡ ✅
+  - 完整的PPO算法实现（Actor-Critic架构）
+  - 经验回放和GAE优势估计（标准化优势函数）
+  - 多目标奖励函数设计（质量-压缩-参数平衡）
+  - PyTorch神经网络实现（GPU/MPS加速）
+  - 模型保存和加载机制
+  - 梯度裁剪和数值稳定性
 
 #### 0.3 归档清理任务
 
