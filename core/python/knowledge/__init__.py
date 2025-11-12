@@ -1,10 +1,17 @@
 """
-Knowledge Management System - 知识管理系统
+Knowledge Base System - 知识库系统
 """
 
-from .knowledge_db import KnowledgeDatabase, ConversionRecord
+from .knowledge_db import KnowledgeDatabase, KnowledgeDB, ConversionRecord
+from .knowledge_query import KnowledgeQuerySystem, QueryFilter, QueryResult, QueryType, SortOrder
 
 __all__ = [
     'KnowledgeDatabase',
-    'ConversionRecord'
+    'KnowledgeDB',
+    'ConversionRecord',
+    'KnowledgeQuerySystem', 
+    'QueryFilter',
+    'QueryResult',
+    'QueryType',
+    'SortOrder'
 ]
