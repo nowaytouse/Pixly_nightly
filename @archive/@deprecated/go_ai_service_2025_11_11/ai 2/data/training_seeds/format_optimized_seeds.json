@@ -1,0 +1,464 @@
+{
+  "version": "2.0.0",
+  "description": "针对各格式特性优化的训练种子库 - 让AI深度理解每种格式的最佳特点",
+  "created": "2025-11-03",
+  "updated": "2025-11-03",
+  
+  "format_characteristics": {
+    "jxl": {
+      "name": "JPEG XL",
+      "strengths": [
+        "极致压缩率（比JPEG小30-60%）",
+        "完美无损JPEG转码（lossless_jpeg=1）",
+        "支持真正的数学无损（distance=0）",
+        "优秀的动画支持（比GIF小90%+）",
+        "高级功能：渐进式加载、ROI编码",
+        "宽色域支持（10-bit+）"
+      ],
+      "best_for": [
+        "照片压缩（替代JPEG）",
+        "动画/GIF替代",
+        "无损归档",
+        "需要极致压缩的场景"
+      ],
+      "weakness": [
+        "浏览器支持有限（需polyfill）",
+        "编码速度较慢"
+      ]
+    },
+    "avif": {
+      "name": "AV1 Image File Format",
+      "strengths": [
+        "极佳的有损压缩（比JPEG小50%+）",
+        "优秀的细节保留能力",
+        "HDR和宽色域支持",
+        "良好的浏览器支持",
+        "适合Web使用"
+      ],
+      "best_for": [
+        "Web图片（现代浏览器）",
+        "照片质量优先",
+        "HDR内容",
+        "社交媒体图片"
+      ],
+      "weakness": [
+        "编码极慢（speed=0-13）",
+        "无损模式效率不高",
+        "动画支持有限"
+      ]
+    },
+    "webp": {
+      "name": "WebP",
+      "strengths": [
+        "广泛的浏览器支持",
+        "编码速度快",
+        "有损和无损双模式",
+        "透明度支持好",
+        "动画支持（但效率一般）"
+      ],
+      "best_for": [
+        "Web图片（兼容性优先）",
+        "需要快速编码",
+        "透明PNG替代",
+        "简单动画"
+      ],
+      "weakness": [
+        "压缩率不如JXL/AVIF",
+        "无损模式效率一般"
+      ]
+    },
+    "heic": {
+      "name": "HEIF/HEIC",
+      "strengths": [
+        "iOS/macOS原生支持",
+        "优秀的压缩率",
+        "支持元数据丰富",
+        "HDR支持"
+      ],
+      "best_for": [
+        "Apple生态",
+        "照片归档",
+        "移动设备"
+      ],
+      "weakness": [
+        "Windows/Linux支持差",
+        "Web不支持",
+        "专利问题"
+      ]
+    }
+  },
+
+  "seeds_by_format": {
+    "jxl": {
+      "lossless_archive": {
+        "name": "JXL 数学无损归档",
+        "params": {
+          "quality": 100,
+          "distance": 0.0,
+          "effort": 9,
+          "speed": 1,
+          "modular": 1,
+          "progressive": 0
+        },
+        "expected_ssim": 1.00,
+        "expected_compression": 0.75,
+        "use_case": "最高质量归档、医学影像、科学数据"
+      },
+      "photo_high_quality": {
+        "name": "JXL 高质量照片",
+        "params": {
+          "quality": 95,
+          "distance": 0.3,
+          "effort": 9,
+          "speed": 3,
+          "progressive": 1,
+          "responsive": 1
+        },
+        "expected_ssim": 0.985,
+        "expected_compression": 0.55,
+        "use_case": "专业摄影、印刷、作品集"
+      },
+      "photo_balanced": {
+        "name": "JXL 平衡照片",
+        "params": {
+          "quality": 88,
+          "distance": 0.8,
+          "effort": 7,
+          "speed": 5,
+          "progressive": 1
+        },
+        "expected_ssim": 0.96,
+        "expected_compression": 0.40,
+        "use_case": "日常照片、社交媒体、网站"
+      },
+      "web_optimized": {
+        "name": "JXL Web优化",
+        "params": {
+          "quality": 82,
+          "distance": 1.2,
+          "effort": 6,
+          "speed": 6,
+          "progressive": 1,
+          "responsive": 1
+        },
+        "expected_ssim": 0.94,
+        "expected_compression": 0.30,
+        "use_case": "Web图片、快速加载、移动优先"
+      },
+      "animation_gif_replacement": {
+        "name": "JXL 动画（GIF替代）",
+        "params": {
+          "quality": 85,
+          "distance": 1.0,
+          "effort": 7,
+          "speed": 6,
+          "lossy_palette": 0,
+          "keep_invisible": 0
+        },
+        "expected_ssim": 0.95,
+        "expected_compression": 0.10,
+        "use_case": "动画表情包、UI动画、教程GIF"
+      }
+    },
+
+    "avif": {
+      "photo_premium": {
+        "name": "AVIF 顶级照片质量",
+        "params": {
+          "quality": 65,
+          "min_quantizer": 0,
+          "max_quantizer": 15,
+          "effort": 8,
+          "speed": 2,
+          "tune": "ssim"
+        },
+        "expected_ssim": 0.985,
+        "expected_compression": 0.45,
+        "use_case": "作品展示、高端网站、摄影作品"
+      },
+      "photo_high": {
+        "name": "AVIF 高质量照片",
+        "params": {
+          "quality": 60,
+          "min_quantizer": 10,
+          "max_quantizer": 25,
+          "effort": 7,
+          "speed": 4,
+          "tune": "ssim"
+        },
+        "expected_ssim": 0.97,
+        "expected_compression": 0.38,
+        "use_case": "电商产品图、博客照片、社交媒体"
+      },
+      "web_standard": {
+        "name": "AVIF Web标准",
+        "params": {
+          "quality": 55,
+          "min_quantizer": 15,
+          "max_quantizer": 35,
+          "effort": 6,
+          "speed": 6,
+          "tune": "ssim"
+        },
+        "expected_ssim": 0.95,
+        "expected_compression": 0.30,
+        "use_case": "网站图片、新闻配图、内容图片"
+      },
+      "mobile_optimized": {
+        "name": "AVIF 移动优化",
+        "params": {
+          "quality": 50,
+          "min_quantizer": 20,
+          "max_quantizer": 45,
+          "effort": 5,
+          "speed": 8,
+          "tune": "ssim"
+        },
+        "expected_ssim": 0.92,
+        "expected_compression": 0.22,
+        "use_case": "移动网页、App内图片、缩略图"
+      }
+    },
+
+    "webp": {
+      "lossless_png_replacement": {
+        "name": "WebP 无损PNG替代",
+        "params": {
+          "quality": 100,
+          "lossless": 1,
+          "method": 6,
+          "exact": 1
+        },
+        "expected_ssim": 1.00,
+        "expected_compression": 0.70,
+        "use_case": "透明PNG、图标、UI元素"
+      },
+      "photo_high": {
+        "name": "WebP 高质量照片",
+        "params": {
+          "quality": 90,
+          "method": 6,
+          "sharp_yuv": 1,
+          "auto_filter": 1
+        },
+        "expected_ssim": 0.97,
+        "expected_compression": 0.50,
+        "use_case": "照片归档、产品图、摄影"
+      },
+      "web_balanced": {
+        "name": "WebP Web平衡",
+        "params": {
+          "quality": 82,
+          "method": 5,
+          "sharp_yuv": 1,
+          "auto_filter": 1
+        },
+        "expected_ssim": 0.95,
+        "expected_compression": 0.40,
+        "use_case": "网站图片、博客、一般用途"
+      },
+      "fast_encoding": {
+        "name": "WebP 快速编码",
+        "params": {
+          "quality": 80,
+          "method": 4,
+          "segments": 4,
+          "pass": 1
+        },
+        "expected_ssim": 0.93,
+        "expected_compression": 0.38,
+        "use_case": "批量处理、实时生成、服务器端"
+      }
+    },
+
+    "heic": {
+      "apple_high_quality": {
+        "name": "HEIC Apple高质量",
+        "params": {
+          "quality": 95,
+          "quantizer": 18,
+          "tune": "ssim"
+        },
+        "expected_ssim": 0.98,
+        "expected_compression": 0.55,
+        "use_case": "iPhone照片、Mac归档、iCloud"
+      },
+      "apple_balanced": {
+        "name": "HEIC Apple平衡",
+        "params": {
+          "quality": 85,
+          "quantizer": 26,
+          "tune": "ssim"
+        },
+        "expected_ssim": 0.95,
+        "expected_compression": 0.42,
+        "use_case": "日常拍摄、自动备份"
+      }
+    }
+  },
+
+  "special_scenarios": {
+    "screenshot_ui": {
+      "formats": {
+        "jxl": {
+          "quality": 90,
+          "distance": 0.5,
+          "effort": 7,
+          "modular": 1
+        },
+        "webp": {
+          "quality": 85,
+          "method": 6,
+          "sharp_yuv": 0
+        },
+        "avif": {
+          "quality": 58,
+          "speed": 6,
+          "tune": "psnr"
+        }
+      },
+      "expected_ssim": 0.96,
+      "use_case": "截图、UI界面、文本重度"
+    },
+    "illustration_art": {
+      "formats": {
+        "jxl": {
+          "quality": 92,
+          "distance": 0.4,
+          "effort": 8,
+          "responsive": 0
+        },
+        "webp": {
+          "quality": 88,
+          "method": 6,
+          "sharp_yuv": 1
+        },
+        "avif": {
+          "quality": 62,
+          "speed": 4,
+          "tune": "ssim"
+        }
+      },
+      "expected_ssim": 0.97,
+      "use_case": "插画、漫画、平面色块"
+    },
+    "complex_texture": {
+      "formats": {
+        "jxl": {
+          "quality": 88,
+          "distance": 0.8,
+          "effort": 8,
+          "patches": 1
+        },
+        "avif": {
+          "quality": 58,
+          "speed": 3,
+          "tune": "ssim",
+          "sharpness": 3
+        }
+      },
+      "expected_ssim": 0.96,
+      "use_case": "高纹理细节、风景、微距"
+    }
+  },
+
+  "training_guidelines": {
+    "format_selection_priority": [
+      "1. 动画内容 → JXL（压缩率最高）",
+      "2. 需要极致压缩 → JXL（距离调节灵活）",
+      "3. Web现代浏览器 → AVIF（质量/体积最佳）",
+      "4. Web兼容性优先 → WebP（支持最广）",
+      "5. Apple生态 → HEIC（原生支持）",
+      "6. 无损归档 → JXL modular模式（最高效）",
+      "7. 透明图片 → WebP无损（快速+兼容）"
+    ],
+    "quality_tuning_rules": {
+      "jxl": {
+        "distance_quality_mapping": {
+          "0.0": "数学无损，SSIM=1.0",
+          "0.1-0.5": "视觉无损，SSIM>0.98",
+          "0.6-1.0": "高质量，SSIM>0.96",
+          "1.1-2.0": "平衡，SSIM>0.93",
+          "2.1-4.0": "Web优化，SSIM>0.90"
+        },
+        "effort_speed_tradeoff": "effort↑ = 体积↓ 10-15% | 时间↑ 2-3x"
+      },
+      "avif": {
+        "quality_range": {
+          "60-65": "顶级质量，接近原图",
+          "55-60": "高质量，肉眼难辨",
+          "50-55": "优秀质量，Web标准",
+          "45-50": "良好质量，移动优化",
+          "40-45": "可接受，体积优先"
+        },
+        "speed_impact": "speed 0-4 = 慢但质量最佳 | speed 6-10 = 快速但质量略降"
+      },
+      "webp": {
+        "quality_guidance": {
+          "90-100": "高质量，接近PNG",
+          "80-90": "平衡，日常使用",
+          "70-80": "Web优化",
+          "60-70": "移动端"
+        },
+        "method_choice": "method 6 = 最佳质量 | method 4 = 平衡 | method 0-2 = 快速"
+      }
+    },
+    "reward_calculation": {
+      "formula": "R = 0.5*SSIM + 0.3*(1-compression_ratio) + 0.2*speed_score",
+      "ssim_threshold": {
+        "excellent": ">0.97",
+        "good": "0.95-0.97",
+        "acceptable": "0.92-0.95",
+        "poor": "<0.92"
+      },
+      "compression_target": {
+        "jxl": "0.30-0.50（极致）",
+        "avif": "0.35-0.55（优秀）",
+        "webp": "0.40-0.60（良好）"
+      }
+    }
+  },
+
+  "ppo_training_config": {
+    "state_features": [
+      "image_width",
+      "image_height",
+      "pixel_count",
+      "aspect_ratio",
+      "has_alpha",
+      "image_type",
+      "complexity_score",
+      "edge_density",
+      "texture_level",
+      "color_variance",
+      "target_format",
+      "optimize_mode"
+    ],
+    "action_space": {
+      "quality": {"min": 40, "max": 100, "step": 1},
+      "distance": {"min": 0.0, "max": 4.0, "step": 0.1},
+      "effort": {"min": 3, "max": 9, "step": 1},
+      "speed": {"min": 1, "max": 10, "step": 1}
+    },
+    "training_hyperparameters": {
+      "episodes": 100,
+      "batch_size": 32,
+      "learning_rate": 0.0003,
+      "gamma": 0.99,
+      "clip_epsilon": 0.2,
+      "value_coefficient": 0.5,
+      "entropy_coefficient": 0.01,
+      "max_grad_norm": 0.5,
+      "ppo_epochs": 10,
+      "min_observations": 50
+    }
+  },
+
+  "notes": [
+    "本种子库基于大量实测和各格式官方文档优化",
+    "每个种子都针对特定场景和格式特性调优",
+    "PPO训练将基于这些种子作为初始策略",
+    "训练后模型将学会根据图像特征自动选择最佳参数",
+    "建议收集多样化的图像类型以获得最佳训练效果"
+  ]
+}

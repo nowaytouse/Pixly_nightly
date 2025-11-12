@@ -1,0 +1,17 @@
+# 观测数据目录
+
+此目录用于存储PPO训练的观测数据。
+
+每次使用插件转换图像时（勾选「PPO强化学习」），会自动记录：
+- 转换参数 (quality, distance, effort, speed)
+- 输入/输出文件大小
+- SSIM质量分数
+- 转换时间
+- 计算的奖励值
+
+文件格式: YYYYMMDD_HHMMSS_XXXX.json
+示例: 20251103_120000_0001.json
+
+目标: 积累至少50个观测样本后即可训练PPO模型
+
+训练命令: ./train_ppo_model.sh

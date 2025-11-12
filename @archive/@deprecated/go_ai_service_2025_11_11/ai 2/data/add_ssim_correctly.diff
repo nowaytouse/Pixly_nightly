@@ -1,0 +1,40 @@
+--- a/pkg/converter/smart/engine.go
++++ b/pkg/converter/smart/engine.go
+@@ -29,6 +29,7 @@ import (
+ 	"pixly/pkg/predictor"
+ 	"pixly/pkg/predictor/ml"
+ 	"pixly/pkg/validation/enhanced"
++	"pixly/pkg/converter/ssim"
+ 	"pixly/pkg/optimizer"
+ 
+ 	"github.com/karrick/godirwalk"
+@@ -107,6 +108,7 @@ type SmartConversionEngine struct {
+ 	predictionCache   *cache.PredictionCache        // 💾 预测缓存
+ 	zapLogger         *zap.Logger                   // zap日志 (pkg需要)
+ 	usePrediction     bool                          // 是否使用智能预测
++	ssimEngine        *ssim.Engine                  // 🎨 SSIM优化转换引擎
+ 	effortOptimizer   *optimizer.EffortOptimizer    // 🎯 智能Effort优化器
+ 	useLearning       bool                          // 是否启用学习
+ }
+@@ -200,6 +202,13 @@ func NewSmartConversionEngine(options SmartConversionOptions) *SmartConversionEngine {
+ 	predictionCache := cache.NewPredictionCache(zapLogger)
+ 	zapLogger.Info("💾 预测缓存已初始化")
+ 
++	// 🎨 初始化SSIM转换引擎
++	var ssimEngine *ssim.Engine
++	if options.SSIMOptimize {
++		ssimEngine = ssim.NewEngine(zapLogger)
++		zapLogger.Info("🎨 SSIM优化模式已启用")
++	}
++
+ 	engine := &SmartConversionEngine{
+ 		options:           options,
+ 		stats:             &SmartConversionStats{startTime: time.Now(), byExt: make(map[string]int64)},
+@@ -214,6 +223,7 @@ func NewSmartConversionEngine(options SmartConversionOptions) *SmartConversionEngine {
+ 		validator:         validator,       // 🔍 8层验证系统
+ 		workerPool:        workerPool,      // 🔄 动态worker池
+ 		predictionCache:   predictionCache, // 💾 预测缓存
++		ssimEngine:        ssimEngine,      // 🎨 SSIM优化转换引擎
+ 		effortOptimizer:   effortOptimizer, // 🎯 智能Effort优化器
+ 		zapLogger:         zapLogger,
+ 		usePrediction:     usePrediction,

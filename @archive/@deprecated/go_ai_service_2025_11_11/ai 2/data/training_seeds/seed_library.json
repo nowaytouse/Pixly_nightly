@@ -1,0 +1,127 @@
+{
+  "version": "1.0.0",
+  "description": "PPO训练预设种子库 - 包含多种优化模式的初始参数",
+  "created": "2025-11-03",
+  "seeds": {
+    "size_optimized": {
+      "name": "体积优先种子",
+      "params": {
+        "quality": 75,
+        "distance": 1.5,
+        "effort": 5,
+        "speed": 7
+      },
+      "expected_ssim": 0.92,
+      "expected_compression": 0.35,
+      "use_cases": ["web", "batch_processing", "preview"]
+    },
+    "balanced": {
+      "name": "平衡种子",
+      "params": {
+        "quality": 88,
+        "distance": 0.8,
+        "effort": 7,
+        "speed": 5
+      },
+      "expected_ssim": 0.96,
+      "expected_compression": 0.50,
+      "use_cases": ["general", "photo", "archive"]
+    },
+    "quality_focused": {
+      "name": "质量优先种子",
+      "params": {
+        "quality": 95,
+        "distance": 0.3,
+        "effort": 9,
+        "speed": 3
+      },
+      "expected_ssim": 0.98,
+      "expected_compression": 0.70,
+      "use_cases": ["professional", "print", "master"]
+    },
+    "lossless": {
+      "name": "无损种子",
+      "params": {
+        "quality": 100,
+        "distance": 0.0,
+        "effort": 9,
+        "speed": 1
+      },
+      "expected_ssim": 1.00,
+      "expected_compression": 0.85,
+      "use_cases": ["archival", "medical", "scientific"]
+    },
+    "animation": {
+      "name": "动画/GIF种子",
+      "params": {
+        "quality": 85,
+        "distance": 1.0,
+        "effort": 6,
+        "speed": 6
+      },
+      "expected_ssim": 0.94,
+      "expected_compression": 0.40,
+      "use_cases": ["gif", "animation", "video"]
+    },
+    "photo_high_detail": {
+      "name": "高细节照片种子",
+      "params": {
+        "quality": 92,
+        "distance": 0.5,
+        "effort": 8,
+        "speed": 4
+      },
+      "expected_ssim": 0.97,
+      "expected_compression": 0.60,
+      "use_cases": ["landscape", "macro", "architecture"]
+    },
+    "illustration": {
+      "name": "插画/线稿种子",
+      "params": {
+        "quality": 90,
+        "distance": 0.6,
+        "effort": 8,
+        "speed": 4
+      },
+      "expected_ssim": 0.96,
+      "expected_compression": 0.45,
+      "use_cases": ["illustration", "manga", "line_art"]
+    },
+    "screenshot": {
+      "name": "截图/UI种子",
+      "params": {
+        "quality": 88,
+        "distance": 0.8,
+        "effort": 6,
+        "speed": 6
+      },
+      "expected_ssim": 0.95,
+      "expected_compression": 0.40,
+      "use_cases": ["screenshot", "ui", "text_heavy"]
+    }
+  },
+  "training_config": {
+    "initial_episodes": 100,
+    "batch_size": 32,
+    "learning_rate": 0.0003,
+    "gamma": 0.99,
+    "clip_epsilon": 0.2,
+    "value_coefficient": 0.5,
+    "entropy_coefficient": 0.01,
+    "max_grad_norm": 0.5,
+    "ppo_epochs": 10,
+    "observation_buffer_size": 1000,
+    "min_observations_for_training": 50
+  },
+  "reward_weights": {
+    "ssim_weight": 0.5,
+    "size_weight": 0.3,
+    "speed_weight": 0.2
+  },
+  "notes": [
+    "种子参数基于大量实测数据优化",
+    "PPO将在运行时根据实际观测调整这些参数",
+    "expected_ssim和expected_compression用于评估训练效果",
+    "建议至少收集50个观测数据后开始训练"
+  ]
+}

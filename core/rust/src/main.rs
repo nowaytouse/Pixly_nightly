@@ -16,8 +16,9 @@ use cli::{
     handle_info_command,
     handle_analyze_command,
     handle_eagle_command,
-    handle_gif_optimize_command,
+    handle_gif_optimize_command, 
     handle_video_command,  // 🎬 Phase 40.24: 视频转换命令
+    handle_audio_command, 
     handle_detect_command,  // 🔥 Phase 45.3: AI文件类型检测命令
     show_tui_manual,
     show_quick_help
@@ -73,6 +74,9 @@ fn main() {
         }
         "video" => {
             handle_video_command(&args[2..]);
+        }
+        "audio" => {  // 🎵 Phase 47: 音频转换命令
+            handle_audio_command(&args[2..]);
         }
         "detect" => {  // 🔥 Phase 45.3: Magika AI 文件类型检测
             handle_detect_command(&args[2..]);

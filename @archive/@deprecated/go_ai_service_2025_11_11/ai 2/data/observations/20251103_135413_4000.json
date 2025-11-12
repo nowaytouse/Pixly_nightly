@@ -1,0 +1,17 @@
+{
+  "conversion_time": 1072,
+  "file_name": "IMG_3535.jpg",
+  "has_alpha": false,
+  "image_type": ".jpg",
+  "input_size": 1448335,
+  "optimize_mode": "size",
+  "output_size": 267026,
+  "params": {
+    "distance": 1,
+    "effort": 7,
+    "quality": 90,
+    "speed": 5
+  },
+  "ssim": 0.95,
+  "tool": "avif"
+}

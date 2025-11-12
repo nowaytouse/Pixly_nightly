@@ -1,0 +1,17 @@
+{
+  "conversion_time": 3102,
+  "file_name": "IMG_8515.jpg",
+  "has_alpha": false,
+  "image_type": ".jpg",
+  "input_size": 873664,
+  "optimize_mode": "balanced",
+  "output_size": 114911,
+  "params": {
+    "distance": 1,
+    "effort": 7,
+    "quality": 90,
+    "speed": 5
+  },
+  "ssim": 0.95,
+  "tool": "avif"
+}

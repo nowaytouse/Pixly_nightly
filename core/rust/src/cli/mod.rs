@@ -24,6 +24,7 @@ pub use commands::{
     handle_eagle_command, 
     handle_gif_optimize_command,
     handle_video_command,  // 🎬 Phase 40.24: 视频转换命令
+    handle_audio_command,  // 🎵 Phase 47: 音频转换命令
     handle_detect_command,  // 🔥 Phase 45.3: AI文件类型检测命令
 };
 pub use help::{show_tui_manual, show_quick_help};

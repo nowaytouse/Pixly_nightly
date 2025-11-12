@@ -1,0 +1,17 @@
+{
+  "conversion_time": 2833,
+  "file_name": "IMG_20171207_213026.jpg",
+  "has_alpha": false,
+  "image_type": ".jpg",
+  "input_size": 161232,
+  "optimize_mode": "balanced",
+  "output_size": 100048,
+  "params": {
+    "distance": 1,
+    "effort": 7,
+    "quality": 90,
+    "speed": 5
+  },
+  "ssim": 0.95,
+  "tool": "jxl"
+}

@@ -1,0 +1,17 @@
+{
+  "conversion_time": 2606,
+  "file_name": "IMG_20180201_144857.jpg",
+  "has_alpha": false,
+  "image_type": ".jpg",
+  "input_size": 234910,
+  "optimize_mode": "quality",
+  "output_size": 110148,
+  "params": {
+    "distance": 1,
+    "effort": 7,
+    "quality": 90,
+    "speed": 5
+  },
+  "ssim": 0.95,
+  "tool": "avif"
+}

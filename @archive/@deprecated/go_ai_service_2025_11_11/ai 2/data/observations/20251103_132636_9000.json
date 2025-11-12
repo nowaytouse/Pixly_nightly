@@ -1,0 +1,17 @@
+{
+  "conversion_time": 4485,
+  "file_name": "心态 (5).jpg",
+  "has_alpha": false,
+  "image_type": ".jpg",
+  "input_size": 264474,
+  "optimize_mode": "quality",
+  "output_size": 121839,
+  "params": {
+    "distance": 1,
+    "effort": 7,
+    "quality": 90,
+    "speed": 5
+  },
+  "ssim": 0.95,
+  "tool": "jxl"
+}

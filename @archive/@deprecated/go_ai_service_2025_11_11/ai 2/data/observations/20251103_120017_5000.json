@@ -1,0 +1,16 @@
+{
+  "conversion_time": 2500,
+  "file_name": "test.jpg",
+  "input_size": 1024000,
+  "optimize_mode": "balanced",
+  "output_size": 512000,
+  "params": {
+    "distance": 0.8,
+    "effort": 7,
+    "quality": 90,
+    "speed": 5
+  },
+  "reward": 0.85,
+  "ssim": 0.96,
+  "tool": "jxl"
+}

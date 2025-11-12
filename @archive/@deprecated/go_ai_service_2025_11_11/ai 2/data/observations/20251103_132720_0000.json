@@ -1,0 +1,17 @@
+{
+  "conversion_time": 1554,
+  "file_name": "IMG_20171025_190654.jpg",
+  "has_alpha": false,
+  "image_type": ".jpg",
+  "input_size": 214646,
+  "optimize_mode": "quality",
+  "output_size": 110148,
+  "params": {
+    "distance": 1,
+    "effort": 7,
+    "quality": 90,
+    "speed": 5
+  },
+  "ssim": 0.95,
+  "tool": "avif"
+}

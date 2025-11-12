@@ -1,0 +1,17 @@
+{
+  "conversion_time": 550,
+  "file_name": "1580794246409.jpg",
+  "has_alpha": false,
+  "image_type": ".jpg",
+  "input_size": 111622,
+  "optimize_mode": "quality",
+  "output_size": 44760,
+  "params": {
+    "distance": 1,
+    "effort": 7,
+    "quality": 90,
+    "speed": 5
+  },
+  "ssim": 0.95,
+  "tool": "webp"
+}

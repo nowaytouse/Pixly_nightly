@@ -27,7 +27,7 @@
  *    - 端口: 固定50052 (Python HTTP服务)
  *    - 协议: HTTP JSON
  *    - 超时: 5秒 (PIXLY_AI_TIMEOUT)
- *    - 降级: AI失败 → Mock预测 (不中断转换)
+ *    - 降级: ❌ 禁止（Python服务不可用时需直接报错）
  * 
  * 3. 【AI预测字段 (Phase 36 - 完整版)】
  *    必须字段:
@@ -56,9 +56,10 @@
  *    ✅ 反馈收集: 自动反馈 + 训练队列
  * 
  * API端点 (Python服务):
- * - GET  /api/v1/health - 健康检查
- * - POST /api/v1/predict - 图像AI预测
+ * - GET  /api/v1/health        - 健康检查
+ * - POST /api/v1/predict       - 图像AI预测
  * - POST /api/v1/predict/video - 视频AI预测
+ * - POST /api/v1/predict/audio - 音频AI预测
  * 
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  */
@@ -293,8 +294,8 @@ impl AIClient {
                     // ✅ 响亮报错，不fallback
                     error!("❌ AI service FAILED: {}", e);
                     error!("   Without AI service, conversion cannot proceed!");
-                    error!("   Start Go AI service:");
-                    error!("      cd core/go && go run cmd/pixly-ai/main.go --port 50052");
+                    error!("   Start Python AI service:");
+                    error!("      python3 tools/pixly_http_server.py --port 50052");
                     anyhow::bail!("🚨 AI service required for conversion! Error: {}", e);
                 }
             }
@@ -319,11 +320,11 @@ impl AIClient {
         eprintln!("[DEBUG] http_predict: Request = {}→{} ({}x{})", 
             request.input_format, request.target_format, request.width, request.height);
         
-        info!("🔗 Connecting to AI service: {}", url);
+        info!("🔗 Connecting to Python AI audio service: {}", url);
         debug!("📋 Request: {}→{} ({}x{})", 
             request.input_format, request.target_format, request.width, request.height);
         
-        // 🔥 Phase 40.31: 适配Go AI服务的请求格式（含UI选项）
+        // 🔥 Phase 47: 适配Python AI服务的请求格式（含高级选项）
         // 🔥 修复：image_path是必需参数，不使用fallback（符合质量宣言）
         let image_path = request.image_path.as_ref()
             .ok_or_else(|| {
@@ -338,7 +339,7 @@ impl AIClient {
             "tool": &request.target_format,
             "target_quality": request.preserve_quality.then_some(95).or(Some(85)),
             "optimize_mode": if request.preserve_quality { "quality" } else { "balanced" },
-            // 🔥 Phase 40.31: 传递UI AI高级选项给GO Service
+            // 🔥 Phase 40.31: 传递UI AI高级选项给Python Service
             "enable_bayesian": request.enable_bayesian.unwrap_or(true),       // 默认启用
             "enable_ppo": request.enable_ppo.unwrap_or(true),                 // 默认启用
             "enable_smart_quality": request.enable_smart_quality.unwrap_or(true),  // 默认启用
@@ -363,15 +364,15 @@ impl AIClient {
                     eprintln!("[DEBUG] Response status: {}", response.status());
                     info!("📥 Response status: {}", response.status());
                     if response.status().is_success() {
-                        // 🔥 Phase 40.6: 解析Go AI服务的响应格式并适配
-                        let go_response: serde_json::Value = response.json()
-                            .context("Failed to parse Go AI response")?;
+                        // 🔥 Phase 47: 解析Python AI服务的响应格式并适配
+                        let python_response: serde_json::Value = response.json()
+                            .context("Failed to parse Python AI response")?;
                         
-                        if go_response["success"].as_bool().unwrap_or(false) {
-                            let params = &go_response["params"];
+                        if python_response["success"].as_bool().unwrap_or(false) {
+                            let params = &python_response["params"];
                             
                             // 🆕 Phase 46.14+: 解析AI预处理建议
-                            let preprocessing_steps = go_response["preprocessing_steps"].as_array()
+                            let preprocessing_steps = python_response["preprocessing_steps"].as_array()
                                 .map(|steps| {
                                     steps.iter().filter_map(|step| {
                                         Some(PreprocessStepSuggestion {
@@ -382,27 +383,29 @@ impl AIClient {
                                     }).collect()
                                 });
                             
-                            return Ok(PredictionResponse {
+                            let response = PredictionResponse {
                                 quality: params["quality"].as_i64().map(|v| v as u8),
                                 speed: params["speed"].as_i64().map(|v| v as u8),
                                 effort: params["effort"].as_i64().map(|v| v as u8),
                                 method: params["method"].as_i64().map(|v| format!("{}", v)),
                                 distance: params["distance"].as_f64().map(|v| v as f32),
-                                confidence: go_response["confidence"].as_f64().unwrap_or(params["confidence"].as_f64().unwrap_or(0.8)) as f32,
-                                reasoning: "Go AI prediction".to_string(),
-                                format_recommendation: go_response["recommended_format"].as_str().map(|s| s.to_string()),
-                                model_used: go_response["model_used"].as_str().map(|s| s.to_string()),
-                                model_version: go_response["model_version"].as_str().map(|s| s.to_string()),
-                                inference_time_ms: go_response["inference_time_ms"].as_f64(),
-                                lossless: Some(false), // Go服务暂不支持lossless预测
+                                confidence: python_response["confidence"].as_f64().unwrap_or(params["confidence"].as_f64().unwrap_or(0.8)) as f32,
+                                reasoning: "Python AI prediction".to_string(),
+                                format_recommendation: python_response["recommended_format"].as_str().map(|s| s.to_string()),
+                                model_used: python_response["model_used"].as_str().map(|s| s.to_string()),
+                                model_version: python_response["model_version"].as_str().map(|s| s.to_string()),
+                                inference_time_ms: python_response["inference_time_ms"].as_f64(),
+                                lossless: Some(false), // Python服务暂不支持lossless预测
                                 lossless_jpeg: Some(false),
                                 format_options: None,
                                 preprocessing_steps,
-                                optimization_path: go_response["optimization_path"].as_str().map(|s| s.to_string()),
-                            });
+                                optimization_path: None,
+                            };
+
+                            return Ok(response);
                         } else {
-                            let error_msg = go_response["error"].as_str().unwrap_or("Unknown error");
-                            last_error = Some(anyhow::anyhow!("Go AI service error: {}", error_msg));
+                            let error_msg = python_response["error"].as_str().unwrap_or("Unknown error");
+                            last_error = Some(anyhow::anyhow!("Python AI service error: {}", error_msg));
                         }
                     } else {
                         let status = response.status();

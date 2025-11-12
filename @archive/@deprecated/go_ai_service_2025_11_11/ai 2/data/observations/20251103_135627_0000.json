@@ -1,0 +1,17 @@
+{
+  "conversion_time": 1631,
+  "file_name": "img-163910481637504e7d62ab01f4179fa1a451b54a8c58a.jpg",
+  "has_alpha": false,
+  "image_type": ".jpg",
+  "input_size": 255770,
+  "optimize_mode": "quality",
+  "output_size": 114911,
+  "params": {
+    "distance": 1,
+    "effort": 7,
+    "quality": 90,
+    "speed": 5
+  },
+  "ssim": 0.95,
+  "tool": "avif"
+}

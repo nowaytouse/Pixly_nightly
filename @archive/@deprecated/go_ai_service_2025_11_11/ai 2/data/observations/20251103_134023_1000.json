@@ -1,0 +1,17 @@
+{
+  "conversion_time": 44328,
+  "file_name": "1584873463565.jpg",
+  "has_alpha": false,
+  "image_type": ".jpg",
+  "input_size": 2208894,
+  "optimize_mode": "size",
+  "output_size": 720177,
+  "params": {
+    "distance": 1,
+    "effort": 7,
+    "quality": 90,
+    "speed": 5
+  },
+  "ssim": 0.95,
+  "tool": "jxl"
+}

@@ -19,6 +19,7 @@
 pub mod convert;
 pub mod batch;
 pub mod video;
+pub mod audio;
 pub mod detect;
 pub mod info;
 pub mod gif;
@@ -30,6 +31,7 @@ pub mod eagle;
 pub use convert::handle as handle_convert_command;
 pub use batch::handle as handle_batch_command;
 pub use video::handle as handle_video_command;
+pub use audio::handle as handle_audio_command;
 pub use detect::handle as handle_detect_command;
 pub use info::handle as handle_info_command;
 pub use gif::handle as handle_gif_optimize_command;

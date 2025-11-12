@@ -1,0 +1,17 @@
+{
+  "conversion_time": 1287,
+  "file_name": "2.角度控制和摄影机.jpg",
+  "has_alpha": false,
+  "image_type": ".jpg",
+  "input_size": 2431035,
+  "optimize_mode": "quality",
+  "output_size": 719416,
+  "params": {
+    "distance": 1,
+    "effort": 7,
+    "quality": 90,
+    "speed": 5
+  },
+  "ssim": 0.95,
+  "tool": "webp"
+}
