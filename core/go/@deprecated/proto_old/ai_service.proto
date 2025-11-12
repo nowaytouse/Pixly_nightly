@@ -1,0 +1,157 @@
+syntax = "proto3";
+
+package pixly.ai;
+
+option go_package = "pixly/pkg/ai/pb";
+
+// ==================== AI 预测服务 ====================
+service AIPredictor {
+    // 预测最优参数（三种模式）
+    rpc Predict(PredictRequest) returns (PredictResponse);
+    
+    // 批量预测
+    rpc PredictBatch(PredictBatchRequest) returns (PredictBatchResponse);
+    
+    // 质量评估
+    rpc AssessQuality(AssessRequest) returns (AssessResponse);
+    
+    // 贝叶斯优化参数
+    rpc OptimizeParams(OptimizeRequest) returns (OptimizeResponse);
+    
+    // 健康检查
+    rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+// ==================== 预测请求 ====================
+message PredictRequest {
+    // 预测模式
+    enum Mode {
+        BASIC = 0;      // 基础优化（规则引擎）
+        ADVANCED = 1;   // 高级AI（SWT+LightGBM+贝叶斯）
+        HYBRID = 2;     // 混合模式（智能路由）
+    }
+    
+    Mode mode = 1;
+    ImageInfo image = 2;
+    string tool = 3;  // cjxl/ffmpeg/avifenc/cwebp
+    PredictOptions options = 4;
+}
+
+// ==================== 图像信息 ====================
+message ImageInfo {
+    string file_path = 1;
+    int32 width = 2;
+    int32 height = 3;
+    int64 size = 4;
+    string format = 5;      // jpg/png/webp/gif...
+    bool is_animated = 6;
+    bool has_alpha = 7;
+}
+
+// ==================== 预测选项 ====================
+message PredictOptions {
+    string target_format = 1;      // 目标格式
+    bool enable_bayesian = 2;      // 启用贝叶斯优化
+    int32 max_iterations = 3;      // 贝叶斯最大迭代次数
+    bool enable_ssim_check = 4;    // 启用SSIM验证
+    float ssim_threshold = 5;      // SSIM阈值（默认0.95）
+}
+
+// ==================== 预测响应 ====================
+message PredictResponse {
+    ToolParams params = 1;
+    int64 estimated_size = 2;
+    float estimated_compression = 3;
+    float confidence = 4;
+    float ssim_estimate = 5;
+    float prediction_time_ms = 6;
+    string mode_used = 7;
+    string reason = 8;
+}
+
+// ==================== 工具参数 ====================
+message ToolParams {
+    // cjxl 参数
+    int32 cjxl_quality = 1;
+    int32 cjxl_effort = 2;
+    float cjxl_distance = 3;
+    bool cjxl_lossless = 4;
+    bool cjxl_modular = 5;
+    bool cjxl_progressive = 6;
+    
+    // avifenc 参数
+    int32 avif_quantizer = 10;
+    int32 avif_quantizer_alpha = 11;
+    int32 avif_speed = 12;
+    
+    // cwebp 参数
+    int32 webp_quality = 20;
+    int32 webp_method = 21;
+    bool webp_lossless = 22;
+    
+    // ffmpeg 参数
+    int32 ffmpeg_crf = 30;
+    string ffmpeg_preset = 31;  // ultrafast/fast/medium/slow/slower/veryslow
+    string ffmpeg_codec = 32;   // libx264/libx265/libsvtav1
+}
+
+// ==================== 批量预测 ====================
+message PredictBatchRequest {
+    PredictRequest.Mode mode = 1;
+    repeated ImageInfo images = 2;
+    string tool = 3;
+    PredictOptions options = 4;
+}
+
+message PredictBatchResponse {
+    repeated PredictResponse results = 1;
+    float total_time_ms = 2;
+    int32 success_count = 3;
+    int32 failed_count = 4;
+}
+
+// ==================== 质量评估 ====================
+message AssessRequest {
+    string original_path = 1;
+    string compressed_path = 2;
+}
+
+message AssessResponse {
+    float ssim = 1;
+    float psnr = 2;
+    float perceptual_quality = 3;
+    float compression_ratio = 4;
+    int64 original_size = 5;
+    int64 compressed_size = 6;
+}
+
+// ==================== 贝叶斯优化 ====================
+message OptimizeRequest {
+    ImageInfo image = 1;
+    string tool = 2;
+    ToolParams initial_params = 3;
+    int32 max_iterations = 4;
+}
+
+message OptimizeResponse {
+    ToolParams optimized_params = 1;
+    float best_score = 2;
+    int32 iterations_used = 3;
+    repeated OptimizationStep history = 4;
+}
+
+message OptimizationStep {
+    int32 iteration = 1;
+    ToolParams params = 2;
+    float score = 3;
+}
+
+// ==================== 健康检查 ====================
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+    bool is_healthy = 1;
+    string version = 2;
+    bool models_loaded = 3;
+    int32 uptime_seconds = 4;
+}

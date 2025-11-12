@@ -1,0 +1,332 @@
+/* 🔥 Phase 46.5: 统一面板动画系统 */
+/* 适用于图像面板和视频面板，确保一致的视觉反馈 */
+
+/* ========== 通用过渡效果 ========== */
+.conversion-panel,
+.main-panel,
+.section {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* ========== 按钮悬停效果（统一） ========== */
+.btn,
+.type-tab,
+.optimize-mode-btn,
+.codec-card {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover,
+.type-tab:hover,
+.optimize-mode-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+}
+
+.btn:active,
+.type-tab:active,
+.optimize-mode-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(102, 126, 234, 0.15);
+}
+
+/* ========== 卡片悬停效果（统一） ========== */
+.codec-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    border-color: rgba(102, 126, 234, 0.5);
+}
+
+.codec-card:active {
+    transform: scale(0.98);
+}
+
+/* ========== 复选框/单选框动画（统一） ========== */
+input[type="checkbox"],
+input[type="radio"] {
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    animation: checkPulse 0.3s ease;
+}
+
+@keyframes checkPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* ========== 加载动画（统一） ========== */
+.skeleton,
+.loading-spinner {
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -468px 0;
+    }
+    100% {
+        background-position: 468px 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 468px 100%;
+}
+
+/* ========== 面板切换动画（统一） ========== */
+.conversion-panel {
+    opacity: 0;
+    transform: translateX(20px);
+    pointer-events: none;
+}
+
+.conversion-panel:not([style*="display: none"]) {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ========== 输入框聚焦效果（统一） ========== */
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+/* ========== 滑块动画（统一） ========== */
+input[type="range"] {
+    transition: opacity 0.2s ease;
+}
+
+input[type="range"]:hover {
+    opacity: 1;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
+input[type="range"]::-webkit-slider-thumb:active {
+    transform: scale(1.1);
+}
+
+/* ========== 下拉菜单动画（统一） ========== */
+.dropdown-menu,
+.convert-dropdown-menu {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+}
+
+.dropdown-menu:not([style*="display: none"]),
+.convert-dropdown-menu:not([style*="display: none"]) {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* ========== 工具提示动画（统一） ========== */
+.tooltip {
+    opacity: 0;
+    transform: translateY(5px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+}
+
+.tooltip-trigger:hover .tooltip {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* ========== 进度条动画（统一） ========== */
+.progress-fill {
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    animation: progressShine 1.5s infinite;
+}
+
+@keyframes progressShine {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* ========== 徽章动画（统一） ========== */
+.badge,
+.codec-badge,
+.format-badge {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.badge:hover,
+.codec-badge:hover,
+.format-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* ========== 收缩/展开动画（统一） ========== */
+details {
+    transition: all 0.3s ease;
+}
+
+details[open] summary::after {
+    transform: rotate(180deg);
+}
+
+summary::after {
+    transition: transform 0.3s ease;
+}
+
+/* ========== 淡入淡出（统一） ========== */
+.fade-in {
+    animation: fadeIn 0.3s ease;
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* ========== 脉冲效果（用于通知/警告） ========== */
+.pulse {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* ========== 摇摆效果（用于错误提示） ========== */
+.shake {
+    animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-5px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(5px);
+    }
+}
+
+/* ========== 旋转加载（统一） ========== */
+.rotate-loading {
+    animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========== 响应式动画优化 ========== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========== 暗色模式平滑过渡 ========== */
+[data-theme] {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme] * {
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}

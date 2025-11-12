@@ -1,0 +1,26 @@
+{
+  "app": {
+    "title": "Pixly AI 优化器",
+    "subtitle": "质量优先智能媒体优化工具"
+  },
+  "drop_files_here": "拖放文件到此处或点击选择",
+  "supported_formats": "支持：图像、视频、音频",
+  "selected_files": "已选择的文件",
+  "optimization_mode": "优化模式",
+  "mode_note": "AI确保质量不变的前提下减小文件体积",
+  "mode_quality": "质量优先",
+  "mode_quality_desc": "最佳质量，近无损",
+  "mode_balanced": "平衡模式",
+  "mode_balanced_desc": "保证质量，优化体积",
+  "ai_analysis": "AI 分析",
+  "cancel": "取消",
+  "optimize": "立即优化",
+  "optimizing": "正在优化...",
+  "results": "优化结果",
+  "done": "完成",
+  "powered_by": "由",
+  "successful": "成功",
+  "failed": "失败",
+  "space_saved": "节省空间",
+  "reduction": "压缩率"
+}

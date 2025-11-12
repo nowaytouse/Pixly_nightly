@@ -1,0 +1,218 @@
+name: rimage
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - ".github/**"
+      - ".gitignore"
+      - "**.md"
+      - "LICENSE**"
+  pull_request:
+    paths-ignore:
+      - ".github/**"
+      - ".gitignore"
+      - "**.md"
+      - "LICENSE**"
+    types:
+      - opened
+      - synchronize
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: test
+
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-gnu
+          - aarch64-unknown-linux-musl
+          - x86_64-pc-windows-msvc
+          - i686-pc-windows-msvc
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
+          - wasm32-unknown-emscripten
+
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-22.04
+            target-apt-arch: amd64
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-22.04
+            target-apt-arch: amd64
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-22.04
+            target-apt-arch: arm64
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-22.04
+            target-apt-arch: arm64
+          - target: x86_64-pc-windows-msvc
+            os: windows-2022
+          - target: i686-pc-windows-msvc
+            os: windows-2022
+          - target: x86_64-apple-darwin
+            os: macos-13
+          - target: aarch64-apple-darwin
+            os: macos-14
+          - target: wasm32-unknown-emscripten
+            os: macos-14
+
+    env:
+      CARGO_BUILD_TARGET: ${{ matrix.target }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: set up ubuntu multiarch
+        if: startsWith(matrix.os, 'ubuntu') && matrix.target-apt-arch != 'amd64'
+        run: |
+          readonly DISTRO_CODENAME=jammy
+          sudo dpkg --add-architecture "${{ matrix.target-apt-arch }}"
+          sudo sed -i "s/^deb http/deb [arch=$(dpkg-architecture -q DEB_HOST_ARCH)] http/" /etc/apt/sources.list
+          sudo sed -i "s/^deb mirror/deb [arch=$(dpkg-architecture -q DEB_HOST_ARCH)] mirror/" /etc/apt/sources.list
+          for suite in '' '-updates' '-backports' '-security'; do
+            echo "deb [arch=${{ matrix.target-apt-arch }}] http://ports.ubuntu.com/ $DISTRO_CODENAME$suite main universe multiverse" | \
+            sudo tee -a /etc/apt/sources.list >/dev/null
+          done
+
+      - name: install musl development files
+        if: endsWith(matrix.target, '-musl')
+        run: |
+          sudo apt-get -yq update
+          sudo apt-get -yq install musl-tools musl-dev:${{ matrix.target-apt-arch }}
+
+      - name: install qemu and aarch64 cross compiler
+        if: startsWith(matrix.target, 'aarch64-unknown-linux')
+        run: |
+          sudo apt-get -yq update
+          sudo apt-get -yq install qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6:arm64
+
+      - name: set musl-g++
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: sudo ln -s /bin/g++ /bin/musl-g++
+
+      - name: set aarch64-linux-musl-g++
+        if: matrix.target == 'aarch64-unknown-linux-musl'
+        run: sudo ln -s /bin/aarch64-linux-gnu-g++ /bin/aarch64-linux-musl-g++
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: install rust toolchain (rust-toolchain-reborn)
+        uses: crusty-pie/toolchain@v1.0.8
+        with:
+          profile: minimal
+          toolchain: stable
+          targets: ${{ matrix.target }}
+
+      - uses: ilammy/setup-nasm@v1
+
+      - uses: taiki-e/install-action@nextest
+
+      - name: install dependencies (linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get -yq update
+          sudo apt-get -yq install ninja-build meson
+
+      - name: install dependencies (macos)
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          brew install ninja meson
+
+      - name: install dependencies (windows)
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          choco install -y ninja
+          pip install meson
+
+      - name: install emcc
+        if: matrix.target == 'wasm32-unknown-emscripten'
+        run: brew install emscripten
+
+      - name: build
+        if: matrix.target != 'wasm32-unknown-emscripten'
+        run: cargo build -r --all-features
+
+      - name: run tests
+        if: matrix.target != 'wasm32-unknown-emscripten'
+        run: |
+          cargo nextest run --release --all-features
+          cargo test --doc --release --all-features
+
+      - name: check wasm
+        if: matrix.target == 'wasm32-unknown-emscripten'
+        run: |
+          export EMSCRIPTEN_CMAKE_FILE="$(brew --cellar emscripten)/$(brew list --versions emscripten | tr ' ' '\n' | tail -1)/libexec/cmake/Modules/Platform/Emscripten.cmake"
+          cargo check --all-features
+        env:
+          CC: "emcc"
+          CXX: "emcc"
+
+      - name: upload cli binary as artifact
+        if: matrix.target != 'wasm32-unknown-emscripten'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rimage binary (${{ matrix.target }})
+          path: |
+            target/${{ env.CARGO_BUILD_TARGET }}/release/rimage
+            target/${{ env.CARGO_BUILD_TARGET }}/release/rimage.exe
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: add summary
+        if: success()
+        shell: pwsh
+        run: |
+          $NeedZone1 = [Int16]2
+          $NeedZone2 = [Int16]8
+          $OutputFormat = "%Y-%m-%d_%H:%M:%S"
+          $NowTime = [UInt32](Get-Date -UFormat "%s")
+          $Zone = [Int16](Get-Date -UFormat "%Z").ToString()
+          $NeedTime1 = ($NeedZone1 - $Zone) * 60 * 60
+          $NeedTime2 = ($NeedZone2 - $Zone) * 60 * 60
+          $Result1 = $NowTime + $NeedTime1
+          $Result2 = $NowTime + $NeedTime2
+          $Formated1 = (Get-Date -UnixTimeSeconds $Result1 -UFormat $OutputFormat).ToString()
+          $Formated2 = (Get-Date -UnixTimeSeconds $Result2 -UFormat $OutputFormat).ToString()
+
+          $summary = "
+          Completion time :   $Formated1 (GMT+02:00)
+          文件编译完成时间：  $Formated2 (GMT+08:00)
+          "
+
+          echo $summary >> $Env:GITHUB_STEP_SUMMARY
+          
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install dependencies
+        run: |
+          sudo apt-get -yq update
+          sudo apt-get -yq install ninja-build meson nasm
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: install rust toolchain (rust-toolchain-reborn)
+        uses: crusty-pie/toolchain@v1.0.8
+        with:
+          profile: minimal
+          toolchain: stable
+          components: rustfmt, clippy
+
+      - name: formatting check
+        run: cargo fmt --all -- --check
+
+      - name: clippy check
+        run: cargo clippy --all-features -- -D warnings

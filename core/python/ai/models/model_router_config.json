@@ -1,0 +1,75 @@
+{
+  "ab_enabled": true,
+  "models": {
+    "lightgbm": [
+      {
+        "name": "lightgbm",
+        "version": "v1.0.0",
+        "path": "models/lightgbm_v1.0.0.txt",
+        "model_type": "predictor",
+        "status": "active",
+        "priority": 1,
+        "ab_weight": 0.7,
+        "metrics": {
+          "accuracy": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "avg_latency": 29.423802209291512,
+          "error_rate": 0.08955223880597019,
+          "total_calls": 67,
+          "success_calls": 61
+        },
+        "created_at": "2025-11-12T06:27:23.314146",
+        "last_used_at": "2025-11-12T06:27:23.314354",
+        "usage_count": 67
+      },
+      {
+        "name": "lightgbm",
+        "version": "v1.0.1",
+        "path": "models/lightgbm_v1.0.1.txt",
+        "model_type": "predictor",
+        "status": "active",
+        "priority": 2,
+        "ab_weight": 0.3,
+        "metrics": {
+          "accuracy": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "avg_latency": 30.184505298638683,
+          "error_rate": 0.06060606060606055,
+          "total_calls": 33,
+          "success_calls": 31
+        },
+        "created_at": "2025-11-12T06:27:23.314172",
+        "last_used_at": "2025-11-12T06:27:23.314349",
+        "usage_count": 33
+      }
+    ],
+    "ppo": [
+      {
+        "name": "ppo",
+        "version": "v1.0.0",
+        "path": "models/ppo/actor_network.pth",
+        "model_type": "optimizer",
+        "status": "active",
+        "priority": 0,
+        "ab_weight": 1.0,
+        "metrics": {
+          "accuracy": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "avg_latency": 0.0,
+          "error_rate": 0.0,
+          "total_calls": 0,
+          "success_calls": 0
+        },
+        "created_at": "2025-11-12T06:27:23.314177",
+        "last_used_at": "2025-11-12T06:27:23.314178",
+        "usage_count": 0
+      }
+    ]
+  }
+}

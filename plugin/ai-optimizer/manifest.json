@@ -1,0 +1,21 @@
+{
+  "manifest_version": 1,
+  "type": "optimizer",
+  "id": "com.pixly.ai.optimizer",
+  "name": "Pixly AI Optimizer",
+  "version": "1.0.0",
+  "author": "Pixly Team",
+  "description": "AI-powered smart media optimizer - Quality-first, guaranteed size reduction",
+  "icon": "logo-ai.png",
+  "main": "index.html",
+  "permissions": [
+    "file:read",
+    "file:write",
+    "network"
+  ],
+  "config": {
+    "ai_service_url": "http://localhost:50052",
+    "enable_magika": true,
+    "default_mode": "balanced"
+  }
+}

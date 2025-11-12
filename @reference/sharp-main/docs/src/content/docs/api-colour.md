@@ -1,0 +1,150 @@
+---
+# This file was auto-generated from JSDoc in lib/colour.js
+title: Colour manipulation
+---
+
+## tint
+> tint(tint) ⇒ <code>Sharp</code>
+
+Tint the image using the provided colour.
+An alpha channel may be present and will be unchanged by the operation.
+
+
+**Throws**:
+
+- <code>Error</code> Invalid parameter
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| tint | <code>string</code> \| <code>Object</code> | Parsed by the [color](https://www.npmjs.org/package/color) module. |
+
+**Example**  
+```js
+const output = await sharp(input)
+  .tint({ r: 255, g: 240, b: 16 })
+  .toBuffer();
+```
+
+
+## greyscale
+> greyscale([greyscale]) ⇒ <code>Sharp</code>
+
+Convert to 8-bit greyscale; 256 shades of grey.
+This is a linear operation. If the input image is in a non-linear colour space such as sRGB, use `gamma()` with `greyscale()` for the best results.
+By default the output image will be web-friendly sRGB and contain three (identical) colour channels.
+This may be overridden by other sharp operations such as `toColourspace('b-w')`,
+which will produce an output image containing one colour channel.
+An alpha channel may be present, and will be unchanged by the operation.
+
+
+
+| Param | Type | Default |
+| --- | --- | --- |
+| [greyscale] | <code>Boolean</code> | <code>true</code> | 
+
+**Example**  
+```js
+const output = await sharp(input).greyscale().toBuffer();
+```
+
+
+## grayscale
+> grayscale([grayscale]) ⇒ <code>Sharp</code>
+
+Alternative spelling of `greyscale`.
+
+
+
+| Param | Type | Default |
+| --- | --- | --- |
+| [grayscale] | <code>Boolean</code> | <code>true</code> | 
+
+
+
+## pipelineColourspace
+> pipelineColourspace([colourspace]) ⇒ <code>Sharp</code>
+
+Set the pipeline colourspace.
+
+The input image will be converted to the provided colourspace at the start of the pipeline.
+All operations will use this colourspace before converting to the output colourspace,
+as defined by [toColourspace](#tocolourspace).
+
+
+**Throws**:
+
+- <code>Error</code> Invalid parameters
+
+**Since**: 0.29.0  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [colourspace] | <code>string</code> | pipeline colourspace e.g. `rgb16`, `scrgb`, `lab`, `grey16` [...](https://www.libvips.org/API/current/enum.Interpretation.html) |
+
+**Example**  
+```js
+// Run pipeline in 16 bits per channel RGB while converting final result to 8 bits per channel sRGB.
+await sharp(input)
+ .pipelineColourspace('rgb16')
+ .toColourspace('srgb')
+ .toFile('16bpc-pipeline-to-8bpc-output.png')
+```
+
+
+## pipelineColorspace
+> pipelineColorspace([colorspace]) ⇒ <code>Sharp</code>
+
+Alternative spelling of `pipelineColourspace`.
+
+
+**Throws**:
+
+- <code>Error</code> Invalid parameters
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [colorspace] | <code>string</code> | pipeline colorspace. |
+
+
+
+## toColourspace
+> toColourspace([colourspace]) ⇒ <code>Sharp</code>
+
+Set the output colourspace.
+By default output image will be web-friendly sRGB, with additional channels interpreted as alpha channels.
+
+
+**Throws**:
+
+- <code>Error</code> Invalid parameters
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [colourspace] | <code>string</code> | output colourspace e.g. `srgb`, `rgb`, `cmyk`, `lab`, `b-w` [...](https://www.libvips.org/API/current/enum.Interpretation.html) |
+
+**Example**  
+```js
+// Output 16 bits per pixel RGB
+await sharp(input)
+ .toColourspace('rgb16')
+ .toFile('16-bpp.png')
+```
+
+
+## toColorspace
+> toColorspace([colorspace]) ⇒ <code>Sharp</code>
+
+Alternative spelling of `toColourspace`.
+
+
+**Throws**:
+
+- <code>Error</code> Invalid parameters
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [colorspace] | <code>string</code> | output colorspace. |

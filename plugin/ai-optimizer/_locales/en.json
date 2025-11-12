@@ -1,0 +1,26 @@
+{
+  "app": {
+    "title": "Pixly AI Optimizer",
+    "subtitle": "Quality-First Smart Media Optimizer"
+  },
+  "drop_files_here": "Drop files here or click to select",
+  "supported_formats": "Supports: Images, Videos, Audio",
+  "selected_files": "Selected Files",
+  "optimization_mode": "Optimization Mode",
+  "mode_note": "AI ensures quality preservation while reducing file size",
+  "mode_quality": "Quality Priority",
+  "mode_quality_desc": "Best quality, near-lossless",
+  "mode_balanced": "Balanced",
+  "mode_balanced_desc": "Quality preserved, size optimized",
+  "ai_analysis": "AI Analysis",
+  "cancel": "Cancel",
+  "optimize": "Optimize Now",
+  "optimizing": "Optimizing...",
+  "results": "Results",
+  "done": "Done",
+  "powered_by": "Powered by",
+  "successful": "Successful",
+  "failed": "Failed",
+  "space_saved": "Space Saved",
+  "reduction": "Reduction"
+}

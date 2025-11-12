@@ -1,0 +1,215 @@
+/**
+ * PIXLY 格式选择器module
+ * 依赖: PIXLY命名空间
+ */
+(function(window) {
+    'use strict';
+    
+    window.PIXLY = window.PIXLY || {};
+    
+    /**
+     * 格式选择器
+     */
+    const FormatSelector = {
+        
+        /**
+         * 支持格式
+         */
+        supportedFormats: {
+            image: ['jxl', 'avif', 'webp', 'png', 'jpg'],
+            video: ['mp4', 'webm', 'mkv', 'avi', 'mov'],
+            animated: ['gif', 'webp', 'mp4']
+        },
+        
+        /**
+         * 格式info
+         */
+        formatInfo: {
+            jxl: {
+                name: 'JPEG XL',
+                icon: '📦',
+                desc: 'New一代图像格式 - 压缩率高、支持无损',
+                quality: 5,
+                size: 5,
+                speed: 3
+            },
+            avif: {
+                name: 'AVIF',
+                icon: '🎬',
+                desc: 'AV1图像格式 - 优秀压缩率',
+                quality: 5,
+                size: 5,
+                speed: 2
+            },
+            webp: {
+                name: 'WebP',
+                icon: '🌐',
+                desc: 'Google图像格式 - 广泛支持',
+                quality: 4,
+                size: 4,
+                speed: 4
+            },
+            png: {
+                name: 'PNG',
+                icon: '🎨',
+                desc: '无损格式 - 支持透明',
+                quality: 5,
+                size: 2,
+                speed: 5
+            },
+            jpg: {
+                name: 'JPEG',
+                icon: '🖼️',
+                desc: '传统格式 - 兼容性最好',
+                quality: 3,
+                size: 3,
+                speed: 5
+            },
+            mp4: {
+                name: 'MP4',
+                icon: '🎥',
+                desc: 'H.264/H.265 视频 - 通用格式',
+                quality: 4,
+                size: 4,
+                speed: 4
+            },
+            webm: {
+                name: 'WebM',
+                icon: '🌐',
+                desc: 'VP9/AV1 视频 - 开放格式',
+                quality: 4,
+                size: 4,
+                speed: 3
+            }
+        },
+        
+        /**
+         * initialized格式选择器
+         */
+        init: function() {
+            const formatRadios = document.querySelectorAll('input[name="format"]');
+            
+            formatRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    this.onFormatChange(radio.value);
+                });
+            });
+            
+ console.log('[PIXLY format] format selector initialized');
+        },
+        
+        /**
+         * 格式变化处理
+         */
+        onFormatChange: function(format) {
+ console.log('[PIXLY format] format changed:', format);
+            
+            // 更New JPEG 无损提示
+            if (window.updateJPEGNotice) {
+                updateJPEGNotice();
+            }
+            
+            // saveconfig
+            if (PIXLY.setConfig) {
+                PIXLY.setConfig('selectedFormat', format);
+            }
+            
+            // 更New格式info显示
+            this.updateFormatInfo(format);
+        },
+        
+        /**
+         * 更New格式info
+         */
+        updateFormatInfo: function(format) {
+            const info = this.formatInfo[format];
+            if (!info) return;
+            
+            const infoEl = document.getElementById('formatInfo');
+            if (infoEl) {
+                infoEl.innerHTML = `
+                    <div class="format-info-card">
+                        <div class="format-info-header">
+                            <span class="format-info-icon">${info.icon}</span>
+                            <span class="format-info-name">${info.name}</span>
+                        </div>
+                        <div class="format-info-desc">${info.desc}</div>
+                        <div class="format-info-stats">
+                            <div class="format-stat">
+                                <span>质量</span>
+                                <span class="format-stat-bar">${'★'.repeat(info.quality)}</span>
+                            </div>
+                            <div class="format-stat">
+                                <span>压缩</span>
+                                <span class="format-stat-bar">${'★'.repeat(info.size)}</span>
+                            </div>
+                            <div class="format-stat">
+                                <span>速度</span>
+                                <span class="format-stat-bar">${'★'.repeat(info.speed)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        },
+        
+        /**
+         * 获取当前Selected格式
+         */
+        getSelectedFormat: function() {
+            const radio = document.querySelector('input[name="format"]:checked');
+            return radio ? radio.value : 'jxl';
+        },
+        
+        /**
+         * settings格式
+         */
+        setFormat: function(format) {
+            const radio = document.querySelector(`input[name="format"][value="${format}"]`);
+            if (radio) {
+                radio.checked = true;
+                this.onFormatChange(format);
+            }
+        },
+        
+        /**
+         * 根据Convert类型获取推荐格式
+         */
+        getRecommendedFormat: function(conversionType) {
+            const recommendations = {
+                'image': 'jxl',
+                'animated': 'webp',
+                'video': 'mp4'
+            };
+            return recommendations[conversionType] || 'jxl';
+        },
+        
+        /**
+         * Check格式is否支持特定功能
+         */
+        supportsFeature: function(format, feature) {
+            const features = {
+                'lossless': ['jxl', 'png', 'webp'],
+                'alpha': ['jxl', 'png', 'webp', 'avif'],
+                'animation': ['gif', 'webp'],
+                'hdr': ['jxl', 'avif']
+            };
+            return features[feature] && features[feature].includes(format);
+        }
+    };
+    
+    // 暴露to全局
+    PIXLY.FormatSelector = FormatSelector;
+    
+    // 向后兼容
+    window.initFormatSelector = function() {
+        FormatSelector.init();
+    };
+    
+    window.updateFormatInfo = function(format) {
+        FormatSelector.updateFormatInfo(format);
+    };
+    
+ console.log('[PIXLY format] format selector module loaded');
+    
+})(window);

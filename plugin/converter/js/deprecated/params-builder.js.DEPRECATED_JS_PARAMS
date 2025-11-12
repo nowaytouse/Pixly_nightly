@@ -1,0 +1,562 @@
+/**
+ * PIXLY parameter构建器module - 完整实现 + AI集成
+ * from plugin.js 完整提取parameter构建逻辑
+ * 依赖: Node.js pathmodule, AI Client (22-ai-client.js)
+ * 
+ * 包含:
+ * - buildJXL (JXL/JPEG XLparameter) + AI增强
+ * - buildWebP (WebPparameter) + AI增强
+ * - buildAVIF (AVIFparameter) + AI增强
+ * - buildPixlySmart (PIXLY智能模式parameter)
+ * - enhanceWithAI (AIparameter预测增强)
+ * 总计: ~350lines完整实现
+ */
+(function(window) {
+    'use strict';
+    
+    window.PIXLY = window.PIXLY || {};
+    
+    /**
+     * 使用AI增强parameter（如果启用）
+     * @param {string} imagePath - 图像path
+     * @param {string} tool - 工具名称 (jxl/avif/webp)
+     * @param {Object} baseParams - 基础parameter
+     * @param {Object} aiOptions - AIoptions
+     * @returns {Promise<Object>} 增强后parameter
+     */
+    async function enhanceWithAI(imagePath, tool, baseParams, aiOptions) {
+        // 快速failed：AI未启用
+        if (!aiOptions || !aiOptions.enabled) {
+            return { ...baseParams, _ai_mode: 'disabled' };
+        }
+        
+        // 快速failed：关键AI功能都未启用
+        if (!aiOptions.smartQuality && !aiOptions.autoOptimize) {
+            return { ...baseParams, _ai_mode: 'disabled' };
+        }
+        
+        // 快速failed：AI客户端not available
+        if (typeof window.aiClient === 'undefined' || !window.aiClient.healthy) {
+            Logger.debug('AI客户端not available，使用基础parameter');
+            return { ...baseParams, _ai_mode: 'fallback' };
+        }
+        
+        try {
+            // 确定Optimize模式
+            const optimizeMode = document.querySelector('input[name="optimizeMode"]:checked')?.value || 'balanced';
+            
+            Logger.debug(`📤 AI预测 | 图像=${imagePath.split('/').pop()} | 工具=${tool} | 模式=${optimizeMode}`);
+            
+            // 调用AI预测
+            const aiResult = await window.aiClient.predictParams(imagePath, tool, optimizeMode);
+            
+            if (aiResult.success && aiResult.mode !== 'fallback') {
+                // AI预测successfully，mergeparameter
+                const enhancedParams = {
+                    ...baseParams,
+                    _ai_enhanced: true,
+                    _ai_confidence: aiResult.params.confidence,
+                    _ai_mode: aiResult.mode
+                };
+                
+                // 如果启用质量预测，覆盖质量parameter
+                if (aiOptions.smartQuality && aiResult.params.quality) {
+                    enhancedParams.quality = aiResult.params.quality;
+                }
+                
+                // 如果启用parameterOptimize，覆盖距离parameter
+                if (aiOptions.autoOptimize && aiResult.params.distance !== undefined) {
+                    enhancedParams.distance = aiResult.params.distance;
+                }
+                
+                // 如果有effortparameter，也应用
+                if (aiOptions.autoOptimize && aiResult.params.effort) {
+                    enhancedParams.effort = aiResult.params.effort;
+                }
+                
+                Logger.success(`✅ AI增强 | Q=${enhancedParams.quality} d=${enhancedParams.distance || 'N/A'} | 置信度=${aiResult.params.confidence.toFixed(2)}`);
+                
+                return enhancedParams;
+            } else {
+                // AIfailed，使用基础parameter
+                Logger.debug('AI预测failed，使用基础parameter');
+                return { ...baseParams, _ai_mode: 'fallback' };
+            }
+        } catch (error) {
+            Logger.warn(`⚠️  AI增强exception: ${error.message}`);
+            return { ...baseParams, _ai_mode: 'error', _ai_error: error.message };
+        }
+    }
+    
+    /**
+     * parameter构建器 - 统一parameterAPI
+     */
+    const ParamsBuilder = {
+        /**
+         * 构建JXLparameter
+         * 完整提取自 plugin.js buildJxlArgs
+         */
+        buildJXL: function(inputFile, outputFile, config) {
+            const path = require('path');
+            const args = [inputFile, outputFile];
+            const fp = config.formatParams || {};
+            
+            // detected输入file类型
+            const inputExt = path.extname(inputFile).toLowerCase();
+            const isJpeg = ['.jpg', '.jpeg', '.jpe', '.jfif', '.jfi'].includes(inputExt);
+            
+            // 基础质量and编码控制
+            if (config.manualLossless || (fp.jxlDistance !== undefined && fp.jxlDistance === 0)) {
+                // 完全无损模式
+                if (isJpeg) {
+                    // JPEG file使用 lossless_jpeg（无损重编码）
+                    args.push('--lossless_jpeg', '1');
+                } else {
+                    // 其他格式使用 distance 0
+                    args.push('--distance', '0');
+                }
+            } else if (config.manualNearLossless) {
+                // 近无损模式
+                if (isJpeg) {
+                    // JPEG need禁用 lossless_jpeg 才能使用 distance
+                    args.push('--lossless_jpeg', '0');
+                }
+                args.push('--distance', '0.5');
+            } else if (fp.jxlDistance !== undefined && fp.jxlDistance > 0) {
+                // 用户指定 Distance (有损模式)
+                if (isJpeg) {
+                    // JPEG need禁用 lossless_jpeg 才能使用 distance
+                    args.push('--lossless_jpeg', '0');
+                }
+                args.push('--distance', fp.jxlDistance.toString());
+            } else {
+                // 默认质量模式
+                // 对于 JPEG file，默认使用无损Convert（避免二次压缩质量损失）
+                if (isJpeg) {
+                    args.push('--lossless_jpeg', '1');
+                } else {
+                    // 其他格式使用质量parameterConvertas distance
+                    const distance = (100 - config.quality) / 10.0; // 质量越高，distance 越小
+                    args.push('--distance', Math.max(0.1, distance).toFixed(1));
+                }
+            }
+            
+            // Effort (编码速度 vs 质量)
+            if (fp.jxlEffort) {
+                args.push('--effort', fp.jxlEffort.toString());
+            }
+            
+            // Patches (局部Optimize)
+            if (fp.jxlPatches) {
+                args.push('--patches', fp.jxlPatches.toString());
+            }
+            
+            // Modular 模式（VarDCT vs Modular）
+            if (fp.jxlModular) {
+                args.push('--modular', '1');
+            }
+            
+            // Progressive 渐进式load
+            if (fp.jxlProgressive) {
+                args.push('--progressive', '1');
+            }
+            
+            // Responsive 响应式图像
+            if (fp.jxlResponsive) {
+                args.push('--responsive', '1');
+            }
+            
+            // Gaborish 滤波器
+            if (fp.jxlGaborish) {
+                args.push('--gaborish', '1');
+            }
+            
+            // 色彩深度
+            if (fp.jxlBitDepth) {
+                args.push('--num_bits', fp.jxlBitDepth);
+            }
+            
+            // 色彩空间
+            if (fp.jxlColorSpace) {
+                args.push('--color_space', fp.jxlColorSpace);
+            }
+            
+            // 保留metadata
+            if (config.preserveMetadata !== false) {
+                args.push('--keep_exif', '1');
+            }
+            
+            // 保留透明度（默认）
+            if (config.preserveAlpha !== false) {
+                // JXL 默认保留透明度，no need额外parameter
+            }
+            
+            return args;
+        },
+        
+        /**
+         * 构建WebPparameter
+         * 完整提取自 plugin.js buildWebpArgs
+         */
+        buildWebP: function(inputFile, outputFile, config) {
+            const args = [];
+            const fp = config.formatParams || {};
+            
+            // 质量控制
+            if (config.manualLossless) {
+                args.push('-lossless');
+            } else if (config.manualNearLossless) {
+                args.push('-near_lossless', '60'); // 近无损：保留大部分质量
+            } else {
+                // 有损模式：使用质量parameter
+                args.push('-q', config.quality ? config.quality.toString() : '85');
+            }
+            
+            // Method (压缩方法: 0=快速, 6=最佳)
+            if (fp.webpMethod !== undefined) {
+                args.push('-m', fp.webpMethod.toString());
+            } else {
+                args.push('-m', '6'); // 默认最佳压缩
+            }
+            
+            // Filter Strength (去块滤波器强度)
+            if (fp.webpFilterStrength !== undefined) {
+                args.push('-f', fp.webpFilterStrength.toString());
+            }
+            
+            // Sharpness (锐度)
+            if (fp.webpSharpness !== undefined) {
+                args.push('-sharpness', fp.webpSharpness.toString());
+            }
+            
+            // Segments (分段数)
+            if (fp.webpSegments !== undefined) {
+                args.push('-segments', fp.webpSegments.toString());
+            }
+            
+            // SNS Strength (空间噪声整形)
+            if (fp.webpSnsStrength !== undefined) {
+                args.push('-sns', fp.webpSnsStrength.toString());
+            }
+            
+            // Auto Filter (自动滤波器)
+            if (fp.webpAutoFilter !== false) {
+                args.push('-af');
+            }
+            
+            // Exact (精确模式)
+            if (fp.webpExact) {
+                args.push('-exact');
+            }
+            
+            // 保留metadata
+            if (config.preserveMetadata !== false) {
+                args.push('-metadata', 'all');
+            }
+            
+            // 保留透明度
+            if (config.preserveAlpha !== false) {
+                // WebP 默认保留透明度
+            }
+            
+            // 输入输出file
+            args.push(inputFile, '-o', outputFile);
+            
+            return args;
+        },
+        
+        /**
+         * 构建AVIFparameter
+         * 完整提取自 plugin.js buildAvifArgs
+         */
+        buildAVIF: function(inputFile, outputFile, config) {
+            const args = [inputFile, outputFile];
+            const fp = config.formatParams || {};
+            
+            // Speed (编码速度: 0=最慢最佳, 10=最快)
+            if (fp.avifSpeed !== undefined) {
+                args.push('--speed', fp.avifSpeed.toString());
+            } else {
+                args.push('--speed', '6'); // 默认平衡
+            }
+            
+            // Quality Range (质量范围)
+            if (config.manualLossless) {
+                // 无损模式
+                args.push('--lossless');
+            } else {
+                // 有损模式：使用min/max质量
+                if (fp.avifMinQ !== undefined) {
+                    args.push('--min', fp.avifMinQ.toString());
+                } else {
+                    args.push('--min', '0');
+                }
+                
+                if (fp.avifMaxQ !== undefined) {
+                    args.push('--max', fp.avifMaxQ.toString());
+                } else {
+                    // from质量parametercalculationmax
+                    const maxQ = Math.round((100 - config.quality) * 0.63); // 质量越高，maxQ越小
+                    args.push('--max', maxQ.toString());
+                }
+            }
+            
+            // Chroma Subsampling (色度子采样)
+            if (fp.avifSubsampling) {
+                args.push('--yuv', fp.avifSubsampling);
+            } else {
+                args.push('--yuv', '4:2:0'); // 默认4:2:0
+            }
+            
+            // Tiles (分块编码，提升多线程性能)
+            if (fp.avifTileRows !== undefined && fp.avifTileRows > 0) {
+                args.push('--tilerowslog2', Math.log2(fp.avifTileRows).toString());
+            }
+            if (fp.avifTileCols !== undefined && fp.avifTileCols > 0) {
+                args.push('--tilecolslog2', Math.log2(fp.avifTileCols).toString());
+            }
+            
+            // 保留metadata
+            if (config.preserveMetadata !== false) {
+                args.push('--exif', 'preserve');
+                args.push('--xmp', 'preserve');
+            }
+            
+            // 保留透明度
+            if (config.preserveAlpha !== false) {
+                // AVIF 默认保留透明度
+            }
+            
+            return args;
+        },
+        
+        /**
+         * 构建HEICparameter
+         * 使用 ImageMagick or ffmpeg Convert
+         */
+        buildHEIC: function(inputFile, outputFile, config) {
+            const args = [];
+            const fp = config.formatParams || {};
+            
+            // 使用 ffmpeg Convertas HEIC (更通用)
+            args.push('-i', inputFile);
+            
+            // 编码器选择
+            const encoder = fp.heicEncoder || 'x265';
+            if (encoder === 'x265') {
+                args.push('-c:v', 'libx265');
+                
+                // 质量控制
+                if (config.manualLossless || fp.heicLossless) {
+                    // 无损模式
+                    args.push('-x265-params', 'lossless=1');
+                } else {
+                    // 有损模式：CRF控制质量
+                    const quality = fp.heicQuality !== undefined ? fp.heicQuality : config.quality || 85;
+                    // CRF: 0-51, 质量越高，CRF越低
+                    const crf = Math.round((100 - quality) * 0.51);
+                    args.push('-crf', crf.toString());
+                }
+                
+                // 色度子采样
+                const subsampling = fp.heicChromaSubsampling || '444';
+                if (subsampling === '420') {
+                    args.push('-pix_fmt', 'yuv420p');
+                } else if (subsampling === '422') {
+                    args.push('-pix_fmt', 'yuv422p');
+                } else if (subsampling === '444') {
+                    args.push('-pix_fmt', 'yuv444p');
+                }
+            } else {
+                // libheif 编码器
+                args.push('-c:v', 'libheif');
+                
+                // 质量控制
+                if (config.manualLossless || fp.heicLossless) {
+                    args.push('-lossless', '1');
+                } else {
+                    const quality = fp.heicQuality !== undefined ? fp.heicQuality : config.quality || 85;
+                    args.push('-q:v', quality.toString());
+                }
+            }
+            
+            // 保留metadata
+            if (config.preserveMetadata !== false) {
+                args.push('-map_metadata', '0');
+            }
+            
+            // 缩略图嵌入
+            if (fp.heicThumbEmbed !== false) {
+                // HEIC 默认会嵌入缩略图
+            }
+            
+            // 输出file
+            args.push('-y', outputFile);
+            
+            return args;
+        },
+        
+        /**
+         * 构建PIXLY smart命令parameter
+         * 用于调用核心程序智能模式
+         */
+        buildPixlySmart: function(inputDir, outputDir, config) {
+            const args = [
+                'smart',
+                '-i', inputDir,
+                '-o', outputDir
+            ];
+            
+            // 格式
+            if (config.format) {
+                args.push('-f', config.format);
+            } else {
+                args.push('-f', 'jxl'); // 默认JXL
+            }
+            
+            // Optimize模式
+            if (config.optimizeMode) {
+                args.push('--optimize', config.optimizeMode);
+            }
+            
+            // SSIMOptimize
+            if (config.ssimOptimize) {
+                args.push('--ssim-optimize');
+            }
+            
+            // 质量
+            if (config.quality) {
+                args.push('--quality', config.quality.toString());
+            }
+            
+            // 工作线程
+            if (config.workers) {
+                args.push('--workers', config.workers.toString());
+            }
+            
+            // 保留metadata
+            if (config.preserveMetadata !== false) {
+                args.push('--preserve-metadata');
+            }
+            
+            // 保留透明度
+            if (config.preserveAlpha !== false) {
+                args.push('--preserve-alpha');
+            }
+            
+            return args;
+        },
+        
+        /**
+         * 辅助: detectedJPEGfile
+         */
+        isJpegFile: function(filePath) {
+            const path = require('path');
+            const ext = path.extname(filePath).toLowerCase();
+            return ['.jpg', '.jpeg', '.jpe', '.jfif', '.jfi'].includes(ext);
+        },
+        
+        /**
+         * 辅助: detectedPNGfile
+         */
+        isPngFile: function(filePath) {
+            const path = require('path');
+            const ext = path.extname(filePath).toLowerCase();
+            return ext === '.png';
+        },
+        
+        /**
+         * 辅助: detectedGIFfile
+         */
+        isGifFile: function(filePath) {
+            const path = require('path');
+            const ext = path.extname(filePath).toLowerCase();
+            return ext === '.gif';
+        },
+        
+        /**
+         * parametervalidate
+         */
+        validate: function(config, format) {
+            const errors = [];
+            
+            // validate质量范围
+            if (config.quality !== undefined) {
+                if (config.quality < 1 || config.quality > 100) {
+                    errors.push('质量parametermustin1-100之间');
+                }
+            }
+            
+            // validate格式专属parameter
+            if (format === 'jxl' && config.formatParams) {
+                const fp = config.formatParams;
+                if (fp.jxlEffort !== undefined && (fp.jxlEffort < 1 || fp.jxlEffort > 9)) {
+                    errors.push('JXL effort mustin1-9之间');
+                }
+                if (fp.jxlDistance !== undefined && (fp.jxlDistance < 0 || fp.jxlDistance > 15)) {
+                    errors.push('JXL distance mustin0-15之间');
+                }
+            }
+            
+            if (format === 'webp' && config.formatParams) {
+                const fp = config.formatParams;
+                if (fp.webpMethod !== undefined && (fp.webpMethod < 0 || fp.webpMethod > 6)) {
+                    errors.push('WebP method mustin0-6之间');
+                }
+            }
+            
+            if (format === 'avif' && config.formatParams) {
+                const fp = config.formatParams;
+                if (fp.avifSpeed !== undefined && (fp.avifSpeed < 0 || fp.avifSpeed > 10)) {
+                    errors.push('AVIF speed mustin0-10之间');
+                }
+            }
+            
+            if (format === 'heic' && config.formatParams) {
+                const fp = config.formatParams;
+                if (fp.heicQuality !== undefined && (fp.heicQuality < 1 || fp.heicQuality > 100)) {
+                    errors.push('HEIC 质量mustin1-100之间');
+                }
+            }
+            
+            return {
+                valid: errors.length === 0,
+                errors
+            };
+        }
+    };
+    
+    // ============================================================
+    // module导出
+    // ============================================================
+    
+    PIXLY.ParamsBuilder = ParamsBuilder;
+    PIXLY.enhanceWithAI = enhanceWithAI;
+    
+    // 向后兼容 - 全局函数
+    window.buildJxlArgs = function(input, output, config) {
+        return ParamsBuilder.buildJXL(input, output, config);
+    };
+    
+    window.buildWebpArgs = function(input, output, config) {
+        return ParamsBuilder.buildWebP(input, output, config);
+    };
+    
+    window.buildAvifArgs = function(input, output, config) {
+        return ParamsBuilder.buildAVIF(input, output, config);
+    };
+    
+    window.buildHeicArgs = function(input, output, config) {
+        return ParamsBuilder.buildHEIC(input, output, config);
+    };
+    
+    window.buildPixlySmartArgs = function(inputDir, outputDir, config) {
+        return ParamsBuilder.buildPixlySmart(inputDir, outputDir, config);
+    };
+    
+    // 🧠 AI增强函数
+    window.enhanceParamsWithAI = enhanceWithAI;
+    
+     console.log('[PIXLY Params] Params Builder module loaded + AI Integration (350 lines, Full Implementation)');
+    
+})(window);

@@ -1,0 +1,36 @@
+{
+  "pending_tasks": [
+    {
+      "id": "task_4c84d9488c8454d7",
+      "input_path": "/test/2.png",
+      "output_path": "/test/2.jxl",
+      "target_format": "jxl",
+      "optimize_mode": "balanced",
+      "target_quality": null,
+      "status": "Pending",
+      "priority": "Urgent",
+      "created_at": 1762838484,
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "progress": 0
+    },
+    {
+      "id": "task_79cf3bf6cc9f246a",
+      "input_path": "/test/1.png",
+      "output_path": "/test/1.jxl",
+      "target_format": "jxl",
+      "optimize_mode": "balanced",
+      "target_quality": null,
+      "status": "Pending",
+      "priority": "Low",
+      "created_at": 1762838484,
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "progress": 0
+    }
+  ],
+  "running_tasks": [],
+  "completed_tasks": []
+}

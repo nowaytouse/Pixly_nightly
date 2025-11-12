@@ -1,0 +1,105 @@
+[package]
+name = "pixly_converter"
+version = "0.1.0"
+edition = "2021"
+authors = ["PIXLY Team"]
+description = "High-performance image and video converter core for PIXLY"
+
+[lib]
+crate-type = ["cdylib", "rlib"]  # 同时生成动态库和 Rust 库
+
+[[bin]]
+name = "pixly-rust"
+path = "src/main.rs"
+
+# Phase 46.14: http_server已废弃，移除bin配置
+# [[bin]]
+# name = "pixly-http-server"
+# path = "src/bin/http_server.rs"
+# required-features = ["http-server"]
+
+[dependencies]
+# 核心依赖
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+thiserror = "1.0"
+log = "0.4"
+env_logger = "0.11"
+sha2 = "0.10"
+
+# 统一日志系统 (Phase 45+ - 跨平台日志)
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
+
+# HTTP服务器 (Phase 22 - HTTP服务集成)
+actix-web = { version = "4.4", optional = true }
+actix-cors = { version = "0.7", optional = true }
+actix-rt = { version = "2.9", optional = true }
+tokio = { version = "1.35", features = ["full"], optional = true }
+
+# HTTP客户端 (Phase 32 - AI服务集成)
+reqwest = { version = "0.11", features = ["json", "blocking"], optional = true }
+lazy_static = "1.5"       # Phase 37: AI Client自动初始化
+regex = "1.10"            # Phase 40.8: 文件名规范化
+md5 = "0.7"               # Phase 40.8: 文件名哈希
+rayon = "1.10"            # Phase 40.12: 并发批量处理
+dashmap = "5.5"           # Phase 40.12: 并发安全缓存
+
+# AI文件类型检测 (Phase 45 - Magika集成)
+magika = "1.0"  # Google AI文件类型检测
+ort = { version = "2.0.0-rc.10", features = ["download-binaries"] }  # ONNX Runtime (Magika依赖)
+
+# 文件系统和路径
+walkdir = "2.5"  # 文件管理：目录遍历
+tempfile = "3.8"
+filetime = "0.2"          # Phase 36: 文件时间戳保留
+dirs = "5.0"              # Phase 40.12: 系统目录获取
+chrono = "0.4"            # Phase 36: 时间处理
+
+# 图像处理
+image = { version = "0.24", features = ["avif", "webp", "png", "jpeg", "gif"] }
+imageproc = "0.23"
+png = "0.17"
+gif = "0.13"  # 🎬 精确GIF帧数检测（修复进度条卡死问题）
+webp-animation = "0.9"  # 🎬 精确WebP帧数检测
+
+# 🦀 Rust原生编码器 (Phase 13-15 - 性能优化)
+rav1e = { version = "0.7", optional = true }     # AVIF原生编码器
+ravif = { version = "0.11", optional = true }    # AVIF高级封装
+webp = { version = "0.3", optional = true }      # WebP原生编码器
+rgb = "0.8"                                      # RGB图像处理
+imgref = "1.10"                                  # 图像引用优化
+
+# 并发
+crossbeam = "0.8"
+num_cpus = "1.16"  # CPU核心数检测 (Phase 19)
+
+# C FFI
+libc = "0.2"
+
+# 可选：命令执行
+[target.'cfg(unix)'.dependencies]
+nix = { version = "0.27", features = ["process"] }
+
+[dev-dependencies]
+criterion = "0.5"
+tempfile = "3.8"
+
+[features]
+default = ["native-avif", "native-webp", "http-server", "ai-client"]
+native-avif = ["rav1e", "ravif"]       # 启用AVIF原生编码器
+native-webp = ["webp"]                  # 启用WebP原生编码器
+http-server = ["actix-web", "actix-cors", "actix-rt", "tokio"]  # 启用HTTP服务器
+ai-client = ["reqwest"]                 # 启用AI服务客户端 (Phase 32)
+full-native = ["native-avif", "native-webp"]  # 启用所有原生编码器
+full = ["full-native", "http-server"]  # 启用所有功能
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.dev]
+opt-level = 1

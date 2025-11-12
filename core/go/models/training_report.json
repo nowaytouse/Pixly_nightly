@@ -1,0 +1,34 @@
+{
+  "version": "4.2.0",
+  "trained_at": "2025-11-02T11:06:21.801655",
+  "dataset_size": 901,
+  "models": {
+    "jxl": {
+      "model_path": "models/lightgbm_jxl.json",
+      "metrics": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "n_estimators": 1
+      },
+      "n_samples": 901
+    },
+    "avif": {
+      "model_path": "models/lightgbm_avif.json",
+      "metrics": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "n_estimators": 1
+      },
+      "n_samples": 901
+    },
+    "webp": {
+      "model_path": "models/lightgbm_webp.json",
+      "metrics": {
+        "rmse": 0.0,
+        "mae": 0.0,
+        "n_estimators": 1
+      },
+      "n_samples": 901
+    }
+  }
+}

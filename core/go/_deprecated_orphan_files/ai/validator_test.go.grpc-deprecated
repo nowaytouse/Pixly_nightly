@@ -1,0 +1,692 @@
+package ai
+
+import (
+	"testing"
+
+	pb "pixly/pkg/ai/pb"
+
+	"google.golang.org/grpc/status"
+)
+
+// TestValidateImageInfo 测试图像信息验证
+func TestValidateImageInfo(t *testing.T) {
+	tests := []struct {
+		name    string
+		img     *pb.ImageInfo
+		wantErr bool
+	}{
+		{
+			name: "valid image info",
+			img: &pb.ImageInfo{
+				FilePath: "/path/to/image.jpg",
+				Width:    1920,
+				Height:   1080,
+				Size:     1024000,
+				Format:   "jpg",
+			},
+			wantErr: false,
+		},
+		{
+			name: "nil image info",
+			img:  nil,
+			wantErr: true,
+		},
+		{
+			name: "empty file path",
+			img: &pb.ImageInfo{
+				FilePath: "",
+				Width:    1920,
+				Height:   1080,
+				Size:     1024000,
+				Format:   "jpg",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid width - zero",
+			img: &pb.ImageInfo{
+				FilePath: "/path/to/image.jpg",
+				Width:    0,
+				Height:   1080,
+				Size:     1024000,
+				Format:   "jpg",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid width - negative",
+			img: &pb.ImageInfo{
+				FilePath: "/path/to/image.jpg",
+				Width:    -100,
+				Height:   1080,
+				Size:     1024000,
+				Format:   "jpg",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid width - too large",
+			img: &pb.ImageInfo{
+				FilePath: "/path/to/image.jpg",
+				Width:    100000,
+				Height:   1080,
+				Size:     1024000,
+				Format:   "jpg",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid height - zero",
+			img: &pb.ImageInfo{
+				FilePath: "/path/to/image.jpg",
+				Width:    1920,
+				Height:   0,
+				Size:     1024000,
+				Format:   "jpg",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid size - zero",
+			img: &pb.ImageInfo{
+				FilePath: "/path/to/image.jpg",
+				Width:    1920,
+				Height:   1080,
+				Size:     0,
+				Format:   "jpg",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid size - negative",
+			img: &pb.ImageInfo{
+				FilePath: "/path/to/image.jpg",
+				Width:    1920,
+				Height:   1080,
+				Size:     -1000,
+				Format:   "jpg",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid format - empty",
+			img: &pb.ImageInfo{
+				FilePath: "/path/to/image.jpg",
+				Width:    1920,
+				Height:   1080,
+				Size:     1024000,
+				Format:   "",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid format - unsupported",
+			img: &pb.ImageInfo{
+				FilePath: "/path/to/image.jpg",
+				Width:    1920,
+				Height:   1080,
+				Size:     1024000,
+				Format:   "xyz",
+			},
+			wantErr: true,
+		},
+		{
+			name: "image too large - exceeds max pixels",
+			img: &pb.ImageInfo{
+				FilePath: "/path/to/image.jpg",
+				Width:    50000,
+				Height:   50000, // 25亿像素，超过10亿限制
+				Size:     1024000,
+				Format:   "jpg",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateImageInfo(tt.img)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateImageInfo() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// TestValidateTool 测试工具名称验证
+func TestValidateTool(t *testing.T) {
+	tests := []struct {
+		name    string
+		tool    string
+		wantErr bool
+	}{
+		{"valid - cjxl", "cjxl", false},
+		{"valid - avifenc", "avifenc", false},
+		{"valid - cwebp", "cwebp", false},
+		{"valid - ffmpeg", "ffmpeg", false},
+		{"valid - magick", "magick", false},
+		{"valid - uppercase", "CJXL", false},
+		{"valid - mixed case", "CjXl", false},
+		{"invalid - empty", "", true},
+		{"invalid - whitespace", "   ", true},
+		{"invalid - unsupported", "gifsicle", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateTool(tt.tool)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateTool() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// TestValidatePredictOptions 测试预测选项验证
+func TestValidatePredictOptions(t *testing.T) {
+	tests := []struct {
+		name    string
+		opts    *pb.PredictOptions
+		wantErr bool
+	}{
+		{
+			name: "valid options",
+			opts: &pb.PredictOptions{
+				TargetFormat:   "avif",
+				SsimThreshold:  0.95,
+				MaxIterations:  10,
+				EnableBayesian: true,
+			},
+			wantErr: false,
+		},
+		{
+			name:    "nil options",
+			opts:    nil,
+			wantErr: false, // nil is allowed
+		},
+		{
+			name: "invalid SSIM - negative",
+			opts: &pb.PredictOptions{
+				SsimThreshold: -0.1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid SSIM - greater than 1",
+			opts: &pb.PredictOptions{
+				SsimThreshold: 1.5,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid iterations - negative",
+			opts: &pb.PredictOptions{
+				MaxIterations: -1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid iterations - too large",
+			opts: &pb.PredictOptions{
+				MaxIterations: 200,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid target format",
+			opts: &pb.PredictOptions{
+				TargetFormat: "xyz",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validatePredictOptions(tt.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validatePredictOptions() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// TestValidateCjxlParams 测试CJXL参数验证
+func TestValidateCjxlParams(t *testing.T) {
+	tests := []struct {
+		name    string
+		params  *pb.ToolParams
+		wantErr bool
+	}{
+		{
+			name: "valid params",
+			params: &pb.ToolParams{
+				CjxlQuality:  90,
+				CjxlEffort:   7,
+				CjxlDistance: 1.0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid quality - negative",
+			params: &pb.ToolParams{
+				CjxlQuality: -1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid quality - too large",
+			params: &pb.ToolParams{
+				CjxlQuality: 101,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid effort - negative",
+			params: &pb.ToolParams{
+				CjxlEffort: -1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid effort - too large",
+			params: &pb.ToolParams{
+				CjxlEffort: 11,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid distance - negative",
+			params: &pb.ToolParams{
+				CjxlDistance: -0.1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid distance - too large",
+			params: &pb.ToolParams{
+				CjxlDistance: 20.0,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateCjxlParams(tt.params)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateCjxlParams() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// TestValidateAvifParams 测试AVIF参数验证
+func TestValidateAvifParams(t *testing.T) {
+	tests := []struct {
+		name    string
+		params  *pb.ToolParams
+		wantErr bool
+	}{
+		{
+			name: "valid params",
+			params: &pb.ToolParams{
+				AvifQuantizer:      25,
+				AvifQuantizerAlpha: 25,
+				AvifSpeed:          6,
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid quantizer - negative",
+			params: &pb.ToolParams{
+				AvifQuantizer: -1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid quantizer - too large",
+			params: &pb.ToolParams{
+				AvifQuantizer: 64,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid quantizer alpha - negative",
+			params: &pb.ToolParams{
+				AvifQuantizerAlpha: -1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid quantizer alpha - too large",
+			params: &pb.ToolParams{
+				AvifQuantizerAlpha: 64,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid speed - negative",
+			params: &pb.ToolParams{
+				AvifSpeed: -1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid speed - too large",
+			params: &pb.ToolParams{
+				AvifSpeed: 11,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateAvifParams(tt.params)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateAvifParams() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// TestValidateWebPParams 测试WebP参数验证
+func TestValidateWebPParams(t *testing.T) {
+	tests := []struct {
+		name    string
+		params  *pb.ToolParams
+		wantErr bool
+	}{
+		{
+			name: "valid params",
+			params: &pb.ToolParams{
+				WebpQuality: 85,
+				WebpMethod:  4,
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid quality - negative",
+			params: &pb.ToolParams{
+				WebpQuality: -1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid quality - too large",
+			params: &pb.ToolParams{
+				WebpQuality: 101,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid method - negative",
+			params: &pb.ToolParams{
+				WebpMethod: -1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid method - too large",
+			params: &pb.ToolParams{
+				WebpMethod: 7,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateWebPParams(tt.params)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateWebPParams() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// TestValidateFFmpegParams 测试FFmpeg参数验证
+func TestValidateFFmpegParams(t *testing.T) {
+	tests := []struct {
+		name    string
+		params  *pb.ToolParams
+		wantErr bool
+	}{
+		{
+			name: "valid params",
+			params: &pb.ToolParams{
+				FfmpegCrf:    23,
+				FfmpegPreset: "medium",
+				FfmpegCodec:  "libx264",
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid CRF - negative",
+			params: &pb.ToolParams{
+				FfmpegCrf: -1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid CRF - too large",
+			params: &pb.ToolParams{
+				FfmpegCrf: 52,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid preset",
+			params: &pb.ToolParams{
+				FfmpegPreset: "invalid",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid codec",
+			params: &pb.ToolParams{
+				FfmpegCodec: "invalid",
+			},
+			wantErr: true,
+		},
+		{
+			name: "valid - uppercase preset",
+			params: &pb.ToolParams{
+				FfmpegPreset: "MEDIUM",
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateFFmpegParams(tt.params)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateFFmpegParams() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// TestValidatePredictRequest 测试完整预测请求验证
+func TestValidatePredictRequest(t *testing.T) {
+	validImage := &pb.ImageInfo{
+		FilePath: "/path/to/image.jpg",
+		Width:    1920,
+		Height:   1080,
+		Size:     1024000,
+		Format:   "jpg",
+	}
+
+	tests := []struct {
+		name    string
+		req     *pb.PredictRequest
+		wantErr bool
+	}{
+		{
+			name: "valid request",
+			req: &pb.PredictRequest{
+				Mode:  pb.PredictRequest_ADVANCED,
+				Image: validImage,
+				Tool:  "cjxl",
+				Options: &pb.PredictOptions{
+					SsimThreshold: 0.95,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:    "nil request",
+			req:     nil,
+			wantErr: true,
+		},
+		{
+			name: "invalid mode",
+			req: &pb.PredictRequest{
+				Mode:  pb.PredictRequest_Mode(999),
+				Image: validImage,
+				Tool:  "cjxl",
+			},
+			wantErr: true,
+		},
+		{
+			name: "nil image",
+			req: &pb.PredictRequest{
+				Mode:  pb.PredictRequest_BASIC,
+				Image: nil,
+				Tool:  "cjxl",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid tool",
+			req: &pb.PredictRequest{
+				Mode:  pb.PredictRequest_BASIC,
+				Image: validImage,
+				Tool:  "invalid",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidatePredictRequest(tt.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ValidatePredictRequest() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			
+			// 验证错误是gRPC status错误
+			if err != nil {
+				if _, ok := status.FromError(err); !ok {
+					t.Errorf("Expected gRPC status error, got: %T", err)
+				}
+			}
+		})
+	}
+}
+
+// TestValidatePredictResponse 测试响应验证
+func TestValidatePredictResponse(t *testing.T) {
+	tests := []struct {
+		name    string
+		resp    *pb.PredictResponse
+		tool    string
+		wantErr bool
+	}{
+		{
+			name: "valid response",
+			resp: &pb.PredictResponse{
+				Confidence:       0.85,
+				PredictionTimeMs: 150.0,
+				Params: &pb.ToolParams{
+					CjxlQuality: 90,
+					CjxlEffort:  7,
+				},
+			},
+			tool:    "cjxl",
+			wantErr: false,
+		},
+		{
+			name:    "nil response",
+			resp:    nil,
+			tool:    "cjxl",
+			wantErr: true,
+		},
+		{
+			name: "invalid confidence - negative",
+			resp: &pb.PredictResponse{
+				Confidence: -0.1,
+			},
+			tool:    "cjxl",
+			wantErr: true,
+		},
+		{
+			name: "invalid confidence - greater than 1",
+			resp: &pb.PredictResponse{
+				Confidence: 1.5,
+			},
+			tool:    "cjxl",
+			wantErr: true,
+		},
+		{
+			name: "invalid prediction time",
+			resp: &pb.PredictResponse{
+				Confidence:       0.85,
+				PredictionTimeMs: -10.0,
+			},
+			tool:    "cjxl",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidatePredictResponse(tt.resp, tt.tool)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ValidatePredictResponse() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// BenchmarkValidateImageInfo 性能基准测试
+func BenchmarkValidateImageInfo(b *testing.B) {
+	img := &pb.ImageInfo{
+		FilePath: "/path/to/image.jpg",
+		Width:    1920,
+		Height:   1080,
+		Size:     1024000,
+		Format:   "jpg",
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = validateImageInfo(img)
+	}
+}
+
+// BenchmarkValidatePredictRequest 性能基准测试
+func BenchmarkValidatePredictRequest(b *testing.B) {
+	req := &pb.PredictRequest{
+		Mode: pb.PredictRequest_ADVANCED,
+		Image: &pb.ImageInfo{
+			FilePath: "/path/to/image.jpg",
+			Width:    1920,
+			Height:   1080,
+			Size:     1024000,
+			Format:   "jpg",
+		},
+		Tool: "cjxl",
+		Options: &pb.PredictOptions{
+			SsimThreshold: 0.95,
+			MaxIterations: 10,
+		},
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = ValidatePredictRequest(req)
+	}
+}

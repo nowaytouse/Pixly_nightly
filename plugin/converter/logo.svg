@@ -1,0 +1,76 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 圆角矩形背景 - 渐变蓝紫色 -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f0f0ff;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 阴影滤镜 -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="8" stdDeviation="20" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- 背景圆角矩形 -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGradient)"/>
+  
+  <!-- 左侧图像图标 (源格式) -->
+  <g transform="translate(80, 170)" filter="url(#shadow)">
+    <rect x="0" y="0" width="120" height="120" rx="20" fill="url(#iconGradient)" opacity="0.9"/>
+    <!-- 小山峰图标 -->
+    <path d="M 20 80 L 40 50 L 60 70 L 80 40 L 100 60 L 100 90 L 20 90 Z" fill="#667eea" opacity="0.7"/>
+    <!-- 太阳 -->
+    <circle cx="35" cy="35" r="12" fill="#ffd700" opacity="0.8"/>
+  </g>
+  
+  <!-- 中间转换箭头 -->
+  <g transform="translate(220, 200)" filter="url(#shadow)">
+    <!-- 大箭头 -->
+    <path d="M 0 30 L 50 30 L 50 10 L 80 40 L 50 70 L 50 50 L 0 50 Z" 
+          fill="url(#iconGradient)" 
+          stroke="rgba(255,255,255,0.5)" 
+          stroke-width="3"/>
+    <!-- 小箭头装饰 -->
+    <path d="M 10 15 L 35 15 M 10 65 L 35 65" 
+          stroke="rgba(255,255,255,0.6)" 
+          stroke-width="4" 
+          stroke-linecap="round"/>
+  </g>
+  
+  <!-- 右侧图像图标 (目标格式) -->
+  <g transform="translate(312, 170)" filter="url(#shadow)">
+    <rect x="0" y="0" width="120" height="120" rx="20" fill="url(#iconGradient)"/>
+    <!-- 小山峰图标 -->
+    <path d="M 20 80 L 40 50 L 60 70 L 80 40 L 100 60 L 100 90 L 20 90 Z" fill="#764ba2" opacity="0.8"/>
+    <!-- 太阳 -->
+    <circle cx="35" cy="35" r="12" fill="#ff6ec7" opacity="0.8"/>
+    <!-- "新" 标记 -->
+    <circle cx="95" cy="25" r="15" fill="#00ff88"/>
+    <text x="95" y="31" text-anchor="middle" font-size="16" font-weight="bold" fill="#667eea">✓</text>
+  </g>
+  
+  <!-- 底部格式标签 -->
+  <g transform="translate(0, 320)">
+    <!-- AVIF 标签 -->
+    <rect x="90" y="0" width="80" height="35" rx="17.5" fill="rgba(255,255,255,0.25)"/>
+    <text x="130" y="23" text-anchor="middle" font-size="18" font-weight="bold" fill="white">AVIF</text>
+    
+    <!-- JXL 标签 -->
+    <rect x="200" y="0" width="70" height="35" rx="17.5" fill="rgba(255,255,255,0.25)"/>
+    <text x="235" y="23" text-anchor="middle" font-size="18" font-weight="bold" fill="white">JXL</text>
+    
+    <!-- WebP 标签 -->
+    <rect x="300" y="0" width="90" height="35" rx="17.5" fill="rgba(255,255,255,0.25)"/>
+    <text x="345" y="23" text-anchor="middle" font-size="18" font-weight="bold" fill="white">WebP</text>
+  </g>
+  
+  <!-- 底部 PIXLY 文字 -->
+  <text x="256" y="420" text-anchor="middle" font-size="48" font-weight="bold" fill="white" opacity="0.95">PIXLY</text>
+  <text x="256" y="455" text-anchor="middle" font-size="20" font-weight="500" fill="white" opacity="0.7">Image Converter</text>
+</svg>

@@ -1,0 +1,491 @@
+/**
+ * ========================================
+ * 🦀 PIXLY Rust Client (Phase 2: Full Conversion Support)
+ * ========================================
+ * 
+ * 功能: 
+ *   • 图像信息读取、格式检测、动画检测
+ *   • 高性能图像转换 (AVIF, JXL, WebP, etc.)
+ *   • Eagle 原地替换
+ * 
+ * 连接: 独立 Rust 服务 (localhost:8080)
+ * 策略: Rust 优先，失败自动回退到 CLI 工具
+ * 状态: 默认启用
+ * 
+ * 使用方式:
+ * ```javascript
+ * if (window.rustConverter) {
+ *     const result = await window.rustConverter.convertImage(input, output, 'avif', config);
+ * }
+ * ```
+ */
+
+console.log('[PIXLY Rust Client] 🦀 Loading...');
+
+// ============================================================================
+// 配置 (⚠️ DEPRECATED - 请使用 28-rust-cli-executor.js)
+// ============================================================================
+// ⚠️ 注意: 此HTTP客户端已被废弃
+// 新版本请使用: window.rustCLI (28-rust-cli-executor.js)
+// 迁移指南: 参考 cmd/rust-service/DEPRECATED.md
+// ============================================================================
+
+const RUST_CONFIG = {
+    // 主开关（已废弃，保留用于向后兼容）
+    enabled: false,  // ⚠️ 默认禁用HTTP方式，优先使用CLI
+    
+    // 模块开关
+    modules: {
+        imageInfo: true,       // 图像信息读取
+        formatDetect: true,    // 格式检测
+        animatedDetect: true,  // 动画检测
+        conversion: true,      // 🔥 图像转换（Phase 2）
+        eagleReplace: true,    // 🔥 Eagle 原地替换（Phase 2）
+    },
+    
+    // 错误处理
+    fallbackOnError: true,     // 出错自动回退到 JS
+    logErrors: true,           // 记录错误
+    
+    // 测试模式
+    testMode: false           // 生产模式
+    // ✅ compareWithJS 已删除 - 死代码，永远不会执行
+};
+
+// ============================================================================
+// Rust 客户端类
+// ============================================================================
+
+class RustClient {
+    constructor() {
+        this.available = false;
+        this.rustServiceUrl = 'http://localhost:8080'; // Rust 服务地址
+        this.stats = {
+            calls: 0,
+            successes: 0,
+            failures: 0,
+            fallbacks: 0,
+        };
+    }
+    
+    /**
+     * 初始化（检测 Rust 可用性）
+     */
+    async initialize() {
+        if (!RUST_CONFIG.enabled) {
+            console.log('[Rust Client] ⏸️ Disabled (config.enabled=false)');
+            return false;
+        }
+        
+        try {
+            // 尝试连接 Rust 服务（独立运行在 localhost:8080）
+            const response = await fetch(`${this.rustServiceUrl}/health`, {
+                method: 'GET',
+                timeout: 3000,
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                this.available = true;
+                console.log(`[Rust Client] ✅ Available (status: ${data.status})`);
+                return true;
+            }
+        } catch (error) {
+            console.log('[Rust Client] ⚠️ Not available (Rust service not responding)');
+            if (RUST_CONFIG.logErrors) {
+                console.debug('[Rust Client] Error:', error.message);
+            }
+        }
+        
+        this.available = false;
+        return false;
+    }
+    
+    /**
+     * 读取图像信息
+     * 
+     * @param {string} filePath - 图像文件路径
+     * @returns {Promise<Object>} - 图像信息 { width, height, format, isAnimated, frameCount, fps, fileSize }
+     */
+    async readImageInfo(filePath) {
+        this.stats.calls++;
+        
+        // 检查模块是否启用
+        if (!RUST_CONFIG.modules.imageInfo) {
+            return this._fallbackReadImageInfo(filePath);
+        }
+        
+        // 检查 Rust 是否可用
+        if (!this.available) {
+            this.stats.fallbacks++;
+            return this._fallbackReadImageInfo(filePath);
+        }
+        
+        try {
+            const response = await fetch(`${this.rustServiceUrl}/api/rust/image-info`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: filePath }),
+                timeout: 5000,
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            this.stats.successes++;
+            
+            // ✅ A/B测试代码已删除 - 死代码，永远不会执行
+            
+            return data;
+            
+        } catch (error) {
+            this.stats.failures++;
+            if (RUST_CONFIG.logErrors) {
+                console.warn('[Rust Client] readImageInfo failed:', error.message);
+            }
+            
+            // 自动回退到 JS
+            if (RUST_CONFIG.fallbackOnError) {
+                this.stats.fallbacks++;
+                return this._fallbackReadImageInfo(filePath);
+            }
+            
+            throw error;
+        }
+    }
+    
+    /**
+     * 检测图像格式
+     * 
+     * @param {string} filePath - 图像文件路径
+     * @returns {Promise<string>} - 格式 (jpeg/png/gif/webp/avif/jxl/heic/unknown)
+     */
+    async detectFormat(filePath) {
+        if (!RUST_CONFIG.modules.formatDetect || !this.available) {
+            return this._fallbackDetectFormat(filePath);
+        }
+        
+        try {
+            const response = await fetch(`${this.rustServiceUrl}/api/rust/detect-format`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: filePath }),
+                timeout: 3000,
+            });
+            
+            const data = await response.json();
+            return data.format;
+            
+        } catch (error) {
+            if (RUST_CONFIG.logErrors) {
+                console.warn('[Rust Client] detectFormat failed:', error.message);
+            }
+            return this._fallbackDetectFormat(filePath);
+        }
+    }
+    
+    /**
+     * 检测是否为动画
+     * 
+     * @param {string} filePath - 图像文件路径
+     * @returns {Promise<boolean>} - 是否为动画
+     */
+    async isAnimated(filePath) {
+        if (!RUST_CONFIG.modules.animatedDetect || !this.available) {
+            return this._fallbackIsAnimated(filePath);
+        }
+        
+        try {
+            const response = await fetch(`${this.rustServiceUrl}/api/rust/is-animated`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: filePath }),
+                timeout: 3000,
+            });
+            
+            const data = await response.json();
+            return data.animated;
+            
+        } catch (error) {
+            if (RUST_CONFIG.logErrors) {
+                console.warn('[Rust Client] isAnimated failed:', error.message);
+            }
+            return this._fallbackIsAnimated(filePath);
+        }
+    }
+    
+    /**
+     * 获取统计信息
+     */
+    getStats() {
+        return {
+            ...this.stats,
+            successRate: this.stats.calls > 0 
+                ? (this.stats.successes / this.stats.calls * 100).toFixed(2) + '%'
+                : 'N/A',
+            fallbackRate: this.stats.calls > 0
+                ? (this.stats.fallbacks / this.stats.calls * 100).toFixed(2) + '%'
+                : 'N/A',
+        };
+    }
+    
+    // ========================================================================
+    // Fallback 实现（JS）
+    // ========================================================================
+    
+    /**
+     * JS Fallback: 读取图像信息
+     */
+    async _fallbackReadImageInfo(filePath) {
+        const fs = require('fs');
+        const path = require('path');
+        
+        // 基本文件信息
+        const stats = fs.statSync(filePath);
+        const ext = path.extname(filePath).toLowerCase().slice(1);
+        
+        // 格式映射
+        const formatMap = {
+            'jpg': 'jpeg', 'jpeg': 'jpeg',
+            'png': 'png',
+            'gif': 'gif',
+            'webp': 'webp',
+            'avif': 'avif',
+            'jxl': 'jxl',
+            'heic': 'heic', 'heif': 'heic',
+        };
+        
+        const format = formatMap[ext] || 'unknown';
+        
+        // 动画检测（简单实现）
+        const animatedExts = ['gif', 'webp'];
+        const isAnimated = animatedExts.includes(ext);
+        
+        return {
+            width: 0,           // 需要更复杂的实现
+            height: 0,          // 需要更复杂的实现
+            format,
+            isAnimated,
+            frameCount: isAnimated ? 1 : 1,
+            fps: 0,
+            fileSize: stats.size,
+        };
+    }
+    
+    /**
+     * JS Fallback: 检测格式
+     */
+    async _fallbackDetectFormat(filePath) {
+        const path = require('path');
+        const ext = path.extname(filePath).toLowerCase().slice(1);
+        
+        const formatMap = {
+            'jpg': 'jpeg', 'jpeg': 'jpeg',
+            'png': 'png', 'gif': 'gif', 'webp': 'webp',
+            'avif': 'avif', 'jxl': 'jxl', 'heic': 'heic', 'heif': 'heic',
+        };
+        
+        return formatMap[ext] || 'unknown';
+    }
+    
+    /**
+     * JS Fallback: 检测动画
+     */
+    async _fallbackIsAnimated(filePath) {
+        const path = require('path');
+        const ext = path.extname(filePath).toLowerCase().slice(1);
+        return ['gif', 'webp'].includes(ext);
+    }
+    
+        // ✅ _compareWithJS 方法已删除 - 死代码（A/B测试），永远不会执行
+
+    /**
+     * 🔥 Phase 2: 图像转换
+     * 
+     * @param {string} inputPath - 输入文件路径
+     * @param {string} outputPath - 输出文件路径
+     * @param {string} format - 目标格式 (avif, webp, jxl, etc.)
+     * @param {Object} config - 转换配置 { quality, speed, lossless }
+     * @returns {Promise<Object>} - 转换结果 { success, outputPath, fileSize, duration }
+     */
+    async convertImage(inputPath, outputPath, format, config = {}) {
+        this.stats.calls++;
+        
+        if (!RUST_CONFIG.enabled || !this.available) {
+            console.log('[Rust Client] ⏭️ Skipped (disabled or unavailable)');
+            return null; // 让调用方 fallback 到 JS
+        }
+        
+        try {
+            console.log(`[Rust Client] 🔄 Converting: ${inputPath} → ${format.toUpperCase()}`);
+            
+            const response = await fetch(`${this.rustServiceUrl}/api/rust/convert`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    input: inputPath,           // ✅ 修复: 服务期望 'input' 而不是 'input_path'
+                    output: outputPath,         // ✅ 修复: 服务期望 'output' 而不是 'output_path'
+                    format: format,             // ✅ 修复: 服务期望 'format' 而不是 'output_format'
+                    quality: config.quality || 90,
+                    speed: config.speed || 4,
+                    lossless: config.lossless || false,
+                }),
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Rust conversion failed: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            // ✅ Rust 服务返回小写字段名 (success, outputPath, fileSize, duration, error)
+            const normalizedResult = {
+                success: result.success || false,
+                outputPath: result.outputPath || '',
+                fileSize: result.fileSize || 0,
+                duration: result.duration || 0,
+                error: result.error || '',
+            };
+            
+            // 🔥 检测假成功（0字节或错误消息）
+            if (normalizedResult.fileSize === 0 || normalizedResult.error) {
+                console.warn(`[Rust Client] ⚠️ Conversion failed: ${normalizedResult.error || '0 bytes output'}`);
+                this.stats.failures++;
+                
+                if (RUST_CONFIG.fallbackOnError) {
+                    this.stats.fallbacks++;
+                    console.log('[Rust Client] ⤴️ Falling back to CLI tools');
+                    return null; // 返回 null 让调用方 fallback
+                }
+                
+                throw new Error(normalizedResult.error || 'Conversion produced 0 bytes');
+            }
+            
+            this.stats.successes++;
+            console.log(`[Rust Client] ✅ Conversion success: ${normalizedResult.fileSize} bytes in ${normalizedResult.duration}ms`);
+            return normalizedResult;
+            
+        } catch (error) {
+            this.stats.failures++;
+            console.error('[Rust Client] ❌ Conversion error:', error.message);
+            
+            if (RUST_CONFIG.fallbackOnError) {
+                this.stats.fallbacks++;
+                console.log('[Rust Client] ⤴️ Falling back to JS implementation');
+                return null; // 返回 null 表示需要 fallback
+            }
+            
+            throw error;
+        }
+    }
+
+    /**
+     * 🔥 Phase 2: Eagle 原地替换
+     * 
+     * @param {string} originalPath - 原文件路径
+     * @param {string} convertedPath - 转换后文件路径
+     * @param {number} width - 新图像宽度
+     * @param {number} height - 新图像高度
+     * @returns {Promise<boolean>} - 是否成功
+     */
+    async eagleReplaceInPlace(originalPath, convertedPath, width, height) {
+        this.stats.calls++;
+        
+        if (!RUST_CONFIG.enabled || !this.available) {
+            return null; // Fallback 到 JS
+        }
+        
+        try {
+            console.log(`[Rust Client] 🔄 Eagle replace: ${originalPath}`);
+            
+            const response = await fetch(`${this.rustServiceUrl}/api/rust/eagle-replace`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    original: originalPath,
+                    converted: convertedPath,
+                    width: width,
+                    height: height,
+                }),
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Eagle replace failed: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            this.stats.successes++;
+            
+            console.log(`[Rust Client] ✅ Eagle replace success`);
+            return result.success;
+            
+        } catch (error) {
+            this.stats.failures++;
+            console.error('[Rust Client] ❌ Eagle replace error:', error.message);
+            
+            if (RUST_CONFIG.fallbackOnError) {
+                this.stats.fallbacks++;
+                return null; // Fallback
+            }
+            
+            throw error;
+        }
+    }
+}
+
+// ============================================================================
+// 全局初始化
+// ============================================================================
+
+(async function initRustClient() {
+    if (!RUST_CONFIG.enabled) {
+        console.log('[PIXLY Rust Client] ⏸️ Disabled (set RUST_CONFIG.enabled=true to enable)');
+        return;
+    }
+    
+    try {
+        const client = new RustClient();
+        const available = await client.initialize();
+        
+        if (available) {
+            // 导出到全局
+            window.rustClient = client;
+            
+            // 只读工具（Phase 1）
+            window.rustInfo = {
+                readImageInfo: (path) => client.readImageInfo(path),
+                detectFormat: (path) => client.detectFormat(path),
+                isAnimated: (path) => client.isAnimated(path),
+                getStats: () => client.getStats(),
+            };
+            
+            // 转换工具（Phase 2）
+            window.rustConverter = {
+                convertImage: (input, output, format, config) => client.convertImage(input, output, format, config),
+                eagleReplaceInPlace: (original, converted, width, height) => client.eagleReplaceInPlace(original, converted, width, height),
+                getStats: () => client.getStats(),
+            };
+            
+            console.log('[PIXLY Rust Client] ✅ Ready!');
+            console.log('[PIXLY Rust Client] 💡 Use window.rustConverter.convertImage()');
+        } else {
+            console.log('[PIXLY Rust Client] ⚠️ Not available, will use JS fallback');
+        }
+        
+    } catch (error) {
+        console.error('[PIXLY Rust Client] ❌ Initialization failed:', error);
+    }
+})();
+
+// ============================================================================
+// 导出配置（供调试使用）
+// ============================================================================
+
+window.RUST_CONFIG = RUST_CONFIG;
+
+console.log('[PIXLY Rust Client] 🦀 Module loaded (Phase 2: Full Conversion Support)');
+console.log('[PIXLY Rust Client] 📊 Status:', RUST_CONFIG.enabled ? 'Enabled' : 'Disabled');
+console.log('[PIXLY Rust Client] 🛡️ Fallback:', RUST_CONFIG.fallbackOnError ? 'Enabled' : 'Disabled');
+console.log('[PIXLY Rust Client] 🔥 Conversion:', RUST_CONFIG.modules.conversion ? 'Enabled' : 'Disabled');

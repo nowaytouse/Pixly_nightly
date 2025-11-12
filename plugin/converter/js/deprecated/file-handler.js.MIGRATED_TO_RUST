@@ -1,0 +1,597 @@
+/**
+ * PIXLY file处理器
+ * 功能：独立file选择system（不依赖 Eagle API）
+ * 来源: 全New实现，完全独立
+ */
+(function(window) {
+    'use strict';
+    
+    window.PIXLY = window.PIXLY || {};
+    
+    // 私有状态
+    let selectedFiles = [];
+    let isSelectingFiles = false;
+    let lastSelectLog = { count: 0, ts: 0 };
+    
+    // 常量
+    const SELECT_FILES = {
+        timeoutMs: 3000,
+        retry: 3,
+        retryDelayMs: 100
+    };
+    
+    // 🔥 支持file扩展名
+    const SUPPORTED_EXTS = {
+        image: ['jpg', 'jpeg', 'jpe', 'jfif', 'jfi', 'png', 'gif', 'webp', 'avif', 'jxl', 'heic', 'heif', 'bmp', 'tiff', 'tif'],
+        animated: ['gif', 'webp'],
+        video: ['mp4', 'mov', 'avi', 'mkv', 'webm', 'm4v']
+    };
+    
+    /**
+     * file处理器
+     */
+    const FileHandler = {
+        
+        /**
+         * 获取Selectedfile列表
+         */
+        getSelectedFiles: function() {
+            return selectedFiles;
+        },
+        
+        /**
+         * settingsSelectedfile列表
+         */
+        setSelectedFiles: function(files) {
+            selectedFiles = files || [];
+        },
+        
+        /**
+         * 获取file类型图标
+         */
+        getFileIcon: function(ext) {
+            const iconMap = {
+                'jpg': '🖼️', 'jpeg': '🖼️', 'jpe': '🖼️', 'jfif': '🖼️', 'jfi': '🖼️',
+                'png': '🎨', 'gif': '🎞️', 'webp': '🌐',
+                'avif': '🎬', 'jxl': '📦', 'heic': '📱', 'heif': '📱',
+                'bmp': '🖌️', 'tiff': '📄', 'tif': '📄',
+                'mp4': '🎥', 'mov': '🎬', 'avi': '📹', 'mkv': '🎞️', 'webm': '🌐', 'm4v': '🎥'
+            };
+            return iconMap[ext.toLowerCase()] || '📄';
+        },
+        
+        /**
+         * 智能解析Eaglefilepath（延迟validate，仅inConvert时调用）
+         * @param {Object} item - Eagle itemobject
+         * @returns {string|null} - validfilepathornull
+         */
+        resolveEaglePath: function(item) {
+            const path = require('path');
+            const fs = require('fs');
+            
+            // 🔧 自动修复 Eagle metadata.json 中的错误 name 字段
+            if (item.id && item.name && item.ext) {
+                const libraryPath = window.eagle?.library?.path || '';
+                if (libraryPath) {
+                    const metadataPath = path.join(libraryPath, 'images', `${item.id}.info`, 'metadata.json');
+                    
+                    // 检测 name 字段是否包含扩展名
+                    if (item.name.endsWith(`.${item.ext}`)) {
+                        console.warn(`[PIXLY File] ⚠️ Detected corrupted metadata: name="${item.name}" contains ext="${item.ext}"`);
+                        
+                        try {
+                            // 读取并修复 metadata.json
+                            const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+                            const correctName = item.name.slice(0, -(item.ext.length + 1));
+                            
+                            metadata.name = correctName;
+                            metadata.lastModified = Date.now();
+                            
+                            // 使用 Eagle 默认格式：2 空格缩进
+                            fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2), 'utf8');
+                            
+                            console.log(`[PIXLY File] ✅ Auto-fixed metadata: "${item.name}" → "${correctName}"`);
+                            
+                            // 更新 item 对象，避免后续构建错误路径
+                            item.name = correctName;
+                        } catch (fixError) {
+                            console.error(`[PIXLY File] ❌ Failed to auto-fix metadata:`, fixError.message);
+                        }
+                    }
+                }
+            }
+            
+            // 🆕 优先从Eagle API获取标准路径
+            let pathLike = item.filePath || item.path || (item.url && item.url.startsWith('file://') ? item.url.replace('file://', '') : null);
+            
+            // 🆕 如果没有pathinfo，从Eagle库结构推导
+            if (!pathLike && item.id && item.name && item.ext) {
+                // Eagle标准path结构：{libraryPath}/images/{id}.info/{name}.{ext}
+                const libraryPath = window.eagle?.library?.path || '';
+                if (libraryPath) {
+                    pathLike = path.join(libraryPath, 'images', `${item.id}.info`, `${item.name}.${item.ext}`);
+ console.log(`[PIXLY File] 🔍 Constructed Eagle path from library: ${pathLike}`);
+                }
+            }
+            
+            if (!pathLike) {
+ console.warn('[PIXLY File] ⚠️ Cannot construct file path: no filePath, path, url, or library info');
+                return null;
+            }
+            
+            // 🆕 解码URL编码的路径（处理中文等特殊字符）
+            try {
+                pathLike = decodeURIComponent(pathLike);
+            } catch (e) {
+                // 如果解码失败，保持原路径
+            }
+            
+            // 快速Check：pathexists直接返回
+            if (fs.existsSync(pathLike)) {
+ console.log(`[PIXLY File] ✅ File exists: ${path.basename(pathLike)}`);
+                return pathLike;
+            }
+            
+ console.warn(`[PIXLY File] ⚠️ File not found: ${pathLike}, trying fixes...`);
+            
+            // path不exists，try修复（Eaglemay替换特殊字符）
+            const dir = path.dirname(pathLike);
+            let basename = path.basename(pathLike, path.extname(pathLike));
+            const ext = path.extname(pathLike);
+            
+            // 修复1: 去除重复扩展名 (gif.gif → gif)
+            if (basename.endsWith(ext.slice(1))) {
+                basename = basename.slice(0, -ext.length);
+ console.log(`[PIXLY File] 🔧 Removed duplicate extension: ${basename}`);
+            }
+            
+            // 修复2: Eagle特殊字符替换规则
+            const fixedBasename = basename
+                .replace(/\((\d+)\)/g, '_$1')      // "(3)" → "_3" (移除空格限制)
+                .replace(/\(\)/g, '_')              // "()" → "_"
+                .replace(/\(/g, '_')                // "(" → "_"
+                .replace(/\)/g, '');                // ")" → ""
+            
+            const fixedPath = path.join(dir, fixedBasename + ext);
+            
+            if (fs.existsSync(fixedPath)) {
+ console.log(`[PIXLY File] ✅ Fixed path found: ${path.basename(fixedPath)}`);
+                return fixedPath;
+            }
+            
+            // 🆕 修复3: 尝试列出目录中的所有文件（模糊匹配）
+            try {
+                const files = fs.readdirSync(dir);
+                const targetName = item.name || basename;
+                const targetExt = (item.ext || ext.slice(1)).toLowerCase();
+                
+                // 查找匹配的文件（不区分大小写）
+                for (const file of files) {
+                    const fileExt = path.extname(file).slice(1).toLowerCase();
+                    const fileBasename = path.basename(file, path.extname(file));
+                    
+                    // 文件名和扩展名都匹配
+                    if (fileBasename === targetName && fileExt === targetExt) {
+                        const foundPath = path.join(dir, file);
+ console.log(`[PIXLY File] ✅ Found by fuzzy match: ${file}`);
+                        return foundPath;
+                    }
+                }
+            } catch (e) {
+ console.error(`[PIXLY File] ❌ Cannot read directory: ${dir}`, e);
+            }
+            
+                        // 所有修复尝试都失败，返回原path（让调用者处理错误）
+            const displayName = item.ext && item.name.endsWith(`.${item.ext}`) 
+                ? item.name 
+                : `${item.name}.${item.ext || ext}`;
+            console.error(`[PIXLY File] ❌ All path resolution attempts failed for: ${displayName}`);
+            return pathLike;
+        },
+        
+        /**
+         * 选择file（from Eagle API - 备选方案）
+         */
+        selectFiles: async function() {
+            // 🔥 改进防抖with并发保护（用户强烈要求可靠filedetected）
+            if (isSelectingFiles) {
+                // ignorelog，静默skip（避免log污染）
+                return;
+            }
+            
+            isSelectingFiles = true;
+            
+            // 🚀 性能监控
+            const perfStart = Date.now();
+ console.log('[PIXLY File] ⏱️ started file selection...');
+            
+            // 🔥 双重保护：超时后强制重置isSelectingFiles
+            const timeoutGuard = setTimeout(() => {
+                this.hideFilesSkeleton();
+                isSelectingFiles = false; // 强制重置
+                if (window.addLog) {
+                    addLog(i18n.t('messages.log.fileSelectionTimeout'), 'info');
+                }
+            }, SELECT_FILES.timeoutMs);
+            
+            // 🔥 DeletepluginInstanceCheck - 不阻塞file选择
+            // Eagle APIshould始终available，不needwaitingplugininitialized
+            // const pluginInstance = PIXLY.getState ? PIXLY.getState('pluginInstance') : null;
+            // if (!pluginInstance) {
+ // console.warn('[PIXLY File] plugin尚未initialized，Skippingfileselection');
+            //     clearTimeout(timeoutGuard);
+            //     isSelectingFiles = false;
+            //     return;
+            // }
+            
+            // 显示骨架屏
+            this.showFilesSkeleton();
+            
+            try {
+                // 🚀 性能计时：Eagle API调用
+                const apiStart = Date.now();
+                
+                // 使用 Eagle API 获取Selected项目（带retry）
+                let items = null;
+                for (let attempt = 1; attempt <= SELECT_FILES.retry; attempt++) {
+                    try {
+                        items = await eagle.item.getSelected();
+                        if (items !== undefined && items !== null) break;
+                    } catch (e) {
+                        if (attempt === SELECT_FILES.retry) throw e;
+                    }
+                    await new Promise(r => setTimeout(r, SELECT_FILES.retryDelayMs));
+                }
+                
+                const apiTime = Date.now() - apiStart;
+ console.log(`[PIXLY File] ⏱️ Eagle API took: ${apiTime}ms`);
+                
+                if (!items || items.length === 0) {
+                    document.getElementById('convertBtn').disabled = true;
+                    selectedFiles = [];
+                    document.getElementById('selectedFiles').style.display = 'none';
+                    this.hideFilesSkeleton();
+                    return;
+                }
+                
+                // Checkis否启用「skip Live 图片」options
+                const skipLivePhotos = document.getElementById('skipLivePhotos')?.checked || false;
+                
+                // 根据当前Convert类型决定支持后缀
+                const activeTab = document.querySelector('.type-tab.active');
+                const conversionType = activeTab ? activeTab.dataset.type : 'image';
+                
+ console.log('[PIXLY File] 📋 current conversion type:', conversionType);
+ console.log('[PIXLY File] 🔍 active tab:', activeTab ? activeTab.textContent.trim() : 'null');
+                
+                const imageExts = SUPPORTED_EXTS.image;
+                const animatedExts = SUPPORTED_EXTS.animated;
+                const videoExts = SUPPORTED_EXTS.video;
+                
+                selectedFiles = items.filter(item => {
+                    const ext = (item.ext || '').toLowerCase();
+                    
+                    if (conversionType === 'video') {
+                        // 视频模式：支持视频文件 + 动态图片（GIF, WebP, AVIF, JXL等用于转视频）
+                        const isVideo = videoExts.includes(ext);
+                        const isAnimated = animatedExts.includes(ext);
+                        // 🆕 也支持其他可能包含动画的格式
+                        const canBeAnimated = ['avif', 'jxl', 'apng'].includes(ext);
+                        if (!isVideo && !isAnimated && !canBeAnimated) return false;
+                    } else if (conversionType === 'animated') {
+                        // 仅动图（GIF/WebP）
+                        if (!animatedExts.includes(ext)) return false;
+                    } else {
+                        // 默认图片
+                        if (!imageExts.includes(ext)) return false;
+                    }
+                    
+                    // 如果启用「skip Live 图片」，则过滤掉 Live 图片
+                    if (skipLivePhotos && item.annotation && item.annotation.includes('Live Photo')) {
+                        if (window.addLog) {
+                            addLog(`⏭️ skip Live 图片: ${item.name}.${item.ext}`, 'info');
+                        }
+                        return false;
+                    }
+                    
+                    return true;
+                }).map(item => {
+                    // 🆕 智能解析Eagle文件路径（修复特殊字符、.info目录等）
+                    const resolvedPath = FileHandler.resolveEaglePath(item);
+                    
+                    // 提取path（优先使用解析后的路径）
+                    let pathLike = resolvedPath || item.filePath || item.path || (item.url && item.url.startsWith('file://') ? item.url.replace('file://', '') : null);
+                    
+                                        if (resolvedPath && resolvedPath !== item.filePath) {
+                        // ✅ 修复：正确显示文件名（避免双重扩展名）
+                        const displayName = item.ext && item.name.endsWith(`.${item.ext}`) 
+                            ? item.name 
+                            : `${item.name}.${item.ext}`;
+                        console.log(`[PIXLY File] ✅ Resolved Eagle path: ${displayName}`);
+                    }
+                    
+                    // 标准化字段（直接使用Eaglemetadata，不做额外validate）
+                    const safeExt = (item.ext || '').toLowerCase();
+                    const safeName = item.name || '未命名';
+                    const sizeBytes = item.size || item.fileSize || 0;
+                    
+                    return {
+                        // Eagle核心字段
+                        id: item.id,
+                        ext: safeExt,
+                        name: safeName,
+                        size: sizeBytes,
+                        filePath: pathLike || '',
+                        
+                        // 额外metadata
+                        width: item.width,
+                        height: item.height,
+                        annotation: item.annotation,
+                        tags: item.tags,
+                        folders: item.folders,
+                        modificationTime: item.modificationTime,
+                        btime: item.btime,
+                        mtime: item.mtime,
+                        
+                        // 保留原始item其他all字段
+                        ...item
+                    };
+                });
+                
+                if (selectedFiles.length === 0) {
+                    document.getElementById('convertBtn').disabled = true;
+                    document.getElementById('selectedFiles').style.display = 'none';
+                    // 🔥 不再输出重复的"无支持文件"警告（UI已清晰表明，避免日志spam）
+                    // const typeKey = conversionType === 'video' ? 'messages.log.noSupportedVideoFiles' : 
+                    //                (conversionType === 'animated' ? 'messages.log.noSupportedAnimatedFiles' : 
+                    //                 'messages.log.noSupportedImageFiles');
+                    // if (window.addLog) {
+                    //     addLog(i18n.t(typeKey), 'warning');
+                    // }
+                    this.hideFilesSkeleton();
+                    return;
+                }
+                
+                // 显示file选择面板并更New内容
+                document.getElementById('selectedFiles').style.display = 'block';
+                this.displaySelectedFiles();
+                document.getElementById('convertBtn').disabled = false;
+                
+                // 选择log节流：相同数量且5秒内不重复打印
+                const now = Date.now();
+                if (selectedFiles.length !== lastSelectLog.count || (now - lastSelectLog.ts) > 5000) {
+                    if (window.addLog) {
+                        addLog(`📁 自动识别 ${selectedFiles.length} files`, 'success');
+                    }
+                    lastSelectLog = { count: selectedFiles.length, ts: now };
+                }
+                
+                // 更New JPEG 无损转码提示
+                if (window.updateJPEGNotice) {
+                    updateJPEGNotice();
+                }
+                
+                // 🔍 detectedis否包含HEIC/HEIFfile，动态显示/隐藏 Live Photo 按钮
+                const hasHeicFiles = selectedFiles.some(f => 
+                    f.ext && f.ext.toLowerCase().match(/^(heic|heif)$/)
+                );
+                const skipLiveLabel = document.getElementById('skipLivePhotosLabel');
+                if (skipLiveLabel) {
+                    skipLiveLabel.style.display = hasHeicFiles ? 'flex' : 'none';
+                    if (hasHeicFiles) {
+ console.log('[PIXLY File] ✅ detected HEIC/HEIF file，shown Live Photo button');
+                    }
+                }
+                
+                // 更New视频info（延迟触发，确保 DOM/状态稳定）
+                if (conversionType === 'video' && selectedFiles.length > 0) {
+                    setTimeout(() => {
+                        if (window.detectVideoInfo && selectedFiles[0]) {
+                            detectVideoInfo(selectedFiles[0].filePath);
+                        }
+                    }, 60);
+                }
+                
+                // 🚀 性能总结
+                const perfEnd = Date.now();
+                const totalTime = perfEnd - perfStart;
+                console.log(`[PIXLY File] ✅ file selection completed: ${selectedFiles.length} files, total: ${totalTime}ms`);
+                
+                // 🎬 检测动图并禁用不支持的格式
+                const animatedExtensions = ['.gif', '.webp', '.apng'];
+                const hasAnimatedFiles = selectedFiles.some(f => animatedExtensions.includes((f.ext || '').toLowerCase()));
+                if (hasAnimatedFiles && window.updateFormatOptionsForAnimated) {
+                    window.updateFormatOptionsForAnimated(true);
+                } else if (!hasAnimatedFiles && window.updateFormatOptionsForAnimated) {
+                    window.updateFormatOptionsForAnimated(false);
+                }
+                
+            } catch (error) {
+ console.error('[PIXLY File] 获取filefailed:', error);
+                document.getElementById('convertBtn').disabled = true;
+                if (window.addLog) {
+                    addLog(`❌ 获取filefailed: ${error.message}`, 'error');
+                }
+                this.hideFilesSkeleton();
+            } finally {
+                clearTimeout(timeoutGuard);
+                isSelectingFiles = false;
+            }
+        },
+        
+        /**
+         * 显示Selectedfile列表
+         */
+        displaySelectedFiles: function() {
+            const selectedFilesDiv = document.getElementById('selectedFiles');
+            const emptyState = document.getElementById('emptyState');
+            const filesList = document.getElementById('filesList');
+            const filesStats = document.getElementById('filesStats');
+            const formatBadges = document.getElementById('formatBadges');
+            
+            // 隐藏骨架屏
+            this.hideFilesSkeleton();
+            
+            if (!selectedFiles || selectedFiles.length === 0) {
+                selectedFilesDiv.style.display = 'none';
+                if (emptyState) emptyState.style.display = 'flex';
+                return;
+            }
+            
+            // 有file时隐藏空状态，显示file列表
+            if (emptyState) emptyState.style.display = 'none';
+            selectedFilesDiv.style.display = 'block';
+            
+            // 清空列表
+            filesList.innerHTML = '';
+            formatBadges.innerHTML = '';
+            
+            // 统计格式
+            const formatCounts = {};
+            let totalSize = 0;
+            
+            selectedFiles.forEach(file => {
+                const ext = (file.ext || '').toUpperCase() || '未知';
+                formatCounts[ext] = (formatCounts[ext] || 0) + 1;
+                if (typeof file.size === 'number' && file.size > 0) totalSize += file.size;
+            });
+            
+            // 更New统计info
+            const formatFileSize = PIXLY.utils ? PIXLY.utils.formatFileSize : window.formatFileSize;
+            filesStats.textContent = `${selectedFiles.length} files · ${formatFileSize(totalSize)}`;
+            
+            // 显示file卡片
+            selectedFiles.forEach((file, index) => {
+                const fileCard = document.createElement('div');
+                fileCard.className = 'file-card';
+                
+                const path = require('path');
+                const extLower = (file.ext || (file.filePath ? path.extname(file.filePath).substring(1) : '') || '').toLowerCase();
+                const icon = this.getFileIcon(extLower);
+                const baseName = file.name || (file.filePath ? path.basename(file.filePath, path.extname(file.filePath)) : '未命名');
+                const fileName = extLower ? `${baseName}.${extLower}` : baseName;
+                const fileSize = formatFileSize(file.size);
+                
+                fileCard.innerHTML = `
+                    <div class="file-card-icon">${icon}</div>
+                    <div class="file-card-info">
+                        <div class="file-card-name" title="${fileName}">${fileName}</div>
+                        <div class="file-card-meta">${(extLower || '').toUpperCase()} · ${fileSize}</div>
+                    </div>
+                    <div class="file-card-remove" onclick="PIXLY.FileHandler.removeFile(${index})" title="移除">×</div>
+                `;
+                
+                filesList.appendChild(fileCard);
+            });
+            
+            // 显示格式徽章
+            Object.entries(formatCounts)
+                .sort((a, b) => b[1] - a[1]) // 按数量排序
+                .forEach(([format, count]) => {
+                    const badge = document.createElement('div');
+                    badge.className = 'format-badge';
+                    badge.innerHTML = `
+                        <span class="format-badge-icon">${this.getFileIcon(format.toLowerCase())}</span>
+                        <span>${format}</span>
+                        <span class="format-badge-count">${count}</span>
+                    `;
+                    formatBadges.appendChild(badge);
+                });
+            
+            selectedFilesDiv.style.display = 'block';
+        },
+        
+        /**
+         * 移除file
+         */
+        removeFile: function(index) {
+            selectedFiles.splice(index, 1);
+            if (selectedFiles.length === 0) {
+                document.getElementById('selectedFiles').style.display = 'none';
+                document.getElementById('convertBtn').disabled = true;
+            } else {
+                this.displaySelectedFiles();
+            }
+            if (window.addLog) {
+                addLog(`🗑️ 移除一files，剩余 ${selectedFiles.length}  `, 'warning');
+            }
+        },
+        
+        /**
+         * 清空file选择
+         */
+        clearFileSelection: function() {
+            if (selectedFiles.length === 0) return;
+            
+            const count = selectedFiles.length;
+            selectedFiles = [];
+            document.getElementById('selectedFiles').style.display = 'none';
+            document.getElementById('convertBtn').disabled = true;
+            if (window.addLog) {
+                addLog(`🗑️ 清空 ${count} files选择`, 'warning');
+            }
+        },
+        
+        /**
+         * 显示file骨架屏
+         */
+        showFilesSkeleton: function() {
+            const skeleton = document.getElementById('filesSkeleton');
+            if (skeleton) skeleton.style.display = 'block';
+        },
+        
+        /**
+         * 隐藏file骨架屏
+         */
+        hideFilesSkeleton: function() {
+            const skeleton = document.getElementById('filesSkeleton');
+            if (skeleton) skeleton.style.display = 'none';
+        }
+    };
+    
+    // 暴露to全局
+    PIXLY.FileHandler = FileHandler;
+    
+    // 向后兼容
+    window.selectFiles = function() {
+        return FileHandler.selectFiles();
+    };
+    
+    window.displaySelectedFiles = function() {
+        FileHandler.displaySelectedFiles();
+    };
+    
+    window.removeFile = function(index) {
+        FileHandler.removeFile(index);
+    };
+    
+    window.clearFileSelection = function() {
+        FileHandler.clearFileSelection();
+    };
+    
+    window.getFileIcon = function(ext) {
+        return FileHandler.getFileIcon(ext);
+    };
+    
+    window.resolveEaglePath = function(item) {
+        return FileHandler.resolveEaglePath(item);
+    };
+    
+    // 🔥 暴露selectedFiles数组（getter/setter，防止重复定义）
+    if (!Object.getOwnPropertyDescriptor(window, 'selectedFiles')) {
+        Object.defineProperty(window, 'selectedFiles', {
+            get: function() {
+                return selectedFiles;
+            },
+            set: function(value) {
+                if (Array.isArray(value)) {
+                    selectedFiles = value;
+                }
+            },
+            configurable: true
+        });
+    }
+    
+ console.log('[PIXLY File] File Handler module loaded');
+    
+})(window);

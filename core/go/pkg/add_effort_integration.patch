@@ -1,0 +1,28 @@
+--- a/pkg/converter/smart/engine.go
++++ b/pkg/converter/smart/engine.go
+@@ -556,6 +556,21 @@ func (sce *SmartConversionEngine) smartConvertFile(inputFile, inputDir, output
+ 
+                 outputFile := sce.generateOutputPath(inputFile, inputDir, outputDir, result.RecommendedFormat)
+ 
++                // 🎯 Effort优化 (仅对JXL lossless模式)
++                if sce.effortOptimizer != nil && sce.effortOptimizer.ShouldOptimize(prediction.Params, targetFormat) {
++                        tempDir := filepath.Join(outputDir, ".effort_temp")
++                        os.MkdirAll(tempDir, 0755)
++                        defer os.RemoveAll(tempDir)
++                        
++                        optResult, err := sce.effortOptimizer.OptimizeEffort(inputFile, tempDir, prediction.Params, targetFormat)
++                        if err == nil && optResult != nil && optResult.OutputPath != "" {
++                                prediction.Params.Effort = optResult.OptimalEffort
++                                sce.zapLogger.Info("Effort优化完成", 
++                                        zap.Int("effort", optResult.OptimalEffort), 
++                                        zap.Int64("size", optResult.FileSize))
++                                os.Rename(optResult.OutputPath, outputFile)
++                                sce.logger.Printf("✅ 已使用最优effort: %d", optResult.OptimalEffort)
++                                result.RecommendedFormat = targetFormat
++                                return result // 使用优化后的文件
++                        }
++                }
++
+                 // 🔧 修复: 确保输出目录存在
+                 outputFileDir := filepath.Dir(outputFile)
+                 if err := os.MkdirAll(outputFileDir, 0755); err != nil {

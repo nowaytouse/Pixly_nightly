@@ -1,0 +1,80 @@
+# If you prefer the allow list template instead of the deny list, see community template:
+# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+#
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# env file
+.env
+.DS_Store
+.DS_Store
+
+# Symbolic links
+pixly-rust/
+
+# Additional symbolic link directories
+# plugin/  # 🔥 Phase 40.33: 临时注释以允许修复测试问题
+pkg/ai/
+pkg/quality/
+pkg/knowledge/
+pkg/predictor/
+
+# 📁 项目管理文件夹
+@deprecated/  # 废弃代码回收站
+@reference/   # 参考资料（第三方项目）
+data/*.db
+
+# Rust
+core/rust/target/
+**/target/
+Cargo.lock
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+.venv
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Build outputs
+*.rlib
+*.rmeta
+*.pth
+*.db

@@ -1,0 +1,36 @@
+[package]
+name = "pixly-wasm"
+version = "0.1.0"
+edition = "2021"
+authors = ["Pixly Team"]
+description = "WASM bindings for Pixly image converter"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+web-sys = { version = "0.3", features = ["console", "Blob", "File", "FileReader", "Uint8Array"] }
+image = { version = "0.24", default-features = false, features = ["jpeg", "png", "webp"] }
+base64 = "0.21"
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+console_error_panic_hook = "0.1"
+
+# 复用主库的功能
+pixly_converter = { path = "../", default-features = false }
+
+[dependencies.wee_alloc]
+version = "0.4"
+optional = true
+
+[features]
+default = ["wee_alloc"]
+
+[profile.release]
+opt-level = "z"     # 优化大小
+lto = true          # 链接时优化
+codegen-units = 1   # 单一代码单元
+strip = true        # 移除调试符号

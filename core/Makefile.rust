@@ -1,0 +1,65 @@
+# Makefile for PIXLY Rust Integration
+
+.PHONY: all rust go-service test clean help
+
+# 默认目标
+all: rust go-service
+
+# 构建 Rust 库
+rust:
+	@echo "🦀 Building Rust library..."
+	cd pixly-rust && cargo build --release
+	@echo "✅ Rust library built: pixly-rust/target/release/libpixly_converter.dylib"
+
+# 构建 Go 服务
+go-service: rust
+	@echo "🐹 Building Go service..."
+	cd cmd/rust-service && go build -o ../../bin/rust-service
+	@echo "✅ Go service built: bin/rust-service"
+
+# 运行服务
+run: go-service
+	@echo "🚀 Starting Rust conversion service..."
+	./bin/rust-service
+
+# 测试 Rust
+test-rust:
+	@echo "🧪 Running Rust tests..."
+	cd pixly-rust && cargo test
+
+# 测试 Go
+test-go:
+	@echo "🧪 Running Go tests..."
+	cd pkg/converter && go test -v
+
+# 清理
+clean:
+	@echo "🧹 Cleaning build artifacts..."
+	cd pixly-rust && cargo clean
+	rm -f bin/rust-service
+	@echo "✅ Cleaned"
+
+# 检查依赖
+check:
+	@echo "🔍 Checking dependencies..."
+	@which cargo > /dev/null || (echo "❌ cargo not found"; exit 1)
+	@which go > /dev/null || (echo "❌ go not found"; exit 1)
+	@which avifenc > /dev/null || echo "⚠️ avifenc not found (optional)"
+	@which cwebp > /dev/null || echo "⚠️ cwebp not found (optional)"
+	@which cjxl > /dev/null || echo "⚠️ cjxl not found (optional)"
+	@echo "✅ All required dependencies found"
+
+# 帮助
+help:
+	@echo "PIXLY Rust Integration Makefile"
+	@echo ""
+	@echo "Usage:"
+	@echo "  make all         - Build Rust library and Go service"
+	@echo "  make rust        - Build Rust library only"
+	@echo "  make go-service  - Build Go service only"
+	@echo "  make run         - Build and run the service"
+	@echo "  make test-rust   - Run Rust tests"
+	@echo "  make test-go     - Run Go tests"
+	@echo "  make check       - Check dependencies"
+	@echo "  make clean       - Clean build artifacts"
+	@echo "  make help        - Show this help"

@@ -1,0 +1,21 @@
+{
+  "image_path": "/Users/nyamiiko/Downloads/\u53c2\u8003/12/VTB/Vtuber Character Design_61-1.png",
+  "image_type": ".png",
+  "width": 1000,
+  "height": 1839,
+  "pixel_count": 1839000,
+  "has_alpha": false,
+  "input_size": 262732,
+  "tool": "webp",
+  "optimize_mode": "balanced",
+  "params": {
+    "quality": 90,
+    "confidence": 0.5,
+    "distance": 0.5,
+    "method": 6,
+    "ppo_optimized": false,
+    "ppo_unavailable": true
+  },
+  "reward": 0.5281111111111111,
+  "timestamp": "1761495027.6979284"
+}

@@ -1,0 +1,68 @@
+/**
+ * Button Component Styles
+ * 
+ * 🔥 Phase 40.24: Eagle插件重构
+ * 按钮组件统一样式
+ */
+
+/* 高级选项切换按钮 */
+.toggle-advanced-btn {
+    transition: all 0.2s ease;
+}
+
+.toggle-advanced-btn:hover {
+    background: var(--bg-elevated);
+    border-color: rgba(59, 130, 246, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.toggle-advanced-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(59, 130, 246, 0.15);
+}
+
+/* 智能模式预设按钮 */
+.optimize-mode-btn {
+    border: 2px solid transparent;
+    background: var(--bg-primary);
+    transition: all 0.2s ease;
+}
+
+.optimize-mode-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    border-color: rgba(59, 130, 246, 0.3);
+    background: var(--bg-elevated);
+}
+
+.optimize-mode-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(59, 130, 246, 0.15);
+}
+
+/* 移除此处的active样式，改用styles.css中的高对比度版本 */
+/* .optimize-mode-btn.active {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    font-weight: 700;
+} */
+
+/* 转换按钮增强 */
+.btn-convert {
+    transition: all 0.3s ease;
+}
+
+.btn-convert:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-convert:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-convert:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

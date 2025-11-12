@@ -1,0 +1,237 @@
+/**
+ * PIXLY 国际化辅助module
+ * 依赖: PIXLY命名空间, i18n.fixed.js
+ */
+(function(window) {
+    'use strict';
+    
+    window.PIXLY = window.PIXLY || {};
+    
+    /**
+     * 国际化辅助器
+     */
+    const I18nHelper = {
+        
+        // ✅ 已删除硬编码翻译 - 完全依赖i18n系统
+        
+        /**
+         * 获取嵌套object值
+         * @param {Object} obj - object
+         * @param {string} path - path，如 'messages.log.pixlyNotFound'
+         * @returns {*} 值orundefined
+         */
+        getNestedValue: function(obj, path) {
+            if (!obj || typeof path !== 'string') return undefined;
+            
+            const keys = path.split('.');
+            let current = obj;
+            
+            for (const key of keys) {
+                if (current && typeof current === 'object' && key in current) {
+                    current = current[key];
+                } else {
+                    return undefined;
+                }
+            }
+            
+            return current;
+        },
+        
+        /**
+         * 替换字符串中parameter占位符
+         * @param {string} str - 模板字符串，如 '{count} files selected'
+         * @param {Object} params - parameterobject，如 {count: 5}
+         * @returns {string} 替换后字符串
+         */
+        replaceParams: function(str, params) {
+            if (!params || typeof str !== 'string') return str;
+            
+            return str.replace(/\{(\w+)\}/g, (match, key) => {
+                return params.hasOwnProperty(key) ? params[key] : match;
+            });
+        },
+        
+                // ✅ applyFallbackTranslations 已删除 - 不再使用硬编码翻译
+        
+        /**
+         * initializedLanguage switcher
+         */
+                initLanguageSwitcher: function() {
+            const langSwitch = document.getElementById('languageSelect');
+            if (!langSwitch) {
+                console.warn('[PIXLY I18n] ⚠️ Language selector #languageSelect not found');
+                return;
+            }
+            
+            // ✅ 检查是否已经初始化过，避免重复绑定
+            if (langSwitch.dataset.initialized === 'true') {
+                console.log('[PIXLY I18n] ⚠️ Language switcher already initialized, skipping');
+                return;
+            }
+            
+            // 设置当前语言
+            const currentLang = window.i18n ? window.i18n.currentLocale : 'en';
+            langSwitch.value = currentLang;
+            console.log(`[PIXLY I18n] 🔧 Set language switcher value to: ${currentLang}`);
+            
+            // 监听语言切换
+            langSwitch.addEventListener('change', async (e) => {
+                const newLang = e.target.value;
+                console.log(`[PIXLY I18n] 🔄 Language switcher changed to: ${newLang}`);
+                await this.switchLanguage(newLang);
+                // ✅ 切换后同步更新选择器的值
+                langSwitch.value = newLang;
+            });
+            
+            // 标记为已初始化
+            langSwitch.dataset.initialized = 'true';
+            
+            console.log('[PIXLY I18n] ✅ Language switcher initialized');
+        },
+        
+                /**
+         * Switch language
+         */
+        switchLanguage: async function(lang) {
+            console.log(`[PIXLY I18n] 🔄 Switching language to: ${lang}`);
+            
+            if (window.i18n && typeof window.i18n.setLanguage === 'function') {
+                await window.i18n.setLanguage(lang);
+                console.log(`[PIXLY I18n] ✅ Language switched to: ${lang}`);
+            } else if (window.i18n && typeof window.i18n.setLocale === 'function') {
+                await window.i18n.setLocale(lang);
+                console.log(`[PIXLY I18n] ✅ Language switched to: ${lang}`);
+            } else {
+                console.error('[PIXLY I18n] ❌ i18n system not loaded, cannot switch language');
+                return;
+            }
+            
+            // ✅ setLocale/setLanguage 内部已经调用了 updateAll()
+            // 不需要重复更新，避免性能问题和潜在的 DOM 冲突
+        },
+        
+        /**
+         * 更Newall翻译
+         */
+                updateAllTranslations: function() {
+            // ✅ 统一使用 i18n.fixed.js 的 updateAll() 方法
+            // 避免重复更新导致的冲突和性能问题
+            if (window.i18n && typeof window.i18n.updateAll === 'function') {
+                window.i18n.updateAll();
+                console.log('[PIXLY I18n] ✅ Delegated to window.i18n.updateAll()');
+            } else {
+                console.warn('[PIXLY I18n] ⚠️ i18n system not loaded yet');
+            }
+        },
+        
+        /**
+         * 获取翻译文本 (增强版)
+         * @param {string} key - 翻译键，支持嵌套如 'messages.log.pixlyNotFound'
+         * @param {Object|string} paramsOrFallback - parameterobjector回退值
+         * @param {string} fallback - 回退值（如果第二 parameterisparamsobject）
+         * @returns {string} 翻译后文本
+         */
+        t: function(key, paramsOrFallback = null, fallback = null) {
+            let params = null;
+            let finalFallback = null;
+            
+            // 处理parameter
+            if (typeof paramsOrFallback === 'object' && paramsOrFallback !== null) {
+                params = paramsOrFallback;
+                finalFallback = fallback;
+            } else if (typeof paramsOrFallback === 'string') {
+                finalFallback = paramsOrFallback;
+            }
+            
+            let translation = null;
+            
+            // 1. 优先使用 i18n system
+            if (window.i18n && typeof window.i18n.t === 'function') {
+                translation = window.i18n.t(key);
+                if (translation !== key) {
+                    return this.replaceParams(translation, params);
+                }
+            }
+            
+            // 2. tryfrom i18next 资源中获取（支持嵌套键）
+            if (window.i18next && window.i18next.store && window.i18next.store.data) {
+                const lang = this.getCurrentLanguage();
+                const langData = window.i18next.store.data[lang];
+                if (langData && langData.translation) {
+                    const value = this.getNestedValue(langData.translation, key);
+                    if (value) {
+                        return this.replaceParams(value, params);
+                    }
+                }
+            }
+            
+            // 3. ✅ 已删除硬编码回退翻译
+            
+            // 4. 使用提供回退值
+            if (finalFallback) {
+                return this.replaceParams(finalFallback, params);
+            }
+            
+            // 5. 返回键名（表示缺失翻译）
+ console.warn(`[PIXLY I18n] Missing translation key: ${key}`);
+            return key;
+        },
+        
+        /**
+         * 获取当前语言
+         */
+        getCurrentLanguage: function() {
+            if (window.i18n && window.i18n.currentLocale) {
+                return window.i18n.currentLocale;
+            }
+            if (window.i18next && typeof window.i18next.language === 'string') {
+                return window.i18next.language;
+            }
+            return 'zh_CN'; // 默认中文
+        },
+        
+        /**
+         * Check i18n is否loaded
+         */
+        isI18nLoaded: function() {
+            return (window.i18n && typeof window.i18n.t === 'function') ||
+                   (window.i18next && typeof window.i18next.t === 'function');
+        },
+        
+        // ✅ addFallbackTranslation 已删除 - 不再支持硬编码翻译
+        
+        // ✅ addFallbackTranslations 已删除 - 废弃函数，使用未定义的属性
+    };
+    
+    // 暴露to全局
+    PIXLY.I18nHelper = I18nHelper;
+    
+    // create简化全局 i18n object
+    if (!window.i18n || !window.i18n.t) {
+        window.i18n = {
+            t: function(key, paramsOrFallback, fallback) {
+                return I18nHelper.t(key, paramsOrFallback, fallback);
+            },
+            getCurrentLanguage: function() {
+                return I18nHelper.getCurrentLanguage();
+            },
+            setLanguage: function(lang) {
+                return I18nHelper.switchLanguage(lang);
+            }
+        };
+ console.log('[PIXLY I18n] Created simplifiedi18nobject');
+    }
+    
+    // ✅ applyFallbackTranslations 已删除 - 废弃函数，调用未定义的方法
+    
+    window.initLanguageSwitcher = function() {
+        I18nHelper.initLanguageSwitcher();
+    };
+    
+    window.updateAllTranslations = function() {
+        I18nHelper.updateAllTranslations();
+    };
+    
+ console.log('[PIXLY I18n] i18n Helper module loaded (Enhanced)');
+    
+})(window);

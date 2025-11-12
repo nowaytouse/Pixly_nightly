@@ -1,0 +1,32 @@
+========================================
+PIXLY项目文档索引 2025
+========================================
+
+主要文档:
+  ⭐ TODO_2025.md           - 主TODO清单 (推荐)
+  ⭐ MASTER_SUMMARY_2025.md  - 项目总览 (推荐)
+  📄 INVESTIGATION_2025.md  - 深度调查报告
+  📄 DEEP_ANALYSIS_2025.md  - 深度分析报告
+  📄 CODE_REFERENCE_2025.md - 代码参考手册
+  📄 COMPLETE_TODO.md       - 完整TODO (已合并)
+
+归档文档:
+  📦 archive/TODO.md
+  📦 archive/FINAL_TODO.md
+  📦 archive/CORRECT_TODO.md
+  📦 archive/INVESTIGATION_REPORT.md
+
+快速查找:
+  查看待办任务     → TODO_2025.md
+  快速项目总览     → MASTER_SUMMARY_2025.md
+  查找代码位置     → CODE_REFERENCE_2025.md
+  深入代码分析     → DEEP_ANALYSIS_2025.md
+  了解项目结构     → INVESTIGATION_2025.md
+
+关键发现:
+  ✅ 插件端同格式检查已实现
+  ❌ GO核心同格式检查缺失
+  ❌ 日志系统不统一 (22处)
+  ❌ gRPC服务端缺失
+
+========================================

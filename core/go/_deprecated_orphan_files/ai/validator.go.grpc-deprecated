@@ -1,0 +1,470 @@
+package ai
+
+import (
+	"fmt"
+	"strings"
+
+	// pb "pixly/ai/pb"  // Phase 46.14: gRPC已废弃，使用HTTP API
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+// 🔥 Phase 46.7: AI请求参数验证器
+//
+// 核心原则：响亮报错 > 静默降级
+// - 所有无效参数都必须被拒绝
+// - 所有错误都必须明确提示
+// - 杜绝沉默失败
+//
+// 验证层级：
+// Layer 1: 参数边界验证
+// Layer 2: 业务逻辑验证
+// Layer 3: 数据完整性验证
+
+// ValidatePredictRequest 验证预测请求
+//
+// 🚨 响亮报错原则：
+// - 任何无效参数都会返回gRPC InvalidArgument错误
+// - 错误消息必须清晰说明问题原因
+// - 不使用默认值覆盖无效输入
+func ValidatePredictRequest(req *pb.PredictRequest) error {
+	if req == nil {
+		return status.Error(codes.InvalidArgument, "预测请求为空")
+	}
+
+	// 1. 验证模式
+	if err := validateMode(req.Mode); err != nil {
+		return status.Errorf(codes.InvalidArgument, "无效的预测模式: %v", err)
+	}
+
+	// 2. 验证图像信息
+	if err := validateImageInfo(req.Image); err != nil {
+		return status.Errorf(codes.InvalidArgument, "无效的图像信息: %v", err)
+	}
+
+	// 3. 验证工具名称
+	if err := validateTool(req.Tool); err != nil {
+		return status.Errorf(codes.InvalidArgument, "无效的工具名称: %v", err)
+	}
+
+	// 4. 验证选项
+	if req.Options != nil {
+		if err := validatePredictOptions(req.Options); err != nil {
+			return status.Errorf(codes.InvalidArgument, "无效的预测选项: %v", err)
+		}
+	}
+
+	return nil
+}
+
+// validateMode 验证预测模式
+func validateMode(mode pb.PredictRequest_Mode) error {
+	switch mode {
+	case pb.PredictRequest_BASIC,
+		pb.PredictRequest_ADVANCED,
+		pb.PredictRequest_HYBRID:
+		return nil
+	default:
+		return fmt.Errorf("未知的预测模式: %v (应为BASIC/ADVANCED/HYBRID)", mode)
+	}
+}
+
+// validateImageInfo 验证图像信息
+//
+// 🚨 严格验证：
+// - 宽度和高度必须在合理范围内 (1-65535)
+// - 文件大小必须大于0
+// - 格式必须是支持的类型
+func validateImageInfo(img *pb.ImageInfo) error {
+	if img == nil {
+		return fmt.Errorf("图像信息为空")
+	}
+
+	// 验证文件路径
+	if strings.TrimSpace(img.FilePath) == "" {
+		return fmt.Errorf("文件路径为空")
+	}
+
+	// 验证宽度
+	if img.Width < 1 {
+		return fmt.Errorf("图像宽度无效: %d (必须 > 0)", img.Width)
+	}
+	if img.Width > 65535 {
+		return fmt.Errorf("图像宽度超出范围: %d (最大65535)", img.Width)
+	}
+
+	// 验证高度
+	if img.Height < 1 {
+		return fmt.Errorf("图像高度无效: %d (必须 > 0)", img.Height)
+	}
+	if img.Height > 65535 {
+		return fmt.Errorf("图像高度超出范围: %d (最大65535)", img.Height)
+	}
+
+	// 验证文件大小
+	if img.Size <= 0 {
+		return fmt.Errorf("文件大小无效: %d (必须 > 0)", img.Size)
+	}
+
+	// 验证图像大小合理性 (防止超大图像)
+	const MaxPixels = 1000000000 // 10亿像素 (~32000x32000)
+	totalPixels := int64(img.Width) * int64(img.Height)
+	if totalPixels > MaxPixels {
+		return fmt.Errorf("图像尺寸过大: %dx%d = %d像素 (最大10亿像素)", 
+			img.Width, img.Height, totalPixels)
+	}
+
+	// 验证格式
+	if err := validateImageFormat(img.Format); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateImageFormat 验证图像格式
+func validateImageFormat(format string) error {
+	if strings.TrimSpace(format) == "" {
+		return fmt.Errorf("图像格式为空")
+	}
+
+	validFormats := map[string]bool{
+		"jpg":  true,
+		"jpeg": true,
+		"png":  true,
+		"webp": true,
+		"gif":  true,
+		"bmp":  true,
+		"tiff": true,
+		"tif":  true,
+		"avif": true,
+		"jxl":  true,
+		"heic": true,
+		"heif": true,
+	}
+
+	formatLower := strings.ToLower(strings.TrimSpace(format))
+	if !validFormats[formatLower] {
+		return fmt.Errorf("不支持的图像格式: %s (支持的格式: jpg/png/webp/gif/bmp/tiff/avif/jxl/heic)", format)
+	}
+
+	return nil
+}
+
+// validateTool 验证工具名称
+func validateTool(tool string) error {
+	if strings.TrimSpace(tool) == "" {
+		return fmt.Errorf("工具名称为空")
+	}
+
+	validTools := map[string]bool{
+		"cjxl":    true,
+		"avifenc": true,
+		"cwebp":   true,
+		"ffmpeg":  true,
+		"magick":  true,
+	}
+
+	toolLower := strings.ToLower(strings.TrimSpace(tool))
+	if !validTools[toolLower] {
+		return fmt.Errorf("不支持的工具: %s (支持的工具: cjxl/avifenc/cwebp/ffmpeg/magick)", tool)
+	}
+
+	return nil
+}
+
+// validatePredictOptions 验证预测选项
+//
+// 🚨 严格验证：
+// - SSIM阈值必须在0.0-1.0之间
+// - 迭代次数必须在合理范围内
+func validatePredictOptions(opts *pb.PredictOptions) error {
+	if opts == nil {
+		return nil
+	}
+
+	// 验证目标格式
+	if opts.TargetFormat != "" {
+		if err := validateImageFormat(opts.TargetFormat); err != nil {
+			return fmt.Errorf("目标格式无效: %v", err)
+		}
+	}
+
+	// 验证SSIM阈值
+	if opts.SsimThreshold < 0.0 || opts.SsimThreshold > 1.0 {
+		return fmt.Errorf("SSIM阈值超出范围: %f (必须在0.0-1.0之间)", opts.SsimThreshold)
+	}
+
+	// 验证贝叶斯迭代次数
+	if opts.MaxIterations < 0 {
+		return fmt.Errorf("最大迭代次数无效: %d (必须 >= 0)", opts.MaxIterations)
+	}
+	if opts.MaxIterations > 100 {
+		return fmt.Errorf("最大迭代次数过大: %d (最大100)", opts.MaxIterations)
+	}
+
+	return nil
+}
+
+// ValidatePredictBatchRequest 验证批量预测请求
+func ValidatePredictBatchRequest(req *pb.PredictBatchRequest) error {
+	if req == nil {
+		return status.Error(codes.InvalidArgument, "批量预测请求为空")
+	}
+
+	// 验证模式
+	if err := validateMode(req.Mode); err != nil {
+		return status.Errorf(codes.InvalidArgument, "无效的预测模式: %v", err)
+	}
+
+	// 验证图像列表
+	if len(req.Images) == 0 {
+		return status.Error(codes.InvalidArgument, "图像列表为空")
+	}
+
+	if len(req.Images) > 1000 {
+		return status.Errorf(codes.InvalidArgument, 
+			"批量图像数量过多: %d (最大1000)", len(req.Images))
+	}
+
+	// 验证每张图像
+	for i, img := range req.Images {
+		if err := validateImageInfo(img); err != nil {
+			return status.Errorf(codes.InvalidArgument, 
+				"第%d张图像信息无效: %v", i+1, err)
+		}
+	}
+
+	// 验证工具
+	if err := validateTool(req.Tool); err != nil {
+		return status.Errorf(codes.InvalidArgument, "无效的工具名称: %v", err)
+	}
+
+	// 验证选项
+	if req.Options != nil {
+		if err := validatePredictOptions(req.Options); err != nil {
+			return status.Errorf(codes.InvalidArgument, "无效的预测选项: %v", err)
+		}
+	}
+
+	return nil
+}
+
+// ValidateAssessRequest 验证质量评估请求
+func ValidateAssessRequest(req *pb.AssessRequest) error {
+	if req == nil {
+		return status.Error(codes.InvalidArgument, "质量评估请求为空")
+	}
+
+	// 验证原始文件路径
+	if strings.TrimSpace(req.OriginalPath) == "" {
+		return status.Error(codes.InvalidArgument, "原始文件路径为空")
+	}
+
+	// 验证压缩文件路径
+	if strings.TrimSpace(req.CompressedPath) == "" {
+		return status.Error(codes.InvalidArgument, "压缩文件路径为空")
+	}
+
+	// 验证路径不相同
+	if req.OriginalPath == req.CompressedPath {
+		return status.Error(codes.InvalidArgument, 
+			"原始文件和压缩文件路径相同")
+	}
+
+	return nil
+}
+
+// ValidateOptimizeRequest 验证贝叶斯优化请求
+func ValidateOptimizeRequest(req *pb.OptimizeRequest) error {
+	if req == nil {
+		return status.Error(codes.InvalidArgument, "贝叶斯优化请求为空")
+	}
+
+	// 验证图像信息
+	if err := validateImageInfo(req.Image); err != nil {
+		return status.Errorf(codes.InvalidArgument, "无效的图像信息: %v", err)
+	}
+
+	// 验证工具
+	if err := validateTool(req.Tool); err != nil {
+		return status.Errorf(codes.InvalidArgument, "无效的工具名称: %v", err)
+	}
+
+	// 验证初始参数
+	if req.InitialParams != nil {
+		if err := validateToolParams(req.InitialParams, req.Tool); err != nil {
+			return status.Errorf(codes.InvalidArgument, "无效的初始参数: %v", err)
+		}
+	}
+
+	// 验证最大迭代次数
+	if req.MaxIterations < 1 {
+		return status.Errorf(codes.InvalidArgument, 
+			"最大迭代次数无效: %d (必须 >= 1)", req.MaxIterations)
+	}
+	if req.MaxIterations > 100 {
+		return status.Errorf(codes.InvalidArgument, 
+			"最大迭代次数过大: %d (最大100)", req.MaxIterations)
+	}
+
+	return nil
+}
+
+// validateToolParams 验证工具参数
+//
+// 🚨 格式特定验证：
+// - CJXL: quality 1-100, effort 1-10, distance 0.0-15.0
+// - AVIF: quantizer 0-63, quantizer_alpha 0-63, speed 0-10
+// - WebP: quality 0-100, method 0-6
+// - FFmpeg: crf 0-51, preset验证
+func validateToolParams(params *pb.ToolParams, tool string) error {
+	if params == nil {
+		return nil
+	}
+
+	tool = strings.ToLower(strings.TrimSpace(tool))
+
+	switch tool {
+	case "cjxl":
+		return validateCjxlParams(params)
+	case "avifenc":
+		return validateAvifParams(params)
+	case "cwebp":
+		return validateWebPParams(params)
+	case "ffmpeg":
+		return validateFFmpegParams(params)
+	}
+
+	return nil
+}
+
+// validateCjxlParams 验证CJXL参数
+func validateCjxlParams(params *pb.ToolParams) error {
+	// Quality: 1-100
+	if params.CjxlQuality < 0 || params.CjxlQuality > 100 {
+		return fmt.Errorf("CJXL quality超出范围: %d (应为0-100)", params.CjxlQuality)
+	}
+
+	// Effort: 1-10
+	if params.CjxlEffort < 0 || params.CjxlEffort > 10 {
+		return fmt.Errorf("CJXL effort超出范围: %d (应为0-10)", params.CjxlEffort)
+	}
+
+	// Distance: 0.0-15.0
+	if params.CjxlDistance < 0.0 || params.CjxlDistance > 15.0 {
+		return fmt.Errorf("CJXL distance超出范围: %f (应为0.0-15.0)", params.CjxlDistance)
+	}
+
+	return nil
+}
+
+// validateAvifParams 验证AVIF参数
+func validateAvifParams(params *pb.ToolParams) error {
+	// Quantizer: 0-63
+	if params.AvifQuantizer < 0 || params.AvifQuantizer > 63 {
+		return fmt.Errorf("AVIF quantizer超出范围: %d (应为0-63)", params.AvifQuantizer)
+	}
+
+	// Quantizer Alpha: 0-63
+	if params.AvifQuantizerAlpha < 0 || params.AvifQuantizerAlpha > 63 {
+		return fmt.Errorf("AVIF quantizer_alpha超出范围: %d (应为0-63)", params.AvifQuantizerAlpha)
+	}
+
+	// Speed: 0-10
+	if params.AvifSpeed < 0 || params.AvifSpeed > 10 {
+		return fmt.Errorf("AVIF speed超出范围: %d (应为0-10)", params.AvifSpeed)
+	}
+
+	return nil
+}
+
+// validateWebPParams 验证WebP参数
+func validateWebPParams(params *pb.ToolParams) error {
+	// Quality: 0-100
+	if params.WebpQuality < 0 || params.WebpQuality > 100 {
+		return fmt.Errorf("WebP quality超出范围: %d (应为0-100)", params.WebpQuality)
+	}
+
+	// Method: 0-6
+	if params.WebpMethod < 0 || params.WebpMethod > 6 {
+		return fmt.Errorf("WebP method超出范围: %d (应为0-6)", params.WebpMethod)
+	}
+
+	return nil
+}
+
+// validateFFmpegParams 验证FFmpeg参数
+func validateFFmpegParams(params *pb.ToolParams) error {
+	// CRF: 0-51
+	if params.FfmpegCrf < 0 || params.FfmpegCrf > 51 {
+		return fmt.Errorf("FFmpeg CRF超出范围: %d (应为0-51)", params.FfmpegCrf)
+	}
+
+	// Preset validation
+	if params.FfmpegPreset != "" {
+		validPresets := map[string]bool{
+			"ultrafast": true,
+			"superfast": true,
+			"veryfast":  true,
+			"faster":    true,
+			"fast":      true,
+			"medium":    true,
+			"slow":      true,
+			"slower":    true,
+			"veryslow":  true,
+		}
+
+		preset := strings.ToLower(strings.TrimSpace(params.FfmpegPreset))
+		if !validPresets[preset] {
+			return fmt.Errorf("FFmpeg preset无效: %s", params.FfmpegPreset)
+		}
+	}
+
+	// Codec validation
+	if params.FfmpegCodec != "" {
+		validCodecs := map[string]bool{
+			"libx264":   true,
+			"libx265":   true,
+			"libsvtav1": true,
+			"libvpx":    true,
+			"libvpx-vp9": true,
+		}
+
+		codec := strings.ToLower(strings.TrimSpace(params.FfmpegCodec))
+		if !validCodecs[codec] {
+			return fmt.Errorf("FFmpeg codec无效: %s", params.FfmpegCodec)
+		}
+	}
+
+	return nil
+}
+
+// ValidatePredictResponse 验证预测响应（用于内部检查）
+//
+// 🚨 确保AI返回的参数合理
+func ValidatePredictResponse(resp *pb.PredictResponse, tool string) error {
+	if resp == nil {
+		return fmt.Errorf("预测响应为空")
+	}
+
+	// 验证置信度
+	if resp.Confidence < 0.0 || resp.Confidence > 1.0 {
+		return fmt.Errorf("置信度超出范围: %f (应为0.0-1.0)", resp.Confidence)
+	}
+
+	// 验证返回的参数
+	if resp.Params != nil {
+		if err := validateToolParams(resp.Params, tool); err != nil {
+			return fmt.Errorf("返回参数无效: %v", err)
+		}
+	}
+
+	// 验证预测时间
+	if resp.PredictionTimeMs < 0 {
+		return fmt.Errorf("预测时间无效: %f (必须 >= 0)", resp.PredictionTimeMs)
+	}
+
+	return nil
+}

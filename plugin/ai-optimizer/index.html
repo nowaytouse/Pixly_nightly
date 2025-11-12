@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixly AI Optimizer</title>
+    <link rel="stylesheet" href="css/minimal.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <img src="logo-ai.png" alt="Pixly AI" class="logo-image">
+                <h1 class="title">Pixly AI Optimizer</h1>
+            </div>
+            <p class="subtitle">AI-Powered Smart Media Optimizer</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- File Selection -->
+            <section class="file-section">
+                <div class="drop-zone" id="dropZone">
+                    <svg class="icon-upload" viewBox="0 0 24 24">
+                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                    </svg>
+                    <p class="drop-text" data-i18n="drop_files_here">Drop files here or click to select</p>
+                    <p class="drop-hint" data-i18n="supported_formats">Supports: Images, Videos, Audio</p>
+                </div>
+                <input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*" style="display: none;">
+            </section>
+
+            <!-- File List -->
+            <section class="file-list" id="fileList" style="display: none;">
+                <h3 data-i18n="selected_files">Selected Files</h3>
+                <div id="filesContainer"></div>
+            </section>
+
+            <!-- Optimization Mode -->
+            <section class="mode-section" id="modeSection" style="display: none;">
+                <h3 data-i18n="optimization_mode">Optimization Mode</h3>
+                <p class="mode-note" data-i18n="mode_note">AI ensures quality preservation while reducing file size</p>
+                <div class="mode-cards">
+                    <div class="mode-card" data-mode="quality">
+                        <div class="mode-icon">🎨</div>
+                        <h4 data-i18n="mode_quality">Quality Priority</h4>
+                        <p data-i18n="mode_quality_desc">Best quality, near-lossless</p>
+                    </div>
+                    <div class="mode-card active" data-mode="balanced">
+                        <div class="mode-icon">⚖️</div>
+                        <h4 data-i18n="mode_balanced">Balanced</h4>
+                        <p data-i18n="mode_balanced_desc">Quality preserved, size optimized</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Analysis Results -->
+            <section class="analysis-section" id="analysisSection" style="display: none;">
+                <h3 data-i18n="ai_analysis">AI Analysis</h3>
+                <div id="analysisResults"></div>
+            </section>
+
+            <!-- Action Buttons -->
+            <section class="actions" id="actionsSection" style="display: none;">
+                <button class="btn btn-secondary" id="cancelBtn" data-i18n="cancel">Cancel</button>
+                <button class="btn btn-primary" id="optimizeBtn" data-i18n="optimize">
+                    <span class="btn-icon">✨</span>
+                    <span>Optimize Now</span>
+                </button>
+            </section>
+
+            <!-- Progress -->
+            <section class="progress-section" id="progressSection" style="display: none;">
+                <h3 data-i18n="optimizing">Optimizing...</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p class="progress-text" id="progressText">0 / 0</p>
+            </section>
+
+            <!-- Results -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <h3 data-i18n="results">Results</h3>
+                <div class="stats-grid" id="statsGrid"></div>
+                <div class="results-list" id="resultsList"></div>
+                <button class="btn btn-primary" id="doneBtn" data-i18n="done">Done</button>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p class="footer-text">
+                <span data-i18n="powered_by">Powered by</span>
+                <strong>Pixly AI</strong>
+                <span class="ai-badge">🤖</span>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/i18n.js"></script>
+    <script src="js/ai-client.js"></script>
+    <script src="js/optimizer.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

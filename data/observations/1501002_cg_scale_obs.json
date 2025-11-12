@@ -1,0 +1,21 @@
+{
+  "image_path": "/Users/nyamiiko/Downloads/\u53c2\u8003/12/\u767d\u591c\u6781\u5149/1501002_cg_scale.png",
+  "image_type": ".png",
+  "width": 2048,
+  "height": 2048,
+  "pixel_count": 4194304,
+  "has_alpha": false,
+  "input_size": 1034477,
+  "tool": "webp",
+  "optimize_mode": "balanced",
+  "params": {
+    "quality": 90,
+    "confidence": 0.5,
+    "distance": 0.5,
+    "method": 6,
+    "ppo_optimized": false,
+    "ppo_unavailable": true
+  },
+  "reward": 0.5281111111111112,
+  "timestamp": "1761496489.715021"
+}

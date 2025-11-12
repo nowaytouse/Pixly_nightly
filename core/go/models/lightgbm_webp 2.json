@@ -1,0 +1,143 @@
+{
+  "name": "tree",
+  "version": "v4",
+  "num_class": 1,
+  "num_tree_per_iteration": 1,
+  "label_index": 0,
+  "max_feature_idx": 11,
+  "objective": "regression",
+  "average_output": false,
+  "feature_names": [
+    "Column_0",
+    "Column_1",
+    "Column_2",
+    "Column_3",
+    "Column_4",
+    "Column_5",
+    "Column_6",
+    "Column_7",
+    "Column_8",
+    "Column_9",
+    "Column_10",
+    "Column_11"
+  ],
+  "monotone_constraints": [],
+  "feature_infos": {
+    "Column_0": {
+      "min_value": -1.1002107916229744,
+      "max_value": 6.746199442456725,
+      "values": []
+    },
+    "Column_1": {
+      "min_value": -0.8505448893441826,
+      "max_value": 2.7925161420359386,
+      "values": []
+    },
+    "Column_2": {
+      "min_value": -0.6175707460210865,
+      "max_value": 9.47001100276495,
+      "values": []
+    },
+    "Column_3": {
+      "min_value": -1.4165124066194115,
+      "max_value": 2.3371008777335947,
+      "values": []
+    },
+    "Column_5": {
+      "min_value": -2.136589926834001,
+      "max_value": 3.235529796190647,
+      "values": []
+    },
+    "Column_6": {
+      "min_value": -2.041992372273223,
+      "max_value": 3.2994367134032125,
+      "values": []
+    },
+    "Column_7": {
+      "min_value": -0.47465047300727137,
+      "max_value": 8.911378429574073,
+      "values": []
+    },
+    "Column_8": {
+      "min_value": -0.5402685222524231,
+      "max_value": 9.329763002455136,
+      "values": []
+    },
+    "Column_9": {
+      "min_value": -5.627148998296885,
+      "max_value": 1.9678105496394986,
+      "values": []
+    },
+    "Column_10": {
+      "min_value": -3.0820964085705196,
+      "max_value": 1.7326423457485214,
+      "values": []
+    },
+    "Column_11": {
+      "min_value": -1.2635656093234342,
+      "max_value": 4.017795794363044,
+      "values": []
+    }
+  },
+  "tree_info": [
+    {
+      "tree_index": 0,
+      "num_leaves": 1,
+      "num_cat": 0,
+      "shrinkage": 1,
+      "tree_structure": {
+        "leaf_value": 85,
+        "leaf_count": 126
+      }
+    }
+  ],
+  "feature_importances": {},
+  "pandas_categorical": null,
+  "metadata": {
+    "tool": "webp",
+    "version": "4.2.0",
+    "trained_at": "2025-11-02T10:58:38.729916",
+    "feature_names": [
+      "width",
+      "height",
+      "pixels",
+      "aspect_ratio",
+      "has_alpha",
+      "edge_strength",
+      "texture_complexity",
+      "noise_level",
+      "detail_level",
+      "compression_score",
+      "high_freq_energy",
+      "low_freq_energy"
+    ],
+    "scaler_mean": [
+      1346.0759493670887,
+      2702.6329113924053,
+      3937630.7848101268,
+      0.8242485994790003,
+      0.0189873417721519,
+      91.05902109266836,
+      20.515053755120388,
+      1.2705674891395957,
+      32527077487.189873,
+      0.6955025492016036,
+      0.8067563093161281,
+      0.02850611456021478
+    ],
+    "scaler_std": [
+      838.0902608734547,
+      2613.1870748246797,
+      5988416.401906206,
+      0.5030811514054907,
+      0.1364801180559989,
+      28.517633598173514,
+      7.233943278467206,
+      2.676848673697901,
+      59618259233.21302,
+      0.03897399105074357,
+      0.04851509403779984,
+      0.014392473709936234
+    ]
+  }
+}
