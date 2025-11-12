@@ -69,6 +69,24 @@
 | EX-014 | SQLite观测存储 | `storage/sqlite_store.go` | `core/python/storage/observation_store.py` | 4h | 🟡 P1 | ✅ 已完成 |
 | EX-015 | PPO强化学习架构 | `rl/ppo.go` | `tools/ppo_enhanced.py` | 6h | 🟢 P2 | ✅ 已完成 |
 
+### 0.4 第四轮价值提取任务 (EX-016~025)
+
+**深度调查日期**: 2025-11-12 16:20  
+**重大发现**: 10个高级智能分析与系统架构功能模块
+
+| 任务ID | 功能描述 | 源文件 | 目标文件 | 工作量 | 优先级 | 状态 |
+|--------|----------|--------|----------|--------|--------|------|
+| EX-016 | 知识分析器 | `knowledge/analyzer.go` | `core/python/ai/knowledge_analyzer.py` | 5h | 🔴 P0 | ❌ 未开始 |
+| EX-017 | 质量度量系统 | `quality/metrics.go` | `core/python/quality/image_metrics.py` | 4h | 🔴 P0 | ❌ 未开始 |
+| EX-018 | 训练队列管理器 | `training_queue.go` | `core/python/ai/training_queue.py` | 6h | 🟡 P1 | ❌ 未开始 |
+| EX-019 | 模型路由器 | `model_router.go` | `core/python/ai/model_router.py` | 5h | 🔴 P0 | ❌ 未开始 |
+| EX-020 | LightGBM模型 | `models/lightgbm.go` | `core/python/ai/models/lightgbm_model.py` | 4h | 🟡 P1 | ❌ 未开始 |
+| EX-021 | 知识库系统 | `knowledge/database.go` | `core/python/knowledge/knowledge_db.py` | 7h | 🔴 P0 | ❌ 未开始 |
+| EX-022 | 格式知识库 | `format_knowledge.go` | `core/python/knowledge/format_knowledge.py` | 3h | 🔴 P0 | ❌ 未开始 |
+| EX-023 | 统一消息系统 | `messaging.go` | `core/python/messaging/unified_messaging.py` | 3h | 🟡 P1 | ❌ 未开始 |
+| EX-024 | HTTP验证器 | `http_validator.go` | `core/python/validation/http_validator.py` | 3h | 🟢 P2 | ❌ 未开始 |
+| EX-025 | 反馈数据库 | `feedback_db.go` | `core/python/ai/feedback_database.py` | 5h | 🔴 P0 | ❌ 未开始 |
+
 **第一轮功能价值说明**:
 
 - **EX-001 模型路由和A/B测试** ⚡⚡⚡ ✅
@@ -179,6 +197,79 @@
   - PyTorch神经网络实现（GPU/MPS加速）
   - 模型保存和加载机制
   - 梯度裁剪和数值稳定性
+
+**第四轮功能价值说明**:
+
+- **EX-016 知识分析器** ⚡⚡⚡⚡
+  - 预测准确性深度分析（平均误差、中位数误差、异常检测）
+  - 空间节省效果评估（预测vs实际对比）
+  - 质量分析系统（PSNR/SSIM阈值评估）
+  - 格式对比分析（PNG/JPG/WebP/AVIF全格式）
+  - 智能建议系统（参数优化建议生成）
+  - 异常案例检测（性能瓶颈识别）
+
+- **EX-017 质量度量系统** ⚡⚡⚡⚡
+  - SSIM结构相似性精确计算（8x8窗口滑动）
+  - PSNR峰值信噪比测量（dB精度）
+  - MSE均方误差计算（RGB三通道）
+  - 局部SSIM质量热图分析
+  - 图像质量对比验证
+
+- **EX-018 训练队列管理器** ⚡⚡⚡
+  - 自动化增量训练管道（最小样本阈值触发）
+  - 批次管理和状态跟踪（pending/training/completed）
+  - 性能监控和自动部署（性能提升阈值）
+  - 训练失败重试机制（最大重试次数）
+  - 后台检查任务调度
+
+- **EX-019 模型路由器** ⚡⚡⚡⚡
+  - 多版本模型管理（版本共存和优先级）
+  - A/B测试权重智能分配（动态权重调整）
+  - 模型性能指标实时跟踪（准确率/延迟/调用数）
+  - 智能模型选择算法（负载均衡+性能优化）
+  - 模型状态管理（active/testing/deprecated）
+
+- **EX-020 LightGBM模型** ⚡⚡⚡
+  - LightGBM模型完整集成（线性回归fallback）
+  - 12维特征向量构建（SWT特征兼容）
+  - 格式特化启发式规则（JXL/AVIF/WebP）
+  - 预测置信度评估系统
+  - 模型权重动态调整
+
+- **EX-021 知识库系统** ⚡⚡⚡⚡
+  - 转换记录数据库管理（完整生命周期跟踪）
+  - 预测vs实际结果对比存储
+  - 用户反馈和评级系统
+  - 知识查询和统计分析
+  - 异常检测和数据挖掘
+
+- **EX-022 格式知识库** ⚡⚡⚡⚡⚡
+  - 完整图像格式特性数据库（JXL/AVIF/WebP/JPEG/PNG/HEIC）
+  - 格式优缺点和技术规格详细分析
+  - 智能格式对比和推荐系统
+  - 基于场景的质量参数推荐（web/archival/social）
+  - 格式评分算法（压缩率/质量/兼容性/速度）
+
+- **EX-023 统一消息系统** ⚡⚡⚡
+  - 跨语言统一消息传递（Go/Rust/Python/JS）
+  - 结构化消息格式（类型/级别/来源/组件）
+  - 进度追踪和错误码管理
+  - 实时消息广播机制（stdout管道）
+  - 调试和追踪ID支持
+
+- **EX-024 HTTP验证器** ⚡⚡
+  - HTTP API参数严格验证（响亮报错原则）
+  - 图像路径和格式验证
+  - 工具名称和质量参数校验  
+  - 请求选项完整性检查
+  - 多格式扩展名支持
+
+- **EX-025 反馈数据库** ⚡⚡⚡⚡
+  - 在线学习反馈数据持久化
+  - 预测vs实际结果对比存储
+  - 用户评级和质量反馈系统
+  - 训练批次管理和性能跟踪
+  - 自动化模型改进数据流
 
 #### 0.3 归档清理任务
 
