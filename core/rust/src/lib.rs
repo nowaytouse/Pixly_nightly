@@ -20,6 +20,7 @@ pub mod constants;  // 统一常量配置 (Phase 46.8)
 pub mod info;
 pub mod converter;  // 完整转换功能
 pub mod preprocessing;  // 预处理管道 (Phase 46.14, 参考Rimage)
+pub mod bridge;     // Python桥接器 (EX-010)
 
 #[cfg(feature = "http-server")]
 pub mod server;  // HTTP服务器 (Phase 22)

@@ -62,8 +62,8 @@
 | 任务ID | 功能描述 | 源文件 | 目标文件 | 工作量 | 优先级 | 状态 |
 |--------|----------|--------|----------|--------|--------|------|
 | EX-009 | SWT小波变换特征提取器 | `features/swt.go` | `core/python/ai/swt_features.py` | 8h | 🔴 P0 | ✅ 已完成 |
-| EX-010 | 智能Python桥接器 | `python_bridge.go` | `core/rust/src/bridge/python_bridge.rs` | 4h | 🟡 P1 | ❌ 未开始 |
-| EX-011 | 模型版本管理器 | `model_manager.go` | `core/python/ai/model_manager.py` | 6h | 🔴 P0 | ❌ 未开始 |
+| EX-010 | 智能Python桥接器 | `python_bridge.go` | `core/rust/src/bridge/python_bridge.rs` | 4h | 🟡 P1 | ✅ 已完成 |
+| EX-011 | 模型版本管理器 | `model_manager.go` | `core/python/ai/model_manager.py` | 6h | 🔴 P0 | ✅ 已完成 |
 | EX-012 | 贝叶斯参数优化器 | `precision_modes.go` | `core/python/ai/bayesian_optimizer.py` | 7h | 🔴 P0 | ✅ 已完成 |
 | EX-013 | 增强视频处理器 | `video_handlers.go` | `core/python/video/enhanced_processor.py` | 5h | 🟡 P1 | ❌ 未开始 |
 | EX-014 | SQLite观测存储 | `storage/sqlite_store.go` | `core/python/storage/observation_store.py` | 4h | 🟡 P1 | ❌ 未开始 |
