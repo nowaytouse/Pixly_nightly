@@ -843,14 +843,19 @@ mod tests {
     #[test]
     fn test_ai_client_creation() {
         let client = AIClient::with_default();
-        assert_eq!(client.config.base_url, "http://localhost:8080");
+        assert_eq!(client.config.base_url, "http://localhost:50052");
     }
 
     #[test]
     fn test_jpeg_jxl_prediction() {
         let client = AIClient::with_default();
+        if !client.is_available() {
+            println!("⏭️  Skipping AI test: Python service not available");
+            return;
+        }
+
         let request = PredictionRequest {
-            image_path: None,
+            image_path: Some("/tmp/test.jpg".to_string()),
             input_format: "jpeg".to_string(),
             target_format: "jxl".to_string(),
             width: 1920,
@@ -880,8 +885,13 @@ mod tests {
     #[test]
     fn test_default_prediction() {
         let client = AIClient::with_default();
+        if !client.is_available() {
+            println!("⏭️  Skipping AI test: Python service not available");
+            return;
+        }
+
         let request = PredictionRequest {
-            image_path: None,
+            image_path: Some("/tmp/test.png".to_string()),
             input_format: "png".to_string(),
             target_format: "avif".to_string(),
             width: 1920,

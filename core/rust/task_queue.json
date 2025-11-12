@@ -1,7 +1,7 @@
 {
   "pending_tasks": [
     {
-      "id": "task_4c84d9488c8454d7",
+      "id": "task_cd8acc60e0b536f7",
       "input_path": "/test/2.png",
       "output_path": "/test/2.jxl",
       "target_format": "jxl",
@@ -9,14 +9,14 @@
       "target_quality": null,
       "status": "Pending",
       "priority": "Urgent",
-      "created_at": 1762838484,
+      "created_at": 1762932415,
       "started_at": null,
       "completed_at": null,
       "error": null,
       "progress": 0
     },
     {
-      "id": "task_79cf3bf6cc9f246a",
+      "id": "task_667a552771d16e17",
       "input_path": "/test/1.png",
       "output_path": "/test/1.jxl",
       "target_format": "jxl",
@@ -24,7 +24,7 @@
       "target_quality": null,
       "status": "Pending",
       "priority": "Low",
-      "created_at": 1762838484,
+      "created_at": 1762932415,
       "started_at": null,
       "completed_at": null,
       "error": null,

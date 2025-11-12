@@ -3,9 +3,20 @@
  */
 
 use crate::converter::params::{ImageCharacteristics, AIParameterClient, OptimizedParams};
+use crate::converter::ai_client::AIClient;
+
+fn is_ai_service_available() -> bool {
+    let client = AIClient::with_default();
+    client.is_available()
+}
 
 #[test]
 fn test_avif_optimization() {
+    if !is_ai_service_available() {
+        println!("⏭️  Skipping AI test: Python service not available");
+        return;
+    }
+
     let chars = ImageCharacteristics {
         width: 1920,
         height: 1080,
@@ -14,7 +25,7 @@ fn test_avif_optimization() {
         has_alpha: false,
         is_animated: false,
         complexity: 0.5,
-        path: None,
+        path: Some("/tmp/test.png".to_string()),
     };
 
     let optimizer = AIParameterClient::new("avif");
@@ -47,6 +58,11 @@ fn test_jxl_lossless_jpeg() {
 
 #[test]
 fn test_webp_optimization() {
+    if !is_ai_service_available() {
+        println!("⏭️  Skipping AI test: Python service not available");
+        return;
+    }
+
     let chars = ImageCharacteristics {
         width: 1920,
         height: 1080,
@@ -55,7 +71,7 @@ fn test_webp_optimization() {
         has_alpha: false,
         is_animated: false,
         complexity: 0.4,
-        path: None,
+        path: Some("/tmp/test.png".to_string()),
     };
 
     let optimizer = AIParameterClient::new("webp");
@@ -67,6 +83,11 @@ fn test_webp_optimization() {
 
 #[test]
 fn test_png_optimization() {
+    if !is_ai_service_available() {
+        println!("⏭️  Skipping AI test: Python service not available");
+        return;
+    }
+
     let chars = ImageCharacteristics {
         width: 1920,
         height: 1080,
@@ -75,7 +96,7 @@ fn test_png_optimization() {
         has_alpha: true,
         is_animated: false,
         complexity: 0.7,
-        path: None,
+        path: Some("/tmp/test.png".to_string()),
     };
 
     let optimizer = AIParameterClient::new("png");
@@ -87,6 +108,11 @@ fn test_png_optimization() {
 
 #[test]
 fn test_small_image_optimization() {
+    if !is_ai_service_available() {
+        println!("⏭️  Skipping AI test: Python service not available");
+        return;
+    }
+
     let chars = ImageCharacteristics {
         width: 800,
         height: 600,
@@ -95,7 +121,7 @@ fn test_small_image_optimization() {
         has_alpha: false,
         is_animated: false,
         complexity: 0.3,
-        path: None,
+        path: Some("/tmp/test.png".to_string()),
     };
 
     let optimizer = AIParameterClient::new("avif");
@@ -108,6 +134,11 @@ fn test_small_image_optimization() {
 
 #[test]
 fn test_large_image_optimization() {
+    if !is_ai_service_available() {
+        println!("⏭️  Skipping AI test: Python service not available");
+        return;
+    }
+
     let chars = ImageCharacteristics {
         width: 3840,
         height: 2160,
@@ -116,7 +147,7 @@ fn test_large_image_optimization() {
         has_alpha: false,
         is_animated: false,
         complexity: 0.8,
-        path: None,
+        path: Some("/tmp/test.png".to_string()),
     };
 
     let optimizer = AIParameterClient::new("avif");
@@ -129,6 +160,11 @@ fn test_large_image_optimization() {
 
 #[test]
 fn test_alpha_channel_handling() {
+    if !is_ai_service_available() {
+        println!("⏭️  Skipping AI test: Python service not available");
+        return;
+    }
+
     let chars = ImageCharacteristics {
         width: 1920,
         height: 1080,
@@ -137,7 +173,7 @@ fn test_alpha_channel_handling() {
         has_alpha: true,
         is_animated: false,
         complexity: 0.5,
-        path: None,
+        path: Some("/tmp/test.png".to_string()),
     };
 
     let optimizer = AIParameterClient::new("avif");
@@ -150,6 +186,11 @@ fn test_alpha_channel_handling() {
 
 #[test]
 fn test_high_complexity_image() {
+    if !is_ai_service_available() {
+        println!("⏭️  Skipping AI test: Python service not available");
+        return;
+    }
+
     let chars = ImageCharacteristics {
         width: 1920,
         height: 1080,
@@ -158,7 +199,7 @@ fn test_high_complexity_image() {
         has_alpha: false,
         is_animated: false,
         complexity: 0.9,
-        path: None,
+        path: Some("/tmp/test.png".to_string()),
     };
 
     let optimizer = AIParameterClient::new("avif");

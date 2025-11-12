@@ -341,7 +341,10 @@ mod tests {
 
     #[test]
     fn test_logging_macros() {
-        init_logging("DEBUG", false);
+        // 忽略init错误（可能已经初始化过）
+        let _ = std::panic::catch_unwind(|| {
+            init_logging("DEBUG", false);
+        });
         
         log_info!("Test message");
         log_info!("Test with fields", count = 5, name = "test");
@@ -350,7 +353,10 @@ mod tests {
 
     #[test]
     fn test_perf_span() {
-        init_logging("INFO", false);
+        // 忽略init错误（可能已经初始化过）
+        let _ = std::panic::catch_unwind(|| {
+            init_logging("INFO", false);
+        });
         
         let _span = perf_span!("test_operation", input = "test.jpg");
         // 模拟操作

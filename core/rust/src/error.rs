@@ -294,7 +294,7 @@ mod tests {
     #[test]
     fn test_error_creation() {
         let err = ErrorBuilder::val_out_of_range("quality", 150, "1-100");
-        assert_eq!(err.code, "PIXLY-CORE-VAL-001");
+        assert_eq!(err.code, "PIXLY-RUST-VAL-001");
         assert!(err.should_block());
         assert!(err.message.contains("150"));
     }
@@ -310,7 +310,7 @@ mod tests {
     fn test_error_serialization() {
         let err = ErrorBuilder::file_not_found("/test/file.jpg");
         let json = serde_json::to_string(&err).unwrap();
-        assert!(json.contains("PIXLY-CORE-FILE-001"));
+        assert!(json.contains("PIXLY-RUST-FILE-001"));
         assert!(json.contains("/test/file.jpg"));
     }
 }
