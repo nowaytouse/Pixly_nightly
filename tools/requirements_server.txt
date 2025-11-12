@@ -3,7 +3,7 @@
 
 # HTTP框架
 flask==3.0.0
-flask-cors==5.0.0  # 修复 Access-Control-Allow-Private-Network 安全漏洞
+flask-cors==6.0.0  # 修复 Access-Control-Allow-Private-Network 安全漏洞
 
 # 已有依赖（确保安装）
 lightgbm>=4.0.0
