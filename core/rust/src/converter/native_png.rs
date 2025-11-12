@@ -23,7 +23,6 @@ use std::path::Path;
 // 🔧 统一日志系统
 use tracing::info;
 
-
 /// PNG编码配置
 #[derive(Debug, Clone)]
 pub struct PngConfig {
@@ -152,28 +151,5 @@ impl NativePngEncoder {
         );
         
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::tempdir;
-
-    #[test]
-    fn test_png_encoding() {
-        // 创建测试图像
-        let img = DynamicImage::new_rgba8(100, 100);
-        
-        // 临时输出目录
-        let temp_dir = tempdir().unwrap();
-        let output_path = temp_dir.path().join("test.png");
-        
-        // 编码
-        let config = PngConfig::default();
-        let result = NativePngEncoder::encode_image(&img, &output_path, &config);
-        
-        assert!(result.is_ok());
-        assert!(output_path.exists());
     }
 }

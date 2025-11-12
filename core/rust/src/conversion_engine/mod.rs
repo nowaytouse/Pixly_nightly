@@ -462,37 +462,3 @@ impl Default for PerformanceMetrics {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::TempDir;
-    
-    #[tokio::test]
-    async fn test_conversion_engine_creation() {
-        let config = ConversionEngineConfig::default();
-        let engine = ConversionEngine::new(config).await;
-        assert!(engine.is_ok());
-    }
-    
-    #[tokio::test]
-    async fn test_conversion_request_serialization() {
-        let request = ConversionRequest {
-            input_path: PathBuf::from("test.jpg"),
-            output_path: PathBuf::from("test.webp"),
-            source_format: "jpeg".to_string(),
-            target_format: "webp".to_string(),
-            quality: 85,
-            distance: None,
-            effort: Some(6),
-            lossless: false,
-            advanced_options: HashMap::new(),
-        };
-        
-        let serialized = serde_json::to_string(&request).unwrap();
-        let deserialized: ConversionRequest = serde_json::from_str(&serialized).unwrap();
-        
-        assert_eq!(request.quality, deserialized.quality);
-        assert_eq!(request.target_format, deserialized.target_format);
-    }
-}

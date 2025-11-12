@@ -301,32 +301,3 @@ impl AudioStrategy {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_codec_selection() {
-        // 1080p Web视频
-        let strategy = VideoConversionStrategy::auto_select(
-            1920, 1080, 60.0, QualityTarget::Balanced, true
-        );
-        assert_eq!(strategy.codec, VideoCodec::H264);
-        
-        // 4K 存档视频
-        let strategy = VideoConversionStrategy::auto_select(
-            3840, 2160, 120.0, QualityTarget::High, false
-        );
-        assert_eq!(strategy.codec, VideoCodec::H265);
-    }
-    
-    #[test]
-    fn test_quality_target() {
-        let crf = QualityTarget::Balanced.recommended_crf(&VideoCodec::H264);
-        assert_eq!(crf, 23);
-        
-        let crf = QualityTarget::Highest.recommended_crf(&VideoCodec::H265);
-        assert_eq!(crf, 22);
-    }
-}

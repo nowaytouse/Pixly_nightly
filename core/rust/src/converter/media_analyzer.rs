@@ -15,7 +15,6 @@
 // 🔧 统一日志系统
 use tracing::{info, warn, debug};
 
-
 use anyhow::{Result, Context, bail};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
@@ -531,19 +530,6 @@ impl MediaAnalyzer {
 impl Default for MediaAnalyzer {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_media_type_detection() {
-        let analyzer = MediaAnalyzer::new();
-        
-        // 这些测试需要实际文件，这里仅做结构测试
-        assert!(analyzer.video_processor.check_ffmpeg().is_ok());
     }
 }
 

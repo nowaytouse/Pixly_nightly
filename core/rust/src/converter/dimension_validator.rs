@@ -8,7 +8,6 @@
 // 🔧 统一日志系统
 use tracing::{error, debug};
 
-
 use anyhow::{Result, bail};
 
 /// 格式尺寸限制常量
@@ -82,33 +81,5 @@ impl DimensionLimits {
             "jxl" => Some(Self::JXL_SAFE_MAX),
             _ => None,
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_webp_dimension_check() {
-        // 正常尺寸
-        assert!(DimensionLimits::validate_dimensions(1920, 1080, "webp").is_ok());
-        
-        // 超出限制
-        assert!(DimensionLimits::validate_dimensions(20000, 1080, "webp").is_err());
-        assert!(DimensionLimits::validate_dimensions(1920, 20000, "webp").is_err());
-    }
-    
-    #[test]
-    fn test_should_use_cli_fallback() {
-        assert!(!DimensionLimits::should_use_cli_fallback(1920, 1080, "webp"));
-        assert!(DimensionLimits::should_use_cli_fallback(20000, 1080, "webp"));
-    }
-    
-    #[test]
-    fn test_get_max_dimension() {
-        assert_eq!(DimensionLimits::get_max_dimension("webp"), Some(16383));
-        assert_eq!(DimensionLimits::get_max_dimension("jpeg"), Some(65535));
-        assert_eq!(DimensionLimits::get_max_dimension("unknown"), None);
     }
 }

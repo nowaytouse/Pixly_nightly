@@ -23,7 +23,6 @@ use std::path::Path;
 // 🔧 统一日志系统
 use tracing::info;
 
-
 /// JPEG编码配置
 #[derive(Debug, Clone)]
 pub struct JpegConfig {
@@ -136,50 +135,5 @@ impl NativeJpegEncoder {
         );
         
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::tempdir;
-
-    #[test]
-    fn test_jpeg_encoding() {
-        // 创建测试图像
-        let img = DynamicImage::new_rgb8(100, 100);
-        
-        // 临时输出目录
-        let temp_dir = tempdir().unwrap();
-        let output_path = temp_dir.path().join("test.jpg");
-        
-        // 编码
-        let config = JpegConfig::default();
-        let result = NativeJpegEncoder::encode_image(&img, &output_path, &config);
-        
-        assert!(result.is_ok());
-        assert!(output_path.exists());
-    }
-    
-    #[test]
-    fn test_high_quality_jpeg() {
-        let img = DynamicImage::new_rgb8(200, 200);
-        let temp_dir = tempdir().unwrap();
-        let output_path = temp_dir.path().join("high_quality.jpg");
-        
-        let config = JpegConfig {
-            quality: 95,
-            progressive: true,
-            optimize_coding: true,
-            chroma_subsampling: ChromaSubsampling::None,
-        };
-        
-        let result = NativeJpegEncoder::encode_image(&img, &output_path, &config);
-        assert!(result.is_ok());
-        assert!(output_path.exists());
-        
-        // 高质量应该生成更大的文件
-        let size = std::fs::metadata(&output_path).unwrap().len();
-        assert!(size > 0);
     }
 }

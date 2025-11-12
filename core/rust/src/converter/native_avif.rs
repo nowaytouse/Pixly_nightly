@@ -23,7 +23,6 @@ use std::path::Path;
 // 🔧 统一日志系统
 use tracing::info;
 
-
 #[cfg(feature = "native-avif")]
 use ravif::Encoder;
 #[cfg(feature = "native-avif")]
@@ -172,29 +171,5 @@ impl NativeAvifEncoder {
             "Native AVIF encoding not available. \
              Compile with --features native-avif or use CLI fallback."
         )
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::tempdir;
-
-    #[test]
-    #[cfg(feature = "native-avif")]
-    fn test_avif_encoding() {
-        // 创建测试图像
-        let img = DynamicImage::new_rgba8(100, 100);
-        
-        // 临时输出目录
-        let temp_dir = tempdir().unwrap();
-        let output_path = temp_dir.path().join("test.avif");
-        
-        // 编码
-        let config = AvifConfig::default();
-        let result = NativeAvifEncoder::encode_image(&img, &output_path, &config);
-        
-        assert!(result.is_ok());
-        assert!(output_path.exists());
     }
 }

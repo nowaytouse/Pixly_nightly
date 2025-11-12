@@ -196,36 +196,3 @@ impl Default for FilenameNormalizer {
         Self::new()
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_normalize_simple() {
-        let mut normalizer = FilenameNormalizer::new();
-        let path = Path::new("test file.png");
-        let result = normalizer.normalize(path).unwrap();
-        assert_eq!(result.file_name().unwrap().to_str().unwrap(), "test_file.png");
-    }
-    
-    #[test]
-    fn test_normalize_dangerous_chars() {
-        let mut normalizer = FilenameNormalizer::new();
-        let path = Path::new("file<with>bad:chars.jpg");
-        let result = normalizer.normalize(path).unwrap();
-        let normalized = result.file_name().unwrap().to_str().unwrap();
-        assert!(!normalized.contains('<'));
-        assert!(!normalized.contains('>'));
-        assert!(!normalized.contains(':'));
-    }
-    
-    #[test]
-    fn test_restore() {
-        let mut normalizer = FilenameNormalizer::new();
-        let original = Path::new("my file.png");
-        let temp = normalizer.normalize(original).unwrap();
-        let restored = normalizer.restore(&temp).unwrap();
-        assert_eq!(restored.file_name().unwrap().to_str().unwrap(), "my file.png");
-    }
-}

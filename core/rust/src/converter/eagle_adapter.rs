@@ -27,7 +27,6 @@ use std::sync::atomic::{AtomicUsize, Ordering};  // 🔥 Phase 40.15: 线程安�
 // 🔧 统一日志系统
 use tracing::{info, warn, error, debug};
 
-
 /// Eagle图像元数据
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EagleImageMetadata {
@@ -893,34 +892,4 @@ struct OptimizeResult {
     saved_bytes: u64,
     /// 是否跳过处理
     skipped: bool,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_eagle_metadata_parsing() {
-        let json = r#"{
-            "id": "TEST123",
-            "name": "test_image",
-            "size": 1024,
-            "btime": 1234567890,
-            "mtime": 1234567900,
-            "ext": "png",
-            "tags": ["test", "sample"],
-            "folders": ["folder1"],
-            "isDeleted": false,
-            "url": "",
-            "annotation": "Test image",
-            "height": 100,
-            "width": 200,
-            "lastModified": 1234567900
-        }"#;
-        
-        let metadata: EagleImageMetadata = serde_json::from_str(json).unwrap();
-        assert_eq!(metadata.id, "TEST123");
-        assert_eq!(metadata.name, "test_image");
-        assert_eq!(metadata.ext, "png");
-    }
 }

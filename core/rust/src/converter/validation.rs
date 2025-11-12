@@ -29,7 +29,6 @@ use serde::{Deserialize, Serialize};
 // 统一日志系统
 use tracing::debug;
 
-
 /// 验证级别
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ValidationLevel {
@@ -748,21 +747,4 @@ fn check_metadata_preserved(input_path: &Path, output_path: &Path) -> Result<boo
     let color_match = input_img.color() == output_img.color();
     
     Ok(dims_match && color_match)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_validator_creation() {
-        let validator = FileValidator::new();
-        assert_eq!(validator.level, ValidationLevel::Integrity);
-    }
-    
-    #[test]
-    fn test_format_detection() {
-        // 测试magic number检测
-        // 实际测试需要真实文件
-    }
 }

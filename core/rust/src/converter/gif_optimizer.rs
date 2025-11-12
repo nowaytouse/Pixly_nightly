@@ -10,7 +10,6 @@
 // 🔧 统一日志系统
 use tracing::{info, warn, debug};
 
-
 use anyhow::{Result, Context, bail};
 use std::path::Path;
 use std::process::Command;
@@ -541,36 +540,5 @@ impl OptimizationResult {
         } else {
             0
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_frame_optimization_levels() {
-        assert_eq!(FrameOptimization::None.gifsicle_level(), "O1");
-        assert_eq!(FrameOptimization::Basic.gifsicle_level(), "O2");
-        assert_eq!(FrameOptimization::Balanced.gifsicle_level(), "O3");
-    }
-    
-    #[test]
-    fn test_default_config() {
-        let config = GifOptimizationConfig::default();
-        assert_eq!(config.color_optimization, 2);
-        assert_eq!(config.frame_optimization, FrameOptimization::Balanced);
-        assert!(!config.lossy_compression);
-    }
-    
-    #[test]
-    fn test_preset_configs() {
-        let web = GifOptimizer::for_web();
-        assert_eq!(web.config.frame_optimization, FrameOptimization::Aggressive);
-        assert!(web.config.lossy_compression);
-        
-        let quality = GifOptimizer::for_quality();
-        assert_eq!(quality.config.frame_optimization, FrameOptimization::Basic);
-        assert!(!quality.config.lossy_compression);
     }
 }

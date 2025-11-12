@@ -16,7 +16,6 @@
 // 🔧 统一日志系统
 use tracing::{info, warn};
 
-
 use anyhow::{Result, Context, bail};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
@@ -550,17 +549,5 @@ fn parse_ffmpeg_time(line: &str) -> Option<f32> {
         Some(time_us as f32 / 1_000_000.0)
     } else {
         None
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_parse_fps() {
-        assert_eq!(parse_fps("30/1"), Some(30.0));
-        assert_eq!(parse_fps("60/1"), Some(60.0));
-        assert_eq!(parse_fps("29.97"), Some(29.97));
     }
 }

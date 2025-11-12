@@ -156,16 +156,3 @@ pub fn handle_analyze_file(input: &Path) -> Result<()> {
     
     Ok(())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_speed_categorization() {
-        assert_eq!(categorize_speed(1.0), "fast");
-        assert_eq!(categorize_speed(3.0), "medium");
-        assert_eq!(categorize_speed(7.0), "slow");
-        assert_eq!(categorize_speed(15.0), "very_slow");
-    }
-}

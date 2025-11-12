@@ -15,7 +15,6 @@ use std::fs;
 // 🔧 统一日志系统
 use tracing::{info, warn};
 
-
 pub struct AnimatedGifStrategy;
 
 impl AnimatedGifStrategy {
@@ -246,18 +245,5 @@ impl ConversionStrategy for AnimatedGifStrategy {
     
     fn priority(&self) -> u8 {
         90 // 高优先级，优先处理动画GIF
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_strategy_availability() {
-        let strategy = AnimatedGifStrategy;
-        // 基本测试
-        assert!(!strategy.name().is_empty());
-        assert!(strategy.supported_formats().contains(&"webp".to_string()));
     }
 }

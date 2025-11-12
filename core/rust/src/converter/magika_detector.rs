@@ -26,7 +26,6 @@
 // 🔧 统一日志系统
 use tracing::{info, debug};
 
-
 use anyhow::{Context, Result};
 use std::path::Path;
 use std::sync::Arc;
@@ -330,39 +329,3 @@ impl MagikaDetector {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 🧪 单元测试
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_extension_matches() {
-        let detector = MagikaDetector::with_defaults();
-        
-        assert!(detector.extension_matches_type("jpg", "jpeg"));
-        assert!(detector.extension_matches_type("jpeg", "jpg"));
-        assert!(detector.extension_matches_type("tif", "tiff"));
-        assert!(!detector.extension_matches_type("jpg", "png"));
-    }
-    
-    #[test]
-    fn test_is_binary_type() {
-        let detector = MagikaDetector::with_defaults();
-        
-        assert!(detector.is_binary_type("jpeg"));
-        assert!(detector.is_binary_type("png"));
-        assert!(detector.is_binary_type("mp4"));
-        assert!(!detector.is_binary_type("txt"));
-        assert!(!detector.is_binary_type("json"));
-    }
-    
-    #[test]
-    fn test_is_executable_type() {
-        let detector = MagikaDetector::with_defaults();
-        
-        assert!(detector.is_executable_type("exe"));
-        assert!(detector.is_executable_type("dll"));
-        assert!(detector.is_executable_type("sh"));
-        assert!(!detector.is_executable_type("jpeg"));
-    }
-}

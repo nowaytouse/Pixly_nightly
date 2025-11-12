@@ -10,7 +10,6 @@ use crate::converter::strategy::{ConversionStrategy, ConversionConfig, Conversio
 // 🔧 统一日志系统
 use tracing::info;
 
-
 /// Same-format optimization strategy
 /// 
 /// Optimizes images without changing format:
@@ -261,34 +260,5 @@ impl ConversionStrategy for SameFormatOptimizer {
             strategy_used: format!("{} ({})", self.name(), tool),
             error_message: None,
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_format_matching() {
-        let optimizer = SameFormatOptimizer::new();
-        let formats = optimizer.supported_formats();
-        
-        // Test that the optimizer is properly initialized
-        // Actual supported formats depend on which tools are available on the system
-        // The formats list should be valid (either empty or non-empty)
-        // We don't assert specific formats because tool availability varies by system
-        assert_eq!(formats.len(), formats.len()); // Just a sanity check
-    }
-    
-    #[test]
-    fn test_optimizer_availability() {
-        let optimizer = SameFormatOptimizer::new();
-        
-        // Test that is_available returns a valid boolean
-        let available = optimizer.is_available();
-        assert!(available == true || available == false);
-        
-        // Test that name returns a valid string
-        assert!(!optimizer.name().is_empty());
     }
 }

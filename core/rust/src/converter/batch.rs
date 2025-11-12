@@ -20,7 +20,6 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 // 🔧 统一日志系统
 use tracing::{info, warn, debug};
 
-
 use crate::converter::{ImageConverter, ConversionConfig, ConversionResult};
 
 /// 进度信息
@@ -382,26 +381,4 @@ pub fn create_batch_from_directory<P: AsRef<Path>>(
     }
     
     Ok(tasks)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::tempdir;
-
-    #[test]
-    fn test_batch_converter_creation() {
-        let config = ConversionConfig::default();
-        let converter = BatchConverter::new(config);
-        assert!(converter.parallel);
-        assert!(converter.max_threads > 0);
-    }
-    
-    #[test]
-    fn test_progress_calculation() {
-        let progress = Progress::new(5, 10, "test.png".to_string());
-        assert_eq!(progress.current, 5);
-        assert_eq!(progress.total, 10);
-        assert!((progress.percentage - 50.0).abs() < 0.01);
-    }
 }

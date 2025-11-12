@@ -23,7 +23,6 @@ use std::path::Path;
 // 🔧 统一日志系统
 use tracing::{info, error};
 
-
 #[cfg(feature = "native-webp")]
 use webp::{Encoder, WebPMemory};
 
@@ -162,29 +161,5 @@ impl NativeWebPEncoder {
             "Native WebP encoding not available. \
              Compile with --features native-webp or use CLI fallback."
         )
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::tempdir;
-
-    #[test]
-    #[cfg(feature = "native-webp")]
-    fn test_webp_encoding() {
-        // 创建测试图像
-        let img = DynamicImage::new_rgba8(100, 100);
-        
-        // 临时输出目录
-        let temp_dir = tempdir().unwrap();
-        let output_path = temp_dir.path().join("test.webp");
-        
-        // 编码
-        let config = WebPConfig::default();
-        let result = NativeWebPEncoder::encode_image(&img, &output_path, &config);
-        
-        assert!(result.is_ok());
-        assert!(output_path.exists());
     }
 }

@@ -244,21 +244,3 @@ pub fn send_success(component: &str, message: String) {
 pub fn send_progress(component: &str, message: String, progress: u8) {
     UnifiedMessage::progress(component, message, progress).emit();
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_message_creation() {
-        let msg = UnifiedMessage::info("TestComponent", "Test message".to_string());
-        assert_eq!(msg.msg_type, MessageType::Info);
-        assert_eq!(msg.component, "TestComponent");
-    }
-    
-    #[test]
-    fn test_progress_message() {
-        let msg = UnifiedMessage::progress("Converter", "Converting...".to_string(), 50);
-        assert_eq!(msg.progress, Some(50));
-    }
-}

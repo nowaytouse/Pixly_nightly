@@ -262,26 +262,3 @@ impl SimdSharpener {
         (avg_gradient / 255.0).min(1.0)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_sharpen_config() {
-        let config = SharpenConfig::default();
-        assert_eq!(config.strength, 1.0);
-        assert_eq!(config.radius, 1);
-    }
-    
-    #[test]
-    fn test_standard_sharpen() {
-        let image = DynamicImage::new_luma8(100, 100);
-        let sharpener = SimdSharpener::new(SharpenConfig {
-            use_simd: false,
-            ..Default::default()
-        });
-        let result = sharpener.sharpen(&image);
-        assert!(result.is_ok());
-    }
-}

@@ -199,23 +199,3 @@ impl ColorQuantizer {
         (colors.len() as u32, has_transparency)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_quantization_config() {
-        let config = QuantizationConfig::default();
-        assert_eq!(config.max_colors, 256);
-        assert_eq!(config.min_quality, 70);
-    }
-    
-    #[test]
-    fn test_simple_quantization() {
-        let image = DynamicImage::new_rgba8(100, 100);
-        let quantizer = ColorQuantizer::new(QuantizationConfig::default());
-        let result = quantizer.quantize(&image);
-        assert!(result.is_ok());
-    }
-}

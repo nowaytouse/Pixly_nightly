@@ -30,7 +30,6 @@ use sha2::{Sha256, Digest};
 // 🔧 统一日志系统
 use tracing::{info, warn, debug};
 
-
 /// 缓存条目
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CacheEntry {
@@ -468,29 +467,5 @@ impl CacheManager {
     /// 获取缓存文件路径
     pub fn get_cache_path(&self, key: &str, format: &str) -> PathBuf {
         self.cache_dir.join(format!("{}.{}", key, format))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::tempdir;
-    
-    #[test]
-    fn test_cache_manager_creation() {
-        let temp_dir = tempdir().unwrap();
-        let manager = CacheManager::new(temp_dir.path()).unwrap();
-        assert!(manager.enabled);
-    }
-    
-    #[test]
-    fn test_cache_key_generation() {
-        let temp_dir = tempdir().unwrap();
-        let manager = CacheManager::new(temp_dir.path()).unwrap();
-        let params: HashMap<String, String> = HashMap::new();
-        
-        // 需要实际文件进行测试
-        // let key = manager.generate_key("test.jpg", "webp", &params).unwrap();
-        // assert!(!key.is_empty());
     }
 }

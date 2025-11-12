@@ -5,7 +5,6 @@
 // Phase 46.13: 移除未使用的导入
 // use tracing::{info, warn, error, debug};
 
-
 /// 显示完整的TUI手册
 pub fn show_tui_manual() {
     let mut manual = String::new();

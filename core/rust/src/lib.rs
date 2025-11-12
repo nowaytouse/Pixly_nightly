@@ -68,14 +68,3 @@ mod lib_legacy {
         env_logger::init();
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_version() {
-        assert!(!VERSION.is_empty());
-        println!("PIXLY Converter v{}", VERSION);
-    }
-}

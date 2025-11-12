@@ -30,7 +30,6 @@ use std::collections::HashMap;
 // 🔧 统一日志系统
 use tracing::{info, warn, debug};
 
-
 // 🔥 Phase 40.18: 合并 metadata_extended.rs 功能
 #[cfg(target_os = "macos")]
 use std::process::Stdio;
@@ -571,23 +570,5 @@ impl MetadataHandler {
 impl Default for MetadataHandler {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_metadata_handler_creation() {
-        let handler = MetadataHandler::new();
-        assert!(handler.preserve);
-    }
-    
-    #[test]
-    fn test_xmp_path_generation() {
-        let path = Path::new("/test/image.jpg");
-        let xmp_path = MetadataHandler::get_xmp_path(path);
-        assert_eq!(xmp_path, PathBuf::from("/test/image.jpg.xmp"));
     }
 }

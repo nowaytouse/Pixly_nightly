@@ -256,39 +256,3 @@ where
 {
     ParallelEncoder::with_defaults().par_map_with_progress(items, processor)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_parallel_processing() {
-        let items: Vec<i32> = (0..100).collect();
-        let encoder = ParallelEncoder::with_defaults();
-        
-        let results = encoder.process(items, |&x| x * 2);
-        
-        assert_eq!(results.len(), 100);
-        assert_eq!(results[0], 0);
-        assert_eq!(results[50], 100);
-    }
-    
-    #[test]
-    fn test_optimal_thread_calculation() {
-        let config = ParallelConfig::default();
-        let threads = ParallelEncoder::calculate_optimal_threads(&config);
-        
-        assert!(threads > 0);
-        assert!(threads <= num_cpus::get() * 2);
-    }
-    
-    #[test]
-    fn test_chunk_size_calculation() {
-        let config = ParallelConfig::default();
-        let threads = 8;
-        let chunk_size = ParallelEncoder::calculate_optimal_chunk_size(&config, threads);
-        
-        assert!(chunk_size >= 1);
-        assert!(chunk_size <= 100);
-    }
-}

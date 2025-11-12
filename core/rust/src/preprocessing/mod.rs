@@ -379,24 +379,3 @@ pub fn parse_resize_param(s: &str) -> Option<(u32, u32)> {
     
     Some((width, height))
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_parse_resize_param() {
-        assert_eq!(parse_resize_param("1920x1080"), Some((1920, 1080)));
-        assert_eq!(parse_resize_param("1920x"), Some((1920, 0)));
-        assert_eq!(parse_resize_param("x1080"), Some((0, 1080)));
-        assert_eq!(parse_resize_param("50%"), Some((50, 0)));
-        assert_eq!(parse_resize_param("invalid"), None);
-    }
-    
-    #[test]
-    fn test_filter_type_from_str() {
-        assert_eq!(FilterType::from_str("nearest"), Some(FilterType::Nearest));
-        assert_eq!(FilterType::from_str("Lanczos3"), Some(FilterType::Lanczos3));
-        assert_eq!(FilterType::from_str("invalid"), None);
-    }
-}

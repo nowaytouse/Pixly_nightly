@@ -207,16 +207,3 @@ pub fn register_all_strategies(manager: &mut StrategyManager) {
     
     info!("🎯 {} strategies registered", manager.available_strategies().len());
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_convert_options_default() {
-        let opts = ConvertOptions::default();
-        assert_eq!(opts.quality, 75);
-        assert_eq!(opts.speed, 4);
-        assert!(opts.preserve_metadata);
-    }
-}

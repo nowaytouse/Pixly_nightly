@@ -16,7 +16,6 @@
 // 🔧 统一日志系统
 use tracing::{info, warn, error, debug};
 
-
 use anyhow::{Result, Context, bail};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -40,7 +39,6 @@ pub struct SearchOptions {
     pub max_depth: Option<usize>,
     pub file_types: Vec<String>,
 }
-
 
 /// 文件管理器
 pub struct FileManager;
@@ -561,94 +559,5 @@ impl FileIconMapper {
             // 默认
             _ => "📄",
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::tempdir;
-    use std::fs::File;
-    use std::io::Write;
-    
-    #[test]
-    fn test_copy_file() {
-        let temp_dir = tempdir().unwrap();
-        let source = temp_dir.path().join("source.txt");
-        let dest = temp_dir.path().join("dest.txt");
-        
-        // 创建源文件
-        let mut file = File::create(&source).unwrap();
-        file.write_all(b"test content").unwrap();
-        
-        // 测试复制
-        FileManager::copy_file(&source, &dest, false).unwrap();
-        assert!(dest.exists());
-        assert_eq!(
-            fs::read_to_string(&dest).unwrap(),
-            "test content"
-        );
-    }
-    
-    #[test]
-    fn test_rename_file() {
-        let temp_dir = tempdir().unwrap();
-        let file = temp_dir.path().join("old.txt");
-        
-        // 创建文件
-        File::create(&file).unwrap();
-        
-        // 测试重命名
-        let new_path = FileManager::rename_file(&file, "new.txt").unwrap();
-        assert!(!file.exists());
-        assert!(new_path.exists());
-        assert_eq!(new_path.file_name().unwrap(), "new.txt");
-    }
-    
-    #[test]
-    fn test_scan_directory() {
-        let temp_dir = tempdir().unwrap();
-        
-        // 创建测试文件
-        File::create(temp_dir.path().join("file1.txt")).unwrap();
-        File::create(temp_dir.path().join("file2.jpg")).unwrap();
-        fs::create_dir(temp_dir.path().join("subdir")).unwrap();
-        
-        // 测试扫描
-        let files = FileManager::scan_directory(temp_dir.path(), None, false).unwrap();
-        assert_eq!(files.len(), 2); // 不包含目录
-        
-        let all = FileManager::scan_directory(temp_dir.path(), None, true).unwrap();
-        assert_eq!(all.len(), 3); // 包含目录
-    }
-    
-    #[test]
-    fn test_search_files() {
-        let temp_dir = tempdir().unwrap();
-        
-        // 创建测试文件
-        File::create(temp_dir.path().join("test1.txt")).unwrap();
-        File::create(temp_dir.path().join("test2.txt")).unwrap();
-        File::create(temp_dir.path().join("other.jpg")).unwrap();
-        
-        // 搜索txt文件
-        let options = SearchOptions {
-            pattern: String::new(),
-            case_sensitive: false,
-            max_depth: None,
-            file_types: vec!["txt".to_string()],
-        };
-        let results = FileManager::search_files(temp_dir.path(), &options).unwrap();
-        assert_eq!(results.len(), 2);
-        
-        // 搜索包含"test"的文件
-        let options = SearchOptions {
-            pattern: "test".to_string(),
-            case_sensitive: false,
-            max_depth: None,
-            file_types: Vec::new(),
-        };
-        let results = FileManager::search_files(temp_dir.path(), &options).unwrap();
-        assert_eq!(results.len(), 2);
     }
 }

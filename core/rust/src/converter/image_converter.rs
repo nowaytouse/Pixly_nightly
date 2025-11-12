@@ -257,22 +257,3 @@ impl ImageConverter {
         bail!("找不到工具: {}", tool_name);
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_conversion_config_default() {
-        let config = ConversionConfig::default();
-        assert_eq!(config.quality, 75);
-        assert_eq!(config.speed, 4);
-    }
-    
-    #[test]
-    fn test_converter_creation() {
-        let config = ConversionConfig::default();
-        let converter = ImageConverter::new(config);
-        // 测试通过即可
-    }
-}

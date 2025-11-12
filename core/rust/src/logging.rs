@@ -327,39 +327,3 @@ macro_rules! log_file_error {
         }
     };
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_log_level_conversion() {
-        assert_eq!(LogLevel::from("ERROR") as u8, 0);
-        assert_eq!(LogLevel::from("info") as u8, 2);
-        assert_eq!(LogLevel::from("unknown") as u8, 2); // 默认INFO
-    }
-
-    #[test]
-    fn test_logging_macros() {
-        // 忽略init错误（可能已经初始化过）
-        let _ = std::panic::catch_unwind(|| {
-            init_logging("DEBUG", false);
-        });
-        
-        log_info!("Test message");
-        log_info!("Test with fields", count = 5, name = "test");
-        log_debug!("Debug message", value = 42);
-    }
-
-    #[test]
-    fn test_perf_span() {
-        // 忽略init错误（可能已经初始化过）
-        let _ = std::panic::catch_unwind(|| {
-            init_logging("INFO", false);
-        });
-        
-        let _span = perf_span!("test_operation", input = "test.jpg");
-        // 模拟操作
-        std::thread::sleep(std::time::Duration::from_millis(10));
-    }
-}

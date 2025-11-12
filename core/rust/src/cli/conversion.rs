@@ -8,7 +8,6 @@ use pixly_converter::converter::strategy::{ConversionConfig, StrategyType, init_
 use pixly_converter::converter::register_all_strategies;  // Phase 46.12: 修正导入路径
 use pixly_converter::converter::quality::QualityChecker;
 
-
 // 🔥 Phase 40.22: XMP sidecar 辅助函数
 /// 获取XMP sidecar文件路径
 /// 
@@ -23,8 +22,6 @@ fn get_xmp_sidecar_path(file_path: &Path) -> std::path::PathBuf {
     xmp_path.set_extension("xmp");
     xmp_path
 }
-
-
 
 /// 转换单个图片
 /// 

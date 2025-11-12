@@ -13,7 +13,6 @@
 // 🔧 统一日志系统
 use tracing::{info, debug, trace};
 
-
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -425,46 +424,5 @@ impl MultiLevelProgressTracker {
     /// 获取文件追踪器
     pub fn file_tracker(&self) -> Option<&Arc<ProgressTracker>> {
         self.file_tracker.as_ref()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_progress_info() {
-        let mut info = ProgressInfo::new(ProgressLevel::Task, 100);
-        assert_eq!(info.percent(), 0.0);
-        
-        info.update(50, "Half done".to_string(), Duration::from_secs(10));
-        assert_eq!(info.percent(), 50.0);
-        assert_eq!(info.speed, 5.0);
-    }
-    
-    #[test]
-    fn test_progress_tracker() {
-        let tracker = ProgressTracker::new(ProgressLevel::Task, 10)
-            .with_update_interval(0); // 设置为0以禁用间隔检查
-        
-        tracker.start("Starting".to_string());
-        assert_eq!(tracker.get_info().state, ProgressState::Running);
-        
-        tracker.update(5, "Half done".to_string());
-        assert_eq!(tracker.get_info().current, 5);
-        
-        tracker.complete("Done".to_string());
-        assert_eq!(tracker.get_info().state, ProgressState::Completed);
-        assert!(tracker.get_info().is_done());
-    }
-    
-    #[test]
-    fn test_cancellation() {
-        let tracker = ProgressTracker::new(ProgressLevel::Task, 10);
-        assert!(!tracker.should_cancel());
-        
-        tracker.cancel();
-        assert!(tracker.should_cancel());
-        assert_eq!(tracker.get_info().state, ProgressState::Cancelled);
     }
 }

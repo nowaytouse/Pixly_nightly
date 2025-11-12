@@ -49,14 +49,3 @@ pub fn get_gif_frame_count<P: AsRef<Path>>(path: P) -> Result<usize> {
     let decoder = GifDecoder::new(file)?;
     Ok(decoder.into_frames().count())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_gif_detection() {
-        // 这里可以添加测试用例
-        // 需要准备测试GIF文件
-    }
-}

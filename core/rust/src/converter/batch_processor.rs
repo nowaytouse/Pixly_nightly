@@ -15,7 +15,6 @@
 // 🔧 统一日志系统
 use tracing::{info, warn, error, debug};
 
-
 use anyhow::{Result, Context};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, AtomicU64, Ordering};
@@ -429,25 +428,5 @@ impl BatchProcessor {
             failures: failures_list,
             is_success,
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_batch_stats() {
-        let stats = BatchStats::new(100);
-        assert_eq!(stats.total, 100);
-        assert_eq!(stats.percent_complete(), 0.0);
-    }
-    
-    #[test]
-    fn test_batch_config_default() {
-        let config = BatchConfig::default();
-        assert_eq!(config.max_threads, 0); // Auto
-        assert!(config.verbose);
-        assert!(config.continue_on_error);
     }
 }

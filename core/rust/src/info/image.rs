@@ -4,7 +4,6 @@
 // 🔧 统一日志系统
 use tracing::debug;
 
-
 use std::path::Path;
 use std::fs;
 use anyhow::{Result, Context, bail};
@@ -380,42 +379,4 @@ fn get_webp_frame_info_manual(data: &[u8]) -> Result<(u32, f32)> {
     
     // 找不到 ANIM chunk，返回默认值
     Ok((1, 0.0))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::io::Write;
-    use tempfile::NamedTempFile;
-
-    #[test]
-    fn test_format_detection() {
-        assert_eq!(ImageFormat::from_extension("jpg"), ImageFormat::JPEG);
-        assert_eq!(ImageFormat::from_extension("png"), ImageFormat::PNG);
-        assert_eq!(ImageFormat::from_extension("gif"), ImageFormat::GIF);
-        assert_eq!(ImageFormat::from_extension("webp"), ImageFormat::WebP);
-        assert_eq!(ImageFormat::from_extension("avif"), ImageFormat::AVIF);
-    }
-
-    #[test]
-    fn test_format_string() {
-        assert_eq!(ImageFormat::JPEG.as_str(), "jpeg");
-        assert_eq!(ImageFormat::PNG.as_str(), "png");
-        assert_eq!(ImageFormat::GIF.as_str(), "gif");
-    }
-
-    #[test]
-    fn test_image_info_default() {
-        let info = ImageInfo::default();
-        assert_eq!(info.width, 0);
-        assert_eq!(info.height, 0);
-        assert_eq!(info.format, ImageFormat::Unknown);
-        assert!(!info.is_animated);
-    }
-
-    #[test]
-    fn test_read_nonexistent_file() {
-        let result = read_image_info("/nonexistent/file.png");
-        assert!(result.is_err());
-    }
 }

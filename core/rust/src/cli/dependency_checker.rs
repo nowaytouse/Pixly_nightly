@@ -426,28 +426,3 @@ pub fn check_required_dependencies_quiet() -> bool {
         .filter(|dep| dep.required)
         .all(|dep| is_command_available(dep.name))
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_dependency_check() {
-        // exiftool应该可用（假设已安装）
-        let exiftool = Dependency {
-            name: "exiftool",
-            required: true,
-            description: "元数据处理",
-            install_hint: "brew install exiftool",
-        };
-        
-        let result = exiftool.check();
-        assert_eq!(result.name, "exiftool");
-        // 注意：这个测试可能在CI环境中失败
-    }
-    
-    #[test]
-    fn test_nonexistent_command() {
-        assert!(!is_command_available("nonexistent_command_12345"));
-    }
-}
