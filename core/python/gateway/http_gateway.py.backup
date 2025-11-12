@@ -174,14 +174,6 @@ class HTTPGateway:
             from ..ai.feedback_db import FeedbackDB
             from ..validation.http_validator import HTTPValidator
             from ..messaging.unified_messaging import UnifiedMessaging
-# 本地化架构导入
-from core.python.local.call_dispatcher import get_global_dispatcher
-from core.python.local.memory_manager import get_global_memory_manager
-
-# 获取全局实例
-dispatcher = get_global_dispatcher()
-memory_manager = get_global_memory_manager()
-
             
             # 初始化组件
             self.python_bridge = PythonBridge(str(self.model_dir))

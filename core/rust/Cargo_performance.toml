@@ -11,23 +11,22 @@ repository = "https://github.com/pixly/pixly-nightly"
 name = "pixly_performance_core"
 crate-type = ["cdylib", "rlib"]  # Python集成 + Rust库
 
+# PyO3 Python绑定
 [dependencies]
+pyo3 = { version = "0.20", features = ["extension-module", "abi3-py38"] }
+numpy = "0.20"  # NumPy集成
+
 # 核心依赖
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-
-# PyO3 Python绑定
-pyo3 = { version = "0.20", features = ["extension-module", "abi3-py38", "auto-initialize"] }
-numpy = "0.20"  # NumPy集成
 anyhow = "1.0"
 thiserror = "1.0"
 log = "0.4"
-env_logger = "0.11"
 
-# 🚀 SIMD优化 (单指令多数据) - 使用稳定版本
-# packed_simd = { version = "0.3", optional = true }  # 有兼容性问题，暂时移除
-wide = { version = "0.7", optional = true }
-# simdeez = { version = "2.0", optional = true }  # 可能有依赖问题，暂时移除
+# 🚀 SIMD优化 (单指令多数据)
+packed_simd = "0.3"
+wide = "0.7"
+simdeez = "2.0"
 
 # 🚀 并行计算
 rayon = "1.8"      # 数据并行
@@ -43,9 +42,9 @@ rgb = "0.8"
 imgref = "1.10"
 
 # 🎯 GPU计算 (通过wgpu)
-wgpu = { version = "0.19", features = ["spirv"], optional = true }
-bytemuck = { version = "1.14", features = ["derive"], optional = true }
-pollster = { version = "0.3", optional = true }  # 阻塞式async执行器
+wgpu = { version = "0.18", features = ["spirv"] }
+bytemuck = { version = "1.14", features = ["derive"] }
+pollster = "0.3"  # 阻塞式async执行器
 
 # 🧮 数学计算 (SIMD优化)
 nalgebra = { version = "0.32", features = ["serde-serialize"] }
@@ -53,21 +52,14 @@ ndarray = { version = "0.15", features = ["serde", "rayon"] }
 faer = "0.14"  # 极速线性代数
 matrixmultiply = "0.3"
 
-# 🔢 机器学习推理 (暂时注释，等待版本兼容)
-# candle-core = { version = "0.3" }  # Meta的Rust ML框架
-# candle-nn = { version = "0.3" }
-ort = { version = "2.0.0-rc.10", features = ["download-binaries"], optional = true }  # ONNX Runtime
+# 🔢 机器学习推理
+candle-core = { version = "0.3" }  # Meta的Rust ML框架
+candle-nn = { version = "0.3" }
+ort = { version = "2.0.0-rc.10", features = ["download-binaries"] }  # ONNX Runtime
 
 # 📊 性能监控
 criterion = { version = "0.5", optional = true }
 pprof = { version = "0.13", features = ["flamegraph", "protobuf-codec"], optional = true }
-
-# 🔧 转换引擎依赖
-tracing = "0.1"           # 结构化日志
-tracing-subscriber = "0.3"
-chrono = { version = "0.4", features = ["serde"] }
-md5 = "0.7"              # 请求ID生成
-memmap2 = "0.9"          # 内存映射
 
 # 💾 内存管理
 mimalloc = { version = "0.1", default-features = false }  # 高性能内存分配器
@@ -81,15 +73,11 @@ xxhash-rust = { version = "0.8", features = ["xxh3"] }
 threadpool = "1.8"
 crossbeam-channel = "0.5"
 
-# C FFI
-libc = "0.2"
-
 [features]
-default = ["simd", "profiling"]
-simd = ["wide"]                                     # SIMD加速 (稳定版本)
+default = ["simd", "gpu", "profiling"]
+simd = ["packed_simd", "wide", "simdeez"]           # SIMD加速
 gpu = ["wgpu", "bytemuck", "pollster"]               # GPU计算
 profiling = ["criterion", "pprof"]                   # 性能分析
-ml = ["ort"]                                        # 机器学习推理
 avx2 = []      # AVX2指令集支持  
 avx512 = []    # AVX512指令集支持
 cuda = []      # CUDA支持 (未来)

@@ -39,7 +39,12 @@
 
             <!-- Optimization Mode -->
             <section class="mode-section" id="modeSection" style="display: none;">
-                <h3 data-i18n="optimization_mode">Optimization Mode</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 data-i18n="optimization_mode" style="margin: 0;">Optimization Mode</h3>
+                    <button id="configToggleBtn" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">
+                        ⚙️ 本地化配置
+                    </button>
+                </div>
                 <p class="mode-note" data-i18n="mode_note">AI ensures quality preservation while reducing file size</p>
                 <div class="mode-cards">
                     <div class="mode-card" data-mode="quality">
@@ -100,6 +105,8 @@
 
     <!-- Scripts -->
     <script src="js/i18n.js"></script>
+    <script src="js/local-ai-client.js"></script>
+    <script src="js/local-config-ui.js"></script>
     <script src="js/ai-client.js"></script>
     <script src="js/optimizer.js"></script>
     <script src="js/main.js"></script>

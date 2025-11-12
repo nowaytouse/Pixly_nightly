@@ -1,16 +1,15 @@
 """
-模型版本管理器
-基于废弃Go代码 @deprecated/go_ai_service_2025_11_11/ai 2/model_manager.go 重新实现
+🧠 PIXLY v3.1 智能模型路由器
 
-功能:
-- 多模型版本并存管理
-- 模型性能指标跟踪（准确率、RMSE、MAE、推理时间）
-- 模型激活/默认状态控制
-- 文件校验和验证
-- 支持模型热切换
-- A/B测试权重管理
+替代Go model_manager.go + model_router.go的完整功能：
+- 本地AI模型管理和加载
+- A/B测试权重路由系统
+- 模型性能监控和评估  
+- 智能模型比较分析
+- 零网络依赖的模型治理
+- LightGBM模型支持
 
-EX-011实现: 从Go废弃代码价值提取
+基于废弃Go ModelManager完全重新设计
 """
 
 import json
@@ -122,447 +121,429 @@ class ModelManager:
         # 模型配置存储：{model_type: ModelConfig}
         self.model_configs: Dict[str, ModelConfig] = {}
         
-        # 线程锁保护并发访问
+        # A/B测试配置
+        self.ab_test_config: Optional['LocalABTestConfig'] = None
+        
+        # 线程锁
         self._lock = threading.RLock()
         
-        # 日志器
-        self.logger = logging.getLogger(__name__)
-        
         # 加载配置
-        self._load_config()
-
-    def add_model_version(self, model_type: str, version: str, 
-                         model_path: str, description: str = "", 
-                         metrics: Optional[ModelMetrics] = None) -> bool:
+        self._load_configurations()
+        self._initialize_default_models()
+    
+    def _load_configurations(self):
+        """加载模型配置"""
+        if self.config_file.exists():
+            try:
+                with open(self.config_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                # 加载模型版本
+                for model_type, versions in data.get('versions', {}).items():
+                    self.model_versions[model_type] = {}
+                    for version_id, version_data in versions.items():
+                        version = ModelVersion(
+                            version=version_data['version'],
+                            path=version_data['path'],
+                            checksum=version_data.get('checksum', ''),
+                            is_active=version_data.get('is_active', False),
+                            is_default=version_data.get('is_default', False),
+                            description=version_data.get('description', '')
+                        )
+                        if 'metrics' in version_data:
+                            metrics_data = version_data['metrics']
+                            version.metrics = ModelMetrics(**metrics_data)
+                        
+                        self.model_versions[model_type][version_id] = version
+                
+                # 加载模型配置
+                for model_type, config_data in data.get('configs', {}).items():
+                    config = ModelConfig(
+                        type=config_data['type'],
+                        version=config_data['version'],
+                        weight=config_data.get('weight', 1.0),
+                        enabled=config_data.get('enabled', True),
+                        priority=config_data.get('priority', 1)
+                    )
+                    self.model_configs[model_type] = config
+                
+                print(f"✅ 加载模型配置: {len(self.model_versions)} 个模型类型")
+                
+            except Exception as e:
+                print(f"⚠️ 加载模型配置失败: {e}")
+    
+    def _initialize_default_models(self):
+        """初始化默认模型配置"""
+        # 确保基础模型配置存在
+        default_configs = {
+            ModelType.LIGHTGBM: ModelConfig(
+                type=ModelType.LIGHTGBM,
+                version="1.0.0",
+                weight=0.6,
+                enabled=True,
+                priority=100
+            ),
+            ModelType.PPO: ModelConfig(
+                type=ModelType.PPO,
+                version="1.0.0", 
+                weight=0.3,
+                enabled=False,  # 默认禁用，待训练
+                priority=80
+            ),
+            ModelType.BASELINE: ModelConfig(
+                type=ModelType.BASELINE,
+                version="1.0.0",
+                weight=0.1,
+                enabled=True,
+                priority=50
+            )
+        }
+        
+        # 添加缺失的配置
+        for model_type, default_config in default_configs.items():
+            if model_type not in self.model_configs:
+                self.model_configs[model_type] = default_config
+        
+        # 检查PPO模型文件
+        self._check_ppo_models()
+    
+    def _check_ppo_models(self):
+        """检查PPO模型文件并自动启用"""
+        ppo_model_paths = [
+            "models/ppo/actor_network.pth",
+            "models/ppo/critic_network.pth"
+        ]
+        
+        all_exist = all(Path(path).exists() for path in ppo_model_paths)
+        
+        if all_exist and ModelType.PPO in self.model_configs:
+            # 启用PPO模型
+            self.model_configs[ModelType.PPO].enabled = True
+            print("✅ 检测到PPO模型文件，已自动启用")
+            
+            # 注册PPO模型版本
+            if ModelType.PPO not in self.model_versions:
+                self.model_versions[ModelType.PPO] = {}
+            
+            ppo_version = ModelVersion(
+                version="1.0.0",
+                path="models/ppo/",
+                is_active=True,
+                is_default=True,
+                description="PPO强化学习模型"
+            )
+            
+            self.model_versions[ModelType.PPO]["1.0.0"] = ppo_version
+    
+    def list_available_models(self) -> Dict[str, Any]:
+        """列出所有可用模型"""
+        with self._lock:
+            models = {}
+            
+            for model_type, config in self.model_configs.items():
+                model_info = {
+                    "type": config.type,
+                    "enabled": config.enabled,
+                    "priority": config.priority,
+                    "weight": config.weight,
+                    "current_version": config.version,
+                    "versions": []
+                }
+                
+                # 添加版本信息
+                if model_type in self.model_versions:
+                    for version_id, version in self.model_versions[model_type].items():
+                        version_info = {
+                            "version": version.version,
+                            "path": version.path,
+                            "is_active": version.is_active,
+                            "is_default": version.is_default,
+                            "description": version.description,
+                            "checksum_valid": version.verify_checksum() if version.checksum else None
+                        }
+                        
+                        if version.metrics:
+                            version_info["metrics"] = version.metrics.to_dict()
+                        
+                        model_info["versions"].append(version_info)
+                
+                models[model_type] = model_info
+            
+            return models
+    
+    def select_model(self, request_id: Optional[str] = None, 
+                    model_type: Optional[str] = None) -> Optional[str]:
         """
-        添加模型版本
+        选择模型 (本地化A/B测试支持)
         
         Args:
-            model_type: 模型类型
-            version: 版本号
-            model_path: 模型文件路径
-            description: 版本描述
-            metrics: 性能指标
+            request_id: 请求ID (用于A/B测试分流)
+            model_type: 指定模型类型
             
         Returns:
-            bool: 是否添加成功
+            选中的模型类型
         """
         with self._lock:
+            # 如果指定了模型类型
+            if model_type and model_type in self.model_configs:
+                config = self.model_configs[model_type]
+                if config.enabled:
+                    return model_type
+            
+            # 本地化A/B测试
+            if self.ab_test_config and self.ab_test_config.enabled and request_id:
+                selected_model = self._ab_test_select(request_id)
+                if selected_model:
+                    return selected_model
+            
+            # 默认选择：按优先级选择最高的启用模型
+            enabled_models = [
+                (model_type, config) for model_type, config in self.model_configs.items()
+                if config.enabled
+            ]
+            
+            if not enabled_models:
+                return ModelType.BASELINE  # 后备到基线模型
+            
+            # 按优先级排序
+            enabled_models.sort(key=lambda x: x[1].priority, reverse=True)
+            return enabled_models[0][0]
+    
+    def _ab_test_select(self, request_id: str) -> Optional[str]:
+        """本地化A/B测试模型选择"""
+        if not self.ab_test_config:
+            return None
+        
+        # 简单哈希分流 (本地化实现)
+        import hashlib
+        hash_value = int(hashlib.md5(request_id.encode()).hexdigest()[:8], 16)
+        split_point = hash_value % 100
+        
+        if split_point < (self.ab_test_config.split_ratio * 100):
+            return self.ab_test_config.model_a
+        else:
+            return self.ab_test_config.model_b
+    
+    def register_model_version(self, model_type: str, version: ModelVersion) -> bool:
+        """注册模型版本"""
+        with self._lock:
             try:
-                # 验证文件存在
-                if not Path(model_path).exists():
-                    self.logger.error(f"模型文件不存在: {model_path}")
-                    return False
-                
-                # 创建模型版本对象
-                model_version = ModelVersion(
-                    version=version,
-                    path=model_path,
-                    description=description,
-                    metrics=metrics
-                )
-                
-                # 添加到存储
                 if model_type not in self.model_versions:
                     self.model_versions[model_type] = {}
                 
-                self.model_versions[model_type][version] = model_version
+                self.model_versions[model_type][version.version] = version
                 
-                # 如果是第一个版本，设为默认和激活
+                # 如果这是第一个版本，设为默认
                 if len(self.model_versions[model_type]) == 1:
-                    model_version.is_default = True
-                    model_version.is_active = True
-                    
-                    # 创建默认配置
-                    if model_type not in self.model_configs:
-                        self.model_configs[model_type] = ModelConfig(
-                            type=model_type,
-                            version=version
-                        )
+                    version.is_default = True
+                    version.is_active = True
                 
                 # 保存配置
-                self._save_config()
+                self._save_configurations()
                 
-                self.logger.info(f"添加模型版本成功: {model_type} v{version}")
+                print(f"✅ 注册模型版本: {model_type} v{version.version}")
                 return True
                 
             except Exception as e:
-                self.logger.error(f"添加模型版本失败: {e}")
+                print(f"❌ 注册模型版本失败: {e}")
                 return False
-
-    def get_active_model(self, model_type: str) -> Optional[ModelVersion]:
-        """
-        获取激活的模型版本
-        
-        Args:
-            model_type: 模型类型
-            
-        Returns:
-            ModelVersion: 激活的模型版本，如果没有则返回None
-        """
-        with self._lock:
-            if model_type not in self.model_versions:
-                return None
-            
-            for version, model in self.model_versions[model_type].items():
-                if model.is_active:
-                    return model
-            
-            # 如果没有激活的，返回默认的
-            for version, model in self.model_versions[model_type].items():
-                if model.is_default:
-                    return model
-            
-            return None
-
-    def activate_model(self, model_type: str, version: str) -> bool:
-        """
-        激活指定模型版本
-        
-        Args:
-            model_type: 模型类型
-            version: 版本号
-            
-        Returns:
-            bool: 是否激活成功
-        """
+    
+    def update_model_config(self, model_type: str, config: ModelConfig) -> bool:
+        """更新模型配置"""
         with self._lock:
             try:
-                if (model_type not in self.model_versions or 
-                    version not in self.model_versions[model_type]):
-                    self.logger.error(f"模型版本不存在: {model_type} v{version}")
-                    return False
+                self.model_configs[model_type] = config
+                self._save_configurations()
                 
-                # 验证文件完整性
-                target_model = self.model_versions[model_type][version]
-                if not target_model.verify_checksum():
-                    self.logger.error(f"模型文件校验失败: {model_type} v{version}")
-                    return False
-                
-                # 取消其他版本的激活状态
-                for v, model in self.model_versions[model_type].items():
-                    model.is_active = (v == version)
-                
-                # 更新配置
-                if model_type in self.model_configs:
-                    self.model_configs[model_type].version = version
-                else:
-                    self.model_configs[model_type] = ModelConfig(
-                        type=model_type,
-                        version=version
-                    )
-                
-                self._save_config()
-                
-                self.logger.info(f"激活模型版本: {model_type} v{version}")
+                print(f"✅ 更新模型配置: {model_type}")
                 return True
                 
             except Exception as e:
-                self.logger.error(f"激活模型版本失败: {e}")
+                print(f"❌ 更新模型配置失败: {e}")
                 return False
-
-    def set_default_model(self, model_type: str, version: str) -> bool:
-        """
-        设置默认模型版本
-        
-        Args:
-            model_type: 模型类型
-            version: 版本号
-            
-        Returns:
-            bool: 是否设置成功
-        """
+    
+    def enable_model(self, model_type: str) -> bool:
+        """启用模型"""
+        with self._lock:
+            if model_type in self.model_configs:
+                self.model_configs[model_type].enabled = True
+                self._save_configurations()
+                print(f"✅ 启用模型: {model_type}")
+                return True
+            return False
+    
+    def disable_model(self, model_type: str) -> bool:
+        """禁用模型"""
+        with self._lock:
+            if model_type in self.model_configs:
+                self.model_configs[model_type].enabled = False
+                self._save_configurations()
+                print(f"✅ 禁用模型: {model_type}")
+                return True
+            return False
+    
+    def start_ab_test(self, model_a: str, model_b: str, 
+                     split_ratio: float = 0.5, duration_hours: float = 24) -> bool:
+        """启动本地化A/B测试"""
         with self._lock:
             try:
-                if (model_type not in self.model_versions or 
-                    version not in self.model_versions[model_type]):
+                # 验证模型存在
+                if (model_a not in self.model_configs or 
+                    model_b not in self.model_configs):
                     return False
                 
-                # 取消其他版本的默认状态
-                for v, model in self.model_versions[model_type].items():
-                    model.is_default = (v == version)
+                self.ab_test_config = LocalABTestConfig(
+                    enabled=True,
+                    split_ratio=split_ratio,
+                    model_a=model_a,
+                    model_b=model_b,
+                    start_time=time.time(),
+                    duration_hours=duration_hours
+                )
                 
-                self._save_config()
-                
-                self.logger.info(f"设置默认模型版本: {model_type} v{version}")
+                print(f"✅ 启动A/B测试: {model_a} vs {model_b} ({split_ratio*100:.1f}% / {(1-split_ratio)*100:.1f}%)")
                 return True
                 
             except Exception as e:
-                self.logger.error(f"设置默认模型版本失败: {e}")
+                print(f"❌ 启动A/B测试失败: {e}")
                 return False
-
-    def update_model_metrics(self, model_type: str, version: str, 
-                           metrics: ModelMetrics) -> bool:
-        """
-        更新模型性能指标
-        
-        Args:
-            model_type: 模型类型
-            version: 版本号
-            metrics: 新的性能指标
-            
-        Returns:
-            bool: 是否更新成功
-        """
+    
+    def stop_ab_test(self) -> Optional[Dict[str, Any]]:
+        """停止A/B测试并返回结果"""
         with self._lock:
-            try:
-                if (model_type not in self.model_versions or 
-                    version not in self.model_versions[model_type]):
-                    return False
+            if self.ab_test_config and self.ab_test_config.enabled:
+                self.ab_test_config.enabled = False
                 
-                self.model_versions[model_type][version].metrics = metrics
-                self._save_config()
-                
-                self.logger.info(f"更新模型指标: {model_type} v{version}")
-                return True
-                
-            except Exception as e:
-                self.logger.error(f"更新模型指标失败: {e}")
-                return False
-
-    def remove_model_version(self, model_type: str, version: str) -> bool:
-        """
-        移除模型版本
-        
-        Args:
-            model_type: 模型类型
-            version: 版本号
-            
-        Returns:
-            bool: 是否移除成功
-        """
-        with self._lock:
-            try:
-                if (model_type not in self.model_versions or 
-                    version not in self.model_versions[model_type]):
-                    return False
-                
-                model = self.model_versions[model_type][version]
-                
-                # 不能移除激活或默认的模型
-                if model.is_active or model.is_default:
-                    self.logger.error(f"不能移除激活或默认模型: {model_type} v{version}")
-                    return False
-                
-                # 移除模型版本
-                del self.model_versions[model_type][version]
-                
-                # 如果该类型没有模型了，移除配置
-                if not self.model_versions[model_type]:
-                    del self.model_versions[model_type]
-                    if model_type in self.model_configs:
-                        del self.model_configs[model_type]
-                
-                self._save_config()
-                
-                self.logger.info(f"移除模型版本: {model_type} v{version}")
-                return True
-                
-            except Exception as e:
-                self.logger.error(f"移除模型版本失败: {e}")
-                return False
-
-    def list_model_versions(self, model_type: Optional[str] = None) -> Dict[str, List[Dict[str, Any]]]:
-        """
-        列出模型版本
-        
-        Args:
-            model_type: 指定模型类型，None表示所有类型
-            
-        Returns:
-            Dict: 模型版本信息
-        """
-        with self._lock:
-            result = {}
-            
-            target_types = [model_type] if model_type else list(self.model_versions.keys())
-            
-            for mtype in target_types:
-                if mtype in self.model_versions:
-                    result[mtype] = []
-                    for version, model in self.model_versions[mtype].items():
-                        model_info = model.to_dict()
-                        model_info['file_exists'] = Path(model.path).exists()
-                        model_info['checksum_valid'] = model.verify_checksum()
-                        result[mtype].append(model_info)
-                    
-                    # 按创建时间排序（新的在前）
-                    result[mtype].sort(key=lambda x: x['created_at'], reverse=True)
-            
-            return result
-
-    def get_model_statistics(self) -> Dict[str, Any]:
-        """
-        获取模型管理器统计信息
-        
-        Returns:
-            Dict: 统计信息
-        """
-        with self._lock:
-            stats = {
-                'total_model_types': len(self.model_versions),
-                'total_versions': sum(len(versions) for versions in self.model_versions.values()),
-                'active_models': {},
-                'model_types': []
-            }
-            
-            for model_type, versions in self.model_versions.items():
-                type_stats = {
-                    'type': model_type,
-                    'total_versions': len(versions),
-                    'active_version': None,
-                    'default_version': None
+                # 返回测试结果
+                result = {
+                    "model_a": self.ab_test_config.model_a,
+                    "model_b": self.ab_test_config.model_b,
+                    "split_ratio": self.ab_test_config.split_ratio,
+                    "duration_hours": self.ab_test_config.duration_hours,
+                    "actual_duration_hours": (time.time() - self.ab_test_config.start_time) / 3600,
+                    "results": self.ab_test_config.results
                 }
                 
-                for version, model in versions.items():
-                    if model.is_active:
-                        type_stats['active_version'] = version
-                        stats['active_models'][model_type] = version
-                    if model.is_default:
-                        type_stats['default_version'] = version
+                print(f"✅ 停止A/B测试")
+                return result
+            
+            return None
+    
+    def record_model_performance(self, model_type: str, inference_time_ms: float,
+                               accuracy: Optional[float] = None, success: bool = True):
+        """记录模型性能"""
+        with self._lock:
+            # 更新A/B测试结果
+            if (self.ab_test_config and self.ab_test_config.enabled and 
+                model_type in [self.ab_test_config.model_a, self.ab_test_config.model_b]):
                 
-                stats['model_types'].append(type_stats)
+                if model_type not in self.ab_test_config.results:
+                    self.ab_test_config.results[model_type] = LocalABTestResult(model_type)
+                
+                result = self.ab_test_config.results[model_type]
+                result.request_count += 1
+                result.total_latency_ms += inference_time_ms
+                result.avg_latency_ms = result.total_latency_ms / result.request_count
+                
+                if accuracy is not None:
+                    result.total_accuracy += accuracy
+                    result.avg_accuracy = result.total_accuracy / result.request_count
+                
+                if not success:
+                    result.error_count += 1
+                
+                result.error_rate = result.error_count / result.request_count
+    
+    def get_model_stats(self) -> Dict[str, Any]:
+        """获取模型统计信息"""
+        with self._lock:
+            stats = {
+                "total_models": len(self.model_configs),
+                "enabled_models": len([c for c in self.model_configs.values() if c.enabled]),
+                "model_details": {},
+                "ab_test": None
+            }
+            
+            # 模型详细信息
+            for model_type, config in self.model_configs.items():
+                stats["model_details"][model_type] = {
+                    "enabled": config.enabled,
+                    "priority": config.priority,
+                    "weight": config.weight,
+                    "version_count": len(self.model_versions.get(model_type, {}))
+                }
+            
+            # A/B测试信息
+            if self.ab_test_config and self.ab_test_config.enabled:
+                stats["ab_test"] = {
+                    "active": True,
+                    "model_a": self.ab_test_config.model_a,
+                    "model_b": self.ab_test_config.model_b,
+                    "split_ratio": self.ab_test_config.split_ratio,
+                    "running_hours": (time.time() - self.ab_test_config.start_time) / 3600,
+                    "results": {
+                        model_type: {
+                            "request_count": result.request_count,
+                            "avg_latency_ms": result.avg_latency_ms,
+                            "avg_accuracy": result.avg_accuracy,
+                            "error_rate": result.error_rate
+                        }
+                        for model_type, result in self.ab_test_config.results.items()
+                    }
+                }
             
             return stats
-
-    def _load_config(self) -> None:
-        """加载配置文件"""
-        try:
-            if not self.config_file.exists():
-                return
-            
-            with open(self.config_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            
-            # 加载模型版本
-            for model_type, versions_data in data.get('model_versions', {}).items():
-                self.model_versions[model_type] = {}
-                
-                for version, version_data in versions_data.items():
-                    # 解析创建时间
-                    created_at = datetime.fromisoformat(version_data['created_at'])
-                    
-                    # 解析性能指标
-                    metrics = None
-                    if 'metrics' in version_data and version_data['metrics']:
-                        metrics = ModelMetrics(**version_data['metrics'])
-                    
-                    # 创建模型版本对象
-                    model_version = ModelVersion(
-                        version=version_data['version'],
-                        path=version_data['path'],
-                        checksum=version_data.get('checksum', ''),
-                        created_at=created_at,
-                        metrics=metrics,
-                        is_active=version_data.get('is_active', False),
-                        is_default=version_data.get('is_default', False),
-                        description=version_data.get('description', '')
-                    )
-                    
-                    self.model_versions[model_type][version] = model_version
-            
-            # 加载模型配置
-            for model_type, config_data in data.get('model_configs', {}).items():
-                self.model_configs[model_type] = ModelConfig(**config_data)
-            
-            self.logger.info(f"加载模型配置成功: {len(self.model_versions)}个模型类型")
-            
-        except Exception as e:
-            self.logger.error(f"加载模型配置失败: {e}")
-
-    def _save_config(self) -> None:
-        """保存配置文件"""
+    
+    def _save_configurations(self):
+        """保存配置到文件"""
         try:
             data = {
-                'model_versions': {},
-                'model_configs': {}
+                "versions": {},
+                "configs": {}
             }
             
             # 保存模型版本
             for model_type, versions in self.model_versions.items():
-                data['model_versions'][model_type] = {}
-                for version, model in versions.items():
-                    data['model_versions'][model_type][version] = model.to_dict()
+                data["versions"][model_type] = {}
+                for version_id, version in versions.items():
+                    data["versions"][model_type][version_id] = version.to_dict()
             
             # 保存模型配置
             for model_type, config in self.model_configs.items():
-                data['model_configs'][model_type] = asdict(config)
+                data["configs"][model_type] = asdict(config)
             
-            # 原子写入
-            temp_file = self.config_file.with_suffix('.tmp')
-            with open(temp_file, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-            
-            temp_file.replace(self.config_file)
-            
+            # 写入文件
+            with open(self.config_file, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2)
+                
         except Exception as e:
-            self.logger.error(f"保存模型配置失败: {e}")
+            print(f"⚠️ 保存模型配置失败: {e}")
 
 
-# 全局模型管理器实例
-_global_model_manager: Optional[ModelManager] = None
-_manager_lock = threading.Lock()
-
-def get_model_manager(storage_dir: str = "models", 
-                     config_file: str = "model_config.json") -> ModelManager:
-    """
-    获取全局模型管理器实例（单例模式）
-    
-    Args:
-        storage_dir: 模型存储目录
-        config_file: 配置文件路径
-        
-    Returns:
-        ModelManager: 模型管理器实例
-    """
-    global _global_model_manager
-    
-    with _manager_lock:
-        if _global_model_manager is None:
-            _global_model_manager = ModelManager(storage_dir, config_file)
-        return _global_model_manager
+@dataclass
+class LocalABTestConfig:
+    """本地化A/B测试配置"""
+    enabled: bool = False
+    split_ratio: float = 0.5  # A组占比
+    model_a: str = ""
+    model_b: str = ""
+    start_time: float = 0.0
+    duration_hours: float = 24.0
+    results: Dict[str, 'LocalABTestResult'] = field(default_factory=dict)
 
 
-if __name__ == "__main__":
-    # 测试代码
-    print("=== 模型版本管理器测试 ===")
-    
-    # 创建测试目录
-    import tempfile
-    import os
-    
-    with tempfile.TemporaryDirectory() as temp_dir:
-        # 创建模型管理器
-        manager = ModelManager(
-            storage_dir=os.path.join(temp_dir, "models"),
-            config_file=os.path.join(temp_dir, "config.json")
-        )
-        
-        # 创建测试模型文件
-        test_model_path = os.path.join(temp_dir, "test_model.pkl")
-        with open(test_model_path, 'w') as f:
-            f.write("test model content")
-        
-        # 添加模型版本
-        metrics = ModelMetrics(accuracy=0.95, rmse=0.1, mae=0.05, inference_time_ms=10.5)
-        success = manager.add_model_version(
-            model_type=ModelType.LIGHTGBM,
-            version="1.0.0",
-            model_path=test_model_path,
-            description="初始版本",
-            metrics=metrics
-        )
-        
-        print(f"添加模型版本: {success}")
-        
-        # 获取激活模型
-        active_model = manager.get_active_model(ModelType.LIGHTGBM)
-        print(f"激活模型: {active_model.version if active_model else 'None'}")
-        
-        # 列出所有版本
-        versions = manager.list_model_versions(ModelType.LIGHTGBM)
-        print(f"模型版本列表: {len(versions.get(ModelType.LIGHTGBM, []))}个版本")
-        
-        # 获取统计信息
-        stats = manager.get_model_statistics()
-        print(f"统计信息: {stats['total_model_types']}个模型类型")
+@dataclass  
+class LocalABTestResult:
+    """本地化A/B测试结果"""
+    model_type: str
+    request_count: int = 0
+    total_latency_ms: float = 0.0
+    avg_latency_ms: float = 0.0
+    total_accuracy: float = 0.0
+    avg_accuracy: float = 0.0
+    error_count: int = 0
+    error_rate: float = 0.0
+
+
+# 向后兼容的别名
+LocalModelManager = ModelManager
