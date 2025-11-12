@@ -16,17 +16,23 @@ import subprocess
 import json
 import tempfile
 import os
+import platform
 import numpy as np
 from typing import Tuple, List, Dict, Optional
 from dataclasses import dataclass
 import logging
+import contextlib
 
-from .enhanced_processor import VideoComplexity, VideoType
+from .enhanced_processor import VideoComplexity, VideoType, VideoProcessorConfig
 
 class VideoComplexityAnalyzer:
-    """视频复杂度分析器"""
+    """
+    视频复杂度分析器
+    高稳定性跨平台实现
+    """
     
-    def __init__(self, debug: bool = False):
+    def __init__(self, config: Optional[VideoProcessorConfig] = None, debug: bool = False):
+        self.config = config or VideoProcessorConfig()
         self.debug = debug
         self.logger = logging.getLogger(__name__)
         
@@ -96,17 +102,39 @@ class VideoComplexityAnalyzer:
         使用ffmpeg的motion vectors分析
         """
         try:
-            # 使用ffmpeg分析前10秒的运动向量
-            with tempfile.NamedTemporaryFile(suffix='.log', delete=False) as tmp_file:
+            if not self.config.ffmpeg_path:
+                self.logger.warning("ffmpeg不可用，使用默认运动复杂度")
+                return 0.5
+                
+            # 规范化路径
+            video_path = os.path.normpath(video_path)
+            
+            with self.config.temp_dir and tempfile.NamedTemporaryFile(
+                suffix='.log', 
+                delete=False, 
+                dir=self.config.temp_dir
+            ) as tmp_file:
                 cmd = [
-                    'ffmpeg', '-i', video_path,
+                    self.config.ffmpeg_path, '-i', video_path,
                     '-t', '10',  # 只分析前10秒
                     '-vf', 'mestimate=me_mode=epzs,showinfo',
                     '-f', 'null', '-',
                     '-v', 'info'
                 ]
                 
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                # 设置环境变量避免编码问题
+                env = os.environ.copy()
+                if platform.system() == 'Windows':
+                    env['PYTHONIOENCODING'] = 'utf-8'
+                
+                result = subprocess.run(
+                    cmd, 
+                    capture_output=True, 
+                    text=True, 
+                    timeout=self.config.default_timeout,
+                    env=env,
+                    cwd=self.config.temp_dir
+                )
                 
                 if result.returncode != 0:
                     self.logger.warning("运动分析失败，使用默认值")
@@ -156,19 +184,38 @@ class VideoComplexityAnalyzer:
     def _analyze_texture_complexity(self, video_path: str) -> float:
         """
         分析纹理复杂度
-        使用ffmpeg的spatial info分析
+        高稳定性跨平台实现
         """
         try:
+            if not self.config.ffmpeg_path:
+                self.logger.warning("ffmpeg不可用，使用默认纹理复杂度")
+                return 0.5
+                
+            # 规范化路径
+            video_path = os.path.normpath(video_path)
+            
             # 使用ffmpeg分析空间复杂度
             cmd = [
-                'ffmpeg', '-i', video_path,
+                self.config.ffmpeg_path, '-i', video_path,
                 '-t', '10',  # 前10秒
                 '-vf', 'siti=print_summary=1',
                 '-f', 'null', '-',
                 '-v', 'info'
             ]
             
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            # 设置环境变量
+            env = os.environ.copy()
+            if platform.system() == 'Windows':
+                env['PYTHONIOENCODING'] = 'utf-8'
+            
+            result = subprocess.run(
+                cmd, 
+                capture_output=True, 
+                text=True, 
+                timeout=self.config.default_timeout,
+                env=env,
+                cwd=self.config.temp_dir
+            )
             
             if result.returncode != 0:
                 # 如果siti过滤器不可用，使用备用方法
@@ -407,6 +454,7 @@ class VideoComplexityAnalyzer:
 
 # 便捷函数
 def analyze_video_complexity(video_path: str, video_type: VideoType, 
+                            config: Optional[VideoProcessorConfig] = None,
                             debug: bool = False) -> VideoComplexity:
     """
     便捷函数：分析视频复杂度
@@ -414,13 +462,20 @@ def analyze_video_complexity(video_path: str, video_type: VideoType,
     Args:
         video_path: 视频文件路径
         video_type: 视频类型信息
+        config: 处理器配置，None使用默认配置
         debug: 调试模式
         
     Returns:
         VideoComplexity: 复杂度分析结果
     """
-    analyzer = VideoComplexityAnalyzer(debug=debug)
-    return analyzer.analyze_complexity(video_path, video_type)
+    try:
+        analyzer = VideoComplexityAnalyzer(config=config, debug=debug)
+        return analyzer.analyze_complexity(video_path, video_type)
+    except Exception as e:
+        if debug:
+            logging.error(f"复杂度分析失败: {e}")
+        # 返回安全的默认值
+        return VideoComplexity()
 
 
 if __name__ == "__main__":

@@ -16,11 +16,26 @@ import subprocess
 import json
 import tempfile
 import os
+import sys
 import time
+import platform
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 from dataclasses import dataclass, asdict
 import logging
+import contextlib
+
+# Import configuration from enhanced_processor to avoid circular import
+try:
+    from .enhanced_processor import VideoProcessorConfig
+except ImportError:
+    # Fallback minimal config if import fails
+    from typing import Optional
+    @dataclass
+    class VideoProcessorConfig:
+        ffmpeg_path: Optional[str] = None
+        temp_dir: Optional[str] = None
+        max_analysis_timeout: int = 300
 
 @dataclass
 class VMAFRequest:
@@ -70,9 +85,13 @@ class Resolution:
 
 
 class VMAFValidator:
-    """VMAF质量验证器"""
+    """
+    VMAF质量验证器
+    高稳定性跨平台实现
+    """
     
-    def __init__(self, debug: bool = False):
+    def __init__(self, config: Optional[VideoProcessorConfig] = None, debug: bool = False):
+        self.config = config or VideoProcessorConfig()
         self.debug = debug
         self.logger = logging.getLogger(__name__)
         
@@ -356,6 +375,7 @@ class VMAFValidator:
 # 便捷函数
 def validate_video_quality(original_path: str, converted_path: str, 
                           min_score: int = 85, n_threads: int = 4,
+                          config: Optional[VideoProcessorConfig] = None,
                           debug: bool = False) -> VMAFResponse:
     """
     便捷函数：验证视频质量
@@ -365,19 +385,27 @@ def validate_video_quality(original_path: str, converted_path: str,
         converted_path: 转换后视频路径
         min_score: 最低可接受分数
         n_threads: 线程数
+        config: 处理器配置，None使用默认配置
         debug: 调试模式
         
     Returns:
         VMAFResponse: 验证响应
     """
-    validator = VMAFValidator(debug=debug)
-    request = VMAFRequest(
-        original_path=original_path,
-        converted_path=converted_path,
-        min_score=min_score,
-        n_threads=n_threads
-    )
-    return validator.validate_quality(request)
+    try:
+        validator = VMAFValidator(config=config, debug=debug)
+        request = VMAFRequest(
+            original_path=original_path,
+            converted_path=converted_path,
+            min_score=min_score,
+            n_threads=n_threads
+        )
+        return validator.validate_quality(request)
+    except Exception as e:
+        return VMAFResponse(
+            success=False,
+            error=f"VMAF验证器初始化失败: {str(e)}",
+            time_ms=0
+        )
 
 
 if __name__ == "__main__":

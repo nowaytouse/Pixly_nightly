@@ -16,12 +16,16 @@ import json
 import subprocess
 import tempfile
 import os
+import sys
 import time
+import platform
+import shutil
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any, Tuple, Union
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 import logging
+import contextlib
 
 # 核心数据结构
 
@@ -111,24 +115,123 @@ class VideoPredictResponse:
         return data
 
 
+@dataclass
+class VideoProcessorConfig:
+    """视频处理器配置"""
+    ffmpeg_path: Optional[str] = None           # ffmpeg路径，None表示自动检测
+    ffprobe_path: Optional[str] = None          # ffprobe路径，None表示自动检测
+    temp_dir: Optional[str] = None              # 临时目录，None使用系统临时目录
+    default_timeout: int = 30                   # 默认超时时间（秒）
+    max_probe_timeout: int = 15                 # 探测超时时间（秒）
+    max_analysis_timeout: int = 300             # 最大分析超时时间（秒）
+    
+    def __post_init__(self):
+        """初始化后处理"""
+        if self.ffmpeg_path is None:
+            self.ffmpeg_path = self._find_executable('ffmpeg')
+        if self.ffprobe_path is None:
+            self.ffprobe_path = self._find_executable('ffprobe')
+        if self.temp_dir is None:
+            self.temp_dir = tempfile.gettempdir()
+    
+    def _find_executable(self, name: str) -> Optional[str]:
+        """跨平台查找可执行文件"""
+        # Windows上尝试添加.exe后缀
+        candidates = [name]
+        if platform.system() == 'Windows':
+            candidates.append(f"{name}.exe")
+        
+        for candidate in candidates:
+            path = shutil.which(candidate)
+            if path:
+                return path
+        
+        return name  # 返回原始名称，让subprocess自行处理
+
+
 class EnhancedVideoProcessor:
     """
     增强视频处理器
-    第一阶段：基础框架和数据结构
+    高规范化、高兼容性、高扩展性、高稳定性设计
     """
     
-    def __init__(self, debug: bool = False):
+    def __init__(self, config: Optional[VideoProcessorConfig] = None, debug: bool = False):
         """
         初始化视频处理器
         
         Args:
+            config: 配置对象，None表示使用默认配置
             debug: 调试模式
         """
+        self.config = config or VideoProcessorConfig()
         self.debug = debug
         self.logger = logging.getLogger(__name__)
         
         if debug:
             logging.basicConfig(level=logging.DEBUG)
+            
+        # 验证环境
+        self._validate_environment()
+    
+    def _validate_environment(self) -> None:
+        """验证运行环境"""
+        missing_tools = []
+        
+        # 检查ffprobe
+        if not self._check_tool_availability(self.config.ffprobe_path):
+            missing_tools.append('ffprobe')
+            
+        # 检查ffmpeg（可选，但建议有）
+        if not self._check_tool_availability(self.config.ffmpeg_path):
+            self.logger.warning("ffmpeg不可用，某些功能可能受限")
+        
+        if missing_tools:
+            error_msg = f"缺失必要工具: {', '.join(missing_tools)}"
+            if platform.system() == 'Windows':
+                error_msg += "\n请下载ffmpeg Windows版本并添加到PATH"
+            elif platform.system() == 'Darwin':
+                error_msg += "\n请使用 brew install ffmpeg 安装"
+            else:
+                error_msg += "\n请使用包管理器安装ffmpeg"
+            
+            raise RuntimeError(error_msg)
+    
+    def _check_tool_availability(self, tool_path: Optional[str]) -> bool:
+        """检查工具可用性"""
+        if not tool_path:
+            return False
+            
+        try:
+            result = subprocess.run(
+                [tool_path, '-version'],
+                capture_output=True,
+                timeout=5,
+                text=True
+            )
+            return result.returncode == 0
+        except (subprocess.SubprocessError, FileNotFoundError, OSError):
+            return False
+    
+    @contextlib.contextmanager
+    def _safe_temp_file(self, suffix: str = '', prefix: str = 'pixly_'):
+        """安全的临时文件上下文管理器"""
+        temp_file = None
+        try:
+            temp_file = tempfile.NamedTemporaryFile(
+                suffix=suffix,
+                prefix=prefix,
+                dir=self.config.temp_dir,
+                delete=False
+            )
+            temp_path = temp_file.name
+            temp_file.close()
+            yield temp_path
+        finally:
+            if temp_file and os.path.exists(temp_file.name):
+                try:
+                    os.unlink(temp_file.name)
+                except OSError:
+                    pass
     
     def predict_video_params(self, request: VideoPredictRequest) -> VideoPredictResponse:
         """
@@ -195,21 +298,46 @@ class EnhancedVideoProcessor:
     def _analyze_video_type(self, video_path: str) -> Optional[VideoType]:
         """
         分析视频类型信息
-        第一阶段：使用ffprobe获取基础信息
+        高稳定性跨平台实现
         """
+        if not self.config.ffprobe_path:
+            self.logger.error("ffprobe不可用")
+            return None
+            
+        # 规范化路径
+        video_path = os.path.normpath(video_path)
+        
         try:
             cmd = [
-                'ffprobe',
-                '-v', 'quiet',
+                self.config.ffprobe_path,
+                '-v', 'error',  # 只显示错误
                 '-print_format', 'json',
                 '-show_format',
                 '-show_streams',
                 video_path
             ]
             
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            # 设置环境变量避免编码问题
+            env = os.environ.copy()
+            if platform.system() == 'Windows':
+                env['PYTHONIOENCODING'] = 'utf-8'
+            
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=self.config.max_probe_timeout,
+                env=env,
+                cwd=self.config.temp_dir  # 设置工作目录
+            )
+            
             if result.returncode != 0:
-                self.logger.error(f"ffprobe失败: {result.stderr}")
+                error_msg = result.stderr or "未知错误"
+                self.logger.error(f"ffprobe分析失败: {error_msg}")
+                return None
+            
+            if not result.stdout.strip():
+                self.logger.error("ffprobe返回空结果")
                 return None
             
             data = json.loads(result.stdout)
@@ -327,26 +455,31 @@ class EnhancedVideoProcessor:
     
     def test_ffmpeg_availability(self) -> bool:
         """测试ffmpeg可用性"""
-        try:
-            result = subprocess.run(['ffmpeg', '-version'], 
-                                  capture_output=True, timeout=5)
-            return result.returncode == 0
-        except:
-            return False
+        return self._check_tool_availability(self.config.ffmpeg_path)
     
     def test_ffprobe_availability(self) -> bool:
         """测试ffprobe可用性"""
-        try:
-            result = subprocess.run(['ffprobe', '-version'], 
-                                  capture_output=True, timeout=5)
-            return result.returncode == 0
-        except:
-            return False
+        return self._check_tool_availability(self.config.ffprobe_path)
+    
+    def get_system_info(self) -> Dict[str, Any]:
+        """获取系统信息用于调试"""
+        return {
+            'platform': platform.system(),
+            'platform_release': platform.release(),
+            'platform_version': platform.version(),
+            'python_version': sys.version,
+            'ffmpeg_path': self.config.ffmpeg_path,
+            'ffprobe_path': self.config.ffprobe_path,
+            'ffmpeg_available': self.test_ffmpeg_availability(),
+            'ffprobe_available': self.test_ffprobe_availability(),
+            'temp_dir': self.config.temp_dir,
+        }
 
 
 # 便捷函数
 def predict_video_params(video_path: str, optimize_mode: str = "balanced", 
                         options: Optional[VideoRequestOptions] = None,
+                        config: Optional[VideoProcessorConfig] = None,
                         debug: bool = False) -> VideoPredictResponse:
     """
     便捷函数：预测视频编码参数
@@ -355,18 +488,42 @@ def predict_video_params(video_path: str, optimize_mode: str = "balanced",
         video_path: 视频文件路径
         optimize_mode: 优化模式
         options: 视频请求选项
+        config: 处理器配置，None使用默认配置
         debug: 调试模式
         
     Returns:
         VideoPredictResponse: 预测响应
     """
-    processor = EnhancedVideoProcessor(debug=debug)
-    request = VideoPredictRequest(
-        video_path=video_path,
-        optimize_mode=optimize_mode,
-        options=options
-    )
-    return processor.predict_video_params(request)
+    try:
+        processor = EnhancedVideoProcessor(config=config, debug=debug)
+        request = VideoPredictRequest(
+            video_path=video_path,
+            optimize_mode=optimize_mode,
+            options=options
+        )
+        return processor.predict_video_params(request)
+    except Exception as e:
+        return VideoPredictResponse(
+            success=False,
+            error=f"处理器初始化失败: {str(e)}",
+            time_ms=0
+        )
+
+
+def get_system_capabilities() -> Dict[str, Any]:
+    """获取系统视频处理能力"""
+    try:
+        config = VideoProcessorConfig()
+        processor = EnhancedVideoProcessor(config=config, debug=False)
+        return processor.get_system_info()
+    except Exception as e:
+        return {
+            'error': str(e),
+            'platform': platform.system(),
+            'python_version': sys.version,
+            'ffmpeg_available': False,
+            'ffprobe_available': False,
+        }
 
 
 if __name__ == "__main__":

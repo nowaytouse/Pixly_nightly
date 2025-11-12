@@ -10,13 +10,15 @@ EX-013实现: 从Go废弃代码价值提取
 
 from .enhanced_processor import (
     EnhancedVideoProcessor,
+    VideoProcessorConfig,
     VideoPredictRequest,
     VideoPredictResponse,
     VideoParams,
     VideoType,
     VideoComplexity,
     VideoRequestOptions,
-    predict_video_params
+    predict_video_params,
+    get_system_capabilities
 )
 
 from .complexity_analyzer import (
@@ -35,7 +37,9 @@ from .vmaf_validator import (
 __all__ = [
     # 核心处理器
     'EnhancedVideoProcessor',
+    'VideoProcessorConfig',
     'predict_video_params',
+    'get_system_capabilities',
     
     # 数据结构
     'VideoPredictRequest',
