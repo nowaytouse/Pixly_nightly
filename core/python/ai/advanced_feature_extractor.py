@@ -223,44 +223,32 @@ class SWTFeatureExtractor:
         else:
             gray = image
         
-        gray_float = gray.astype(np.float32) / 255.0
+        # Go算法核心特征 (高精度实现)
+        edge_strength = self._calculate_sobel_edge_strength(gray)
+        texture_complexity = self._calculate_local_std_texture(gray) 
+        noise_level = self._calculate_mad_noise_level(gray)
+        detail_level = self._calculate_highpass_detail(gray)
         
-        # 1. 边缘强度 (Edge Strength)
-        edge_strength = self._calculate_edge_strength(gray)
+        # Go算法多尺度频域能量分析
+        high_freq, mid_freq, low_freq = self._calculate_multiscale_energy(gray)
         
-        # 2. 纹理复杂度 (Texture Complexity)
-        texture_complexity = self._calculate_texture_complexity(gray_float)
-        
-        # 3. 噪声级别 (Noise Level)
-        noise_level = self._calculate_noise_level(gray_float)
-        
-        # 4. 细节级别 (Detail Level)
-        detail_level = self._calculate_detail_level(gray)
-        
-        # 5-7. 频率能量分布
-        high_freq, mid_freq, low_freq = self._calculate_frequency_energy(gray_float)
-        
-        # 8. 整体质量评估
-        overall_quality = self._calculate_overall_quality(gray_float)
-        
-        # 9. 压缩性评分
-        compression_score = self._calculate_compression_score(
-            edge_strength, texture_complexity, noise_level
-        )
+        # Go算法熵和平滑区域分析
+        entropy_score = self._calculate_entropy_score(gray)
+        smooth_ratio = self._calculate_smooth_region_ratio(gray)
         
         return {
-            "edge_strength": float(edge_strength),
-            "texture_complexity": float(texture_complexity),
-            "noise_level": float(noise_level),
-            "detail_level": float(detail_level),
-            "high_freq_energy": float(high_freq),
-            "mid_freq_energy": float(mid_freq),
-            "low_freq_energy": float(low_freq),
-            "overall_quality": float(overall_quality),
-            "compression_score": float(compression_score)
+            'edge_strength': float(edge_strength),
+            'texture_complexity': float(texture_complexity), 
+            'noise_level': float(noise_level),
+            'detail_level': float(detail_level),
+            'high_freq_energy': float(high_freq),
+            'mid_freq_energy': float(mid_freq),
+            'low_freq_energy': float(low_freq),
+            'entropy_score': float(entropy_score),
+            'smooth_region_ratio': float(smooth_ratio)
         }
     
-    def _calculate_edge_strength(self, gray: np.ndarray) -> float:
+    def _calculate_sobel_edge_strength(self, gray: np.ndarray) -> float:
         """计算边缘强度"""
         # Sobel算子
         grad_x = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
@@ -271,6 +259,139 @@ class SWTFeatureExtractor:
         
         # 归一化到0-100
         return np.mean(magnitude) * 100 / 255
+    
+    def _calculate_local_std_texture(self, gray: np.ndarray) -> float:
+        """基于Go算法的局部标准差纹理复杂度计算"""
+        window_size = 7  # Go算法使用7x7窗口
+        texture_sum = 0.0
+        count = 0
+        
+        for y in range(window_size//2, gray.shape[0] - window_size//2):
+            for x in range(window_size//2, gray.shape[1] - window_size//2):
+                # 提取7x7窗口
+                window = gray[y-window_size//2:y+window_size//2+1, 
+                            x-window_size//2:x+window_size//2+1]
+                
+                # 计算窗口标准差
+                std_val = np.std(window.astype(np.float64))
+                texture_sum += std_val
+                count += 1
+        
+        # 归一化到0-100
+        return (texture_sum / count) / 255.0 * 100.0 if count > 0 else 0.0
+    
+    def _calculate_mad_noise_level(self, gray: np.ndarray) -> float:
+        """基于Go算法的MAD噪声检测"""
+        diffs = []
+        
+        # Go算法：采样像素差异
+        for y in range(1, gray.shape[0], 2):
+            for x in range(1, gray.shape[1], 2):
+                curr = float(gray[y, x])
+                prev = float(gray[y, x-1])
+                diff = abs(curr - prev)
+                diffs.append(diff)
+        
+        if len(diffs) == 0:
+            return 0.0
+        
+        # 计算平均差异（简化MAD）
+        return np.mean(diffs) / 255.0 * 100.0
+    
+    def _calculate_highpass_detail(self, gray: np.ndarray) -> float:
+        """基于Go算法的细节水平计算"""
+        total_high_freq = 0.0
+        count = 0
+        
+        # 高通滤波器（简化）
+        for y in range(1, gray.shape[0]-1):
+            for x in range(1, gray.shape[1]-1):
+                center = float(gray[y, x])
+                avg = (float(gray[y-1, x]) + float(gray[y+1, x]) + 
+                      float(gray[y, x-1]) + float(gray[y, x+1])) / 4.0
+                
+                high_freq = abs(center - avg)
+                total_high_freq += high_freq
+                count += 1
+        
+        if count == 0:
+            return 0.0
+        
+        # 归一化到0-100
+        return (total_high_freq / count) / 255.0 * 100.0
+    
+    def _calculate_multiscale_energy(self, gray: np.ndarray) -> Tuple[float, float, float]:
+        """基于Go算法的多尺度频域能量分析"""
+        # 高频：像素级差异
+        high_energy = 0.0
+        for y in range(1, gray.shape[0]):
+            for x in range(1, gray.shape[1]):
+                diff = abs(float(gray[y, x]) - float(gray[y, x-1]))
+                high_energy += diff * diff
+        
+        # 中频：2x2区域标准差
+        mid_energy = 0.0
+        for y in range(2, gray.shape[0]-2, 2):
+            for x in range(2, gray.shape[1]-2, 2):
+                patch = gray[y-1:y+2, x-1:x+2]
+                std_val = np.std(patch.astype(np.float64))
+                mid_energy += std_val * std_val
+        
+        # 低频：4x4区域标准差
+        low_energy = 0.0
+        for y in range(4, gray.shape[0]-4, 4):
+            for x in range(4, gray.shape[1]-4, 4):
+                patch = gray[y-2:y+3, x-2:x+3]
+                std_val = np.std(patch.astype(np.float64))
+                low_energy += std_val * std_val
+        
+        # 归一化
+        pixel_count = gray.shape[0] * gray.shape[1]
+        return (
+            high_energy / pixel_count,
+            mid_energy / (pixel_count / 4),
+            low_energy / (pixel_count / 16)
+        )
+    
+    def _calculate_entropy_score(self, gray: np.ndarray) -> float:
+        """基于Go算法的信息熵计算"""
+        # 计算直方图
+        hist, _ = np.histogram(gray.flatten(), bins=256, range=(0, 255))
+        
+        # 计算概率分布
+        hist = hist.astype(np.float64)
+        hist = hist / np.sum(hist)
+        
+        # 计算熵
+        entropy = 0.0
+        for p in hist:
+            if p > 0:
+                entropy += -p * np.log2(p)
+        
+        # 归一化到0-100
+        return entropy / 8.0 * 100.0  # log2(256) = 8
+    
+    def _calculate_smooth_region_ratio(self, gray: np.ndarray) -> float:
+        """基于Go算法的平滑区域比例计算"""
+        smooth_threshold = 5.0  # 平滑区域阈值
+        smooth_count = 0
+        total_count = 0
+        
+        window_size = 3
+        for y in range(window_size//2, gray.shape[0] - window_size//2):
+            for x in range(window_size//2, gray.shape[1] - window_size//2):
+                # 提取3x3窗口
+                window = gray[y-window_size//2:y+window_size//2+1, 
+                            x-window_size//2:x+window_size//2+1]
+                
+                # 计算窗口标准差
+                std_val = np.std(window.astype(np.float64))
+                
+                if std_val < smooth_threshold:
+                    smooth_count += 1
+                total_count += 1
+        
+        return (smooth_count / total_count * 100.0) if total_count > 0 else 0.0
     
     def _calculate_texture_complexity(self, gray_float: np.ndarray) -> float:
         """计算纹理复杂度（局部标准差）"""

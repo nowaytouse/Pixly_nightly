@@ -161,109 +161,43 @@ impl FormatConverter {
         self.optimal_tools.get(&(source.to_string(), target.to_string())).cloned()
     }
     
-    pub fn optimize_conversion_request(&self, mut request: ConversionRequest) -> Result<ConversionRequest> {
+    pub fn validate_conversion_request(&self, request: &ConversionRequest) -> Result<()> {
         let source_ext = self.extract_extension(&request.input_path)?;
-        let target_ext = request.target_format.clone();
+        let target_ext = &request.target_format;
         
-        // 验证转换支持
-        if !self.is_conversion_supported(&source_ext, &target_ext) {
+        // 仅验证转换支持，不修改任何参数
+        if !self.is_conversion_supported(&source_ext, target_ext) {
             return Err(anyhow!("不支持的转换: {} -> {}", source_ext, target_ext));
         }
         
-        // 获取目标格式的默认设置
-        if let Some(defaults) = self.format_defaults.get(&target_ext) {
-            // 优化质量参数
+        // 验证参数范围（但不修改）
+        if let Some(defaults) = self.format_defaults.get(target_ext) {
             if request.quality < defaults.quality_range.0 || request.quality > defaults.quality_range.1 {
-                request.quality = defaults.default_quality;
-                request.advanced_options.insert(
-                    "quality_adjusted".to_string(),
-                    serde_json::json!(true)
-                );
+                return Err(anyhow!(
+                    "质量参数 {} 超出格式 {} 的有效范围 [{}, {}]",
+                    request.quality, target_ext, defaults.quality_range.0, defaults.quality_range.1
+                ));
             }
             
-            // 优化effort参数
             if let Some(effort) = request.effort {
                 if effort < defaults.effort_range.0 || effort > defaults.effort_range.1 {
-                    request.effort = Some(defaults.default_effort);
-                    request.advanced_options.insert(
-                        "effort_adjusted".to_string(),
-                        serde_json::json!(true)
-                    );
+                    return Err(anyhow!(
+                        "effort参数 {} 超出格式 {} 的有效范围 [{}, {}]",
+                        effort, target_ext, defaults.effort_range.0, defaults.effort_range.1
+                    ));
                 }
-            } else {
-                request.effort = Some(defaults.default_effort);
             }
             
-            // 优化distance参数（JXL专用）
-            if target_ext == "jxl" && request.distance.is_none() {
-                request.distance = defaults.optimal_distance;
-            }
-            
-            // 处理无损模式
+            // 验证无损模式支持
             if request.lossless && !defaults.supports_lossless {
-                request.lossless = false;
-                request.advanced_options.insert(
-                    "lossless_not_supported".to_string(),
-                    serde_json::json!(format!("格式 {} 不支持无损模式", target_ext))
-                );
+                return Err(anyhow!("格式 {} 不支持无损模式", target_ext));
             }
         }
         
-        // 添加格式特定的高级选项
-        self.add_format_specific_options(&mut request, &source_ext, &target_ext);
-        
-        Ok(request)
+        Ok(())
     }
     
-    fn add_format_specific_options(&self, request: &mut ConversionRequest, 
-                                  source: &str, target: &str) {
-        match target.as_str() {
-            "jxl" => {
-                // JXL特定优化
-                if !request.advanced_options.contains_key("modular") {
-                    request.advanced_options.insert("modular".to_string(), serde_json::json!(0));
-                }
-                
-                if source == "jpeg" && !request.advanced_options.contains_key("jpeg_store_metadata") {
-                    request.advanced_options.insert("jpeg_store_metadata".to_string(), serde_json::json!(1));
-                }
-                
-                if request.lossless && !request.advanced_options.contains_key("lossless_jpeg") {
-                    request.advanced_options.insert("lossless_jpeg".to_string(), serde_json::json!(1));
-                }
-            }
-            
-            "avif" => {
-                // AVIF特定优化
-                if !request.advanced_options.contains_key("cpu-used") {
-                    let cpu_used = if request.quality > 90 { 2 } else { 4 };
-                    request.advanced_options.insert("cpu-used".to_string(), serde_json::json!(cpu_used));
-                }
-                
-                if !request.advanced_options.contains_key("tile-rows") {
-                    request.advanced_options.insert("tile-rows".to_string(), serde_json::json!(0));
-                }
-                
-                if !request.advanced_options.contains_key("tile-cols") {
-                    request.advanced_options.insert("tile-cols".to_string(), serde_json::json!(0));
-                }
-            }
-            
-            "webp" => {
-                // WebP特定优化
-                if !request.advanced_options.contains_key("auto-filter") && !request.lossless {
-                    request.advanced_options.insert("auto-filter".to_string(), serde_json::json!(true));
-                }
-                
-                if !request.advanced_options.contains_key("preprocessing") {
-                    let preprocessing = if request.quality > 85 { 2 } else { 1 };
-                    request.advanced_options.insert("preprocessing".to_string(), serde_json::json!(preprocessing));
-                }
-            }
-            
-            _ => {}
-        }
-    }
+    // Rust执行层不应预设参数 - 移除此函数，参数优化应由Python AI层负责
     
     fn extract_extension(&self, path: &std::path::PathBuf) -> Result<String> {
         path.extension()
@@ -332,55 +266,7 @@ impl FormatConverter {
         base_time * complexity * size_factor
     }
     
-    pub fn get_recommended_settings(&self, source: &str, target: &str, 
-                                  use_case: &str) -> Option<HashMap<String, serde_json::Value>> {
-        let mut settings = HashMap::new();
-        
-        match use_case {
-            "web" => {
-                // Web优化设置
-                settings.insert("quality".to_string(), serde_json::json!(80));
-                settings.insert("effort".to_string(), serde_json::json!(4));
-                if target == "jxl" {
-                    settings.insert("distance".to_string(), serde_json::json!(1.5));
-                }
-            }
-            
-            "archival" => {
-                // 存档优化设置
-                settings.insert("quality".to_string(), serde_json::json!(95));
-                settings.insert("effort".to_string(), serde_json::json!(8));
-                settings.insert("lossless".to_string(), serde_json::json!(true));
-                if target == "jxl" {
-                    settings.insert("distance".to_string(), serde_json::json!(0.5));
-                }
-            }
-            
-            "mobile" => {
-                // 移动端优化设置
-                settings.insert("quality".to_string(), serde_json::json!(75));
-                settings.insert("effort".to_string(), serde_json::json!(3));
-                if target == "jxl" {
-                    settings.insert("distance".to_string(), serde_json::json!(2.0));
-                }
-            }
-            
-            "balanced" => {
-                // 平衡设置
-                if let Some(defaults) = self.format_defaults.get(target) {
-                    settings.insert("quality".to_string(), serde_json::json!(defaults.default_quality));
-                    settings.insert("effort".to_string(), serde_json::json!(defaults.default_effort));
-                    if let Some(distance) = defaults.optimal_distance {
-                        settings.insert("distance".to_string(), serde_json::json!(distance));
-                    }
-                }
-            }
-            
-            _ => return None,
-        }
-        
-        Some(settings)
-    }
+    // 推荐设置应由Python AI层负责 - Rust只执行不推荐
 }
 
 impl Default for FormatConverter {

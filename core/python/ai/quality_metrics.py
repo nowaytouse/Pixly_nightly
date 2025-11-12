@@ -165,13 +165,13 @@ class QualityCalculator:
         """
         if mse == 0:
             return 100.0  # 完全相同
-        
         max_pixel_value = 255.0
         psnr = 10.0 * math.log10((max_pixel_value ** 2) / mse)
         
         return float(psnr)
     
-    def _calculate_ssim(self, img1: np.ndarray, img2: np.ndarray) -> float:
+    def calculate_ssim(self, img1: np.ndarray, img2: np.ndarray, 
+                      window_size: int = 8, gaussian_weights: bool = False) -> float:
         """
         计算结构相似性指数 (Structural Similarity Index)
         
@@ -407,3 +407,70 @@ def get_quality_calculator() -> QualityCalculator:
         if _global_quality_calculator is None:
             _global_quality_calculator = QualityCalculator()
         return _global_quality_calculator
+
+
+class SSIMCalculatorOptimized:
+    """基于Go 8x8窗口的SSIM优化算法"""
+    
+    def __init__(self, window_size: int = 8):
+        self.window_size = window_size
+        self.k1 = 0.01
+        self.k2 = 0.03
+        self.L = 255  # 动态范围
+        
+    def calculate_ssim_8x8(self, img1: np.ndarray, img2: np.ndarray) -> float:
+        """Go算法的8x8窗口SSIM实现"""
+        # 转换为灰度图
+        if len(img1.shape) == 3:
+            gray1 = np.dot(img1[...,:3], [0.299, 0.587, 0.114]).astype(np.uint8)
+            gray2 = np.dot(img2[...,:3], [0.299, 0.587, 0.114]).astype(np.uint8)
+        else:
+            gray1, gray2 = img1.astype(np.uint8), img2.astype(np.uint8)
+        
+        # SSIM常数
+        c1 = (self.k1 * self.L) ** 2
+        c2 = (self.k2 * self.L) ** 2
+        
+        ssim_sum = 0.0
+        count = 0
+        
+        # Go算法：8x8窗口滑动（非重叠）
+        for y in range(0, gray1.shape[0] - self.window_size + 1, self.window_size):
+            for x in range(0, gray1.shape[1] - self.window_size + 1, self.window_size):
+                # 提取8x8窗口
+                win1 = gray1[y:y+self.window_size, x:x+self.window_size].astype(np.float64)
+                win2 = gray2[y:y+self.window_size, x:x+self.window_size].astype(np.float64)
+                
+                # Go算法：单次遍历计算统计量
+                mu1 = np.mean(win1)
+                mu2 = np.mean(win2)
+                mu1_sq = mu1 ** 2
+                mu2_sq = mu2 ** 2
+                mu1_mu2 = mu1 * mu2
+                
+                sigma1_sq = np.var(win1)
+                sigma2_sq = np.var(win2)
+                
+                # 协方差计算
+                if win1.size > 1:
+                    sigma12 = np.cov(win1.flatten(), win2.flatten())[0, 1]
+                else:
+                    sigma12 = 0.0
+                
+                # SSIM计算
+                numerator = (2 * mu1_mu2 + c1) * (2 * sigma12 + c2)
+                denominator = (mu1_sq + mu2_sq + c1) * (sigma1_sq + sigma2_sq + c2)
+                
+                if denominator > 0:
+                    ssim_sum += numerator / denominator
+                    count += 1
+        
+        return ssim_sum / count if count > 0 else 0.0
+    
+    def batch_ssim_comparison(self, image_pairs: List[Tuple[np.ndarray, np.ndarray]]) -> List[float]:
+        """批量SSIM比较 - 基于Go算法优化"""
+        results = []
+        for img1, img2 in image_pairs:
+            ssim = self.calculate_ssim_8x8(img1, img2)
+            results.append(ssim)
+        return results
