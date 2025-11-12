@@ -1,22 +1,22 @@
-# Pixly AI System Requirements
-# Version: 4.2.0
-# Python 3.8+
+# Pixly AI System Requirements  
+# Version: 3.1.0 (2025 Edition)
+# Python 3.10+ (2025 minimum standard)
 
-# 核心科学计算 
-numpy>=1.24.0  # 安全更新：修复缓冲区溢出漏洞
-scipy>=1.10.0  # 安全更新：修复数值稳定性问题
+# 核心科学计算 (2025最新版本)
+numpy>=2.0.0  # 2025版：全新C++ API + SIMD优化
+scipy>=1.14.0  # 2025版：改进数值算法
 
-# 图像处理
-Pillow>=10.0.0  # 安全更新：修复多个CVE漏洞
-opencv-python>=4.8.0  # 安全更新：修复内存安全问题
+# 图像处理 (2025现代化版本)
+Pillow>=10.4.0  # 2025版：AVIF/HEIF支持 + 安全修复
+opencv-python>=4.10.0  # 2025版：DNN优化 + Python 3.10+支持
 
-# 小波变换
-PyWavelets>=1.3.0
+# 小波变换 (2025版)
+PyWavelets>=1.6.0  # 2025版：更快FFT算法
 
-# 机器学习
-scikit-learn>=1.3.0  # 安全更新：修复pickle反序列化漏洞
-scikit-image>=0.21.0  # 安全更新：修复图像处理内存泄漏
-lightgbm>=4.0.0  # 安全更新：修复训练时的内存安全问题
+# 机器学习 (2025 AI生态)
+scikit-learn>=1.5.0  # 2025版：改进算法 + 新estimators
+scikit-image>=0.24.0  # 2025版：更快图像处理
+lightgbm>=4.5.0  # 2025版：GPU训练优化 + 新特性
 
 # 强化学习（可选）
 # gym>=0.21.0

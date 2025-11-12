@@ -1,11 +1,15 @@
 [package]
 name = "pixly_performance_core"
-version = "3.0.0"
+version = "3.1.0"
 edition = "2021"
+rust-version = "1.80"  # 2025标准：最新稳定版Rust
 authors = ["PIXLY Team <team@pixly.ai>"]
-description = "Ultra-high performance Rust core for PIXLY v3.0 with SIMD, GPU acceleration and PyO3 bindings"
+description = "Ultra-high performance Rust core for PIXLY v3.1 with 2025 SIMD, GPU acceleration and PyO3 bindings"
 license = "MIT"
-repository = "https://github.com/pixly/pixly-nightly"
+repository = "https://github.com/nowaytouse/Pixly_nightly"
+readme = "README.md"
+keywords = ["image-processing", "ai", "performance", "simd", "gpu"]
+categories = ["multimedia::images", "science", "algorithms"]
 
 [lib]
 name = "pixly_performance_core"
@@ -16,23 +20,26 @@ crate-type = ["cdylib", "rlib"]  # Python集成 + Rust库
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-# PyO3 Python绑定
-pyo3 = { version = "0.20", features = ["extension-module", "abi3-py38", "auto-initialize"] }
-numpy = "0.20"  # NumPy集成
+# PyO3 Python绑定 (2025年最新版本)
+pyo3 = { version = "0.22", features = ["extension-module", "abi3-py310", "auto-initialize"] }
+numpy = "0.22"  # NumPy集成
 anyhow = "1.0"
-thiserror = "1.0"
+thiserror = "2.0"  # 2025标准：v2版本
 log = "0.4"
-env_logger = "0.11"
+env_logger = "0.11"  
+tracing = "0.1"  # 2025标准：结构化日志
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }  # 2025：高级追踪
 
 # 🚀 SIMD优化 (单指令多数据) - 使用稳定版本
 # packed_simd = { version = "0.3", optional = true }  # 有兼容性问题，暂时移除
 wide = { version = "0.7", optional = true }
 # simdeez = { version = "2.0", optional = true }  # 可能有依赖问题，暂时移除
 
-# 🚀 并行计算
-rayon = "1.8"      # 数据并行
+# 🚀 并行计算 (2025最新版本)
+rayon = "1.10"     # 数据并行 - 2025最新
 crossbeam = "0.8"  # 无锁并发
-tokio = { version = "1.35", features = ["full"] }  # 异步运行时
+tokio = { version = "1.40", features = ["full", "tracing"] }  # 2025异步运行时
+async-std = { version = "1.12", optional = true }  # 2025备选异步运行时
 num_cpus = "1.16"  # CPU核心检测
 
 # 🖼️ 图像处理 (高性能版本)
