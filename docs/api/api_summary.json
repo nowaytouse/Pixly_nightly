@@ -1,0 +1,36 @@
+{
+  "total_endpoints": 9,
+  "by_tags": {
+    "prediction": 2,
+    "ai": 1,
+    "system": 2,
+    "models": 2,
+    "training": 2,
+    "video": 1,
+    "feedback": 1
+  },
+  "by_methods": {
+    "POST": 5,
+    "GET": 4
+  },
+  "config": {
+    "title": "Pixly AI Service API",
+    "description": "AI驱动的图像和视频参数预测服务",
+    "version": "3.0.0",
+    "base_url": "http://localhost:8080",
+    "contact_name": "Pixly Team",
+    "contact_email": "team@pixly.ai",
+    "license_name": "MIT",
+    "license_url": "https://opensource.org/licenses/MIT",
+    "servers": [
+      {
+        "url": "http://localhost:8080",
+        "description": "Development Server"
+      },
+      {
+        "url": "https://api.pixly.ai",
+        "description": "Production Server"
+      }
+    ]
+  }
+}

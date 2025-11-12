@@ -1,0 +1,98 @@
+{
+  "POST__api_v1_predict": [
+    {
+      "name": "Test AI参数预测",
+      "method": "POST",
+      "url": "/api/v1/predict",
+      "description": "基于图像特征预测最佳压缩参数",
+      "params": {
+        "image_path": "/path/to/image.jpg",
+        "tool": "jxl",
+        "target_quality": 85,
+        "optimize_mode": "balanced"
+      }
+    }
+  ],
+  "GET__api_v1_health": [
+    {
+      "name": "Test 健康检查",
+      "method": "GET",
+      "url": "/api/v1/health",
+      "description": "获取服务健康状态"
+    }
+  ],
+  "GET__api_v1_models": [
+    {
+      "name": "Test 获取模型列表",
+      "method": "GET",
+      "url": "/api/v1/models",
+      "description": "获取所有可用的AI模型版本"
+    }
+  ],
+  "POST__api_v1_training_start": [
+    {
+      "name": "Test 启动训练队列",
+      "method": "POST",
+      "url": "/api/v1/training/start",
+      "description": "启动自动化模型训练队列"
+    }
+  ],
+  "POST__api_v1_predict_video": [
+    {
+      "name": "Test 视频AI参数预测",
+      "method": "POST",
+      "url": "/api/v1/predict/video",
+      "description": "基于视频特征预测最佳压缩参数",
+      "params": {
+        "video_path": "/path/to/video.mp4",
+        "target_codec": "h265",
+        "target_crf": 23,
+        "preset": "medium"
+      }
+    }
+  ],
+  "GET__api_v1_training_status": [
+    {
+      "name": "Test 获取训练状态",
+      "method": "GET",
+      "url": "/api/v1/training/status",
+      "description": "获取当前模型训练队列的状态"
+    }
+  ],
+  "POST__api_v1_models_register": [
+    {
+      "name": "Test 注册新模型",
+      "method": "POST",
+      "url": "/api/v1/models/register",
+      "description": "注册新的AI模型版本到系统",
+      "params": {
+        "name": "lightgbm",
+        "version": "v2.0.0",
+        "model_path": "/models/lightgbm_v2.pth",
+        "description": "改进的LightGBM模型"
+      }
+    }
+  ],
+  "POST__api_v1_feedback_record": [
+    {
+      "name": "Test 记录用户反馈",
+      "method": "POST",
+      "url": "/api/v1/feedback/record",
+      "description": "记录用户对AI预测结果的反馈",
+      "params": {
+        "prediction_id": "pred_123456",
+        "user_rating": 4,
+        "actual_quality": 87,
+        "comments": "预测很准确"
+      }
+    }
+  ],
+  "GET__api_v1_capabilities": [
+    {
+      "name": "Test 获取服务能力",
+      "method": "GET",
+      "url": "/api/v1/capabilities",
+      "description": "获取AI服务支持的功能和格式列表"
+    }
+  ]
+}
