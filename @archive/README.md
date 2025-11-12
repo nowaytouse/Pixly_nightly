@@ -1,20 +1,24 @@
 # 文档归档说明
 
+**最后更新**: 2025-11-12 15:30  
+**归档状态**: Phase 47 完成，音频转换功能已实现
+
 ## 目的
 
 本目录集中存放历史文档和已经完成归档的资源，帮助保持项目根目录整洁，同时保证所有高价值信息可追溯。
 
 ## 目录概览
 
-- `docs_old/` – Phase/Session/Report 等 153 份历史文档的原始结构副本
+- `docs_old/` – Phase/Session/Report 等 154 份历史文档的原始结构副本
 - `phase_46_docs/` – Phase 46 系列的重点里程碑文档
-- `CLEANUP_PLAN.md` – 第二轮归档清理计划与操作记录
+- `deprecated_phase47_archived/` – Phase 47 废弃代码和临时文档
+- `@deprecated/` – 已废弃但仍具参考价值的Go代码与文档
+- `CLEANUP_PLAN.md` – 归档清理计划与操作记录（预计节省~2.0GB）
 - `QUICK_VALIDATION_TEST.md` – 快速验证测试脚本与说明
-- `@deprecated/` – 已废弃但仍具参考价值的代码与文档
 
 ### 压缩归档
 
-- `historical_docs_phase46-47.tar.gz` – Phase 46-47 历史文档完整备份
+- `historical_docs_phase46-47.tar.gz` – Phase 46-47 历史文档完整备份（待创建）
 - 完整历史归档：`~/Desktop/pixly_archive_backup_20251112.tar.gz`
 
 ## 归档策略
@@ -60,6 +64,15 @@
 | EX-006 预测准确性分析器 | `knowledge/analyzer.go` | `tools/accuracy_analyzer.py` | ✅ 已完成 |
 | EX-007 格式知识库 | `format_knowledge.go` | `core/python/ai/format_knowledge.py` | ✅ 已完成 |
 | EX-008 HTTP 参数验证器 | `http_validator.go` | `tools/request_validator.py` | ✅ 已完成 |
+
+### 第三轮新增功能（Phase 47.24-47.25）
+
+| 功能 | 实现位置 | 状态 | 完成日期 |
+|------|----------|------|----------|
+| 音频转换命令 | `core/rust/src/cli/commands/audio.rs` | ✅ 已完成 | 2025-11-12 |
+| Python AI音频预测集成 | HTTP API `/api/v1/predict/audio` | ✅ 已完成 | 2025-11-12 |
+| Q-004 单元测试增强 | Rust测试套件 (108个测试) | ✅ 已完成 | 2025-11-12 |
+| AI服务可用性检查 | 智能测试跳过机制 | ✅ 已完成 | 2025-11-12 |
 
 > 详细分析请参阅 `docs/DEPRECATED_ARCHIVE_ANALYSIS.md`
 
