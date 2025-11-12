@@ -22,12 +22,13 @@ console_error_panic_hook = "0.1"
 # 复用主库的功能
 pixly_converter = { path = "../", default-features = false }
 
-[dependencies.wee_alloc]
+# 使用现代内存分配器替代废弃的wee_alloc
+[dependencies.lol_alloc]
 version = "0.4"
 optional = true
 
 [features]
-default = ["wee_alloc"]
+default = ["lol_alloc"]
 
 [profile.release]
 opt-level = "z"     # 优化大小

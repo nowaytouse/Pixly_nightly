@@ -10,10 +10,11 @@ use image::{DynamicImage, ImageFormat};
 use std::io::Cursor;
 use base64::{Engine as _, engine::general_purpose};
 
-// 使用wee_alloc作为全局分配器（减小WASM体积）
-#[cfg(feature = "wee_alloc")]
+// 使用lol_alloc作为全局分配器（减小WASM体积）- 替代已废弃的wee_alloc
+#[cfg(feature = "lol_alloc")]
 #[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+static ALLOC: lol_alloc::AssumeSingleThreaded<lol_alloc::FreeListAllocator> = 
+    unsafe { lol_alloc::AssumeSingleThreaded::new(lol_alloc::FreeListAllocator::new()) };
 
 // 设置panic hook
 #[wasm_bindgen(start)]
