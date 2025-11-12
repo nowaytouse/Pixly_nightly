@@ -78,3 +78,4 @@ yarn-error.log
 *.rmeta
 *.pth
 *.db
+.DS_Store
