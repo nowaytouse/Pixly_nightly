@@ -18,9 +18,11 @@ scikit-learn>=1.5.0  # 2025版：改进算法 + 新estimators
 scikit-image>=0.24.0  # 2025版：更快图像处理
 lightgbm>=4.5.0  # 2025版：GPU训练优化 + 新特性
 
-# 强化学习（可选）
-# gym>=0.21.0
-# stable-baselines3>=1.6.0
+# 强化学习 (2025版本 - 默认启用)
+gym>=0.29.0  # 2025版：改进环境API + 更好兼容性
+stable-baselines3>=2.3.0  # 2025版：PyTorch 2.0支持 + 新算法
+gymnasium>=0.29.0  # 2025版：Gym的官方继承者
+# 注意：如需禁用强化学习，请设置环境变量 PIXLY_DISABLE_RL=1
 
 # 实用工具
 tqdm>=4.62.0

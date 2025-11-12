@@ -33,6 +33,7 @@ pub mod python_bridge;
 
 // 🚀 v3.1 新增：转换引擎模块
 pub mod conversion_engine;
+pub mod quality_predictor;
 
 // 根据编译特性选择入口点
 #[cfg(feature = "performance")]

@@ -393,6 +393,235 @@ class SWTFeatureExtractor:
         
         return (smooth_count / total_count * 100.0) if total_count > 0 else 0.0
     
+    def extract_advanced_go_features(self, image_path: str) -> Dict[str, float]:
+        """
+        提取Go高级算法特征 - 增强版SWT分析
+        包含Go原版的复杂度计算和频域分析
+        """
+        image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+        if image is None:
+            raise ValueError(f"无法加载图像: {image_path}")
+        
+        # Go高级算法特征
+        edge_strength = self._go_sobel_edge_strength(image)
+        texture_variance = self._go_texture_variance(image)
+        frequency_analysis = self._go_frequency_domain_analysis(image)
+        spatial_features = self._go_spatial_coherence(image)
+        
+        return {
+            'go_edge_strength': edge_strength,
+            'go_texture_variance': texture_variance,
+            'go_high_freq_power': frequency_analysis['high_freq'],
+            'go_mid_freq_power': frequency_analysis['mid_freq'],
+            'go_low_freq_power': frequency_analysis['low_freq'],
+            'go_spatial_coherence': spatial_features['coherence'],
+            'go_directional_energy': spatial_features['directional'],
+            'go_pattern_regularity': spatial_features['regularity']
+        }
+    
+    def _go_sobel_edge_strength(self, gray: np.ndarray) -> float:
+        """Go原版Sobel算法 - 精确实现"""
+        height, width = gray.shape
+        total_edge = 0.0
+        count = 0
+        
+        # Go Sobel核 (原版数值)
+        sobel_x = np.array([
+            [-1, 0, 1],
+            [-2, 0, 2], 
+            [-1, 0, 1]
+        ], dtype=np.float64)
+        
+        sobel_y = np.array([
+            [-1, -2, -1],
+            [0, 0, 0],
+            [1, 2, 1]
+        ], dtype=np.float64)
+        
+        for y in range(1, height - 1):
+            for x in range(1, width - 1):
+                gx = 0.0
+                gy = 0.0
+                
+                # Go算法：应用Sobel算子
+                for dy in range(-1, 2):
+                    for dx in range(-1, 2):
+                        pixel = float(gray[y + dy, x + dx])
+                        gx += pixel * sobel_x[dy + 1, dx + 1]
+                        gy += pixel * sobel_y[dy + 1, dx + 1]
+                
+                # Go算法：计算梯度幅值
+                magnitude = np.sqrt(gx * gx + gy * gy)
+                total_edge += magnitude
+                count += 1
+        
+        if count == 0:
+            return 0.0
+        
+        # Go算法：归一化到0-100
+        return (total_edge / count) / 255.0 * 100.0
+    
+    def _go_texture_variance(self, gray: np.ndarray) -> float:
+        """Go纹理方差算法 - 窗口方差分析"""
+        window_size = 5
+        height, width = gray.shape
+        variance_sum = 0.0
+        count = 0
+        
+        for y in range(window_size//2, height - window_size//2):
+            for x in range(window_size//2, width - window_size//2):
+                # 提取窗口
+                window = gray[y-window_size//2:y+window_size//2+1, 
+                            x-window_size//2:x+window_size//2+1]
+                
+                # Go算法：计算窗口方差
+                variance = np.var(window.astype(np.float64))
+                variance_sum += variance
+                count += 1
+        
+        return (variance_sum / count) if count > 0 else 0.0
+    
+    def _go_frequency_domain_analysis(self, gray: np.ndarray) -> Dict[str, float]:
+        """Go频域分析算法 - 多尺度频率能量"""
+        # FFT变换
+        f_transform = np.fft.fft2(gray.astype(np.float64))
+        f_shift = np.fft.fftshift(f_transform)
+        magnitude_spectrum = np.abs(f_shift)
+        
+        height, width = magnitude_spectrum.shape
+        center_y, center_x = height // 2, width // 2
+        
+        # Go算法：分频段能量分析
+        high_freq_energy = 0.0
+        mid_freq_energy = 0.0
+        low_freq_energy = 0.0
+        
+        for y in range(height):
+            for x in range(width):
+                # 计算到中心的距离
+                distance = np.sqrt((y - center_y)**2 + (x - center_x)**2)
+                energy = magnitude_spectrum[y, x]
+                
+                # Go算法：频段划分
+                if distance < min(height, width) * 0.1:
+                    low_freq_energy += energy
+                elif distance < min(height, width) * 0.3:
+                    mid_freq_energy += energy
+                else:
+                    high_freq_energy += energy
+        
+        # 归一化
+        total_energy = high_freq_energy + mid_freq_energy + low_freq_energy
+        if total_energy > 0:
+            return {
+                'high_freq': high_freq_energy / total_energy,
+                'mid_freq': mid_freq_energy / total_energy,
+                'low_freq': low_freq_energy / total_energy
+            }
+        else:
+            return {'high_freq': 0.0, 'mid_freq': 0.0, 'low_freq': 0.0}
+    
+    def _go_spatial_coherence(self, gray: np.ndarray) -> Dict[str, float]:
+        """Go空间相干性分析 - 方向性和规律性"""
+        height, width = gray.shape
+        
+        # 方向性能量计算
+        # 水平方向
+        horizontal_energy = 0.0
+        for y in range(height):
+            for x in range(width - 1):
+                diff = abs(float(gray[y, x]) - float(gray[y, x + 1]))
+                horizontal_energy += diff * diff
+        
+        # 垂直方向
+        vertical_energy = 0.0
+        for y in range(height - 1):
+            for x in range(width):
+                diff = abs(float(gray[y, x]) - float(gray[y + 1, x]))
+                vertical_energy += diff * diff
+        
+        # 对角线方向
+        diagonal_energy = 0.0
+        for y in range(height - 1):
+            for x in range(width - 1):
+                diff = abs(float(gray[y, x]) - float(gray[y + 1, x + 1]))
+                diagonal_energy += diff * diff
+        
+        # 方向性指数
+        total_directional = horizontal_energy + vertical_energy + diagonal_energy
+        directional_ratio = max(horizontal_energy, vertical_energy, diagonal_energy) / total_directional if total_directional > 0 else 0
+        
+        # 空间相干性
+        coherence = self._calculate_spatial_autocorrelation(gray)
+        
+        # 模式规律性
+        regularity = self._calculate_pattern_regularity(gray)
+        
+        return {
+            'coherence': coherence,
+            'directional': directional_ratio,
+            'regularity': regularity
+        }
+    
+    def _calculate_spatial_autocorrelation(self, gray: np.ndarray) -> float:
+        """计算空间自相关性"""
+        height, width = gray.shape
+        center_y, center_x = height // 2, width // 2
+        
+        # 选择中心区域计算自相关
+        region_size = min(height, width) // 4
+        if region_size < 10:
+            return 0.0
+            
+        center_region = gray[center_y-region_size:center_y+region_size, 
+                           center_x-region_size:center_x+region_size]
+        
+        # 计算不同位移的相关性
+        correlations = []
+        for shift in range(1, min(10, region_size)):
+            shifted = np.roll(center_region, shift, axis=0)
+            correlation = np.corrcoef(center_region.flatten(), shifted.flatten())[0, 1]
+            if not np.isnan(correlation):
+                correlations.append(abs(correlation))
+        
+        return np.mean(correlations) if correlations else 0.0
+    
+    def _calculate_pattern_regularity(self, gray: np.ndarray) -> float:
+        """计算模式规律性"""
+        # 使用局部二值模式(LBP)的简化版本
+        height, width = gray.shape
+        pattern_count = 0
+        regular_patterns = 0
+        
+        for y in range(1, height - 1):
+            for x in range(1, width - 1):
+                center = gray[y, x]
+                
+                # 8邻域比较
+                neighbors = [
+                    gray[y-1, x-1], gray[y-1, x], gray[y-1, x+1],
+                    gray[y, x-1], gray[y, x+1],
+                    gray[y+1, x-1], gray[y+1, x], gray[y+1, x+1]
+                ]
+                
+                # 计算二值模式
+                binary_pattern = 0
+                for i, neighbor in enumerate(neighbors):
+                    if neighbor >= center:
+                        binary_pattern |= (1 << i)
+                
+                # 检查是否为规律模式 (均匀模式)
+                transitions = 0
+                for i in range(8):
+                    if ((binary_pattern >> i) & 1) != ((binary_pattern >> ((i + 1) % 8)) & 1):
+                        transitions += 1
+                
+                pattern_count += 1
+                if transitions <= 2:  # 均匀模式
+                    regular_patterns += 1
+        
+        return (regular_patterns / pattern_count) if pattern_count > 0 else 0.0
+    
     def _calculate_texture_complexity(self, gray_float: np.ndarray) -> float:
         """计算纹理复杂度（局部标准差）"""
         # 局部窗口标准差

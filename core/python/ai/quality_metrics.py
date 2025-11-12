@@ -474,3 +474,91 @@ class SSIMCalculatorOptimized:
             ssim = self.calculate_ssim_8x8(img1, img2)
             results.append(ssim)
         return results
+
+
+class QualityPredictor:
+    """基于Go算法的质量预测器 - 转换前质量预测"""
+    
+    def __init__(self):
+        self.acceptable_ssim_threshold = 0.95
+        
+    def estimate_ssim_before_conversion(self, quality: int, has_alpha: bool, complexity: float) -> float:
+        """
+        基于Go EstimateSSIM算法的转换前SSIM预测
+        用于在实际转换前预估质量损失
+        """
+        # Go算法：基于质量参数的基础SSIM
+        base_ssim = 0.75 + (quality / 100.0) * 0.20
+        
+        # Go算法：透明通道会略微降低SSIM
+        if has_alpha:
+            base_ssim -= 0.02
+        
+        # Go算法：高复杂度图像SSIM略低
+        if complexity > 40:
+            base_ssim -= 0.03
+        
+        # Go算法：确保在合理范围内
+        if base_ssim > 0.99:
+            base_ssim = 0.99
+        if base_ssim < 0.70:
+            base_ssim = 0.70
+            
+        return base_ssim
+    
+    def is_quality_acceptable(self, ssim: float) -> bool:
+        """基于Go IsSSIMAcceptable算法判断质量是否可接受"""
+        return ssim >= self.acceptable_ssim_threshold
+    
+    def get_quality_level(self, ssim: float) -> str:
+        """基于Go GetQualityLevel算法获取质量等级"""
+        if ssim >= 0.98:
+            return "excellent"  # 极佳
+        elif ssim >= 0.95:
+            return "good"      # 良好
+        elif ssim >= 0.90:
+            return "fair"      # 尚可
+        else:
+            return "poor"      # 较差
+    
+    def predict_conversion_outcome(self, quality: int, source_info: Dict) -> Dict:
+        """
+        综合预测转换结果质量
+        整合Go算法的预测能力
+        """
+        has_alpha = source_info.get('has_alpha', False)
+        complexity = source_info.get('complexity', 30.0)  # 默认中等复杂度
+        
+        predicted_ssim = self.estimate_ssim_before_conversion(quality, has_alpha, complexity)
+        quality_level = self.get_quality_level(predicted_ssim)
+        is_acceptable = self.is_quality_acceptable(predicted_ssim)
+        
+        return {
+            'predicted_ssim': predicted_ssim,
+            'quality_level': quality_level,
+            'acceptable': is_acceptable,
+            'recommendation': self._get_quality_recommendation(predicted_ssim, quality)
+        }
+    
+    def _get_quality_recommendation(self, predicted_ssim: float, current_quality: int) -> str:
+        """基于预测结果提供质量建议"""
+        if predicted_ssim < 0.90:
+            return f"建议提高质量参数到{min(current_quality + 10, 100)}以获得更好效果"
+        elif predicted_ssim > 0.98:
+            return f"可以适当降低质量参数到{max(current_quality - 5, 70)}以减小文件大小"
+        else:
+            return "当前质量参数合适"
+
+
+# 全局质量预测器实例
+_global_quality_predictor = None
+_predictor_lock = threading.Lock()
+
+def get_quality_predictor() -> QualityPredictor:
+    """获取全局质量预测器实例（单例模式）"""
+    global _global_quality_predictor
+    
+    with _predictor_lock:
+        if _global_quality_predictor is None:
+            _global_quality_predictor = QualityPredictor()
+        return _global_quality_predictor
