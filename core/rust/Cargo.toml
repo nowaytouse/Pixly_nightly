@@ -80,7 +80,7 @@ ort = { version = "2.0.0-rc.10", features = ["download-binaries"], optional = tr
 
 # 📊 性能监控
 criterion = { version = "0.5", optional = true }
-pprof = { version = "0.13", features = ["flamegraph", "protobuf-codec"], optional = true }
+pprof = { version = "0.14", features = ["flamegraph", "protobuf-codec"], optional = true }
 
 # 🔧 转换引擎依赖
 chrono = { version = "0.4", features = ["serde"] }
