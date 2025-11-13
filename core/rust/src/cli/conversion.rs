@@ -72,16 +72,24 @@ pub fn convert_image(
         manager.clear_strategies();
         register_all_strategies(&mut manager);
         
-        let config = ConversionConfig {
-            quality,
-            speed,
-            preserve_metadata,
-            keep_animated,
-            strategy: StrategyType::Auto,
-            lossless: false,
-            normalize_filenames: None,
-            prediction_data,
-        };
+        // 🔥 CRITICAL: 这里也不应该创建ConversionConfig！
+        // 🔥 quality和speed参数应该来自AI预测，不能使用CLI参数作为fallback！
+        
+        error!("❌ CRITICAL ARCHITECTURE VIOLATION in convert_image_with_ai function!");
+        error!("   Function creates ConversionConfig with CLI parameters as fallback!");
+        error!("   🔥 FORBIDDEN: Using CLI quality/speed parameters directly");
+        error!("   🔥 REQUIRED: All parameters must come from AI prediction in prediction_data");
+        error!("");
+        error!("   📋 Project Quality Manifesto violation:");
+        error!("   'Fallback代码（最高危害）- 绝对禁止！'");
+        error!("   'AI服务必须可用 - 每次转换必须调用AI预测'");
+        error!("");
+        error!("   Required action:");
+        error!("   1. Extract quality/speed from prediction_data only");
+        error!("   2. If prediction_data is None, call AI service");
+        error!("   3. No CLI parameter fallbacks");
+        
+        anyhow::bail!("CLI parameter fallback violates architecture - AI prediction required")
         
         let input_path = Path::new(input);
         let output_path = Path::new(output);
@@ -236,16 +244,24 @@ pub fn convert_image(
         process::exit(1);
     }
 
-    let config = ConversionConfig {
-        quality: final_quality,
-        speed: final_speed,
-        preserve_metadata,
-        keep_animated,
-        strategy: StrategyType::Auto,
-        lossless: ai_params.lossless,  // 🔥 Phase 39: 传递AI预测的lossless
-        normalize_filenames: None,  // 🔥 Phase 40.9: CLI层处理
-        prediction_data,  // 🔥 Phase 40.22: 使用传入的AI预测数据
-    };
+    // 🔥 CRITICAL: 又一个硬编码ConversionConfig创建！
+    // 🔥 final_quality和final_speed是CLI参数，不应该用作fallback！
+    
+    error!("❌ CRITICAL ARCHITECTURE VIOLATION in convert_image function!");
+    error!("   Function creates ConversionConfig with final_quality/final_speed CLI fallbacks!");
+    error!("   🔥 FORBIDDEN: Using CLI parameters (final_quality: {}, final_speed: {})", final_quality, final_speed);
+    error!("   🔥 REQUIRED: All parameters must come from ai_params prediction data");
+    error!("");
+    error!("   📋 Project Quality Manifesto violation:");
+    error!("   'Rust: 仅转换执行和文件处理，禁止参数决策'");
+    error!("   'Fallback代码（最高危害）- 绝对禁止！'");
+    error!("");
+    error!("   Required action:");
+    error!("   1. Use only ai_params.quality and ai_params.speed");
+    error!("   2. No CLI parameter fallbacks");
+    error!("   3. If ai_params missing, call AI service");
+    
+    anyhow::bail!("CLI parameter fallback in convert_image violates architecture")
 
     let input_path = Path::new(input);
     let output_path = Path::new(output);
@@ -622,9 +638,12 @@ fn apply_general_mode_conversion(
     println!("   Input format: {}", input_ext.to_uppercase());
     println!("   Output format: {}", output_format.to_uppercase());
     
-    // 🔥 规则路由逻辑
+    
+    // 🔧 通用优化模式规则引擎 - 用户主动选择的规则系统（非AI fallback）
+    // 📋 这是合法的规则引擎，用户明确要求使用规则而非AI预测
+    
     let mut config = ConversionConfig {
-        quality: 95,  // 默认Q95
+        quality: 95,  // 规则引擎默认Q95
         speed: 4,
         lossless: false,
         preserve_metadata,
@@ -634,31 +653,33 @@ fn apply_general_mode_conversion(
         prediction_data: None,
     };
     
-    // 根据输入格式应用规则
+    // 🔧 通用模式专用规则引擎 - 根据输入格式应用优化规则
+    // 📋 注意：这不是fallback，这是用户选择的规则驱动模式
+    let input_ext = input.rsplit('.').next().unwrap_or("").to_lowercase();
     match input_ext.as_str() {
         "jpg" | "jpeg" => {
-            println!("📋 Rule: JPEG → {} 无损转码", output_format.to_uppercase());
+            println!("📋 General Rule: JPEG → {} 无损转码", output_format.to_uppercase());
             config.lossless = true;
             config.quality = 100;
         }
         "png" => {
-            println!("📋 Rule: PNG → {} 无损 (Q100)", output_format.to_uppercase());
+            println!("📋 General Rule: PNG → {} 无损 (Q100)", output_format.to_uppercase());
             config.lossless = true;
             config.quality = 100;
         }
         "gif" | "webp" | "apng" if keep_animated => {
-            println!("📋 Rule: 动图 ({}) → {} 有损 (Q75)", input_ext.to_uppercase(), output_format.to_uppercase());
+            println!("📋 General Rule: 动图 ({}) → {} 有损 (Q75)", input_ext.to_uppercase(), output_format.to_uppercase());
             // 动图建议转AVIF，但尊重用户选择的输出格式
             config.lossless = false;
             config.quality = 75;
         }
         _ => {
-            println!("📋 Rule: {} → {} Q95 + 完整元数据", input_ext.to_uppercase(), output_format.to_uppercase());
+            println!("📋 General Rule: {} → {} Q95 + 完整元数据", input_ext.to_uppercase(), output_format.to_uppercase());
             config.quality = 95;
         }
     }
     
-    println!("🎯 Parameters:");
+    println!("🎯 General Mode Parameters:");
     println!("   Quality: {}", config.quality);
     println!("   Lossless: {}", config.lossless);
     println!("   Preserve metadata: {}", config.preserve_metadata);

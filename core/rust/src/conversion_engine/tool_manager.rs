@@ -200,13 +200,13 @@ impl ToolManager {
                 Ok(tool_info) => {
                     info!("✅ 检测到工具: {} v{} at {}", 
                           tool, tool_info.version, tool_info.path.display());
-                    tools.insert(*tool, tool_info);
+                    tools.insert(tool.clone(), tool_info);
                 }
                 Err(e) => {
                     warn!("⚠️ 未找到工具 {}: {}", tool, e);
                     // 创建不可用的工具信息
-                    tools.insert(*tool, ToolInfo {
-                        tool: *tool,
+                    tools.insert(tool.clone(), ToolInfo {
+                        tool: tool.clone(),
                         version: "unknown".to_string(),
                         path: PathBuf::new(),
                         available: false,
@@ -232,7 +232,7 @@ impl ToolManager {
                         let features = self.detect_tool_features(tool, path).await;
                         
                         return Ok(ToolInfo {
-                            tool: *tool,
+                            tool: tool.clone(),
                             version,
                             path: path.clone(),
                             available: true,
@@ -414,7 +414,7 @@ impl ToolManager {
             })
             .unwrap();
         
-        Ok(**best_tool)
+        Ok((*best_tool).clone())
     }
     
     fn calculate_tool_score(&self, tool: &ConversionTool, criteria: &ToolSelectionCriteria, 
@@ -512,7 +512,7 @@ impl ToolManager {
         let tools = self.tools.read().await;
         tools.values()
             .filter(|info| info.available)
-            .map(|info| info.tool)
+            .map(|info| info.tool.clone())
             .collect()
     }
     

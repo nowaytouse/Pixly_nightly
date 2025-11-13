@@ -5,8 +5,8 @@
 // - 零拷贝内存访问 (vs Go频繁内存分配)
 // - 硬件加速Sobel算子 (vs Go软件实现)
 
-use std::simd::prelude::*;
-use image::{DynamicImage, Rgb, Rgba};
+use wide::*;
+use image::{DynamicImage, Rgb, Rgba, GenericImageView};
 use anyhow::Result;
 
 /// SIMD加速的图像特征提取器
@@ -17,7 +17,7 @@ pub struct SIMDFeatureExtractor {
 impl SIMDFeatureExtractor {
     pub fn new() -> Self {
         Self {
-            use_simd: std::simd::Simd::<f32, 8>::LEN > 0, // 检查SIMD可用性
+            use_simd: cfg!(feature = "simd"), // 检查SIMD特性是否启用
         }
     }
     

@@ -295,18 +295,53 @@ fn try_ai_prediction(
             
             // 🔥 Phase 36: AI智能预测lossless和format_options
             // 🔥 Phase 40.16: 使用启发式规则而不是硬编码false
-            let lossless = response.lossless.unwrap_or_else(|| {
-                decide_lossless_heuristic(&chars.format, target_format)
-            });
+            // 🔥 CRITICAL: AI响应必须完整 - 不允许任何parameter fallback！
+            // 📋 如果AI服务返回不完整数据，说明AI服务有问题，应该报错而非fallback
+            
+            let quality = match response.quality {
+                Some(q) => q,
+                None => {
+                    error!("❌ CRITICAL: AI service returned incomplete response - missing quality parameter!");
+                    error!("🔥 NO hardcoded fallback allowed (quality=80)");
+                    error!("📋 Project Quality Manifesto violation: 'AI服务必须可用 - 每次转换必须调用AI预测'");
+                    error!("Required action:");
+                    error!("1. Check AI service health: curl http://localhost:50052/api/v1/version");
+                    error!("2. Verify AI service prediction endpoint");
+                    error!("3. Fix AI service to return complete responses");
+                    error!("4. NO parameter fallbacks allowed");
+                    return None;
+                }
+            };
+            
+            let speed = match response.speed {
+                Some(s) => s,
+                None => {
+                    error!("❌ CRITICAL: AI service returned incomplete response - missing speed parameter!");
+                    error!("🔥 NO hardcoded fallback allowed (speed=4)");
+                    error!("📋 Project Quality Manifesto violation: 'AI服务必须可用 - 每次转换必须调用AI预测'");
+                    return None;
+                }
+            };
+            
+            let lossless = match response.lossless {
+                Some(l) => l,
+                None => {
+                    error!("❌ CRITICAL: AI service returned incomplete response - missing lossless parameter!");
+                    error!("🔥 NO heuristic fallback allowed");
+                    error!("📋 Project Quality Manifesto violation: 'AI服务必须可用 - 每次转换必须调用AI预测'");
+                    return None;
+                }
+            };
+            
             let format_options = response.format_options.unwrap_or_default();
             
-            info!("✅ AI prediction SUCCESS: quality={:?}, speed={:?}, lossless={}, format_opts={}, confidence={:.1}%",
-                response.quality, response.speed, lossless, format_options.len(), response.confidence * 100.0);
+            info!("✅ AI prediction SUCCESS: quality={}, speed={}, lossless={}, format_opts={}, confidence={:.1}%",
+                quality, speed, lossless, format_options.len(), response.confidence * 100.0);
             
             // Convert to OptimizedParams
             Some(OptimizedParams {
-                quality: response.quality.unwrap_or(80),
-                speed: response.speed.unwrap_or(4),
+                quality,
+                speed,
                 lossless, // 🔥 AI智能预测无损模式
                 format_options, // 🔥 AI智能预测格式选项
                 estimated_size: (chars.file_size as f32 * 0.8) as u64,

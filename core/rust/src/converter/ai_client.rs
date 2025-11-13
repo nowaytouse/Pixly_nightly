@@ -799,8 +799,11 @@ impl AIClient {
     ) -> Result<VideoParams> {
         warn!("⚠️ AI client not enabled, returning default video params");
         Ok(VideoParams {
+            encoder: "h264".to_string(),
             crf: 23,
             preset: "medium".to_string(),
+            fps: Some(30),
+            scale: None,
         })
     }
 }

@@ -273,8 +273,9 @@ impl UIBridgeInterface {
         let is_ready = matches!(*self.status.read().unwrap(), UIStatus::Ready);
         health.insert("is_ready".to_string(), Value::Bool(is_ready));
         
-        // 内存使用情况 (简化)
-        health.insert("memory_usage_mb".to_string(), Value::Number(0.into())); // TODO: 实际内存监控
+        // 实际内存监控
+        let memory_usage = self.get_memory_usage_mb();
+        health.insert("memory_usage_mb".to_string(), Value::Number(memory_usage.into()));
         
         // 错误率
         let stats = self.stats.read().unwrap();
@@ -349,7 +350,109 @@ impl UIBridgeInterface {
         println!("✅ 缓存和统计已清空");
     }
     
-    /// 内部方法：更新统计信息
+    
+    /// 获取实际内存使用情况 (MB)
+    fn get_memory_usage_mb(&self) -> u64 {
+        #[cfg(target_os = "linux")]
+        {
+            // Linux: 读取/proc/self/status
+            use std::fs;
+            if let Ok(status) = fs::read_to_string("/proc/self/status") {
+                for line in status.lines() {
+                    if line.starts_with("VmRSS:") {
+                        if let Some(kb_str) = line.split_whitespace().nth(1) {
+                            if let Ok(kb) = kb_str.parse::<u64>() {
+                                return kb / 1024; // KB转MB
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        #[cfg(target_os = "macos")]
+        {
+            // macOS: 使用mach系统调用
+            use std::mem;
+            extern "C" {
+                fn mach_task_self() -> u32;
+                fn task_info(target_task: u32, flavor: u32, task_info_out: *mut u8, task_info_outCnt: *mut u32) -> i32;
+            }
+            
+            const TASK_BASIC_INFO: u32 = 5;
+            const TASK_BASIC_INFO_COUNT: u32 = 5;
+            
+            #[repr(C)]
+            struct TaskBasicInfo {
+                suspend_count: u32,
+                virtual_size: u64,
+                resident_size: u64,
+                user_time: u64,
+                system_time: u64,
+            }
+            
+            unsafe {
+                let mut info = mem::zeroed::<TaskBasicInfo>();
+                let mut count = TASK_BASIC_INFO_COUNT;
+                let result = task_info(
+                    mach_task_self(),
+                    TASK_BASIC_INFO,
+                    &mut info as *mut _ as *mut u8,
+                    &mut count,
+                );
+                
+                if result == 0 {
+                    return info.resident_size / (1024 * 1024); // Bytes转MB
+                }
+            }
+        }
+        
+        #[cfg(target_os = "windows")]
+        {
+            // Windows: 使用GetProcessMemoryInfo
+            use std::mem;
+            extern "system" {
+                fn GetCurrentProcess() -> *mut std::ffi::c_void;
+                fn GetProcessMemoryInfo(
+                    hProcess: *mut std::ffi::c_void,
+                    ppsmemCounters: *mut ProcessMemoryCounters,
+                    cb: u32,
+                ) -> i32;
+            }
+            
+            #[repr(C)]
+            struct ProcessMemoryCounters {
+                cb: u32,
+                PageFaultCount: u32,
+                PeakWorkingSetSize: u64,
+                WorkingSetSize: u64,
+                QuotaPeakPagedPoolUsage: u64,
+                QuotaPagedPoolUsage: u64,
+                QuotaPeakNonPagedPoolUsage: u64,
+                QuotaNonPagedPoolUsage: u64,
+                PagefileUsage: u64,
+                PeakPagefileUsage: u64,
+            }
+            
+            unsafe {
+                let mut pmc = mem::zeroed::<ProcessMemoryCounters>();
+                pmc.cb = mem::size_of::<ProcessMemoryCounters>() as u32;
+                
+                let result = GetProcessMemoryInfo(
+                    GetCurrentProcess(),
+                    &mut pmc,
+                    mem::size_of::<ProcessMemoryCounters>() as u32,
+                );
+                
+                if result != 0 {
+                    return pmc.WorkingSetSize / (1024 * 1024); // Bytes转MB
+                }
+            }
+        }
+        
+        // 回退：估算内存使用
+        0
+    }
     fn update_stats(&self, success: bool, inference_time: f32) {
         let mut stats = self.stats.write().unwrap();
         

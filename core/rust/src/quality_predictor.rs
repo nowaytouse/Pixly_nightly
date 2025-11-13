@@ -125,7 +125,7 @@ impl QualityPredictor {
 
     /// Rust扩展：预测置信度计算
     fn calculate_prediction_confidence(&self, image_info: &ImageInfo, predicted_ssim: f64) -> f64 {
-        let mut confidence = 0.85; // 基础置信度
+        let mut confidence: f64 = 0.85; // 基础置信度
 
         // 基于图像复杂度调整置信度
         if image_info.complexity < 20.0 {
@@ -141,7 +141,7 @@ impl QualityPredictor {
             confidence -= 0.10; // 低质量预测不确定性大
         }
 
-        confidence.clamp(0.50, 0.99)
+        confidence.clamp(0.50_f64, 0.99_f64)
     }
 
     /// 基于Go算法的质量建议生成

@@ -39,15 +39,27 @@ pub struct WebPConfig {
     pub preserve_alpha: bool,
 }
 
-impl Default for WebPConfig {
-    fn default() -> Self {
-        Self {
-            quality: 85.0,
-            lossless: false,
-            preserve_alpha: true,
-        }
-    }
-}
+// 🔥 CRITICAL: WebPConfig不应有Default实现！
+// 📋 Default实现包含硬编码fallback值：
+// - quality: 85.0   (硬编码fallback - 必须来自AI)
+// - lossless: false (硬编码fallback - 必须来自AI)
+// 
+// ✅ 正确的WebPConfig构建方式：
+// 1. 从AI预测数据构建
+// 2. 从规则引擎明确指定
+// 3. 从用户CLI参数明确构建
+// 
+// ❌ 禁止使用WebPConfig::default()
+
+// impl Default for WebPConfig {
+//     fn default() -> Self {
+//         Self {
+//             quality: 85.0,      // ❌ 硬编码fallback
+//             lossless: false,    // ❌ 硬编码fallback
+//             preserve_alpha: true,
+//         }
+//     }
+// }
 
 /// 原生WebP编码器
 pub struct NativeWebPEncoder;

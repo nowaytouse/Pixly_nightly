@@ -58,17 +58,29 @@ pub enum ChromaSampling {
     Yuv420,
 }
 
-impl Default for AvifConfig {
-    fn default() -> Self {
-        Self {
-            quality: 85.0,
-            speed: 4,
-            chroma_sampling: ChromaSampling::Yuv420,
-            preserve_alpha: true,
-            threads: 0, // auto
-        }
-    }
-}
+// 🔥 CRITICAL: AvifConfig不应有Default实现！
+// 📋 Default实现包含硬编码fallback值：
+// - quality: 85.0  (硬编码fallback - 必须来自AI)
+// - speed: 4       (硬编码fallback - 必须来自AI)
+// 
+// ✅ 正确的AvifConfig构建方式：
+// 1. 从AI预测数据构建
+// 2. 从规则引擎明确指定
+// 3. 从用户CLI参数明确构建
+// 
+// ❌ 禁止使用AvifConfig::default()
+
+// impl Default for AvifConfig {
+//     fn default() -> Self {
+//         Self {
+//             quality: 85.0,      // ❌ 硬编码fallback
+//             speed: 4,           // ❌ 硬编码fallback
+//             chroma_sampling: ChromaSampling::Yuv420,
+//             preserve_alpha: true,
+//             threads: 0, // auto
+//         }
+//     }
+// }
 
 /// 原生AVIF编码器
 pub struct NativeAvifEncoder;
@@ -160,7 +172,7 @@ impl NativeAvifEncoder {
         Ok(())
     }
     
-    /// 不支持原生编码时的fallback提示
+    /// ❌ AVIF功能必须可用 - 严禁任何fallback
     #[cfg(not(feature = "native-avif"))]
     pub fn encode<P: AsRef<Path>>(
         _input_path: P,
@@ -168,8 +180,19 @@ impl NativeAvifEncoder {
         _config: &AvifConfig,
     ) -> Result<()> {
         anyhow::bail!(
-            "Native AVIF encoding not available. \
-             Compile with --features native-avif or use CLI fallback."
+            "❌ CRITICAL: Native AVIF encoding REQUIRED but not available!\n\
+             \n\
+             🔥 This is a CONFIGURATION ERROR, not a fallback situation!\n\
+             \n\
+             Required action:\n\
+             1. Compile with: cargo build --features native-avif\n\
+             2. Or enable in Cargo.toml: native-avif = true\n\
+             \n\
+             ⚠️  NO FALLBACK AVAILABLE - AVIF conversion WILL FAIL without native support!\n\
+             ⚠️  NO CLI fallback - violates project architecture principles!\n\
+             \n\
+             📋 Project Quality Manifesto: 'Fallback代码（最高危害）- 绝对禁止！'\n\
+             📋 Reason: Fallback掩盖真实问题，让功能成为摆设，延缓问题发现"
         )
     }
 }

@@ -32,11 +32,6 @@ pub use process_pool::{ProcessPool, CommandRequest, CommandResult};
 pub use io_scheduler::{IOScheduler, IORequest, IOResult};
 pub use format_converter::FormatConverter;
 
-use tool_manager::{ToolManager, ConversionTool};
-use process_pool::ProcessPool;
-use io_scheduler::IOScheduler;
-use format_converter::FormatConverter;
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConversionRequest {
     pub input_path: PathBuf,
@@ -154,6 +149,11 @@ impl ConversionEngine {
         
         let start_time = std::time::Instant::now();
         
+        // 保存request字段以备错误处理使用
+        let input_path = request.input_path.clone();
+        let output_path = request.output_path.clone();
+        let target_format = request.target_format.clone();
+        
         // 执行转换
         let result = self.execute_conversion(request, &request_id).await;
         
@@ -165,7 +165,7 @@ impl ConversionEngine {
                 conversion_result.processing_time_ms = start_time.elapsed().as_millis() as u64;
                 info!("✅ 转换完成: {} -> {} ({:.1}% 压缩)", 
                       conversion_result.input_path.display(),
-                      conversion_result.target_format,
+                      target_format,
                       (1.0 - conversion_result.compression_ratio) * 100.0);
                 Ok(conversion_result)
             }
@@ -173,8 +173,8 @@ impl ConversionEngine {
                 error!("❌ 转换失败: {}", e);
                 Ok(ConversionResult {
                     success: false,
-                    input_path: request.input_path,
-                    output_path: request.output_path,
+                    input_path,
+                    output_path,
                     original_size: 0,
                     output_size: 0,
                     compression_ratio: 0.0,
@@ -204,7 +204,15 @@ impl ConversionEngine {
         
         // 5. 执行转换（带超时）
         let timeout_duration = Duration::from_secs(self.config.conversion_timeout_seconds);
-        let conversion_future = self.process_pool.execute_command(conversion_command);
+        let command_request = CommandRequest {
+            executable: conversion_command[0].clone(),
+            args: conversion_command[1..].to_vec(),
+            working_dir: None,
+            timeout_seconds: self.config.conversion_timeout_seconds,
+            capture_output: true,
+            environment_vars: vec![],
+        };
+        let conversion_future = self.process_pool.execute_command(command_request);
         
         let command_result = timeout(timeout_duration, conversion_future).await
             .map_err(|_| anyhow!("转换超时"))??;
@@ -238,7 +246,7 @@ impl ConversionEngine {
     }
     
     async fn build_conversion_command(&self, request: &ConversionRequest, tool: &ConversionTool) -> Result<Vec<String>> {
-        let mut command = vec![tool.get_executable_name()];
+        let mut command = vec![tool.get_executable_name().to_string()];
         
         match tool {
             ConversionTool::CJXL => {
@@ -299,6 +307,29 @@ impl ConversionEngine {
                 command.push("-q:v".to_string());
                 command.push(format!("{}", (100 - request.quality) / 3)); // FFmpeg quality scale
                 command.push("-y".to_string()); // 覆盖输出文件
+                command.push(request.output_path.to_string_lossy().to_string());
+            }
+            
+            ConversionTool::DJXL => {
+                command.push(request.input_path.to_string_lossy().to_string());
+                command.push(request.output_path.to_string_lossy().to_string());
+            }
+            
+            ConversionTool::AVIFDEC => {
+                command.push(request.input_path.to_string_lossy().to_string());
+                command.push(request.output_path.to_string_lossy().to_string());
+            }
+            
+            ConversionTool::DWEBP => {
+                command.push(request.input_path.to_string_lossy().to_string());
+                command.push("-o".to_string());
+                command.push(request.output_path.to_string_lossy().to_string());
+            }
+            
+            ConversionTool::MAGICK => {
+                command.push(request.input_path.to_string_lossy().to_string());
+                command.push("-quality".to_string());
+                command.push(format!("{}", request.quality));
                 command.push(request.output_path.to_string_lossy().to_string());
             }
         }

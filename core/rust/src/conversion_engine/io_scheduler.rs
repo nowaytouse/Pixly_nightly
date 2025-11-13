@@ -112,11 +112,11 @@ impl IOScheduler {
         
         debug!("💾 执行I/O操作: {:?} on {}", request.operation, request.file_path.display());
         
-        let result = match request.operation {
+        let result = match &request.operation {
             IOOperation::Read => self.handle_read(&request).await,
-            IOOperation::Write { data } => self.handle_write(&request, data).await,
-            IOOperation::Copy { destination } => self.handle_copy(&request, destination).await,
-            IOOperation::Move { destination } => self.handle_move(&request, destination).await,
+            IOOperation::Write { data } => self.handle_write(&request, data.clone()).await,
+            IOOperation::Copy { destination } => self.handle_copy(&request, destination.clone()).await,
+            IOOperation::Move { destination } => self.handle_move(&request, destination.clone()).await,
             IOOperation::Delete => self.handle_delete(&request).await,
             IOOperation::GetMetadata => self.handle_get_metadata(&request).await,
         };
@@ -429,13 +429,16 @@ impl IOScheduler {
 
     async fn evict_cache_entries(&self, cache: &mut HashMap<PathBuf, CacheEntry>) {
         // LRU驱逐策略
-        let mut entries: Vec<_> = cache.iter().collect();
-        entries.sort_by(|a, b| a.1.last_accessed.cmp(&b.1.last_accessed));
+        let mut entries: Vec<_> = cache.iter().map(|(k, v)| (k.clone(), v.last_accessed)).collect();
+        entries.sort_by(|a, b| a.1.cmp(&b.1));
+        
+        // 收集要移除的键
+        let evict_count = cache.len() / 4;
+        let keys_to_remove: Vec<_> = entries.iter().take(evict_count).map(|(path, _)| path.clone()).collect();
         
         // 移除最老的25%条目
-        let evict_count = cache.len() / 4;
-        for (path, _) in entries.iter().take(evict_count) {
-            cache.remove(*path);
+        for path in keys_to_remove {
+            cache.remove(&path);
         }
     }
 

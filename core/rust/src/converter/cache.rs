@@ -26,7 +26,7 @@ use std::collections::HashMap;
 use std::time::{SystemTime, Duration};
 use std::fs;
 use serde::{Deserialize, Serialize};
-use sha2::{Sha256, Digest};
+use blake3;
 // 🔧 统一日志系统
 use tracing::{info, warn, debug};
 
@@ -150,7 +150,7 @@ impl CacheManager {
         format: &str,
         params: &HashMap<String, String>,
     ) -> Result<String> {
-        let mut hasher = Sha256::new();
+        let mut hasher = blake3::Hasher::new();
         
         // 读取文件内容并计算哈希 (对于大文件，只读取部分内容)
         let file_hash = Self::hash_file(source.as_ref())?;
@@ -168,7 +168,7 @@ impl CacheManager {
         }
         
         let hash = hasher.finalize();
-        Ok(format!("{:x}", hash))
+        Ok(hash.to_hex().to_string())
     }
     
     /// 计算文件哈希 (快速版本)
@@ -177,7 +177,7 @@ impl CacheManager {
         
         let mut file = fs::File::open(path)?;
         let file_size = file.metadata()?.len();
-        let mut hasher = Sha256::new();
+        let mut hasher = blake3::Hasher::new();
         
         // 对于大文件，只哈希头部、中部和尾部
         if file_size > 10 * 1024 * 1024 { // > 10MB
@@ -198,7 +198,7 @@ impl CacheManager {
             hasher.update(&buffer);
             
             // 添加文件大小到哈希
-            hasher.update(file_size.to_le_bytes());
+            hasher.update(&file_size.to_le_bytes());
         } else {
             // 小文件，读取全部内容
             let mut buffer = Vec::new();
@@ -207,7 +207,7 @@ impl CacheManager {
         }
         
         let hash = hasher.finalize();
-        Ok(format!("{:x}", hash))
+        Ok(hash.to_hex().to_string())
     }
     
     /// 查找缓存

@@ -6,7 +6,8 @@
 // - 类型安全转换 (vs Go反射解析)
 
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList, PyTuple};
+use pyo3::{Bound};
+use pyo3::types::{PyDict, PyList, PyTuple, PyModule, PyAny};
 use anyhow::{Context, Result};
 use std::collections::HashMap;
 
@@ -31,18 +32,22 @@ impl PythonPredictionInterface {
     pub fn initialize_dispatcher(&mut self, models_dir: &str) -> Result<()> {
         Python::with_gil(|py| -> Result<()> {
             // 添加Python路径
-            let sys = py.import("sys")?;
-            let path: &PyList = sys.getattr("path")?.downcast()?;
-            path.insert(0, "core/python")?;
+            let sys = PyModule::import_bound(py, "sys").map_err(|e| anyhow::anyhow!("Failed to import sys: {}", e))?;
+            let path_attr = sys.getattr("path").map_err(|e| anyhow::anyhow!("Failed to get sys.path: {}", e))?;
+            let path = match path_attr.downcast::<PyList>() {
+                Ok(list) => list,
+                Err(_) => return Err(anyhow::anyhow!("Failed to downcast path to PyList")),
+            };
+            path.insert(0, "core/python").map_err(|e| anyhow::anyhow!("Failed to insert path: {}", e))?;
             
             // 导入本地化AI调度器
-            let ai_module = py.import("ai.local_dispatcher")
-                .context("无法导入ai.local_dispatcher模块")?;
-            let dispatcher_class = ai_module.getattr("LocalAIDispatcher")?;
+            let ai_module = PyModule::import_bound(py, "ai.local_dispatcher")
+                .map_err(|e| anyhow::anyhow!("无法导入ai.local_dispatcher模块: {}", e))?;
+            let dispatcher_class = ai_module.getattr("LocalAIDispatcher").map_err(|e| anyhow::anyhow!("Failed to get LocalAIDispatcher: {}", e))?;
             
             // 创建调度器实例
-            let args = PyTuple::new(py, &[models_dir, "config", "cache"]);
-            let dispatcher = dispatcher_class.call1(args)?;
+            let args = PyTuple::new_bound(py, &[models_dir, "config", "cache"]);
+            let dispatcher = dispatcher_class.call1(args).map_err(|e| anyhow::anyhow!("Failed to create dispatcher: {}", e))?;
             
             self.dispatcher = Some(dispatcher.to_object(py));
             
@@ -53,7 +58,7 @@ impl PythonPredictionInterface {
     
     /// 零拷贝特征转换
     fn features_to_python(&self, py: Python, features: &ImageFeatures) -> Result<PyObject> {
-        let request_dict = PyDict::new(py);
+        let request_dict = PyDict::new_bound(py);
         
         // 基础请求参数
         request_dict.set_item("image_path", "rust_extracted")?;
@@ -63,7 +68,7 @@ impl PythonPredictionInterface {
         request_dict.set_item("enable_caching", true)?;
         
         // Rust提取的特征数据 (零拷贝传递)
-        let features_dict = PyDict::new(py);
+        let features_dict = PyDict::new_bound(py);
         features_dict.set_item("width", features.width)?;
         features_dict.set_item("height", features.height)?;
         features_dict.set_item("channels", features.channels)?;
@@ -84,20 +89,20 @@ impl PythonPredictionInterface {
         Ok(request_dict.to_object(py))
     }
     
-    /// 零拷贝结果解析
-    fn parse_python_result(&self, py_result: &PyAny) -> Result<PredictionResult> {
+    /// 零拷贝结果解析 (现代化PyO3 API)
+    fn parse_python_result(&self, py_result: &Bound<PyAny>) -> Result<PredictionResult> {
         // 直接从Python对象提取字段 (零拷贝)
         let quality: u8 = py_result.getattr("quality")?.extract()?;
         let distance: f32 = py_result.getattr("distance")?.extract()?;
         let effort: u8 = py_result.getattr("effort")
-            .unwrap_or_else(|_| py_result.py().None())
-            .extract().unwrap_or(6);
+            .map(|attr| attr.extract().unwrap_or(6))
+            .unwrap_or(6);
         let confidence: f32 = py_result.getattr("confidence")?.extract()?;
         let model_used: String = py_result.getattr("model_used")?.extract()?;
         let inference_time_ms: f32 = py_result.getattr("inference_time_ms")?.extract()?;
         let reasoning: String = py_result.getattr("reasoning")
-            .unwrap_or_else(|_| py_result.py().None())
-            .extract().unwrap_or_default();
+            .map(|attr| attr.extract().unwrap_or_else(|_| "No reasoning provided".to_string()))
+            .unwrap_or_else(|_| "No reasoning provided".to_string());
         
         Ok(PredictionResult {
             quality,
@@ -122,8 +127,8 @@ impl PythonPredictionInterface {
         let dispatcher = self.dispatcher.as_ref()
             .context("Python调度器未初始化")?;
         
-        Python::with_gil(|py| -> Result<PredictionResult> {
-            let dispatcher = dispatcher.as_ref(py);
+        let result = Python::with_gil(|py| -> Result<PredictionResult> {
+            let dispatcher = dispatcher.bind(py);
             
             // 零拷贝特征转换
             let request = self.features_to_python(py, features)?;
@@ -133,13 +138,15 @@ impl PythonPredictionInterface {
                 .context("Python预测调用失败")?;
             
             // 零拷贝结果解析
-            let result = self.parse_python_result(py_result)?;
-            
-            // 缓存结果
-            self.prediction_cache.insert(cache_key, result.clone());
+            let result = self.parse_python_result(&py_result)?;
             
             Ok(result)
-        })
+        })?;
+        
+        // 缓存结果
+        self.prediction_cache.insert(cache_key, result.clone());
+        
+        Ok(result)
     }
     
     /// 批量预测 (SIMD优化)
@@ -149,22 +156,25 @@ impl PythonPredictionInterface {
         Python::with_gil(|py| -> Result<()> {
             let dispatcher = self.dispatcher.as_ref()
                 .context("Python调度器未初始化")?
-                .as_ref(py);
+                .bind(py);
             
             // 构建批量请求
-            let requests = PyList::empty(py);
+            let requests = PyList::empty_bound(py);
             for features in features_batch {
                 let request = self.features_to_python(py, features)?;
                 requests.append(request)?;
             }
             
             // 批量调用
-            let py_results = dispatcher.call_method1("predict_batch", (requests,))?;
-            let results_list: &PyList = py_results.downcast()?;
+            let py_results = dispatcher.call_method1("predict_batch", (requests,)).map_err(|e| anyhow::anyhow!("Batch prediction failed: {}", e))?;
+            let results_list = match py_results.downcast::<PyList>() {
+                Ok(list) => list,
+                Err(_) => return Err(anyhow::anyhow!("Failed to downcast batch results to PyList")),
+            };
             
             // 批量解析结果
             for py_result in results_list.iter() {
-                let result = self.parse_python_result(py_result)?;
+                let result = self.parse_python_result(&py_result)?;
                 results.push(result);
             }
             
@@ -180,18 +190,32 @@ impl PythonPredictionInterface {
             .context("Python调度器未初始化")?;
         
         Python::with_gil(|py| -> Result<HashMap<String, serde_json::Value>> {
-            let dispatcher = dispatcher.as_ref(py);
+            let dispatcher = dispatcher.bind(py);
             
             // 调用Python状态查询
-            let py_status = dispatcher.call_method0("list_models")?;
+            let py_status = dispatcher.call_method0("list_models").map_err(|e| anyhow::anyhow!("Failed to list models: {}", e))?;
             
             // 转换为Rust HashMap
-            let status_dict: &PyDict = py_status.downcast()?;
+            let status_dict = match py_status.downcast::<PyDict>() {
+                Ok(dict) => dict,
+                Err(_) => return Err(anyhow::anyhow!("Failed to downcast status to PyDict")),
+            };
             let mut status = HashMap::new();
             
             for (key, value) in status_dict.iter() {
                 let key_str: String = key.extract()?;
-                let value_json = serde_json::to_value(value.extract::<HashMap<String, serde_json::Value>>()?)?;
+                // 直接尝试提取不同类型
+                let value_json = if let Ok(s) = value.extract::<String>() {
+                    serde_json::Value::String(s)
+                } else if let Ok(n) = value.extract::<i64>() {
+                    serde_json::Value::Number(serde_json::Number::from(n))
+                } else if let Ok(f) = value.extract::<f64>() {
+                    serde_json::Value::Number(serde_json::Number::from_f64(f).unwrap_or_else(|| serde_json::Number::from(0)))
+                } else if let Ok(b) = value.extract::<bool>() {
+                    serde_json::Value::Bool(b)
+                } else {
+                    serde_json::Value::Null
+                };
                 status.insert(key_str, value_json);
             }
             
@@ -205,10 +229,13 @@ impl PythonPredictionInterface {
             .context("Python调度器未初始化")?;
         
         Python::with_gil(|py| -> Result<HashMap<String, serde_json::Value>> {
-            let dispatcher = dispatcher.as_ref(py);
+            let dispatcher = dispatcher.bind(py);
             
-            let py_health = dispatcher.call_method0("get_health_status")?;
-            let health_dict: &PyDict = py_health.downcast()?;
+            let py_health = dispatcher.call_method0("get_health_status").map_err(|e| anyhow::anyhow!("Failed to get health status: {}", e))?;
+            let health_dict = match py_health.downcast::<PyDict>() {
+                Ok(dict) => dict,
+                Err(_) => return Err(anyhow::anyhow!("Failed to downcast health to PyDict")),
+            };
             
             let mut health = HashMap::new();
             for (key, value) in health_dict.iter() {
@@ -218,7 +245,7 @@ impl PythonPredictionInterface {
                     Err(_) => match value.extract::<bool>() {
                         Ok(b) => serde_json::Value::Bool(b),
                         Err(_) => match value.extract::<f64>() {
-                            Ok(f) => serde_json::Value::Number(serde_json::Number::from_f64(f).unwrap_or_default()),
+                            Ok(f) => serde_json::Value::Number(serde_json::Number::from_f64(f).unwrap_or_else(|| serde_json::Number::from(0))),
                             Err(_) => serde_json::Value::Null,
                         }
                     }

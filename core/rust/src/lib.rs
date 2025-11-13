@@ -22,10 +22,7 @@ pub mod constants;
 pub mod info;
 pub mod converter;
 pub mod preprocessing;
-pub mod bridge;
-
-#[cfg(feature = "http-server")]
-pub mod server;
+// pub mod bridge;  // 🔄 已迁移到@deprecated - 未使用
 
 // 🚀 新增：极限性能模块 (v3.0)
 pub mod performance;

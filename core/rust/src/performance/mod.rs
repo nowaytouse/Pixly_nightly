@@ -331,7 +331,7 @@ impl PerformanceCore {
             let mut total_bytes = 0;
             
             for iteration in 0..case.iterations {
-                match self.process_image(&case.test_data, &case.operation).await {
+                match self.process_image(&case.test_data, case.operation.clone()).await {
                     Ok(result) => {
                         success_count += 1;
                         total_bytes += result.len();

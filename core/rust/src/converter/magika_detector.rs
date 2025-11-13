@@ -23,19 +23,18 @@
  * 
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  */
-// 🔧 统一日志系统
-use tracing::{info, debug};
-
 use anyhow::{Context, Result};
 use std::path::Path;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
+use std::fs;
 use lazy_static::lazy_static;
-use std::sync::Mutex;
+use tracing::{info, warn, debug};
+use infer;
 use serde::{Deserialize, Serialize};
 
-// 🔥 Phase 45.1: 全局 Magika 实例（单例模式）
+// 全局文件类型检测器实例（单例模式）
 lazy_static! {
-    static ref MAGIKA_INSTANCE: Arc<Mutex<Option<magika::Session>>> = Arc::new(Mutex::new(None));
+    static ref DETECTOR_INITIALIZED: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
 }
 
 /// 文件类型检测结果
@@ -112,21 +111,19 @@ impl MagikaDetector {
     /// 初始化全局 Magika 实例
     /// 
     /// 🔥 此方法只需调用一次，后续检测将复用实例
-    pub fn initialize() -> Result<()> {
-        let mut instance = MAGIKA_INSTANCE.lock()
-            .map_err(|e| anyhow::anyhow!("Failed to lock Magika instance: {}", e))?;
+    fn initialize_detector() -> Result<()> {
+        let mut initialized = DETECTOR_INITIALIZED.lock()
+            .map_err(|e| anyhow::anyhow!("Failed to lock detector state: {}", e))?;
         
-        if instance.is_none() {
-            info!("🤖 Initializing Magika AI detector...");
+        if !*initialized {
+            info!("🔍 Initializing file type detector...");
             
             let start = std::time::Instant::now();
-            let session = magika::Session::new()
-                .context("Failed to initialize Magika session")?;
-            
+            // infer库是轻量级的，不需要复杂初始化
             let elapsed = start.elapsed();
-            info!("✅ Magika initialized in {:.2}ms", elapsed.as_secs_f64() * 1000.0);
+            info!("✅ File detector initialized in {:.2}ms", elapsed.as_secs_f64() * 1000.0);
             
-            *instance = Some(session);
+            *initialized = true;
         }
         
         Ok(())
@@ -139,45 +136,54 @@ impl MagikaDetector {
     /// 
     /// # 返回
     /// - `FileTypeDetection`: 检测结果
-    pub fn detect_file_type(&self, file_path: &Path) -> Result<FileTypeDetection> {
-        // 1. 确保 Magika 已初始化
-        Self::initialize()?;
+    pub fn detect_file_type<P: AsRef<Path>>(&self, file_path: P) -> Result<FileTypeDetection> {
+        let file_path = file_path.as_ref();
         
-        // 2. 获取 Magika 实例
-        let mut instance = MAGIKA_INSTANCE.lock()
-            .map_err(|e| anyhow::anyhow!("Failed to lock Magika instance: {}", e))?;
+        // 1. 确保检测器已初始化
+        Self::initialize_detector()?;
         
-        let session = instance.as_mut()
-            .ok_or_else(|| anyhow::anyhow!("Magika not initialized"))?;
+        // 2. 读取文件前几个字节进行检测
+        let file_data = fs::read(file_path)
+            .context(format!("Failed to read file: {:?}", file_path))?;
         
         // 3. 执行检测
         let start = std::time::Instant::now();
-        let file_type = session.identify_file_sync(file_path)
-            .context(format!("Failed to detect file type: {:?}", file_path))?;
+        
+        let detected_type = if let Some(kind) = infer::get(&file_data) {
+            kind.extension().to_string()
+        } else {
+            // 回退到文件扩展名检测
+            file_path.extension()
+                .and_then(|ext| ext.to_str())
+                .unwrap_or("unknown")
+                .to_string()
+        };
         
         let elapsed = start.elapsed();
-        debug!("🔍 Magika detection completed in {:.2}ms", elapsed.as_secs_f64() * 1000.0);
+        debug!("🔍 File type detection completed in {:.2}ms", elapsed.as_secs_f64() * 1000.0);
         
-        // 4. 解析结果
-        let info = file_type.info();
-        let detected_type = info.label.to_string();
-        let mime_type = Some(info.mime_type.to_string());
-        let description = Some(info.description.to_string());
+        // 4. 构建结果
+        let confidence = if detected_type != "unknown" { 0.95 } else { 0.1 };
         
-        // 5. 获取置信度分数（使用内置方法）
-        let confidence = file_type.score() as f64;
-        
-        // 6. 判断是否为二进制文件
-        let is_binary = self.is_binary_type(&detected_type);
-        
-        Ok(FileTypeDetection {
-            detected_type,
+        let detection = FileTypeDetection {
+            detected_type: detected_type.clone(),
             confidence,
             is_high_confidence: confidence >= self.min_confidence,
-            mime_type,
-            description,
-            is_binary,
-        })
+            mime_type: infer::get(&file_data).map(|kind| kind.mime_type().to_string()),
+            description: Some(format!("File type: {}", detected_type)),
+            is_binary: !detected_type.starts_with("text"),
+        };
+        
+        // 5. 日志记录
+        if detection.confidence >= self.min_confidence {
+            info!("🎯 File type detected: {} (confidence: {:.2})", 
+                  detection.detected_type, detection.confidence);
+        } else if self.strict_mode {
+            warn!("⚠️ Low confidence detection: {} (confidence: {:.2})", 
+                  detection.detected_type, detection.confidence);
+        }
+        
+        Ok(detection)
     }
     
     /// 验证文件安全性（检测伪装文件）

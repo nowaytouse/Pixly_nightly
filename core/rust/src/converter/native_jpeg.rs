@@ -52,16 +52,27 @@ pub enum ChromaSubsampling {
     Sample420,
 }
 
-impl Default for JpegConfig {
-    fn default() -> Self {
-        Self {
-            quality: 85,
-            progressive: false,
-            optimize_coding: true,
-            chroma_subsampling: ChromaSubsampling::Sample420,
-        }
-    }
-}
+// 🔥 CRITICAL: JpegConfig不应有Default实现！
+// 📋 Default实现包含硬编码fallback值：
+// - quality: 85    (硬编码fallback - 必须来自AI)
+// 
+// ✅ 正确的JpegConfig构建方式：
+// 1. 从AI预测数据构建
+// 2. 从规则引擎明确指定  
+// 3. 从用户CLI参数明确构建
+// 
+// ❌ 禁止使用JpegConfig::default()
+
+// impl Default for JpegConfig {
+//     fn default() -> Self {
+//         Self {
+//             quality: 85,        // ❌ 硬编码fallback
+//             progressive: false,
+//             optimize_coding: true,
+//             chroma_subsampling: ChromaSubsampling::Sample420,
+//         }
+//     }
+// }
 
 /// 原生JPEG编码器
 pub struct NativeJpegEncoder;

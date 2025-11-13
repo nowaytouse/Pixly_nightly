@@ -85,20 +85,33 @@ pub struct ConversionConfig {
     pub prediction_data: Option<PredictionData>,
 }
 
-impl Default for ConversionConfig {
-    fn default() -> Self {
-        Self {
-            quality: 85,
-            speed: 4,
-            preserve_metadata: true,
-            keep_animated: true,
-            strategy: StrategyType::Auto,
-            lossless: false,  // 🔥 Phase 39: 默认有损模式
-            normalize_filenames: None,
-            prediction_data: None,
-        }
-    }
-}
+// 🔥 CRITICAL: ConversionConfig不应有Default实现！
+// 📋 Default实现是最严重的Fallback违规：
+// - quality: 85  (硬编码fallback)
+// - speed: 4     (硬编码fallback) 
+// - lossless: false (硬编码fallback)
+// 
+// 🔥 所有ConversionConfig必须：
+// 1. 从AI预测数据构建（AI模式）
+// 2. 从规则引擎构建（通用模式）  
+// 3. 从明确的CLI参数构建（调试模式）
+// 
+// ❌ 禁止使用Default::default()作为参数来源！
+
+// impl Default for ConversionConfig {
+//     fn default() -> Self {
+//         Self {
+//             quality: 85,    // ❌ 硬编码fallback
+//             speed: 4,       // ❌ 硬编码fallback
+//             preserve_metadata: true,
+//             keep_animated: true,
+//             strategy: StrategyType::Auto,
+//             lossless: false,  // ❌ 硬编码fallback
+//             normalize_filenames: None,
+//             prediction_data: None,
+//         }
+//     }
+// }
 
 /// 转换结果
 #[derive(Debug, Clone)]

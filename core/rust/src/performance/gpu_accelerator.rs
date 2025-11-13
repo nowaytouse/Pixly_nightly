@@ -296,9 +296,16 @@ impl GpuAccelerator {
                 self.resize_image_gpu(image_data, *width, *height).await
             }
             ImageOperation::Compress { quality: _ } => {
-                // GPU压缩需要更复杂的实现，暂时回退
-                warn!("GPU压缩暂未实现，使用CPU回退");
-                self.process_image_cpu_fallback(image_data, operation)
+                error!("❌ CRITICAL: GPU compression not implemented!");
+                error!("   🔥 NO CPU FALLBACK AVAILABLE - violates architecture principles!");
+                error!("");
+                error!("   Required action:");
+                error!("   1. Use CPU-based processing instead of GPU for compression");
+                error!("   2. Or implement proper GPU compression pipeline");
+                error!("   3. Do not use GPU accelerator for compression operations");
+                error!("");
+                error!("   📋 Project Quality Manifesto: 'Fallback代码（最高危害）- 绝对禁止！'");
+                anyhow::bail!("GPU compression not implemented - no fallback available")
             }
             ImageOperation::Enhance => {
                 self.enhance_image_gpu(image_data).await
@@ -538,30 +545,6 @@ impl GpuAccelerator {
         
         // 暂时返回原图 (完整GPU实现需要更多代码)
         Ok(image_data.to_vec())
-    }
-    
-    /// CPU回退处理
-    fn process_image_cpu_fallback(&self, 
-                                 image_data: &[u8], 
-                                 operation: &ImageOperation) -> Result<Vec<u8>> {
-        
-        let img = image::load_from_memory(image_data)
-            .context("解码图像失败")?;
-        
-        let processed_img = match operation {
-            ImageOperation::Resize { width, height } => {
-                img.resize(*width, *height, image::imageops::FilterType::Lanczos3)
-            }
-            ImageOperation::Compress { quality: _ } => img,
-            ImageOperation::Enhance => img.brighten(20),
-        };
-        
-        let mut output = Vec::new();
-        processed_img.write_to(&mut std::io::Cursor::new(&mut output), 
-                              image::ImageOutputFormat::Png)
-            .context("编码输出图像失败")?;
-        
-        Ok(output)
     }
     
     /// 获取GPU信息

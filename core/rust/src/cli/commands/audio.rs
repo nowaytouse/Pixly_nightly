@@ -114,9 +114,16 @@ pub fn handle(args: &[String]) {
                 params
             }
             Err(e) => {
-                eprintln!("❌ AI prediction failed: {}", e);
-                eprintln!("   Using fallback parameters");
-                AudioConversionParams::default_for_format(&determine_output_codec(output, codec.as_deref()))
+                eprintln!("❌ CRITICAL: AI prediction FAILED: {}", e);
+                eprintln!("   🔥 NO FALLBACK AVAILABLE - Audio conversion REQUIRES AI prediction!");
+                eprintln!("");
+                eprintln!("   Required action:");
+                eprintln!("   1. Start Go AI service: cd core/go && go run cmd/pixly-ai/main.go");
+                eprintln!("   2. Verify service: curl http://localhost:50052/api/v1/version");
+                eprintln!("");
+                eprintln!("   📋 Project Quality Manifesto: 'Fallback代码（最高危害）- 绝对禁止！'");
+                eprintln!("   📋 Reason: Fallback掩盖真实问题，让AI服务成为摆设");
+                std::process::exit(1);
             }
         }
     } else {

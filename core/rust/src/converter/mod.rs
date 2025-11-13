@@ -20,10 +20,7 @@ pub mod native_jpeg;
 // 📦 转换策略实现
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 pub mod cli_strategy;
-pub mod native_avif_strategy;
-pub mod native_webp_strategy;
-pub mod native_png_strategy;
-pub mod native_jpeg_strategy;
+pub mod native_strategies; // 🔄 整合：替代4个单独的native策略文件
 pub mod gif_animation_strategy;
 pub mod same_format_optimizer;
 
@@ -40,15 +37,16 @@ pub mod gif_optimizer;
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 pub mod media_analyzer;
 pub mod validation;
-pub mod validator;
+// pub mod validator; // 🔄 已迁移到@deprecated - 功能由media_analyzer.rs提供
 pub mod quality;
-pub mod dimension_validator;
+// pub mod dimension_validator; // 🔄 已迁移到@deprecated - 功能已整合到native_strategies.rs
 pub mod magika_detector;  // AI文件类型检测
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 📋 元数据处理
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 pub mod metadata;
+pub mod request_models; // 🔄 从@deprecated/server提取的统一请求/响应模型
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 🤖 AI集成
@@ -103,8 +101,8 @@ pub use task_queue::{TaskQueue, ConversionTask, TaskStatus, TaskPriority, QueueS
 // 元数据
 pub use metadata::{MetadataHandler, ExifData, CompleteMetadataConfig};
 
-// 验证
-pub use validator::{QualityValidator, ValidationResult};
+// 验证 - 注释：validator.rs已迁移到@deprecated，功能由media_analyzer.rs提供
+// pub use validator::{QualityValidator, ValidationResult};
 
 // 原生编码器
 pub use native_avif::{NativeAvifEncoder, AvifConfig, ChromaSampling};
@@ -113,9 +111,8 @@ pub use native_png::{NativePngEncoder, PngConfig};
 
 // 策略实现
 pub use cli_strategy::{CliStrategy, CliTool};
-pub use native_avif_strategy::NativeAvifStrategy;
-pub use native_webp_strategy::NativeWebPStrategy;
-pub use native_png_strategy::NativePngStrategy;
+// 🔄 整合后的Native策略
+pub use native_strategies::{NativeJpegStrategy, NativePngStrategy, NativeWebpStrategy, NativeAvifStrategy};
 
 // 集成适配器
 pub use eagle_adapter::EagleAdapter;
@@ -167,22 +164,20 @@ pub fn register_all_strategies(manager: &mut StrategyManager) {
     info!("  ✓ Animated GIF Strategy");
     
     // 🦀 原生编码器（优先级100）
-    #[cfg(feature = "native-avif")]
-    {
-        manager.register(Box::new(NativeAvifStrategy));
-        info!("  ✓ Native AVIF (rav1e)");
-    }
+    use native_strategies::{NativeJpegStrategy, NativePngStrategy, NativeWebpStrategy, NativeAvifStrategy};
     
-    #[cfg(feature = "native-webp")]
-    {
-        manager.register(Box::new(NativeWebPStrategy));
+    manager.register(Box::new(NativeAvifStrategy));
+    info!("  ✓ Native AVIF");
+    
+    if cfg!(feature = "webp") {
+        manager.register(Box::new(NativeWebpStrategy));
         info!("  ✓ Native WebP");
     }
     
     manager.register(Box::new(NativePngStrategy));
     info!("  ✓ Native PNG");
     
-    manager.register(Box::new(native_jpeg_strategy::NativeJpegStrategy));
+    manager.register(Box::new(NativeJpegStrategy));
     info!("  ✓ Native JPEG");
     
     // 📦 CLI工具策略

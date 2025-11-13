@@ -48,11 +48,24 @@ imageproc = "0.23"
 fast_image_resize = "3.0"  # SIMD优化的图像缩放
 rgb = "0.8"
 imgref = "1.10"
+gif = "0.12"            # GIF编解码
+png = "0.17"            # PNG编解码
 
-# 🎯 GPU计算 (通过wgpu)
-wgpu = { version = "0.19", features = ["spirv"], optional = true }
-bytemuck = { version = "1.14", features = ["derive"], optional = true }
-pollster = { version = "0.3", optional = true }  # 阻塞式async执行器
+# 📁 文件系统处理
+walkdir = "2.4"         # 目录遍历
+regex = "1.10"          # 正则表达式
+lazy_static = "1.4"     # 静态变量初始化
+infer = "0.15"          # 文件类型检测
+mime_guess = "2.0"      # MIME类型推断
+
+# 🚀 GPU计算 (2025年统一GPU加速)
+wgpu = { version = "0.20", optional = true }               # WebGPU统一API
+bytemuck = { version = "1.16", optional = true }          # 字节转换 
+pollster = { version = "0.3", optional = true }           # 异步阻塞
+
+# 🚀 CUDA GPU加速 (专业级)
+cudarc = { version = "0.11", optional = true }            # CUDA Rust绑定
+candle-core = { version = "0.6", optional = true }        # 机器学习张量计算
 
 # 🧮 数学计算 (SIMD优化)
 nalgebra = { version = "0.32", features = ["serde-serialize"] }
@@ -70,8 +83,6 @@ criterion = { version = "0.5", optional = true }
 pprof = { version = "0.13", features = ["flamegraph", "protobuf-codec"], optional = true }
 
 # 🔧 转换引擎依赖
-tracing = "0.1"           # 结构化日志
-tracing-subscriber = "0.3"
 chrono = { version = "0.4", features = ["serde"] }
 md5 = "0.7"              # 请求ID生成
 memmap2 = "0.9"          # 内存映射
@@ -99,7 +110,9 @@ profiling = ["criterion", "pprof"]                   # 性能分析
 ml = ["ort"]                                        # 机器学习推理
 avx2 = []      # AVX2指令集支持  
 avx512 = []    # AVX512指令集支持
-cuda = []      # CUDA支持 (未来)
+cuda = ["cudarc", "candle-core"]      # CUDA支持 (GPU加速)
+performance = []    # 性能核心功能
+ai-client = []      # AI客户端功能
 
 # 🚀 极限性能优化配置
 [profile.release]
