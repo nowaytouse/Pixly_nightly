@@ -275,7 +275,23 @@ impl ModernFormatConverter {
         }
         
         // 🔥 Phase 2: Additional critical parameters
-        if params.distance > 0.0 && !params.lossless {
+        // 检测输入是否为JPEG
+        let is_jpeg_input = input.extension()
+            .and_then(|e| e.to_str())
+            .map(|e| e.to_lowercase())
+            .map(|e| e == "jpg" || e == "jpeg")
+            .unwrap_or(false);
+        
+        // JPEG输入时，cjxl默认使用--lossless_jpeg=1（无损重新打包）
+        // 此时不能传递--distance参数（会冲突）
+        // 只有在明确要求有损转换时才传递distance
+        if params.distance > 0.0 && !params.lossless && !is_jpeg_input {
+            cmd.args(&["--distance", &params.distance.to_string()]);
+        }
+        
+        // 如果是JPEG输入且用户要求有损转换，需要禁用lossless_jpeg
+        if is_jpeg_input && !params.lossless && params.distance > 0.0 {
+            cmd.args(&["--lossless_jpeg", "0"]);
             cmd.args(&["--distance", &params.distance.to_string()]);
         }
         
