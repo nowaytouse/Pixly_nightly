@@ -754,7 +754,7 @@ function buildConversionArgs(file) {
     
     logger.debug('PIXLY Format', 'Conversion arguments built', { 
         argsCount: args.length,
-        outputDir
+        mode: 'in-place replacement'
     });
     
     return args;
