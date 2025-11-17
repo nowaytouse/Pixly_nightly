@@ -282,14 +282,15 @@ impl ModernFormatConverter {
             .map(|e| e == "jpg" || e == "jpeg")
             .unwrap_or(false);
         
-        // JPEG输入时的特殊处理：
-        // - cjxl默认启用--lossless_jpeg=1（无损重新打包JPEG）
-        // - 这是最优选择，保持JPEG质量且文件更小
-        // - 不传递--distance参数（会与--lossless_jpeg=1冲突）
-        // 
-        // 非JPEG输入时：
-        // - 传递--distance参数控制有损压缩
-        if !is_jpeg_input && params.distance > 0.0 && !params.lossless {
+        // Distance参数处理（有损压缩控制）
+        if params.distance > 0.0 && !params.lossless {
+            if is_jpeg_input {
+                // JPEG输入时，需要显式禁用lossless_jpeg才能使用distance
+                // 这样用户可以选择：
+                // - 无损重新打包（默认，不传distance）
+                // - 有损转换（传--lossless_jpeg=0 + --distance）
+                cmd.args(&["--lossless_jpeg", "0"]);
+            }
             cmd.args(&["--distance", &params.distance.to_string()]);
         }
         
