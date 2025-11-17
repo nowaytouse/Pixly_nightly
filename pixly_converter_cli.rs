@@ -339,12 +339,22 @@ fn run(cli: Cli) -> Result<()> {
             println!("   Strategy: {}", result.strategy_used);
             
             // 🔥 XMP Sidecar 合并处理（使用原始输入路径）
+            println!("\n🔍 Post-conversion processing...");
+            println!("   Input: {:?}", input);
+            println!("   Output: {:?}", output_path);
+            
             if merge_xmp {
-                merge_xmp_sidecar(&input, &output_path)?;
+                println!("   📎 Checking for XMP sidecar...");
+                if let Err(e) = merge_xmp_sidecar(&input, &output_path) {
+                    println!("   ⚠️  XMP merge failed: {}", e);
+                }
             }
             
             // 🔥 Eagle 原地替换处理（使用原始输入路径）
-            handle_eagle_in_place_replacement(&input, &output_path)?;
+            println!("   📦 Checking for Eagle .info directory...");
+            if let Err(e) = handle_eagle_in_place_replacement(&input, &output_path) {
+                println!("   ⚠️  Eagle update failed: {}", e);
+            }
             
             Ok(())
         }
@@ -362,13 +372,23 @@ fn merge_xmp_sidecar(input_path: &Path, output_path: &Path) -> Result<()> {
     use std::process::Command;
     use std::fs;
     
-    // 1. 检测XMP sidecar (标准命名: photo.jpg -> photo.xmp)
+    // 1. 检测XMP sidecar
+    // 1a. 标准sidecar (photo.jpg -> photo.xmp)
     let xmp_path = input_path.with_extension("xmp");
     
-    if !xmp_path.exists() {
+    // 1b. Eagle独立XMP资源（需要扫描images目录）
+    let eagle_xmp_path = find_eagle_xmp_resource(input_path)?;
+    
+    let actual_xmp_path = if xmp_path.exists() {
+        Some(xmp_path)
+    } else if let Some(eagle_xmp) = eagle_xmp_path {
+        Some(eagle_xmp)
+    } else {
         // 没有XMP文件，直接返回
         return Ok(());
-    }
+    };
+    
+    let xmp_path = actual_xmp_path.unwrap();
     
     println!("📎 Found XMP sidecar: {:?}", xmp_path);
     
@@ -435,10 +455,25 @@ fn merge_xmp_sidecar(input_path: &Path, output_path: &Path) -> Result<()> {
                         println!("   ✅ XMP merge verified ({} tags found)", xmp_tag_count);
                         
                         // 6. 删除原XMP sidecar
-                        if let Err(e) = fs::remove_file(&xmp_path) {
-                            println!("   ⚠️  Failed to delete XMP sidecar: {}", e);
-                        } else {
-                            println!("   🗑️  XMP sidecar deleted: {:?}", xmp_path);
+                        // 如果是Eagle XMP资源，删除整个.info目录
+                        if let Some(parent) = xmp_path.parent() {
+                            if parent.file_name()
+                                .and_then(|n| n.to_str())
+                                .map_or(false, |n| n.ends_with(".info")) {
+                                // Eagle XMP资源，删除整个.info目录
+                                if let Err(e) = fs::remove_dir_all(parent) {
+                                    println!("   ⚠️  Failed to delete Eagle XMP resource directory: {}", e);
+                                } else {
+                                    println!("   🗑️  Eagle XMP resource deleted: {:?}", parent);
+                                }
+                            } else {
+                                // 标准XMP sidecar，只删除文件
+                                if let Err(e) = fs::remove_file(&xmp_path) {
+                                    println!("   ⚠️  Failed to delete XMP sidecar: {}", e);
+                                } else {
+                                    println!("   🗑️  XMP sidecar deleted: {:?}", xmp_path);
+                                }
+                            }
                         }
                     } else {
                         println!("   ⚠️  XMP merge verification failed (only {} tags found)", xmp_tag_count);
@@ -463,6 +498,82 @@ fn merge_xmp_sidecar(input_path: &Path, output_path: &Path) -> Result<()> {
     }
     
     Ok(())
+}
+
+/// Find Eagle XMP resource by scanning images/ directory
+/// Eagle中XMP是独立资源，有自己的.info目录
+fn find_eagle_xmp_resource(input_path: &Path) -> Result<Option<PathBuf>> {
+    use std::fs;
+    
+    // 获取输入文件的name（不含扩展名）
+    let input_name = input_path.file_stem()
+        .and_then(|s| s.to_str())
+        .ok_or_else(|| anyhow::anyhow!("Invalid input filename"))?;
+    
+    eprintln!("🔍 Searching for Eagle XMP resource: name={}", input_name);
+    
+    // 检查是否在Eagle库中
+    let parent = input_path.parent()
+        .ok_or_else(|| anyhow::anyhow!("No parent directory"))?;
+    
+    if !parent.file_name()
+        .and_then(|n| n.to_str())
+        .map_or(false, |n| n.ends_with(".info")) {
+        eprintln!("   Not in Eagle library, skipping XMP search");
+        return Ok(None);
+    }
+    
+    // 获取images目录
+    let images_dir = parent.parent()
+        .ok_or_else(|| anyhow::anyhow!("No images directory"))?;
+    
+    eprintln!("   Scanning images directory: {:?}", images_dir);
+    
+    // 扫描所有.info目录
+    for entry in fs::read_dir(images_dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        
+        if !path.is_dir() {
+            continue;
+        }
+        
+        let dir_name = path.file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("");
+        
+        if !dir_name.ends_with(".info") {
+            continue;
+        }
+        
+        // 读取metadata.json
+        let metadata_path = path.join("metadata.json");
+        if !metadata_path.exists() {
+            continue;
+        }
+        
+        let metadata_content = fs::read_to_string(&metadata_path)?;
+        let metadata: serde_json::Value = serde_json::from_str(&metadata_content)?;
+        
+        // 检查是否是XMP资源且name匹配
+        if let (Some(ext), Some(name)) = (
+            metadata.get("ext").and_then(|v| v.as_str()),
+            metadata.get("name").and_then(|v| v.as_str())
+        ) {
+            if ext == "xmp" && name == input_name {
+                // 找到匹配的XMP资源
+                let xmp_file = path.join(format!("{}.xmp", name));
+                if xmp_file.exists() {
+                    eprintln!("   ✅ Found Eagle XMP resource: {:?}", xmp_file);
+                    eprintln!("      .info directory: {:?}", dir_name);
+                    return Ok(Some(xmp_file));
+                }
+            }
+        }
+    }
+    
+    eprintln!("   No Eagle XMP resource found");
+    Ok(None)
 }
 
 /// Normalize filename if it contains special characters
@@ -524,23 +635,38 @@ fn handle_eagle_in_place_replacement(input: &Path, output: &Path) -> Result<()> 
     use std::fs;
     use serde_json::{json, Value};
     
+    println!("      🔍 Eagle check - Input: {:?}", input);
+    println!("      🔍 Eagle check - Output: {:?}", output);
+    
     // 1. 检测是否在 Eagle .info 目录中
     let parent = match output.parent() {
-        Some(p) => p,
-        None => return Ok(()), // 没有父目录，跳过
+        Some(p) => {
+            println!("      🔍 Output parent: {:?}", p);
+            p
+        },
+        None => {
+            println!("      ⏭️  No parent directory, skipping");
+            return Ok(());
+        }
     };
     
     let parent_name = match parent.file_name().and_then(|n| n.to_str()) {
-        Some(name) => name,
-        None => return Ok(()), // 无法获取目录名，跳过
+        Some(name) => {
+            println!("      🔍 Parent name: {}", name);
+            name
+        },
+        None => {
+            println!("      ⏭️  Cannot get parent name, skipping");
+            return Ok(());
+        }
     };
     
     if !parent_name.ends_with(".info") {
-        // 不在 .info 目录中，跳过
+        println!("      ⏭️  Not in .info directory, skipping");
         return Ok(());
     }
     
-    println!("📦 Detected Eagle .info directory");
+    println!("      ✅ Detected Eagle .info directory: {}", parent_name);
     
     // 2. 更新 metadata.json
     let metadata_path = parent.join("metadata.json");
