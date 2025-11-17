@@ -687,12 +687,8 @@ function buildConversionArgs(file) {
     
     const args = ['convert', file.filePath];
     
-    // 🔥 XMP 合并选项（默认启用）
-    const mergeXmpCheckbox = document.getElementById('mergeXmp');
-    const mergeXmp = mergeXmpCheckbox ? mergeXmpCheckbox.checked : true;
-    if (!mergeXmp) {
-        args.push('--merge-xmp', 'false');
-    }
+    // 🔥 XMP 合并：后台自动启用，无需 UI 选项
+    // Rust CLI 默认启用 --merge-xmp=true
     
     if (state.conversionType === 'image') {
         // 图像转换参数
