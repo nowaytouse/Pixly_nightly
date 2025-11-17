@@ -444,6 +444,19 @@ async function loadFilesFromEagle() {
             return;
         }
         
+        // 🔥 Phase 1: 收集所有XMP文件，建立文件名到XMP路径的映射
+        const xmpMap = new Map();
+        items.forEach(item => {
+            const ext = (item.ext || '').toLowerCase().replace(/^\./, '');
+            if (ext === 'xmp') {
+                xmpMap.set(item.name, item.filePath);
+                logger.info('PIXLY Format', 'XMP file found: {name} -> {path}', { 
+                    name: item.name, 
+                    path: item.filePath 
+                });
+            }
+        });
+        
         // 过滤支持的文件类型（根据当前转换类型）
         const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'jxl', 'heic', 'heif', 'bmp', 'tiff'];
         const videoExts = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
@@ -464,7 +477,9 @@ async function loadFilesFromEagle() {
             size: item.size || 0,
             width: item.width || 0,
             height: item.height || 0,
-            isAnimated: item.isAnimated || false
+            isAnimated: item.isAnimated || false,
+            // 🔥 关联对应的XMP文件路径（如果存在）
+            xmpPath: xmpMap.get(item.name) || null
         }));
         
         logger.info('PIXLY Format', LOG.FILE_LOADING_FILTERED, { count: state.selectedFiles.length });
@@ -689,6 +704,12 @@ function buildConversionArgs(file) {
     
     // 🔥 XMP 合并：后台自动启用，无需 UI 选项
     // Rust CLI 默认启用 --merge-xmp=true
+    
+    // 🔥 如果有对应的XMP文件，传递其路径
+    if (file.xmpPath) {
+        args.push('--xmp-path', file.xmpPath);
+        logger.info('PIXLY Format', 'XMP path provided: {path}', { path: file.xmpPath });
+    }
     
     if (state.conversionType === 'image') {
         // 图像转换参数

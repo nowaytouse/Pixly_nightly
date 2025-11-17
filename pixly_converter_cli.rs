@@ -75,6 +75,10 @@ enum Commands {
         #[arg(long, default_value = "true")]
         merge_xmp: bool,
         
+        /// XMP file path (if provided, skip scanning)
+        #[arg(long)]
+        xmp_path: Option<PathBuf>,
+        
         /// Normalize filenames (handle special characters)
         #[arg(long, default_value = "false")]
         normalize_filenames: bool,
@@ -224,6 +228,7 @@ fn run(cli: Cli) -> Result<()> {
             pix_fmt: _,
             // Tools
             merge_xmp,
+            xmp_path,
             normalize_filenames,
         } => {
             // 确定输出格式
@@ -345,7 +350,7 @@ fn run(cli: Cli) -> Result<()> {
             
             if merge_xmp {
                 println!("   📎 Checking for XMP sidecar...");
-                if let Err(e) = merge_xmp_sidecar(&input, &output_path) {
+                if let Err(e) = merge_xmp_sidecar(&input, &output_path, xmp_path.as_deref()) {
                     println!("   ⚠️  XMP merge failed: {}", e);
                 }
             }
@@ -368,27 +373,38 @@ fn run(cli: Cli) -> Result<()> {
 /// 2. 使用exiftool合并XMP到目标文件
 /// 3. 验证合并成功（至少2个XMP标签）
 /// 4. 删除原XMP sidecar
-fn merge_xmp_sidecar(input_path: &Path, output_path: &Path) -> Result<()> {
+fn merge_xmp_sidecar(input_path: &Path, output_path: &Path, provided_xmp_path: Option<&Path>) -> Result<()> {
     use std::process::Command;
     use std::fs;
     
-    // 1. 检测XMP sidecar
-    // 1a. 标准sidecar (photo.jpg -> photo.xmp)
-    let xmp_path = input_path.with_extension("xmp");
-    
-    // 1b. Eagle独立XMP资源（需要扫描images目录）
-    let eagle_xmp_path = find_eagle_xmp_resource(input_path)?;
-    
-    let actual_xmp_path = if xmp_path.exists() {
-        Some(xmp_path)
-    } else if let Some(eagle_xmp) = eagle_xmp_path {
-        Some(eagle_xmp)
+    // 1. 确定XMP文件路径（优先级：提供的路径 > 标准sidecar > Eagle扫描）
+    let xmp_path = if let Some(provided) = provided_xmp_path {
+        // 1a. 插件提供的XMP路径（最高优先级，无需扫描）
+        if provided.exists() {
+            println!("   📎 Using provided XMP path: {:?}", provided);
+            provided.to_path_buf()
+        } else {
+            println!("   ⚠️  Provided XMP path does not exist: {:?}", provided);
+            return Ok(());
+        }
     } else {
-        // 没有XMP文件，直接返回
-        return Ok(());
+        // 1b. 标准sidecar (photo.jpg -> photo.xmp)
+        let standard_xmp = input_path.with_extension("xmp");
+        
+        if standard_xmp.exists() {
+            println!("   📎 Found standard XMP sidecar: {:?}", standard_xmp);
+            standard_xmp
+        } else {
+            // 1c. Eagle独立XMP资源（需要扫描images目录，最慢）
+            println!("   🔍 Scanning for Eagle XMP resource...");
+            if let Some(eagle_xmp) = find_eagle_xmp_resource(input_path)? {
+                eagle_xmp
+            } else {
+                // 没有XMP文件，直接返回
+                return Ok(());
+            }
+        }
     };
-    
-    let xmp_path = actual_xmp_path.unwrap();
     
     println!("📎 Found XMP sidecar: {:?}", xmp_path);
     
