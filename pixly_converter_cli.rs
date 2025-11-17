@@ -442,9 +442,8 @@ fn merge_xmp_sidecar(input_path: &Path, output_path: &Path, provided_xmp_path: O
             
             // 判断是否成功：
             // 1. exit code = 0，或
-            // 2. 包含[minor]警告但不包含真正的error
-            let is_success = merge_output.status.success() || 
-                (stderr_str.contains("[minor]") && !stderr_str.to_lowercase().contains("error"));
+            // 2. 包含[minor]警告（即使有"Error:"前缀，只要是[minor]就认为成功）
+            let is_success = merge_output.status.success() || stderr_str.contains("[minor]");
             
             if !is_success {
                 // 真正的失败
