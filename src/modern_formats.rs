@@ -283,15 +283,24 @@ impl ModernFormatConverter {
             .unwrap_or(false);
         
         // Distance参数处理（有损压缩控制）
+        eprintln!("🔍 DEBUG JXL params:");
+        eprintln!("   is_jpeg_input: {}", is_jpeg_input);
+        eprintln!("   params.distance: {}", params.distance);
+        eprintln!("   params.lossless: {}", params.lossless);
+        
         if params.distance > 0.0 && !params.lossless {
             if is_jpeg_input {
                 // JPEG输入时，需要显式禁用lossless_jpeg才能使用distance
                 // 这样用户可以选择：
                 // - 无损重新打包（默认，不传distance）
                 // - 有损转换（传--lossless_jpeg=0 + --distance）
+                eprintln!("   ✅ Adding --lossless_jpeg 0");
                 cmd.args(&["--lossless_jpeg", "0"]);
             }
+            eprintln!("   ✅ Adding --distance {}", params.distance);
             cmd.args(&["--distance", &params.distance.to_string()]);
+        } else {
+            eprintln!("   ⏭️  Skipping distance (lossless or distance=0)");
         }
         
         // 🔥 位深度 - 只有非默认值且非0时才传递，让cjxl自动处理

@@ -412,12 +412,34 @@ fn convert_to_jxl(input: &Path, output: &Path, config: &ConversionConfig) -> Res
     let effort = (10 - config.speed).clamp(1, 9);
     let distance = ((100 - config.quality) as f32 / 10.0).clamp(0.0, 15.0);
     
-    let result = Command::new(&cjxl_path)
-        .arg(input)
+    // 检测输入是否为JPEG
+    let is_jpeg_input = input.extension()
+        .and_then(|e| e.to_str())
+        .map(|e| {
+            let ext = e.to_lowercase();
+            ext == "jpg" || ext == "jpeg"
+        })
+        .unwrap_or(false);
+    
+    let mut cmd = Command::new(&cjxl_path);
+    cmd.arg(input)
         .arg(output)
-        .arg("--effort").arg(effort.to_string())
-        .arg("--distance").arg(distance.to_string())
-        .output();
+        .arg("--effort").arg(effort.to_string());
+    
+    // JPEG输入时的特殊处理：
+    // - cjxl默认启用--lossless_jpeg=1（无损重新打包）
+    // - 如果用户要求有损转换，需要禁用lossless_jpeg并传递distance
+    // - 如果用户要求无损，不传递distance（让cjxl使用默认的lossless_jpeg=1）
+    if !config.lossless {
+        if is_jpeg_input {
+            // JPEG输入 + 有损转换：禁用lossless_jpeg，传递distance
+            cmd.arg("--lossless_jpeg").arg("0");
+        }
+        cmd.arg("--distance").arg(distance.to_string());
+    }
+    // 如果config.lossless=true，不传递distance，让cjxl使用默认的无损模式
+    
+    let result = cmd.output();
     
     match result {
         Ok(output_result) if output_result.status.success() => Ok(()),
