@@ -71,6 +71,10 @@ enum Commands {
         #[arg(short, long)]
         output: Option<PathBuf>,
         
+        /// Merge XMP sidecar files
+        #[arg(long, default_value = "true")]
+        merge_xmp: bool,
+        
         // JXL specific
         #[arg(long)]
         jpeg_lossless: bool,
@@ -214,6 +218,8 @@ fn run(cli: Cli) -> Result<()> {
             refs: _,
             me_method: _,
             pix_fmt: _,
+            // XMP
+            merge_xmp,
         } => {
             // 确定输出格式
             let target_format = format.unwrap_or_else(|| {
@@ -314,7 +320,126 @@ fn run(cli: Cli) -> Result<()> {
             println!("   Processing time: {:.2}s", result.duration.as_secs_f64());
             println!("   Strategy: {}", result.strategy_used);
             
+            // 🔥 XMP Sidecar 合并处理
+            if merge_xmp {
+                merge_xmp_sidecar(&input, &output_path)?;
+            }
+            
             Ok(())
         }
     }
+}
+
+/// Merge XMP sidecar file into the output file
+/// 
+/// XMP Sidecar处理规则（参考 PROJECT_QUALITY_MANIFESTO.md）:
+/// 1. XMP文件命名: image.xmp (去掉原扩展名，直接加.xmp)
+/// 2. 使用exiftool合并XMP到目标文件
+/// 3. 验证合并成功（至少2个XMP标签）
+/// 4. 删除原XMP sidecar
+fn merge_xmp_sidecar(input_path: &Path, output_path: &Path) -> Result<()> {
+    use std::process::Command;
+    use std::fs;
+    
+    // 1. 检测XMP sidecar (标准命名: photo.jpg -> photo.xmp)
+    let xmp_path = input_path.with_extension("xmp");
+    
+    if !xmp_path.exists() {
+        // 没有XMP文件，直接返回
+        return Ok(());
+    }
+    
+    println!("📎 Found XMP sidecar: {:?}", xmp_path);
+    
+    // 2. 检查exiftool是否可用
+    let exiftool_check = Command::new("exiftool")
+        .arg("-ver")
+        .output();
+    
+    if exiftool_check.is_err() {
+        println!("⚠️  exiftool not found, skipping XMP merge");
+        println!("   Install: brew install exiftool (macOS) or apt install libimage-exiftool-perl (Linux)");
+        return Ok(());
+    }
+    
+    // 3. 清理exiftool临时文件（如果存在）
+    let tmp_file = format!("{}_exiftool_tmp", output_path.display());
+    if Path::new(&tmp_file).exists() {
+        println!("   🧹 Cleaning old exiftool temp file: {}", tmp_file);
+        let _ = fs::remove_file(&tmp_file);
+    }
+    
+    // 4. 使用exiftool合并XMP到目标文件
+    println!("   🔄 Merging XMP metadata to output file...");
+    let merge_result = Command::new("exiftool")
+        .arg("-tagsFromFile")
+        .arg(&xmp_path)
+        .arg("-XMP:all")
+        .arg("-overwrite_original")
+        .arg(&output_path)
+        .output();
+    
+    match merge_result {
+        Ok(merge_output) if merge_output.status.success() || {
+            // 允许exiftool的[minor]警告
+            let stderr_str = String::from_utf8_lossy(&merge_output.stderr);
+            !merge_output.status.success() && 
+            stderr_str.contains("[minor]") && 
+            !stderr_str.to_lowercase().contains("error")
+        } => {
+            let stderr_str = String::from_utf8_lossy(&merge_output.stderr);
+            
+            // 记录警告但继续执行
+            if stderr_str.contains("[minor]") {
+                let warning = stderr_str.lines()
+                    .find(|line| line.contains("[minor]"))
+                    .unwrap_or("");
+                println!("   ℹ️  exiftool warning (ignored): {}", warning);
+            }
+            
+            // 5. 验证合并成功（至少2个XMP标签）
+            let verify_result = Command::new("exiftool")
+                .arg("-XMP:all")
+                .arg(&output_path)
+                .output();
+            
+            match verify_result {
+                Ok(verify_output) => {
+                    let output_str = String::from_utf8_lossy(&verify_output.stdout);
+                    let xmp_tag_count = output_str.lines()
+                        .filter(|line| line.contains("XMP") || line.contains("xmp"))
+                        .count();
+                    
+                    if xmp_tag_count >= 2 {
+                        println!("   ✅ XMP merge verified ({} tags found)", xmp_tag_count);
+                        
+                        // 6. 删除原XMP sidecar
+                        if let Err(e) = fs::remove_file(&xmp_path) {
+                            println!("   ⚠️  Failed to delete XMP sidecar: {}", e);
+                        } else {
+                            println!("   🗑️  XMP sidecar deleted: {:?}", xmp_path);
+                        }
+                    } else {
+                        println!("   ⚠️  XMP merge verification failed (only {} tags found)", xmp_tag_count);
+                        println!("   Keeping XMP sidecar for safety");
+                    }
+                }
+                Err(e) => {
+                    println!("   ⚠️  XMP verification failed: {}", e);
+                    println!("   Keeping XMP sidecar for safety");
+                }
+            }
+        }
+        Ok(merge_output) => {
+            let stderr = String::from_utf8_lossy(&merge_output.stderr);
+            println!("   ❌ XMP merge failed: {}", stderr);
+            println!("   Keeping XMP sidecar");
+        }
+        Err(e) => {
+            println!("   ❌ XMP merge failed: {}", e);
+            println!("   Keeping XMP sidecar");
+        }
+    }
+    
+    Ok(())
 }

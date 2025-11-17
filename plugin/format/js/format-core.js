@@ -687,6 +687,13 @@ function buildConversionArgs(file) {
     
     const args = ['convert', file.filePath];
     
+    // 🔥 XMP 合并选项（默认启用）
+    const mergeXmpCheckbox = document.getElementById('mergeXmp');
+    const mergeXmp = mergeXmpCheckbox ? mergeXmpCheckbox.checked : true;
+    if (!mergeXmp) {
+        args.push('--merge-xmp', 'false');
+    }
+    
     if (state.conversionType === 'image') {
         // 图像转换参数
         args.push('--format', state.imageFormat);

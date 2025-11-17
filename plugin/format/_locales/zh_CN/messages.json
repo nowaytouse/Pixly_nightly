@@ -142,5 +142,10 @@
   "result": {
     "complete": { "message": "转换完成" },
     "openFolder": { "message": "打开输出文件夹" }
+  },
+  "tools": {
+    "title": { "message": "工具选项" },
+    "mergeXmp": { "message": "自动合并 XMP Sidecar" },
+    "mergeXmpInfo": { "message": "检测 .xmp 文件并合并元数据到输出文件（需要 exiftool）" }
   }
 }

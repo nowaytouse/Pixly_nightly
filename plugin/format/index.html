@@ -107,6 +107,21 @@
                         </div>
                     </div>
 
+                    <!-- 🔥 工具选项 -->
+                    <div class="panel tools-panel">
+                        <h3 class="panel-title">
+                            <span>🛠️</span>
+                            <span data-i18n="tools.title">工具选项</span>
+                        </h3>
+                        <div class="option-group">
+                            <label class="checkbox-label" title="自动检测并合并 XMP sidecar 文件到输出文件，合并后删除 XMP 文件">
+                                <input type="checkbox" id="mergeXmp" checked>
+                                <span data-i18n="tools.mergeXmp">自动合并 XMP Sidecar</span>
+                            </label>
+                            <p class="option-hint" data-i18n="tools.mergeXmpInfo">检测 .xmp 文件并合并元数据到输出文件（需要 exiftool）</p>
+                        </div>
+                    </div>
+
                     <!-- JXL专属参数 -->
                     <div class="panel format-specific-panel" id="jxlParams">
                         <h3 class="panel-title">
