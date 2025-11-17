@@ -775,11 +775,17 @@ function executeRustCLI(args) {
         let stderr = '';
         
         proc.stdout.on('data', (data) => {
-            stdout += data.toString();
+            const text = data.toString();
+            stdout += text;
+            // 🔥 实时打印 Rust CLI 的 stdout
+            console.log('[Rust CLI stdout]', text);
         });
         
         proc.stderr.on('data', (data) => {
-            stderr += data.toString();
+            const text = data.toString();
+            stderr += text;
+            // 🔥 实时打印 Rust CLI 的 stderr（调试信息通常在这里）
+            console.log('[Rust CLI stderr]', text);
         });
         
         proc.on('close', (code) => {
