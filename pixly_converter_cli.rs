@@ -338,13 +338,13 @@ fn run(cli: Cli) -> Result<()> {
             println!("   Processing time: {:.2}s", result.duration.as_secs_f64());
             println!("   Strategy: {}", result.strategy_used);
             
-            // 🔥 XMP Sidecar 合并处理
+            // 🔥 XMP Sidecar 合并处理（使用原始输入路径）
             if merge_xmp {
-                merge_xmp_sidecar(&actual_input, &output_path)?;
+                merge_xmp_sidecar(&input, &output_path)?;
             }
             
-            // 🔥 Eagle 原地替换处理
-            handle_eagle_in_place_replacement(&actual_input, &output_path)?;
+            // 🔥 Eagle 原地替换处理（使用原始输入路径）
+            handle_eagle_in_place_replacement(&input, &output_path)?;
             
             Ok(())
         }
