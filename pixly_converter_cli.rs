@@ -340,8 +340,11 @@ fn run(cli: Cli) -> Result<()> {
             
             // 🔥 XMP Sidecar 合并处理
             if merge_xmp {
-                merge_xmp_sidecar(&input, &output_path)?;
+                merge_xmp_sidecar(&actual_input, &output_path)?;
             }
+            
+            // 🔥 Eagle 原地替换处理
+            handle_eagle_in_place_replacement(&actual_input, &output_path)?;
             
             Ok(())
         }
@@ -508,4 +511,102 @@ fn normalize_filename_if_needed(input: &Path) -> Result<(PathBuf, Option<PathBuf
     println!("   ✅ Normalized to: {}", normalized_name);
     
     Ok((temp_path.clone(), Some(temp_path)))
+}
+
+/// Handle Eagle in-place replacement
+/// 
+/// Eagle 原地替换规则:
+/// 1. 检测是否在 Eagle .info 目录中
+/// 2. 更新 metadata.json (ext, size, mtime)
+/// 3. 删除原文件
+/// 4. 保留缩略图（Eagle会自动重新生成）
+fn handle_eagle_in_place_replacement(input: &Path, output: &Path) -> Result<()> {
+    use std::fs;
+    use serde_json::{json, Value};
+    
+    // 1. 检测是否在 Eagle .info 目录中
+    let parent = match output.parent() {
+        Some(p) => p,
+        None => return Ok(()), // 没有父目录，跳过
+    };
+    
+    let parent_name = match parent.file_name().and_then(|n| n.to_str()) {
+        Some(name) => name,
+        None => return Ok(()), // 无法获取目录名，跳过
+    };
+    
+    if !parent_name.ends_with(".info") {
+        // 不在 .info 目录中，跳过
+        return Ok(());
+    }
+    
+    println!("📦 Detected Eagle .info directory");
+    
+    // 2. 更新 metadata.json
+    let metadata_path = parent.join("metadata.json");
+    if !metadata_path.exists() {
+        println!("   ⚠️  metadata.json not found, skipping Eagle update");
+        return Ok(());
+    }
+    
+    println!("   📝 Updating Eagle metadata.json...");
+    
+    // 读取现有 metadata
+    let metadata_content = fs::read_to_string(&metadata_path)
+        .context("Failed to read metadata.json")?;
+    
+    let mut metadata: Value = serde_json::from_str(&metadata_content)
+        .context("Failed to parse metadata.json")?;
+    
+    // 获取新文件信息
+    let output_metadata = fs::metadata(output)?;
+    let new_ext = output.extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("")
+        .to_lowercase();
+    let new_size = output_metadata.len();
+    let new_mtime = output_metadata.modified()?
+        .duration_since(std::time::UNIX_EPOCH)?
+        .as_millis() as u64;
+    
+    // 更新字段
+    if let Some(obj) = metadata.as_object_mut() {
+        // 更新扩展名
+        obj.insert("ext".to_string(), json!(new_ext));
+        
+        // 更新文件大小
+        obj.insert("size".to_string(), json!(new_size));
+        
+        // 更新修改时间
+        obj.insert("mtime".to_string(), json!(new_mtime));
+        obj.insert("lastModified".to_string(), json!(new_mtime));
+        
+        // 更新文件名（去掉扩展名）
+        if let Some(stem) = output.file_stem().and_then(|s| s.to_str()) {
+            obj.insert("name".to_string(), json!(stem));
+        }
+        
+        println!("   ✅ Updated metadata:");
+        println!("      ext: {}", new_ext);
+        println!("      size: {} bytes", new_size);
+        println!("      name: {}", output.file_stem().and_then(|s| s.to_str()).unwrap_or(""));
+    }
+    
+    // 写回 metadata.json
+    let updated_content = serde_json::to_string_pretty(&metadata)?;
+    fs::write(&metadata_path, updated_content)
+        .context("Failed to write metadata.json")?;
+    
+    println!("   ✅ Eagle metadata updated");
+    
+    // 3. 删除原文件（如果与输出文件不同）
+    if input != output && input.exists() {
+        if let Err(e) = fs::remove_file(input) {
+            println!("   ⚠️  Failed to delete original file: {}", e);
+        } else {
+            println!("   🗑️  Original file deleted: {:?}", input.file_name());
+        }
+    }
+    
+    Ok(())
 }
