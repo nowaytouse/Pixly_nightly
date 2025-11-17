@@ -746,10 +746,8 @@ function buildConversionArgs(file) {
         }
     }
     
-    // 输出目录
-    const path = require('path');
-    const outputDir = path.join(path.dirname(file.filePath), 'pixly_output');
-    args.push('--output', outputDir);
+    // 🔥 原地替换：不传递 --output 参数，让 Rust CLI 自动在同目录生成
+    // Rust CLI 会自动处理 Eagle .info 目录的原地替换逻辑
     
     logger.debug('PIXLY Format', 'Conversion arguments built', { 
         argsCount: args.length,
