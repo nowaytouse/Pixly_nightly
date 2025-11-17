@@ -1,0 +1,45 @@
+{
+  "summary": {
+    "overall_success_rate": 0.214,
+    "status": "需要改进 (Needs Improvement)",
+    "reliability": "可靠性有待提升",
+    "test_duration_seconds": 0.16,
+    "tested_files": {
+      "images": 0,
+      "videos": 0,
+      "audio": 0,
+      "others": 0
+    }
+  },
+  "detailed_results": {
+    "rust_compilation": false,
+    "python_modules": false,
+    "image_processing": {
+      "total": 0,
+      "processed": 0,
+      "failed": 0,
+      "details": []
+    },
+    "video_processing": {
+      "total": 0,
+      "processed": 0,
+      "failed": 0,
+      "details": []
+    },
+    "audio_processing": {
+      "total": 0,
+      "processed": 0,
+      "failed": 0,
+      "details": []
+    },
+    "ai_prediction": true,
+    "performance_optimization": false
+  },
+  "recommendations": [
+    "修复Rust编译错误，确保核心功能可用",
+    "检查Python模块导入，修复依赖问题",
+    "改进图片处理功能的稳定性",
+    "优化视频处理功能",
+    "增强音频处理能力"
+  ]
+}

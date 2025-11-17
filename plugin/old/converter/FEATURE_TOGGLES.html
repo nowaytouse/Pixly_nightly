@@ -1,0 +1,137 @@
+<!-- 功能开关配置面板 -->
+<div id="featureToggles" class="settings-panel" style="margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+    <h3 style="margin-top: 0;">🎛️ 功能开关</h3>
+    
+    <div class="toggle-group">
+        <label style="display: flex; align-items: center; margin: 10px 0;">
+            <input type="checkbox" id="enableValidation" checked>
+            <span style="margin-left: 10px;">
+                <strong>启用验证系统</strong>
+                <br>
+                <small style="color: #666;">转换前进行多级验证检查</small>
+            </span>
+        </label>
+        
+        <label style="display: flex; align-items: center; margin: 10px 0;">
+            <input type="checkbox" id="enableAI" checked>
+            <span style="margin-left: 10px;">
+                <strong>启用AI预测</strong>
+                <br>
+                <small style="color: #666;">智能模式使用AI推荐参数</small>
+            </span>
+        </label>
+        
+        <label style="display: flex; align-items: center; margin: 10px 0;">
+            <input type="checkbox" id="enableFileValidation">
+            <span style="margin-left: 10px;">
+                <strong>启用文件类型验证</strong>
+                <br>
+                <small style="color: #666;">使用Magika检测文件类型伪装</small>
+            </span>
+        </label>
+        
+        <label style="display: flex; align-items: center; margin: 10px 0;">
+            <input type="checkbox" id="preserveMetadata" checked>
+            <span style="margin-left: 10px;">
+                <strong>保留元数据</strong>
+                <br>
+                <small style="color: #666;">保留EXIF、XMP等元数据</small>
+            </span>
+        </label>
+        
+        <label style="display: flex; align-items: center; margin: 10px 0;">
+            <input type="checkbox" id="keepAnimated" checked>
+            <span style="margin-left: 10px;">
+                <strong>保留动画</strong>
+                <br>
+                <small style="color: #666;">保留GIF动画帧</small>
+            </span>
+        </label>
+        
+        <label style="display: flex; align-items: center; margin: 10px 0;">
+            <input type="checkbox" id="normalizeFilenames">
+            <span style="margin-left: 10px;">
+                <strong>规范化文件名</strong>
+                <br>
+                <small style="color: #666;">移除特殊字符，统一命名格式</small>
+            </span>
+        </label>
+    </div>
+    
+    <div style="margin-top: 15px; padding: 10px; background: #f0f9ff; border-radius: 5px;">
+        <strong>💡 提示:</strong>
+        <ul style="margin: 5px 0; padding-left: 20px; font-size: 13px;">
+            <li>验证系统可防止无效参数和格式不兼容</li>
+            <li>AI预测仅在智能模式下生效</li>
+            <li>手动模式完全使用用户指定参数</li>
+            <li>所有功能可独立开关，互不影响</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+// 功能开关状态管理
+(function() {
+    'use strict';
+    
+    const toggles = {
+        enableValidation: true,
+        enableAI: true,
+        enableFileValidation: false,
+        preserveMetadata: true,
+        keepAnimated: true,
+        normalizeFilenames: false
+    };
+    
+    // 从localStorage加载设置
+    function loadToggles() {
+        Object.keys(toggles).forEach(key => {
+            const saved = localStorage.getItem(`pixly_${key}`);
+            if (saved !== null) {
+                toggles[key] = saved === 'true';
+                const checkbox = document.getElementById(key);
+                if (checkbox) {
+                    checkbox.checked = toggles[key];
+                }
+            }
+        });
+    }
+    
+    // 保存设置到localStorage
+    function saveToggle(key, value) {
+        toggles[key] = value;
+        localStorage.setItem(`pixly_${key}`, value);
+        console.log(`[Feature Toggle] ${key} = ${value}`);
+    }
+    
+    // 绑定事件监听
+    function bindToggles() {
+        Object.keys(toggles).forEach(key => {
+            const checkbox = document.getElementById(key);
+            if (checkbox) {
+                checkbox.addEventListener('change', (e) => {
+                    saveToggle(key, e.target.checked);
+                });
+            }
+        });
+    }
+    
+    // 获取当前设置
+    window.getFeatureToggles = function() {
+        return { ...toggles };
+    };
+    
+    // 初始化
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            loadToggles();
+            bindToggles();
+        });
+    } else {
+        loadToggles();
+        bindToggles();
+    }
+    
+    console.log('[Feature Toggles] ✅ 功能开关系统已加载');
+})();
+</script>

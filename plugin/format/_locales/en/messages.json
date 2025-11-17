@@ -1,0 +1,146 @@
+{
+  "app": {
+    "title": { "message": "PIXLY Format - Professional Conversion" },
+    "subtitle": { "message": "Professional Format Conversion · Precise Control" }
+  },
+  "language": {
+    "switchLanguage": { "message": "Switch Language" }
+  },
+  "theme": {
+    "toggle": { "message": "Toggle Theme" }
+  },
+  "conversion": {
+    "image": { "message": "Image Conversion" },
+    "video": { "message": "Video Processing" },
+    "start": { "message": "Start Conversion" }
+  },
+  "empty": {
+    "title": { "message": "No Files Selected" },
+    "desc": { "message": "Select images or videos in Eagle, then return to this plugin" }
+  },
+  "files": {
+    "selected": { "message": "files selected" },
+    "clear": { "message": "Clear" },
+    "refresh": { "message": "Refresh File List" }
+  },
+  "format": {
+    "title": { "message": "Output Format" },
+    "jxlDesc": { "message": "Next-gen Format" },
+    "avifDesc": { "message": "AV1 Encoded" },
+    "webpDesc": { "message": "Web Optimized" },
+    "heicDesc": { "message": "Apple Ecosystem" }
+  },
+  "quality": {
+    "title": { "message": "Quality Settings" },
+    "label": { "message": "Quality" },
+    "high": { "message": "High Quality: Rich Details" },
+    "balanced": { "message": "Balanced: Quality & Size" },
+    "compressed": { "message": "Compressed: Smaller File" },
+    "size": { "message": "Size Priority: Minimal File" }
+  },
+  "jxl": {
+    "title": { "message": "JXL Advanced Parameters" },
+    "jpegLosslessTranscode": { "message": "JPEG Lossless Transcode" },
+    "jpegLosslessInfo": { "message": "When enabled, some options will be disabled to ensure 100% reversible transcoding" },
+    "effort": { "message": "Effort Level" },
+    "effortHint": { "message": "1-3: Fast | 4-6: Balanced | 7-9: Maximum" },
+    "distance": { "message": "Distance (Quality)" },
+    "distanceHint": { "message": "0.0: Lossless | 1.0-3.0: High Quality" },
+    "encodingModes": { "message": "Encoding Modes" },
+    "modular": { "message": "Modular" },
+    "progressive": { "message": "Progressive" },
+    "responsive": { "message": "Responsive" },
+    "gaborish": { "message": "Gaborish" },
+    "bitDepth": { "message": "Color Bit Depth" },
+    "bitDepthAuto": { "message": "Auto (Based on Source)" },
+    "bitDepth8": { "message": "8-bit (Standard)" },
+    "bitDepth10": { "message": "10-bit (HDR)" },
+    "bitDepth12": { "message": "12-bit (Professional)" },
+    "bitDepth16": { "message": "16-bit (Maximum)" },
+    "colorSpace": { "message": "Color Space" },
+    "colorSpaceAuto": { "message": "Auto (Preserve Source)" },
+    "colorSpaceSRGB": { "message": "sRGB (Standard)" },
+    "colorSpaceP3": { "message": "Display P3 (Wide Gamut)" },
+    "colorSpaceAdobe": { "message": "Adobe RGB (Professional)" },
+    "colorSpaceProPhoto": { "message": "ProPhoto RGB (Maximum)" }
+  },
+  "avif": {
+    "title": { "message": "AVIF Advanced Parameters" },
+    "speed": { "message": "Encoding Speed" },
+    "speedHint": { "message": "0-3: Maximum Quality | 4-6: Balanced | 7-10: Fast" },
+    "minQuantizer": { "message": "Min Quantizer" },
+    "maxQuantizer": { "message": "Max Quantizer" },
+    "chromaSubsampling": { "message": "Chroma Subsampling" },
+    "chromaAuto": { "message": "Auto (FFmpeg Smart Selection)" },
+    "chroma420": { "message": "4:2:0 (Standard)" },
+    "chroma422": { "message": "4:2:2 (Balanced)" },
+    "chroma444": { "message": "4:4:4 (Best)" },
+    "tiles": { "message": "Tiles Rows×Cols" },
+    "tilesHint": { "message": "Parallel encoding for large images" }
+  },
+  "webp": {
+    "title": { "message": "WebP Advanced Parameters" },
+    "method": { "message": "Compression Method" },
+    "methodHint": { "message": "0-2: Fast | 3-4: Balanced | 5-6: Best" },
+    "filtering": { "message": "Filter Strength" },
+    "sharpness": { "message": "Sharpness Level" }
+  },
+  "heic": {
+    "title": { "message": "HEIC Advanced Parameters" },
+    "encoder": { "message": "Encoder" },
+    "encoderX265": { "message": "x265 (Recommended)" },
+    "encoderLibheif": { "message": "libheif (Standard)" },
+    "chromaSubsampling": { "message": "Chroma Subsampling" },
+    "chromaAuto": { "message": "Auto (FFmpeg Smart Selection)" },
+    "chroma420": { "message": "4:2:0 (Standard)" },
+    "chroma444": { "message": "4:4:4 (Best)" },
+    "lossless": { "message": "Lossless Encoding" },
+    "embedThumbnails": { "message": "Embed Thumbnails" }
+  },
+  "video": {
+    "containerFormat": { "message": "Container Format" },
+    "mp4Desc": { "message": "Widest Compatibility" },
+    "movDesc": { "message": "Apple Optimized" },
+    "webmDesc": { "message": "Web Optimized" },
+    "mkvDesc": { "message": "Universal Container" },
+    "targetEncoder": { "message": "Target Encoder" },
+    "h264Desc": { "message": "Best Compatibility" },
+    "h265Desc": { "message": "Higher Compression" },
+    "av1Desc": { "message": "Next Generation" },
+    "proresDesc": { "message": "Professional Post" },
+    "qualityControl": { "message": "Quality Control" },
+    "crfValue": { "message": "CRF Value" },
+    "crfHint": { "message": "0=Lossless | 18=Visually Lossless | 23=High Quality | 28=Balanced" },
+    "bitrateMode": { "message": "Bitrate Control Mode" },
+    "crfMode": { "message": "CRF (Constant Quality)" },
+    "cbrMode": { "message": "CBR (Constant Bitrate)" },
+    "vbrMode": { "message": "VBR (Variable Bitrate)" },
+    "abrMode": { "message": "ABR (Average Bitrate)" },
+    "encodingParams": { "message": "Encoding Parameters" },
+    "gopSize": { "message": "GOP Size" },
+    "gopHint": { "message": "Keyframe Interval (250=10s@25fps)" },
+    "bframes": { "message": "B-Frames Count" },
+    "refFrames": { "message": "Reference Frames" },
+    "meAlgorithm": { "message": "Motion Estimation" },
+    "meDiamond": { "message": "Diamond (Fastest)" },
+    "meHexagon": { "message": "Hexagon (Recommended)" },
+    "meUmh": { "message": "UMH (High Quality)" },
+    "meEsa": { "message": "ESA (Exhaustive)" },
+    "pixelFormat": { "message": "Pixel Format" },
+    "pixFmtAuto": { "message": "Auto (FFmpeg Smart Selection)" },
+    "pixFmt420p": { "message": "YUV 4:2:0 8-bit" },
+    "pixFmt422p": { "message": "YUV 4:2:2 8-bit" },
+    "pixFmt444p": { "message": "YUV 4:4:4 8-bit" },
+    "pixFmt420p10": { "message": "YUV 4:2:0 10-bit" },
+    "pixFmt422p10": { "message": "YUV 4:2:2 10-bit" },
+    "pixFmt444p10": { "message": "YUV 4:4:4 10-bit" },
+    "pixFmtHint": { "message": "Auto mode lets FFmpeg choose the format with minimal loss based on source and encoder capabilities" }
+  },
+  "progress": {
+    "converting": { "message": "Converting..." }
+  },
+  "result": {
+    "complete": { "message": "Conversion Complete" },
+    "openFolder": { "message": "Open Output Folder" }
+  }
+}

@@ -1,0 +1,311 @@
+{
+  "timestamp": "2025-11-17T00:16:39.805851",
+  "total_samples": 30,
+  "stats": {
+    "image": 6,
+    "video": 6,
+    "audio": 18
+  },
+  "data": [
+    {
+      "media_type": "image",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/blackwhite.png",
+      "input_size": 1025,
+      "target_format": "webp",
+      "quality": 70,
+      "output_size": 846,
+      "compression_ratio": 0.8253658536585365,
+      "reward": 0.38478048780487806
+    },
+    {
+      "media_type": "image",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/blackwhite.png",
+      "input_size": 1025,
+      "target_format": "webp",
+      "quality": 85,
+      "output_size": 992,
+      "compression_ratio": 0.9678048780487805,
+      "reward": 0.35931707317073175
+    },
+    {
+      "media_type": "image",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/blackwhite.png",
+      "input_size": 1025,
+      "target_format": "webp",
+      "quality": 95,
+      "output_size": 1228,
+      "compression_ratio": 1.1980487804878048,
+      "reward": 0.38
+    },
+    {
+      "media_type": "image",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/pixel-40x23-yuv420.jpg",
+      "input_size": 515,
+      "target_format": "webp",
+      "quality": 70,
+      "output_size": 394,
+      "compression_ratio": 0.7650485436893204,
+      "reward": 0.42097087378640774
+    },
+    {
+      "media_type": "image",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/pixel-40x23-yuv420.jpg",
+      "input_size": 515,
+      "target_format": "webp",
+      "quality": 85,
+      "output_size": 556,
+      "compression_ratio": 1.079611650485437,
+      "reward": 0.34
+    },
+    {
+      "media_type": "image",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/pixel-40x23-yuv420.jpg",
+      "input_size": 515,
+      "target_format": "webp",
+      "quality": 95,
+      "output_size": 828,
+      "compression_ratio": 1.6077669902912621,
+      "reward": 0.38
+    },
+    {
+      "media_type": "video",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-320x240.webm",
+      "input_size": 219229,
+      "target_format": "webm",
+      "quality": 500,
+      "output_size": 182892,
+      "compression_ratio": 0.8342509430777862,
+      "reward": 0.20787452846110688
+    },
+    {
+      "media_type": "video",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-320x240.webm",
+      "input_size": 219229,
+      "target_format": "mp4",
+      "quality": 500,
+      "output_size": 204002,
+      "compression_ratio": 0.9305429482413367,
+      "reward": 0.15972852587933167
+    },
+    {
+      "media_type": "video",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-320x240.webm",
+      "input_size": 219229,
+      "target_format": "webm",
+      "quality": 1000,
+      "output_size": 284143,
+      "compression_ratio": 1.296101336958158,
+      "reward": 0.25
+    },
+    {
+      "media_type": "video",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-320x240.webm",
+      "input_size": 219229,
+      "target_format": "mp4",
+      "quality": 1000,
+      "output_size": 367430,
+      "compression_ratio": 1.6760100169229435,
+      "reward": 0.25
+    },
+    {
+      "media_type": "video",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-320x240.webm",
+      "input_size": 219229,
+      "target_format": "webm",
+      "quality": 2000,
+      "output_size": 481971,
+      "compression_ratio": 2.198481952661372,
+      "reward": 0.5
+    },
+    {
+      "media_type": "video",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-320x240.webm",
+      "input_size": 219229,
+      "target_format": "mp4",
+      "quality": 2000,
+      "output_size": 687949,
+      "compression_ratio": 3.138038306975811,
+      "reward": 0.5
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/mono_cpe.adts",
+      "input_size": 293,
+      "target_format": "opus",
+      "quality": 128,
+      "output_size": 398,
+      "compression_ratio": 1.3583617747440273,
+      "reward": 0.12
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/mono_cpe.adts",
+      "input_size": 293,
+      "target_format": "aac",
+      "quality": 128,
+      "output_size": 116,
+      "compression_ratio": 0.39590443686006827,
+      "reward": 0.5428668941979522
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/mono_cpe.adts",
+      "input_size": 293,
+      "target_format": "mp3",
+      "quality": 128,
+      "output_size": 10988,
+      "compression_ratio": 37.50170648464164,
+      "reward": 0.12
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/mono_cpe.adts",
+      "input_size": 293,
+      "target_format": "opus",
+      "quality": 192,
+      "output_size": 398,
+      "compression_ratio": 1.3583617747440273,
+      "reward": 0.18
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/mono_cpe.adts",
+      "input_size": 293,
+      "target_format": "aac",
+      "quality": 192,
+      "output_size": 116,
+      "compression_ratio": 0.39590443686006827,
+      "reward": 0.6028668941979523
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/mono_cpe.adts",
+      "input_size": 293,
+      "target_format": "mp3",
+      "quality": 192,
+      "output_size": 11276,
+      "compression_ratio": 38.484641638225256,
+      "reward": 0.18
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/mono_cpe.adts",
+      "input_size": 293,
+      "target_format": "opus",
+      "quality": 256,
+      "output_size": 398,
+      "compression_ratio": 1.3583617747440273,
+      "reward": 0.24
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/mono_cpe.adts",
+      "input_size": 293,
+      "target_format": "aac",
+      "quality": 256,
+      "output_size": 116,
+      "compression_ratio": 0.39590443686006827,
+      "reward": 0.6628668941979522
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/mono_cpe.adts",
+      "input_size": 293,
+      "target_format": "mp3",
+      "quality": 256,
+      "output_size": 11276,
+      "compression_ratio": 38.484641638225256,
+      "reward": 0.24
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-audio-main-aac.aac",
+      "input_size": 43683,
+      "target_format": "opus",
+      "quality": 128,
+      "output_size": 42384,
+      "compression_ratio": 0.9702630313852071,
+      "reward": 0.14081587803035503
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-audio-main-aac.aac",
+      "input_size": 43683,
+      "target_format": "aac",
+      "quality": 128,
+      "output_size": 44894,
+      "compression_ratio": 1.0277224549595954,
+      "reward": 0.12
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-audio-main-aac.aac",
+      "input_size": 43683,
+      "target_format": "mp3",
+      "quality": 128,
+      "output_size": 45356,
+      "compression_ratio": 1.038298651649383,
+      "reward": 0.12
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-audio-main-aac.aac",
+      "input_size": 43683,
+      "target_format": "opus",
+      "quality": 192,
+      "output_size": 64872,
+      "compression_ratio": 1.485062839090722,
+      "reward": 0.18
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-audio-main-aac.aac",
+      "input_size": 43683,
+      "target_format": "aac",
+      "quality": 192,
+      "output_size": 65383,
+      "compression_ratio": 1.4967607536112446,
+      "reward": 0.18
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-audio-main-aac.aac",
+      "input_size": 43683,
+      "target_format": "mp3",
+      "quality": 192,
+      "output_size": 68012,
+      "compression_ratio": 1.5569443490602752,
+      "reward": 0.18
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-audio-main-aac.aac",
+      "input_size": 43683,
+      "target_format": "opus",
+      "quality": 256,
+      "output_size": 88123,
+      "compression_ratio": 2.0173293958748255,
+      "reward": 0.24
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-audio-main-aac.aac",
+      "input_size": 43683,
+      "target_format": "aac",
+      "quality": 256,
+      "output_size": 80990,
+      "compression_ratio": 1.8540393288006776,
+      "reward": 0.24
+    },
+    {
+      "media_type": "audio",
+      "input_file": "/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data/bear-audio-main-aac.aac",
+      "input_size": 43683,
+      "target_format": "mp3",
+      "quality": 256,
+      "output_size": 90668,
+      "compression_ratio": 2.0755900464711674,
+      "reward": 0.24
+    }
+  ]
+}

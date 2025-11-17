@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>PIXLY Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            text-align: center;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        h1 {
+            color: #667eea;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 2px solid #667eea;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>✅ PIXLY 测试插件</h1>
+    <div class="status">
+        <p>如果你能看到这个页面，说明Eagle插件系统正常工作！</p>
+        <p>Eagle API 状态: <span id="eagleStatus">检测中...</span></p>
+    </div>
+    
+    <script>
+        // 检测Eagle API
+        if (typeof eagle !== 'undefined') {
+            document.getElementById('eagleStatus').textContent = '✅ 可用';
+            document.getElementById('eagleStatus').style.color = '#4CAF50';
+            console.log('Eagle API 可用');
+        } else {
+            document.getElementById('eagleStatus').textContent = '❌ 不可用';
+            document.getElementById('eagleStatus').style.color = '#f44336';
+            console.error('Eagle API 不可用');
+        }
+    </script>
+</body>
+</html>

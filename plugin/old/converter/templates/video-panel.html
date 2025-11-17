@@ -1,0 +1,483 @@
+<!-- 转换设置 -->
+<div class="section">
+    <!-- 模式切换标签 -->
+    <div class="mode-tabs mb-lg">
+        <button class="mode-tab active" data-mode="smart-video">
+            <span style="font-size: 16px;">🤖</span>
+            <span data-i18n="mode.smartVideo">Smart Video</span>
+        </button>
+        <button class="mode-tab" data-mode="manual-video">
+            <span style="font-size: 16px;">⚙️</span>
+            <span data-i18n="mode.manualVideo">Manual Video</span>
+        </button>
+    </div>
+
+    <!-- 隐藏的 radio 输入 -->
+    <input type="radio" name="videoMode" value="smart" checked style="display: none;" id="videoModeRadioSmart">
+    <input type="radio" name="videoMode" value="manual" style="display: none;" id="videoModeRadioManual">
+
+    <!-- 🤖 视频AI选项（智能模式专属） -->
+    <div id="videoAIOptionsSection" style="display: block; margin-bottom: 20px;">
+        <div class="card-title mb-md" style="display: flex; align-items: center; justify-content: space-between;">
+            <span data-i18n="videoAI.title">🧠 Video AI Options</span>
+            <span id="videoGoCoreInline" style="font-size: 10px; font-weight: 600; padding: 4px 8px; background: var(--bg-elevated); border-radius: 4px; border: 1px solid var(--border);">
+                <span style="color: #FFA500;" data-i18n="ai.goCoreNotDetected">🤖 Detecting...</span>
+            </span>
+        </div>
+        
+        <!-- 隐藏的checkbox，默认强制勾选 -->
+        <input type="checkbox" id="enableVideoAI" checked style="display: none;">
+        
+        <!-- AI高级选项面板（直接显示，无需勾选） -->
+        <div style="margin-bottom: 16px;">
+            <!-- ⚡ Presets（最上方，和图像处理保持一致） -->
+            <div style="margin-bottom: 16px; padding: 12px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%); border: 1px solid var(--border); border-radius: 8px;">
+                <div style="color: var(--text-primary); font-weight: 600; font-size: 13px; margin-bottom: 8px;" data-i18n="videoAI.preset">⚡ プリセット</div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                    <label class="optimize-mode-btn" data-preset="fast" data-i18n="[title]videoAI.fastTooltip" style="color: #1e293b;">
+                        <input type="radio" name="videoAIPreset" value="fast" style="display: none;">
+                        <span style="font-size: 12px; color: inherit !important;" data-i18n="videoAI.fast">⚡ 高速</span>
+                    </label>
+                    <label class="optimize-mode-btn active" data-preset="balanced" data-i18n="[title]videoAI.balancedTooltip" style="color: #1e293b;">
+                        <input type="radio" name="videoAIPreset" value="balanced" checked style="display: none;">
+                        <span style="font-size: 12px; color: inherit !important;" data-i18n="videoAI.balanced">📊 バランス</span>
+                    </label>
+                    <label class="optimize-mode-btn" data-preset="quality" data-i18n="[title]videoAI.fullTooltip" style="color: #1e293b;">
+                        <input type="radio" name="videoAIPreset" value="quality" style="display: none;">
+                        <span style="font-size: 12px; color: inherit !important;" data-i18n="videoAI.full">⭐ 完全</span>
+                    </label>
+                </div>
+                <div id="videoAIPresetDesc" style="margin-top: 6px; font-size: 10px; color: var(--text-secondary); font-weight: 500;" data-i18n="videoAI.balancedDesc">
+                    バランス：スマートチャネル + 高度な機能 - 毎日推奨
+                </div>
+            </div>
+            
+            <!-- 🎯 视频智能模式说明卡 + 高级选项（左右布局，与图像面板统一） -->
+            <div style="display: flex; gap: 12px; margin-bottom: 16px; align-items: stretch;">
+                <!-- 左侧：说明卡 -->
+                <div id="videoOptimizeModeInfoCard" style="flex: 0 0 350px; padding: 16px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(76, 175, 80, 0.2) 100%); border-radius: 8px; border: 2px solid rgba(76, 175, 80, 0.4); box-shadow: 0 2px 8px rgba(0,0,0,0.12); display: flex; flex-direction: column;">
+                    <!-- 标题区域 -->
+                    <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                        <div id="videoOptimizeModeIcon" style="font-size: 32px; line-height: 1; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">✨</div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div id="videoOptimizeModeTitle" style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; letter-spacing: 0.3px; line-height: 1.3;" data-i18n="videoAI.bestModeTitle">Smart Mode - Best Preset</div>
+                            <div id="videoOptimizeModeDesc" style="font-size: 11px; color: var(--text-secondary); line-height: 1.5; font-weight: 500;" data-i18n="videoAI.bestModeDesc">Best AI config enabled: LightGBM quality prediction + PPO reinforcement learning + VMAF validation + Smart format recommendation</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 分隔线 -->
+                    <div style="height: 1px; background: linear-gradient(90deg, rgba(76, 175, 80, 0.3), transparent); margin: 10px 0;"></div>
+                    
+                    <!-- 功能列表 -->
+                    <div style="margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; padding: 6px; background: rgba(102, 126, 234, 0.1); border-radius: 4px;">
+                            <span style="font-size: 16px;">🎯</span>
+                            <span style="font-size: 11px; font-weight: 600; color: var(--text-primary);" data-i18n="videoAI.smartQualityFeature">Smart Quality Prediction</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; padding: 6px; background: rgba(102, 126, 234, 0.1); border-radius: 4px;">
+                            <span style="font-size: 16px;">⚡</span>
+                            <span style="font-size: 11px; font-weight: 600; color: var(--text-primary);" data-i18n="videoAI.autoOptimizeFeature">Auto Parameter Optimization</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; padding: 6px; background: rgba(102, 126, 234, 0.1); border-radius: 4px;">
+                            <span style="font-size: 16px;">📊</span>
+                            <span style="font-size: 11px; font-weight: 600; color: var(--text-primary);" data-i18n="videoAI.vmafFeature">VMAF Quality Validation</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 说明区域 -->
+                    <div id="videoOptimizeModeHint" style="padding: 10px 12px; background: rgba(0, 0, 0, 0.15); border-radius: 6px; font-size: 10px; color: var(--text-primary); line-height: 1.6; border-left: 3px solid rgba(76, 175, 80, 0.7);">
+                        <div style="font-weight: 700; margin-bottom: 4px; font-size: 11px;" data-i18n="videoAI.ppoNote">💡 All quality predictions use PPO reinforcement learning</div>
+                        <div style="opacity: 0.9;" data-i18n="videoAI.ppoDesc">Continuously optimize decision accuracy for best conversion results</div>
+                    </div>
+                </div>
+                
+                <!-- 右侧：AI高级选项网格 -->
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <div id="advancedVideoAIOptions" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start;">
+                <!-- 场景检测 -->
+                <label style="display: flex; align-items: center; cursor: pointer; padding: 10px; border-radius: 6px; transition: all 0.2s; background: var(--bg-secondary); border: 1px solid var(--border);" data-i18n="[title]videoAI.sceneDetectionTooltip">
+                    <input type="checkbox" id="enableAdvancedFeatures" checked style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 12px; margin-bottom: 2px;">
+                            <span data-i18n="videoAI.sceneDetection">🎬 Advanced Feature Analysis</span>
+                        </div>
+                        <div style="font-size: 10px; line-height: 1.4; font-weight: 500; color: var(--text-secondary);">
+                            <span data-i18n="videoAI.sceneDetectionDesc">Smart scene change detection</span>
+                        </div>
+                    </div>
+                </label>
+                
+                <!-- 强制Transformer精细处理 -->
+                <label style="display: flex; align-items: center; cursor: pointer; padding: 10px; border-radius: 6px; transition: all 0.2s; background: var(--bg-secondary); border: 1px solid var(--border);" data-i18n="[title]videoAI.forceTransformerTooltip">
+                    <input type="checkbox" id="forceTransformer" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 12px; margin-bottom: 2px;">
+                            <span data-i18n="videoAI.forceTransformer">🔮 Force Transformer Processing</span>
+                        </div>
+                        <div style="font-size: 10px; line-height: 1.4; font-weight: 500; color: var(--text-secondary);">
+                            <span data-i18n="videoAI.forceTransformerDesc">Deep learning fine processing</span>
+                        </div>
+                    </div>
+                </label>
+                
+                <!-- VMAF Quality Validation -->
+                <label style="display: flex; align-items: center; cursor: pointer; padding: 10px; border-radius: 6px; transition: all 0.2s; background: var(--bg-secondary); border: 1px solid var(--border);" data-i18n="[title]videoAI.vmafValidationTooltip">
+                    <input type="checkbox" id="enableVMAF" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 12px; margin-bottom: 2px;">
+                            <span data-i18n="videoAI.vmafValidation">📊 VMAF Quality Validation</span>
+                        </div>
+                        <div style="font-size: 10px; line-height: 1.4; font-weight: 500; color: var(--text-secondary);">
+                            <span data-i18n="videoAI.vmafValidationDesc">Video quality assessment</span>
+                        </div>
+                    </div>
+                </label>
+                
+                <!-- 🆕 動圖轉影片RECOMMENDED -->
+                <label id="videoForAnimationLabel" style="display: flex; align-items: center; cursor: pointer; padding: 10px; border-radius: 6px; transition: all 0.2s; background: var(--bg-secondary); border: 1px solid var(--border);"
+                       data-i18n="[title]ai.videoForAnimationTooltip">
+                    <input type="checkbox" id="enableVideoForAnimationVideo" checked style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 12px; margin-bottom: 2px;">
+                            <span data-i18n="videoAI.videoForAnimation">🎬 Animation to Video</span>
+                        </div>
+                        <div style="font-size: 10px; line-height: 1.4; font-weight: 500; color: var(--text-secondary);">
+                            <span data-i18n="videoAI.videoForAnimationDesc">Large animations recommended to convert to video format</span>
+                        </div>
+                    </div>
+                </label>
+                    </div>
+                    
+                    <!-- 📹 视频/动图信息面板（填充右下角空白区域） -->
+                    <div id="videoFileInfoPanel" style="margin-top: 10px; padding: 14px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15)); border-radius: 8px; border: 2px solid rgba(139, 92, 246, 0.3); box-shadow: 0 2px 6px rgba(0,0,0,0.08); flex: 1;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <span style="font-size: 24px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">📹</span>
+                    <div style="flex: 1;">
+                        <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;" data-i18n="video.currentFile">Currently Selected File</div>
+                        <div id="videoFileName" style="font-size: 11px; color: var(--text-secondary); font-weight: 500; word-break: break-all;" data-i18n="video.noFileSelected">No File Selected</div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                    <!-- File Size -->
+                    <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 600;" data-i18n="video.fileSize">📦 File Size</div>
+                        <div id="videoFileSize" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">--</div>
+                    </div>
+                    
+                    <!-- 分辨率 -->
+                    <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 600;" data-i18n="video.resolution">📐 Resolution</div>
+                        <div id="videoResolution" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">--</div>
+                    </div>
+                    
+                    <!-- Duration/Frames -->
+                    <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 600;" data-i18n="video.duration">⏱️ Duration/Frames</div>
+                        <div id="videoDuration" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">--</div>
+                    </div>
+                    
+                    <!-- Format -->
+                    <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 600;" data-i18n="video.format">🎬 Format</div>
+                        <div id="videoFormat" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">--</div>
+                    </div>
+                    
+                    <!-- Encoder -->
+                    <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 600;" data-i18n="video.encoder">🎨 Encoder</div>
+                        <div id="videoCodec" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">--</div>
+                    </div>
+                    
+                    <!-- 比特率 -->
+                    <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                        <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 600;" data-i18n="video.bitrate">📊 Bitrate</div>
+                        <div id="videoBitrate" style="font-size: 13px; font-weight: 700; color: var(--text-primary);">--</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 10px; padding: 8px 10px; background: rgba(0, 0, 0, 0.15); border-radius: 5px; font-size: 10px; color: var(--text-secondary); line-height: 1.5; border-left: 3px solid rgba(139, 92, 246, 0.6);">
+                    💡 <span style="font-weight: 600;" data-i18n="video.lastFileInfo">Display last selected file info</span> - <span data-i18n="video.lastFileInfoHint">When multiple files selected, only last file details shown</span>
+                </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ⚙️ 手动参数区域（手动模式专属） -->
+<div id="videoManualOptions" style="display: none;">
+    
+    <!-- 容器Format（移到最上方，与图像面板顺序统一） -->
+    <div class="section">
+    <h3 style="margin-bottom: 12px;" data-i18n="video.containerFormat">📦 Container Format</h3>
+    
+    <div class="format-grid gap-md">
+        <label class="format-item" data-i18n="[title]video.mp4TooltipFull">
+            <input type="radio" name="videoContainer" value="mp4" checked>
+            <div class="format-label">
+                <div class="format-icon">📦</div>
+                <div class="format-name">MP4</div>
+                <div class="format-desc" data-i18n="video.mp4Desc">Widest compatibility</div>
+            </div>
+        </label>
+        <label class="format-item" data-i18n="[title]video.movTooltipFull">
+            <input type="radio" name="videoContainer" value="mov">
+            <div class="format-label">
+                <div class="format-icon">🍎</div>
+                <div class="format-name">MOV</div>
+                <div class="format-desc" data-i18n="video.movDesc">Apple device optimized</div>
+            </div>
+        </label>
+
+        <label class="format-item" data-i18n="[title]video.mkvTooltipFull">
+            <input type="radio" name="videoContainer" value="mkv">
+            <div class="format-label">
+                <div class="format-icon">📁</div>
+                <div class="format-name">MKV</div>
+                <div class="format-desc" data-i18n="video.mkvDesc">Universal container</div>
+            </div>
+        </label>
+    </div>
+    
+    <div id="videoCompatCheck" style="margin-top: 8px; padding: 8px; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); border-radius: 4px; font-size: 12px;">
+        ✅ H.265 + MP4 = Widest compatibility
+    </div>
+</div>
+
+    <!-- Encoder选择（移到容器Format下方） -->
+    <div class="section" style="margin-top: 16px;">
+    <h3 style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <span data-i18n="video.targetEncoder">🎨 Target Encoder</span>
+        <span id="videoManualRustCoreStatus" style="font-size: 10px; font-weight: 600; padding: 4px 8px; background: var(--bg-elevated); border-radius: 4px; border: 1px solid var(--border);">
+            <span style="color: #FFA500;">⚙️ Detecting...</span>
+        </span>
+    </h3>
+
+    <div class="codec-selector">
+        <label class="codec-card" data-i18n="[title]encoder.h265TooltipFull">
+            <input type="radio" name="videoCodec" value="h265" checked>
+            <div class="codec-content">
+                <div class="codec-name">H.265 (HEVC)</div>
+                <div class="codec-badge best" data-i18n="encoder.recommended">Recommended</div>
+                <div class="codec-stats"><span data-i18n="encoder.quality">Quality</span>: ⭐⭐⭐⭐⭐ | <span data-i18n="encoder.speed">Speed</span>: ⚡⚡⚡</div>                                                                                    
+            </div>
+        </label>
+        
+        <label class="codec-card" data-i18n="[title]encoder.h266TooltipFull">
+            <input type="radio" name="videoCodec" value="h266">
+            <div class="codec-content">
+                <div class="codec-name">H.266 (VVC)</div>
+                <div class="codec-badge best" data-i18n="encoder.latestStandard">LATEST STANDARD</div>
+                <div class="codec-stats"><span data-i18n="encoder.quality">Quality</span>: ⭐⭐⭐⭐⭐⭐ | <span data-i18n="encoder.speed">Speed</span>: ⚡</div>                                                                                      
+            </div>
+        </label>
+        
+        <label class="codec-card" data-i18n="[title]encoder.av1TooltipFull">
+            <input type="radio" name="videoCodec" value="av1">
+            <div class="codec-content">
+                <div class="codec-name">AV1</div>
+                <div class="codec-badge" data-i18n="video.nextGen">NEXT-GEN</div>                                                                                   
+                <div class="codec-stats"><span data-i18n="encoder.quality">Quality</span>: ⭐⭐⭐⭐⭐ | <span data-i18n="encoder.speed">Speed</span>: ⚡⚡</div>                                                                                      
+            </div>
+        </label>
+
+
+    </div>
+</div>
+
+<!-- 🔥 Phase 45.8.6: 高级选项（可折叠）- 统一图像面板结构 -->
+<div class="section" style="margin-top: 16px;">
+    <details open>
+        <summary style="cursor: pointer; font-size: 17px; font-weight: 600; margin-bottom: 12px; user-select: none; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;" class="advanced-summary">
+            <span data-i18n="video.advancedOptions">⚡ Advanced Options</span>
+            <span style="font-size: 10px; font-weight: 500; color: var(--text-secondary); opacity: 0.8; white-space: nowrap;" data-i18n="video.autoOptimizationNote">💡 Auto optimization: Smart metadata preservation | Auto GPU detection | Worker thread optimization</span>
+        </summary>
+        
+        <!-- 手动模式说明卡片（在折叠面板内） -->
+        <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 14px; border-radius: 8px; margin-bottom: 16px; color: white;">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;">
+                <!-- 左侧：标题和描述 -->
+                <div style="flex: 1; min-width: 200px;">
+                    <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px;" data-i18n="video.manualMode">⚙️ Manual Mode - Professional Control</div>
+                    <div style="font-size: 11px; opacity: 0.9; line-height: 1.5;" data-i18n="video.manualDesc">Professional parameter control | Animation to video (GIF/APNG) | Video transcoding optimization</div>
+                </div>
+                
+                <!-- 右侧：GPUAcceleration信息 -->
+                <div style="min-width: 200px; padding: 10px; background: rgba(255, 255, 255, 0.15); border-radius: 6px; backdrop-filter: blur(10px);">
+                    <div id="gpuInfo" style="font-size: 11px; font-weight: 600; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;">
+                        <span style="font-size: 14px;">⚡</span>
+                        <span data-i18n="video.gpuStatus">GPU Hardware Acceleration</span>
+                    </div>
+                    <div style="font-size: 10px; opacity: 0.9; line-height: 1.4;">
+                        <span data-i18n="video.gpuForced">✅ Enabled, supports all encoders</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!-- Quality控制 -->
+        <div style="margin-bottom: 16px;">
+    <h3 style="margin-bottom: 12px;" data-i18n="video.qualityControl">🎯 Quality Control</h3>
+    <div style="background: var(--bg-elevated); padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <label style="color: var(--text-primary);" data-i18n="video.crfLabel">CRF Value:</label>
+            <span id="videoCrfValue" style="font-weight: bold; color: var(--text-primary);">23</span>
+        </div>
+        <input type="range" id="videoCrfSlider" min="0" max="51" value="23" style="width: 100%;">
+        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 8px;" data-i18n="video.crfHint">
+            0=Lossless | 18=Visually lossless | 23=High quality (recommended) | 28=Balanced | 51=Worst
+        </div>
+    </div>
+</div>
+
+        <!-- Encoding Parameters -->
+        <div style="margin-bottom: 16px;">
+            <h3 style="margin-bottom: 12px;" data-i18n="video.encodingParams">⚙️ Encoding Parameters</h3>
+        
+        <!-- 参数网格 -->
+        <div style="display: grid; gap: 16px;">
+            
+            <!-- 码率模式 -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);" data-i18n="video.rateControl">
+                    📊 Bitrate Control Mode
+                </label>
+                <select id="videoRateControl" class="form-control" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary);">
+                    <option value="crf" selected data-i18n="video.rc.crf">CRF (Constant Quality)</option>
+                    <option value="cbr" data-i18n="video.rc.cbr">CBR (Constant Bitrate)</option>
+                    <option value="vbr" data-i18n="video.rc.vbr">VBR (Variable Bitrate)</option>
+                    <option value="abr" data-i18n="video.rc.abr">ABR (Average Bitrate)</option>
+                </select>
+                <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;" data-i18n="video.rcHint">
+                    CRF recommended for storage, CBR/VBR for streaming
+                </div>
+            </div>
+            
+            <!-- 目标码率（CBR/VBR/ABR时显示）-->
+            <div id="bitrateControl" style="display: none;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);" data-i18n="video.bitrate">
+                    🎯 Target Bitrate (Mbps)
+                </label>
+                <input type="number" id="videoBitrate" min="1" max="100" value="10" step="0.5" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary);">
+                <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;" data-i18n="video.bitrateHint">
+                    1080pRECOMMENDED: 8-12 Mbps | 4KRECOMMENDED: 35-50 Mbps
+                </div>
+            </div>
+            
+            <!-- GOP大小 -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);" data-i18n="video.gop">
+                    🎬 GOP Size (Keyframe Interval)
+                </label>
+                <input type="number" id="videoGop" min="1" max="600" value="250" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary);">
+                <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;" data-i18n="video.gopHint">
+                    Smaller=Easy seek, Larger=Higher compression (250=10s@25fps)
+                </div>
+            </div>
+            
+            <!-- BCount量 -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);" data-i18n="video.bframes">
+                    🔄 B-frames Count
+                </label>
+                <input type="number" id="videoBframes" min="0" max="16" value="3" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary);">
+                <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;" data-i18n="video.bframesHint">
+                    0=Disabled | 3-4=Recommended | More=Better compression but slower encoding
+                </div>
+            </div>
+            
+            <!-- Reference Frame Count -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);" data-i18n="video.refs">
+                    📎 Reference Frames Count
+                </label>
+                <input type="number" id="videoRefs" min="1" max="16" value="4" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary);">
+                <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;" data-i18n="video.refsHint">
+                    1-4=Fast | 5-16=High quality but needs more decoding resources
+                </div>
+            </div>
+            
+            <!-- Motion Search Range -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);" data-i18n="video.meRange">
+                    🔍 Motion Search Range
+                </label>
+                <input type="number" id="videoMeRange" min="4" max="512" value="16" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary);">
+                <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;" data-i18n="video.meRangeHint">
+                    16=Fast | 32-64=Balanced | 128+=High motion scenes
+                </div>
+            </div>
+            
+            <!-- Subpixel Motion Estimation -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);" data-i18n="video.subme">
+                    🎯 Subpixel Motion Estimation
+                </label>
+                <select id="videoSubme" class="form-control" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary);">
+                    <option value="1" data-i18n="video.subme.1">1 - Fastest</option>
+                    <option value="2" data-i18n="video.subme.2">2 - Very Fast</option>
+                    <option value="3" data-i18n="video.subme.3">3 - Fast</option>
+                    <option value="4" data-i18n="video.subme.4">4 - Medium</option>
+                    <option value="5" selected data-i18n="video.subme.5">5 - RECOMMENDED</option>
+                    <option value="6" data-i18n="video.subme.6">6 - Slow</option>
+                    <option value="7" data-i18n="video.subme.7">7 - Slower</option>
+                    <option value="8" data-i18n="video.subme.8">8 - Very Slow</option>
+                    <option value="9" data-i18n="video.subme.9">9 - Slowest</option>
+                    <option value="10" data-i18n="video.subme.10">10 - Placebo</option>
+                </select>
+                <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;" data-i18n="video.submeHint">
+                    Higher value = Better quality but slower encoding
+                </div>
+            </div>
+            
+            <!-- 运动估计算法 -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);" data-i18n="video.meMethod">
+                    🧮 Motion Estimation Algorithm
+                </label>
+                <select id="videoMeMethod" class="form-control" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary);">
+                    <option value="dia" data-i18n="video.me.dia">Diamond (Fastest)</option>
+                    <option value="hex" selected data-i18n="video.me.hex">Hexagon (RECOMMENDED)</option>
+                    <option value="umh" data-i18n="video.me.umh">UMH (High Quality)</option>
+                    <option value="esa" data-i18n="video.me.esa">ESA (Exhaustive Search)</option>
+                    <option value="tesa" data-i18n="video.me.tesa">TESA (Slowest/Best)</option>
+                </select>
+                <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;" data-i18n="video.meMethodHint">
+                    hex for most scenes, umh/esa for highest quality
+                </div>
+            </div>
+            
+            <!-- 去块滤波 -->
+            <div>
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-primary);">
+                    <input type="checkbox" id="videoDeblock" checked style="width: 18px; height: 18px; cursor: pointer;">
+                    <span data-i18n="video.deblock">🧹 Deblocking Filter</span>
+                </label>
+                <div id="deblockParams" style="margin-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div>
+                        <input type="number" id="videoDeblockAlpha" min="-6" max="6" value="0" placeholder="Alpha" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary);">
+                        <div style="font-size: 9px; color: var(--text-secondary); margin-top: 2px;" data-i18n="video.deblockAlphaHint">Alpha: -6~6</div>
+                    </div>
+                    <div>
+                        <input type="number" id="videoDeblockBeta" min="-6" max="6" value="0" placeholder="Beta" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary);">
+                        <div style="font-size: 9px; color: var(--text-secondary); margin-top: 2px;" data-i18n="video.deblockBetaHint">Beta: -6~6</div>
+                    </div>
+                </div>
+                <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;" data-i18n="video.deblockHint">
+                    Negative=Stronger filter, Positive=Weaker filter, 0=Default
+                </div>
+            </div>
+            
+</div>
+        
+    </details>
+</div>
+
+</div>
+<!-- ⚙️ 手动参数区域结束 -->
+
+
+            <!-- ========== 🎬 统一视频处理面板结束 ========== -->

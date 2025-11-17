@@ -1,0 +1,85 @@
+{
+  "total_checks": 13,
+  "passed": 13,
+  "failed": 0,
+  "details": [
+    {
+      "check": "Clippy警告",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS"
+    },
+    {
+      "check": "测试套件",
+      "expected": "242 passed",
+      "actual": "242 passed",
+      "status": "PASS"
+    },
+    {
+      "check": "src/conversion_core.rs - clamp",
+      "expected": "包含 'clamp'",
+      "actual": "找到",
+      "status": "PASS"
+    },
+    {
+      "check": "src/automl.rs - type SplitData",
+      "expected": "包含 'type SplitData'",
+      "actual": "找到",
+      "status": "PASS"
+    },
+    {
+      "check": "src/ml_bridge.rs - type FeatureExtractorFn",
+      "expected": "包含 'type FeatureExtractorFn'",
+      "actual": "找到",
+      "status": "PASS"
+    },
+    {
+      "check": "src/bayesian_optimizer.rs - use serde",
+      "expected": "包含 'use serde'",
+      "actual": "找到",
+      "status": "PASS"
+    },
+    {
+      "check": "src/ml_data_flow.rs - use crate::ml_bridge",
+      "expected": "包含 'use crate::ml_bridge'",
+      "actual": "找到",
+      "status": "PASS"
+    },
+    {
+      "check": "Clamp等价性 (10)",
+      "expected": 9,
+      "actual": 9,
+      "status": "PASS"
+    },
+    {
+      "check": "Clamp等价性 (5)",
+      "expected": 5,
+      "actual": 5,
+      "status": "PASS"
+    },
+    {
+      "check": "Clamp等价性 (0)",
+      "expected": 1,
+      "actual": 1,
+      "status": "PASS"
+    },
+    {
+      "check": "Clamp等价性 (-5)",
+      "expected": 1,
+      "actual": 1,
+      "status": "PASS"
+    },
+    {
+      "check": "类型安全性",
+      "expected": "编译成功",
+      "actual": "编译成功",
+      "status": "PASS"
+    },
+    {
+      "check": "性能影响",
+      "expected": "零影响",
+      "actual": "Release构建成功",
+      "status": "PASS"
+    }
+  ]
+}

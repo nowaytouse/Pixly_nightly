@@ -1,0 +1,172 @@
+{
+  "summary": {
+    "total_tests": 11,
+    "successful_tests": 11,
+    "success_rate": 1.0,
+    "duration_seconds": 0.04,
+    "status": "EXCELLENT"
+  },
+  "detailed_results": {
+    "rust_binaries": {
+      "image_kernel": true,
+      "video_kernel": true
+    },
+    "image_ai_prediction": [
+      {
+        "name": "高清JPEG转WebP",
+        "status": "success",
+        "result": {
+          "core": {
+            "quality": 80,
+            "speed": 4,
+            "lossless": false,
+            "format_options": {
+              "alpha_compression": "0",
+              "method": "4",
+              "lossless": "false"
+            },
+            "estimated_size": 1300000,
+            "estimated_ratio": 0.65,
+            "algorithm_version": "unified-v1",
+            "predictor_version": "3.0.0-unified"
+          },
+          "confidence": 0.8500000000000001
+        }
+      },
+      {
+        "name": "4K PNG转JPEG",
+        "status": "success",
+        "result": {
+          "core": {
+            "quality": 88,
+            "speed": 4,
+            "lossless": false,
+            "format_options": {
+              "optimize": "true",
+              "progressive": "true"
+            },
+            "estimated_size": 7970880,
+            "estimated_ratio": 0.99636,
+            "algorithm_version": "unified-v1",
+            "predictor_version": "3.0.0-unified"
+          },
+          "confidence": 0.7999999999999999
+        }
+      },
+      {
+        "name": "小图标PNG转WebP",
+        "status": "success",
+        "result": {
+          "core": {
+            "quality": 75,
+            "speed": 1,
+            "lossless": true,
+            "format_options": {
+              "lossless": "true",
+              "alpha_compression": "1",
+              "method": "1"
+            },
+            "estimated_size": 35937,
+            "estimated_ratio": 0.71874,
+            "algorithm_version": "unified-v1",
+            "predictor_version": "3.0.0-unified"
+          },
+          "confidence": 0.8500000000000001
+        }
+      }
+    ],
+    "video_ai_prediction": [
+      {
+        "name": "1080p H264视频",
+        "status": "success",
+        "result": {
+          "target_codec": "H264",
+          "target_container": "mp4",
+          "crf": 24,
+          "preset": "medium",
+          "two_pass": false,
+          "audio_mode": "Aac"
+        }
+      },
+      {
+        "name": "4K高码率视频",
+        "status": "success",
+        "result": {
+          "target_codec": "H265",
+          "target_container": "mp4",
+          "crf": 22,
+          "preset": "slow",
+          "two_pass": false,
+          "audio_mode": "Aac"
+        }
+      },
+      {
+        "name": "低分辨率快速编码",
+        "status": "success",
+        "result": {
+          "target_codec": "Vp9",
+          "target_container": "webm",
+          "crf": 25,
+          "preset": "veryfast",
+          "two_pass": false,
+          "audio_mode": "Remove"
+        }
+      }
+    ],
+    "edge_cases": [
+      {
+        "name": "超大图像",
+        "status": "success",
+        "result": {
+          "core": {
+            "quality": 86,
+            "speed": 4,
+            "lossless": true,
+            "format_options": {
+              "lossless": "false",
+              "method": "4",
+              "alpha_compression": "1"
+            },
+            "estimated_size": 46919999,
+            "estimated_ratio": 0.93839998,
+            "algorithm_version": "unified-v1",
+            "predictor_version": "3.0.0-unified"
+          },
+          "confidence": 0.75
+        }
+      },
+      {
+        "name": "极小图像",
+        "status": "success",
+        "result": {
+          "core": {
+            "quality": 81,
+            "speed": 4,
+            "lossless": false,
+            "format_options": {
+              "progressive": "false",
+              "optimize": "true"
+            },
+            "estimated_size": 541,
+            "estimated_ratio": 0.541,
+            "algorithm_version": "unified-v1",
+            "predictor_version": "3.0.0-unified"
+          },
+          "confidence": 0.9
+        }
+      },
+      {
+        "name": "超长视频",
+        "status": "success",
+        "result": {
+          "target_codec": "H264",
+          "target_container": "mp4",
+          "crf": 24,
+          "preset": "medium",
+          "two_pass": false,
+          "audio_mode": "Aac"
+        }
+      }
+    ]
+  }
+}

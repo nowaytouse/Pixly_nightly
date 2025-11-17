@@ -1,0 +1,17 @@
+{
+  "batches": [
+    {
+      "batch_id": 1,
+      "model_type": "ppo",
+      "start_time": "2025-11-12T06:28:52.975783",
+      "end_time": null,
+      "status": "failed",
+      "sample_count": 200,
+      "metrics": {},
+      "new_version": "",
+      "error_message": "",
+      "retry_count": 1
+    }
+  ],
+  "next_batch_id": 2
+}

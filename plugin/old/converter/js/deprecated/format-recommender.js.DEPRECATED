@@ -1,0 +1,459 @@
+/**
+ * ╔════════════════════════════════════════════════════════════╗
+ * ║   智能格式推荐module v4.2.0                                   ║
+ * ║   根据图像特征推荐最优格式（包括动态图→视频）               ║
+ * ╚════════════════════════════════════════════════════════════╝
+ */
+
+(function(window) {
+    'use strict';
+
+    /**
+     * 格式推荐config
+     */
+    const FormatRecommendationRules = {
+        // 动态图规则（帧数判断）
+        animated: {
+            // 短动画 (≤30帧)：适合JXL
+            short: {
+                maxFrames: 30,
+                recommended: 'jxl',
+                reason: '短动画，JXL动画支持更好'
+            },
+            // 中等动画 (31-120帧)：建议视频格式
+            medium: {
+                minFrames: 31,
+                maxFrames: 120,
+                recommended: 'mp4',
+                videoCodec: 'h264',
+                reason: '中等长度动画，建议ConvertasH.264视频'
+            },
+            // 长动画 (>120帧)：强烈建议视频格式
+            long: {
+                minFrames: 121,
+                recommended: 'mp4',
+                videoCodec: 'h265',
+                reason: '长动画，强烈建议ConvertasH.265视频以获得最佳压缩'
+            }
+        },
+        
+        // 静态图规则
+        static: {
+            // 照片：AVIF优先
+            photo: {
+                recommended: 'avif',
+                fallback: 'jxl',
+                reason: '照片类图像，AVIF压缩率最高'
+            },
+            // 透明图：WebPorJXL
+            transparent: {
+                recommended: 'webp',
+                fallback: 'jxl',
+                reason: '包含透明通道，WebP兼容性好'
+            },
+            // 文档扫描：JXL无损
+            document: {
+                recommended: 'jxl',
+                lossless: true,
+                reason: '文档扫描，JXL无损压缩最佳'
+            },
+            // 屏幕截图：JXLorWebP
+            screenshot: {
+                recommended: 'jxl',
+                fallback: 'webp',
+                reason: '屏幕截图，JXL锐度保持好'
+            }
+        }
+    };
+
+    /**
+     * 智能格式推荐器
+     */
+    class FormatRecommender {
+        constructor() {
+            this.rules = FormatRecommendationRules;
+        }
+
+        /**
+         * Analysis图像并推荐格式
+         * @param {Object} imageInfo - 图像info
+         * @returns {Object} 推荐Result
+         */
+        recommend(imageInfo) {
+            const {
+                isAnimated = false,
+                frameCount = 1,
+                hasAlpha = false,
+                width = 0,
+                height = 0,
+                fileSize = 0,
+                format = '',
+                features = {}
+            } = imageInfo;
+
+            // 动态图处理
+            if (isAnimated && frameCount > 1) {
+                return this.recommendForAnimated(frameCount, width, height, fileSize);
+            }
+
+            // 静态图处理
+            return this.recommendForStatic({
+                hasAlpha,
+                width,
+                height,
+                fileSize,
+                format,
+                features
+            });
+        }
+
+        /**
+         * 动态图格式推荐
+         * @param {number} frameCount - 帧数
+         * @param {number} width - 宽度
+         * @param {number} height - 高度
+         * @param {number} fileSize - file大小
+         * @returns {Object} 推荐Result
+         */
+        recommendForAnimated(frameCount, width, height, fileSize) {
+            const pixels = width * height;
+            const isHighRes = pixels > 1920 * 1080; // >1080p
+
+            // 短动画 (≤30帧)
+            if (frameCount <= this.rules.animated.short.maxFrames) {
+                return {
+                    format: 'jxl',
+                    category: 'animated_short',
+                    confidence: 0.85,
+                    reason: `短动画 (${frameCount}帧)，JXL动画支持更好`,
+                    alternatives: ['gif', 'webp'],
+                    videoSuggestion: null
+                };
+            }
+
+            // 中等动画 (31-120帧)
+            if (frameCount <= this.rules.animated.medium.maxFrames) {
+                const videoFormat = {
+                    format: 'mp4',
+                    codec: 'h264',
+                    quality: 23,
+                    preset: 'medium'
+                };
+
+                return {
+                    format: 'jxl',  // 保留图像格式作as主推荐
+                    category: 'animated_medium',
+                    confidence: 0.75,
+                    reason: `中等动画 (${frameCount}帧)，JXLavailable但视频格式更优`,
+                    alternatives: ['webp'],
+                    videoSuggestion: {
+                        ...videoFormat,
+                        reason: `建议ConvertasH.264视频以减小体积 (预计减小60-80%)`,
+                        estimatedSaving: 0.70
+                    }
+                };
+            }
+
+            // 长动画 (>120帧)
+            const codec = isHighRes ? 'h265' : 'h264';
+            const quality = isHighRes ? 25 : 23;
+            
+            return {
+                format: 'mp4',  // 直接推荐视频格式
+                category: 'animated_long',
+                confidence: 0.95,
+                reason: `长动画 (${frameCount}帧)，强烈建议使用视频格式`,
+                alternatives: [],
+                videoSuggestion: {
+                    format: 'mp4',
+                    codec: codec,
+                    quality: quality,
+                    preset: isHighRes ? 'slow' : 'medium',
+                    reason: `长动画must使用视频编码 (预计减小70-85%)`,
+                    estimatedSaving: 0.78,
+                    mandatory: true  // 强制标记
+                }
+            };
+        }
+
+        /**
+         * 静态图格式推荐
+         * @param {Object} info - 图像info
+         * @returns {Object} 推荐Result
+         */
+        recommendForStatic(info) {
+            const { hasAlpha, width, height, fileSize, format, features } = info;
+            const pixels = width * height;
+
+            // 透明图
+            if (hasAlpha) {
+                return {
+                    format: 'webp',
+                    category: 'static_transparent',
+                    confidence: 0.90,
+                    reason: '包含透明通道，WebP兼容性好',
+                    alternatives: ['jxl'],
+                    videoSuggestion: null
+                };
+            }
+
+            // 高分辨率照片
+            if (pixels > 4000 * 3000 && format.match(/jpe?g/i)) {
+                return {
+                    format: 'avif',
+                    category: 'static_photo_high',
+                    confidence: 0.92,
+                    reason: '高分辨率照片，AVIF压缩率最高',
+                    alternatives: ['jxl', 'webp'],
+                    videoSuggestion: null
+                };
+            }
+
+            // 普通照片
+            if (format.match(/jpe?g/i)) {
+                return {
+                    format: 'avif',
+                    category: 'static_photo',
+                    confidence: 0.88,
+                    reason: '照片类图像，AVIF压缩率最高',
+                    alternatives: ['jxl', 'webp'],
+                    videoSuggestion: null
+                };
+            }
+
+            // PNG图像（mayis截图or图表）
+            if (format.match(/png/i)) {
+                // Checkis否as文档/截图（高边缘强度）
+                const isDocument = features.edgeStrength > 50 || 
+                                 features.textureComplexity < 10;
+                
+                if (isDocument) {
+                    return {
+                        format: 'jxl',
+                        category: 'static_document',
+                        confidence: 0.90,
+                        reason: '文档or截图，JXL锐度保持好',
+                        alternatives: ['webp'],
+                        lossless: true,
+                        videoSuggestion: null
+                    };
+                }
+
+                return {
+                    format: 'jxl',
+                    category: 'static_png',
+                    confidence: 0.85,
+                    reason: 'PNG图像，JXL通用性好',
+                    alternatives: ['webp', 'avif'],
+                    videoSuggestion: null
+                };
+            }
+
+            // 默认推荐
+            return {
+                format: 'jxl',
+                category: 'static_default',
+                confidence: 0.75,
+                reason: '通用图像，JXL平衡性好',
+                alternatives: ['avif', 'webp'],
+                videoSuggestion: null
+            };
+        }
+
+        /**
+         * 根据AI特征增强推荐
+         * @param {Object} recommendation - 基础推荐
+         * @param {Object} aiFeatures - AIAnalysis特征
+         * @returns {Object} 增强后推荐
+         */
+        enhanceWithAI(recommendation, aiFeatures) {
+            if (!aiFeatures || !aiFeatures.swt) {
+                return recommendation;
+            }
+
+            const {
+                compressionScore = 0.5,
+                textureComplexity = 50,
+                edgeStrength = 50
+            } = aiFeatures.swt;
+
+            // 高可压缩性图像 → 优先AVIF
+            if (compressionScore > 0.8 && recommendation.category.includes('photo')) {
+                recommendation.confidence = Math.min(0.95, recommendation.confidence + 0.05);
+                recommendation.reason += ' | AIAnalysis: 高可压缩性';
+            }
+
+            // 高纹理复杂度 → 优先JXL
+            if (textureComplexity > 80 && !recommendation.category.includes('animated')) {
+                if (recommendation.format === 'avif') {
+                    recommendation.alternatives = ['jxl', ...recommendation.alternatives];
+                    recommendation.reason += ' | AI建议: 复杂纹理考虑JXL';
+                }
+            }
+
+            return recommendation;
+        }
+    }
+
+    // ============================================================
+    // 导出
+    // ============================================================
+
+    const recommender = new FormatRecommender();
+
+    window.FormatRecommender = FormatRecommender;
+    window.formatRecommender = recommender;
+
+    // 便捷函数
+    window.recommendFormat = function(imageInfo) {
+        return recommender.recommend(imageInfo);
+    };
+
+    window.recommendFormatWithAI = function(imageInfo, aiFeatures) {
+        const baseRecommendation = recommender.recommend(imageInfo);
+        return recommender.enhanceWithAI(baseRecommendation, aiFeatures);
+    };
+
+    /**
+     * 通用优化规则（方案A：保守无损优先）
+     * JPEG → JXL 无损 | PNG → JXL 无损 | WebP → JXL 无损 | GIF/动图 → AVIF 有损
+     * @param {Object} imageInfo - 图像信息
+     * @returns {Object} 格式推荐结果
+     */
+    window.universalOptimizeRoute = function(imageInfo) {
+        const { format, fileSize, width, height, hasAlpha, features, frameCount } = imageInfo;
+        const pixels = width * height;
+        const sizeMB = fileSize / (1024 * 1024);
+        
+        // ========== JPEG处理：无损转JXL ==========
+        if (format.match(/jpe?g/i)) {
+            return {
+                format: 'jxl',
+                mode: 'lossless_jpeg',  // 使用 --lossless_jpeg=1
+                lossless: true,
+                quality: 100,
+                effort: 7,
+                reason: 'JPEG无损转JXL，100%可逆，减小10-20%',
+                confidence: 0.98,
+                alternatives: ['avif'],
+                preserveOriginal: true,  // 标记为无损转换
+                estimatedSaving: 0.15,   // 预计减小15%
+                category: 'universal_jpeg_lossless'
+            };
+        }
+        
+        // ========== PNG处理：无损转JXL ==========
+        if (format.match(/png/i)) {
+            return {
+                format: 'jxl',
+                mode: 'lossless',        // 使用 --distance 0
+                lossless: true,
+                quality: 100,
+                effort: 7,
+                reason: 'PNG无损转JXL，完全无损，减小30-50%',
+                confidence: 0.95,
+                alternatives: ['webp'],
+                preserveOriginal: true,
+                estimatedSaving: hasAlpha ? 0.35 : 0.40,  // 透明PNG压缩率稍低
+                category: hasAlpha ? 'universal_png_alpha_lossless' : 'universal_png_lossless'
+            };
+        }
+        
+        // ========== WebP处理：无损转JXL ==========
+        if (format.match(/webp/i) && frameCount === 0) {
+            return {
+                format: 'jxl',
+                mode: 'lossless',
+                lossless: true,
+                quality: 100,
+                effort: 7,
+                reason: 'WebP无损转JXL，统一到现代格式',
+                confidence: 0.90,
+                alternatives: [],
+                preserveOriginal: true,
+                estimatedSaving: 0.20,
+                category: 'universal_webp_lossless'
+            };
+        }
+        
+        // ========== GIF/动图处理：AVIF有损 ==========
+        if (frameCount > 0) {
+            // 短动画（≤30帧）：AVIF有损
+            if (frameCount <= 30) {
+                return {
+                    format: 'avif',
+                    mode: 'lossy',
+                    lossless: false,
+                    quality: 85,
+                    effort: 6,
+                    reason: `短动画（${frameCount}帧），AVIF有损压缩体积小（减小60-75%）`,
+                    confidence: 0.92,
+                    alternatives: ['jxl'],
+                    estimatedSaving: 0.68,
+                    category: 'universal_animated_short',
+                    videoSuggestion: null
+                };
+            }
+            
+            // 中等动画（31-120帧）：AVIF + 建议视频
+            if (frameCount <= 120) {
+                return {
+                    format: 'avif',
+                    mode: 'lossy',
+                    lossless: false,
+                    quality: 82,
+                    effort: 6,
+                    reason: `中等动画（${frameCount}帧），AVIF有损或考虑转视频`,
+                    confidence: 0.85,
+                    alternatives: ['jxl'],
+                    estimatedSaving: 0.72,
+                    category: 'universal_animated_medium',
+                    videoSuggestion: {
+                        format: 'mp4',
+                        codec: pixels > 1920*1080 ? 'h265' : 'h264',
+                        quality: pixels > 1920*1080 ? 25 : 23,
+                        preset: 'medium',
+                        reason: '转H.265视频可进一步减小体积（减小70-85%）',
+                        estimatedSaving: 0.78
+                    }
+                };
+            }
+            
+            // 长动画（>120帧）：强制转视频
+            return {
+                format: 'mp4',
+                mandatory: true,
+                mode: 'video',
+                videoConfig: {
+                    codec: pixels > 1920*1080 ? 'h265' : 'h264',
+                    quality: pixels > 1920*1080 ? 25 : 23,
+                    preset: 'medium',
+                    gop: 250,
+                    bframes: 3
+                },
+                reason: `长动画（${frameCount}帧），必须使用视频编码`,
+                confidence: 0.98,
+                alternatives: [],
+                estimatedSaving: 0.82,
+                category: 'universal_animated_long_video'
+            };
+        }
+        
+        // ========== 其他格式：默认JXL ==========
+        return {
+            format: 'jxl',
+            mode: 'lossy',
+            lossless: false,
+            quality: 90,
+            effort: 7,
+            reason: '通用格式，JXL平衡性好',
+            confidence: 0.75,
+            alternatives: ['avif', 'webp'],
+            estimatedSaving: 0.30,
+            category: 'universal_default'
+        };
+    };
+
+ console.log('[PIXLY Format Recommender] 📊 Smart Format Recommender module loaded');
+
+})(window);

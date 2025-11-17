@@ -1,0 +1,15 @@
+{
+    "id": "pixly-ai-smart-converter",
+    "version": "2.0.0",
+    "platform": "all",
+    "arch": "all",
+    "name": "PIXLY AI",
+    "logo": "/logo.png",
+    "keywords": ["AI", "converter"],
+    "devTools": false,
+    "main": {
+        "url": "index.html",
+        "width": 1400,
+        "height": 900
+    }
+}

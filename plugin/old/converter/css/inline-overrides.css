@@ -1,0 +1,278 @@
+/* 高级选项与所有面板内容文本颜色与背景强制统一，避免白底白字 */
+.panel-content { 
+    color: var(--text-primary) !important; 
+    background: var(--bg-card) !important;
+}
+.panel-content * { color: inherit !important; }
+/* details 面板内的label与说明文字同样继承 */
+details .panel-content label,
+details .panel-content .option-item span,
+details .panel-content .hint-desc,
+details .panel-content .hint-title { color: inherit !important; }
+
+/* 🔥 AI选项区域 - 暗色模式高对比度优化 */
+:not([data-theme]) #aiOptionsSection [data-i18n="ai.smartQuality"],
+:not([data-theme]) #aiOptionsSection [data-i18n="ai.autoOptimize"],
+:not([data-theme]) #aiOptionsSection [data-i18n="ai.ssimValidation"],
+:not([data-theme]) #aiOptionsSection [data-i18n="ai.smartFormat"],
+:not([data-theme]) #aiOptionsSection [data-i18n="ai.goCoreStatus"] {
+    color: #60a5fa !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+}
+
+/* 🔥🔥🔥 视频AI选项区域 - 暗色模式文字颜色修复（最高优先级） 🔥🔥🔥 */
+/* 注意：暗色模式下 data-theme 属性不存在（被移除），所以使用 :not([data-theme]) */
+html body:not([data-theme]) #videoAIOptionsSection,
+html:not([data-theme]) body #videoAIOptionsSection {
+    color: #f8f9fa !important;
+}
+
+html body:not([data-theme]) #videoAIOptionsSection *,
+html:not([data-theme]) body #videoAIOptionsSection * {
+    color: #f8f9fa !important;
+}
+
+html body:not([data-theme]) #videoAIOptionsSection .card-title,
+html body:not([data-theme]) #videoAIOptionsSection .card-title span,
+html:not([data-theme]) body #videoAIOptionsSection .card-title,
+html:not([data-theme]) body #videoAIOptionsSection .card-title span {
+    color: #60a5fa !important;
+    font-weight: 700 !important;
+}
+
+html body:not([data-theme]) #videoAIOptionsSection label,
+html body:not([data-theme]) #videoAIOptionsSection label div,
+html body:not([data-theme]) #videoAIOptionsSection label span,
+html:not([data-theme]) body #videoAIOptionsSection label,
+html:not([data-theme]) body #videoAIOptionsSection label div,
+html:not([data-theme]) body #videoAIOptionsSection label span {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* 移除强制白色文字，使用styles.css中的高对比度版本 */
+/* html body:not([data-theme]) #videoAIOptionsSection .optimize-mode-btn,
+html body:not([data-theme]) #videoAIOptionsSection .optimize-mode-btn span,
+html:not([data-theme]) body #videoAIOptionsSection .optimize-mode-btn,
+html:not([data-theme]) body #videoAIOptionsSection .optimize-mode-btn span {
+    color: #ffffff !important;
+} */
+
+/* 视频AI描述文字（小字） */
+html body:not([data-theme]) #videoAIOptionsSection [data-i18n],
+html body:not([data-theme]) #videoAIOptionsSection [style*="color: var(--text-secondary)"],
+html:not([data-theme]) body #videoAIOptionsSection [data-i18n],
+html:not([data-theme]) body #videoAIOptionsSection [style*="color: var(--text-secondary)"] {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* 视频AI状态标签 */
+html body:not([data-theme]) #videoGoCoreInline,
+html body:not([data-theme]) #videoGoCoreInline span,
+html:not([data-theme]) body #videoGoCoreInline,
+html:not([data-theme]) body #videoGoCoreInline span {
+    color: #FFA500 !important;
+}
+
+:not([data-theme]) #aiOptionsSection [data-i18n="ai.smartQualityDesc"],
+:not([data-theme]) #aiOptionsSection [data-i18n="ai.autoOptimizeDesc"],
+:not([data-theme]) #aiOptionsSection [data-i18n="ai.ssimValidationDesc"],
+:not([data-theme]) #aiOptionsSection [data-i18n="ai.smartFormatDesc"],
+:not([data-theme]) #aiOptionsSection [data-i18n="ai.goCoreNotDetected"] {
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-weight: 600 !important;
+    font-size: 11px !important;
+    line-height: 1.6 !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
+}
+
+
+
+:not([data-theme]) #aiOptionsSection label {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+:not([data-theme]) #aiOptionsSection > div:nth-of-type(2) {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+/* 亮色模式优化 */
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.smartQuality"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.autoOptimize"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.ssimValidation"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.smartFormat"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.goCoreStatus"] {
+    color: #3b82f6 !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+}
+
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.smartQualityDesc"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.autoOptimizeDesc"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.ssimValidationDesc"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.smartFormatDesc"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.goCoreNotDetected"] {
+    color: var(--text-secondary) !important;
+    font-weight: 600 !important;
+    font-size: 11px !important;
+    line-height: 1.6 !important;
+}
+
+
+
+[data-theme="light"] #aiOptionsSection label {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+[data-theme="light"] #aiOptionsSection > div:nth-of-type(2) {
+    background: var(--bg-elevated) !important;
+    border: 1px solid var(--border) !important;
+}
+
+/* 高级选项标题颜色适配 */
+:not([data-theme]) .advanced-summary {
+    color: #60a5fa !important;
+}
+
+[data-theme="light"] .advanced-summary {
+    color: #3b82f6 !important;
+}
+
+/* JPEG无损提示框适配 */
+:not([data-theme]) .jpeg-lossless-notice {
+    background: rgba(76, 175, 80, 0.15) !important;
+    border-left: 4px solid #4CAF50 !important;
+}
+
+:not([data-theme]) .jpeg-lossless-title {
+    color: #4CAF50 !important;
+}
+
+[data-theme="light"] .jpeg-lossless-notice {
+    background: rgba(76, 175, 80, 0.08) !important;
+    border-left: 4px solid #4CAF50 !important;
+}
+
+[data-theme="light"] .jpeg-lossless-title {
+    color: #2e7d32 !important;
+}
+
+/* 🎯 智能模式按钮视觉反馈 */
+.toggle-advanced-btn:hover {
+    background: var(--bg-elevated) !important;
+    border-color: rgba(102, 126, 234, 0.5) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.toggle-advanced-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(102, 126, 234, 0.15);
+}
+
+/* 🎯 智能模式预设按钮 - 强化边框和反馈效果 */
+.optimize-mode-btn {
+    border: 2px solid transparent !important;
+    background: var(--bg-primary) !important;
+    transition: all 0.2s ease !important;
+}
+
+.optimize-mode-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25) !important;
+    border-color: rgba(102, 126, 234, 0.3) !important;
+    background: var(--bg-elevated) !important;
+}
+
+.optimize-mode-btn:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 1px 2px rgba(102, 126, 234, 0.15) !important;
+}
+
+/* 移除此处的active样式，改用styles.css中的高对比度版本 */
+/* .optimize-mode-btn.active {
+    border-color: #3b82f6 !important;
+    background: rgba(102, 126, 234, 0.1) !important;
+    font-weight: 700 !important;
+} */
+
+/* GPU状态卡片适配 */
+:not([data-theme]) .gpu-status-card {
+    background: rgba(102, 126, 234, 0.1) !important;
+    border-left: 3px solid #3b82f6 !important;
+}
+
+:not([data-theme]) .gpu-info-title {
+    color: #60a5fa !important;
+}
+
+:not([data-theme]) .gpu-info-desc {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* 🔥 编码器卡片 - 暗色模式优化（暗背景+亮文字=高对比度） */
+:not([data-theme]) .codec-badge.best {
+    /* 深橙色背景 + 白色文字 = 高对比度 */
+    background: linear-gradient(135deg, #d84315 0%, #bf360c 100%);
+    color: #ffffff;
+    font-weight: 700;
+    border-color: #ff6e40;
+}
+
+:not([data-theme]) .codec-name {
+    /* 确保编码器名称在暗色模式下清晰可读 */
+    color: #ffffff;
+    font-weight: 700;
+}
+
+:not([data-theme]) .codec-stats {
+    /* 统计信息使用亮灰色 */
+    color: #b0b8c5;
+}
+
+[data-theme="light"] .gpu-status-card {
+    background: rgba(102, 126, 234, 0.05) !important;
+    border-left: 3px solid #3b82f6 !important;
+}
+
+[data-theme="light"] .gpu-info-title {
+    color: #3b82f6 !important;
+}
+
+[data-theme="light"] .gpu-info-desc {
+    color: var(--text-secondary) !important;
+}
+
+/* 🔥🔥🔥 编码器卡片暗色模式 - 最高优先级强制应用 🔥🔥🔥 */
+html body :not([data-theme]) .codec-card .codec-badge.best {
+    background: linear-gradient(135deg, #d84315 0%, #bf360c 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    border-color: #ff6e40 !important;
+    text-shadow: none !important;
+}
+
+html body :not([data-theme]) .codec-card .codec-name {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-shadow: none !important;
+}
+
+html body :not([data-theme]) .codec-card .codec-stats {
+    color: #b0b8c5 !important;
+    text-shadow: none !important;
+}
+
+/* 🔥 确保所有编码器标签在暗色模式下都使用深色背景 */
+html body :not([data-theme]) .codec-badge {
+    background-color: #2d3250 !important;
+    color: #e0e6ff !important;
+}

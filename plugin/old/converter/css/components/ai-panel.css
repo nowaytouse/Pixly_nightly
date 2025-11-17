@@ -1,0 +1,128 @@
+/**
+ * AI Panel Component Styles
+ * 
+ * 🔥 Phase 40.24: Eagle插件重构
+ * 从HTML内联样式提取
+ */
+
+/* AI选项区域基础样式 */
+#aiOptionsSection {
+    transition: all 0.3s ease;
+}
+
+/* AI选项标题 */
+#aiOptionsSection [data-i18n="ai.smartQuality"],
+#aiOptionsSection [data-i18n="ai.autoOptimize"],
+#aiOptionsSection [data-i18n="ai.ssimValidation"],
+#aiOptionsSection [data-i18n="ai.smartFormat"],
+#aiOptionsSection [data-i18n="ai.goCoreStatus"] {
+    font-weight: 700;
+    font-size: 13px;
+}
+
+/* AI选项描述 */
+#aiOptionsSection [data-i18n="ai.smartQualityDesc"],
+#aiOptionsSection [data-i18n="ai.autoOptimizeDesc"],
+#aiOptionsSection [data-i18n="ai.ssimValidationDesc"],
+#aiOptionsSection [data-i18n="ai.smartFormatDesc"],
+#aiOptionsSection [data-i18n="ai.goCoreNotDetected"] {
+    font-weight: 600;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+/* 暗色模式 - AI选项 */
+[data-theme="dark"] #aiOptionsSection [data-i18n="ai.smartQuality"],
+[data-theme="dark"] #aiOptionsSection [data-i18n="ai.autoOptimize"],
+[data-theme="dark"] #aiOptionsSection [data-i18n="ai.ssimValidation"],
+[data-theme="dark"] #aiOptionsSection [data-i18n="ai.smartFormat"],
+[data-theme="dark"] #aiOptionsSection [data-i18n="ai.goCoreStatus"] {
+    color: #60a5fa;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] #aiOptionsSection [data-i18n="ai.smartQualityDesc"],
+[data-theme="dark"] #aiOptionsSection [data-i18n="ai.autoOptimizeDesc"],
+[data-theme="dark"] #aiOptionsSection [data-i18n="ai.ssimValidationDesc"],
+[data-theme="dark"] #aiOptionsSection [data-i18n="ai.smartFormatDesc"],
+[data-theme="dark"] #aiOptionsSection [data-i18n="ai.goCoreNotDetected"] {
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+[data-theme="dark"] #aiOptionsSection label {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
+}
+
+[data-theme="dark"] #aiOptionsSection > div:nth-of-type(2) {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+/* 亮色模式 - AI选项 */
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.smartQuality"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.autoOptimize"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.ssimValidation"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.smartFormat"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.goCoreStatus"] {
+    color: #3b82f6;
+}
+
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.smartQualityDesc"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.autoOptimizeDesc"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.ssimValidationDesc"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.smartFormatDesc"],
+[data-theme="light"] #aiOptionsSection [data-i18n="ai.goCoreNotDetected"] {
+    color: var(--text-secondary);
+}
+
+[data-theme="light"] #aiOptionsSection label {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+[data-theme="light"] #aiOptionsSection > div:nth-of-type(2) {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+}
+
+/* Advanced AI toggle */
+[data-theme="dark"] .advanced-summary {
+    color: #60a5fa;
+}
+
+[data-theme="light"] .advanced-summary {
+    color: #3b82f6;
+}
+
+/* GPU状态卡片 */
+[data-theme="dark"] .gpu-status-card {
+    background: rgba(102, 126, 234, 0.1);
+    border-left: 3px solid #3b82f6;
+}
+
+[data-theme="dark"] .gpu-info-title {
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .gpu-info-desc {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="light"] .gpu-status-card {
+    background: rgba(102, 126, 234, 0.05);
+    border-left: 3px solid #3b82f6;
+}
+
+[data-theme="light"] .gpu-info-title {
+    color: #3b82f6;
+}
+
+[data-theme="light"] .gpu-info-desc {
+    color: var(--text-muted);
+}

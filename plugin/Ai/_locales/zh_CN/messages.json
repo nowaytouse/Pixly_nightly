@@ -1,0 +1,119 @@
+{
+  "app": {
+    "title": {
+      "message": "PIXLY AI - 智能多媒体处理"
+    },
+    "subtitle": {
+      "message": "智能多媒体处理 · 一键优化"
+    }
+  },
+  "language": {
+    "switchLanguage": {
+      "message": "切换语言"
+    }
+  },
+  "theme": {
+    "toggle": {
+      "message": "切换主题"
+    }
+  },
+  "empty": {
+    "title": {
+      "message": "未选择文件"
+    },
+    "desc": {
+      "message": "在 Eagle 中选择图片或视频，然后返回此插件"
+    },
+    "step1": {
+      "message": "在 Eagle 选择文件"
+    },
+    "step2": {
+      "message": "返回插件"
+    },
+    "step3": {
+      "message": "一键转换"
+    }
+  },
+  "files": {
+    "selected": {
+      "message": "个文件已选择"
+    },
+    "clear": {
+      "message": "清空"
+    },
+    "refresh": {
+      "message": "刷新文件列表"
+    }
+  },
+  "ai": {
+    "title": {
+      "message": "AI 智能选项"
+    },
+    "optimizeTarget": {
+      "message": "优化目标"
+    },
+    "balanced": {
+      "message": "平衡"
+    },
+    "balancedDesc": {
+      "message": "质量与体积兼顾"
+    },
+    "quality": {
+      "message": "质量优先"
+    },
+    "qualityDesc": {
+      "message": "最佳画质"
+    },
+    "size": {
+      "message": "体积优先"
+    },
+    "sizeDesc": {
+      "message": "最小文件"
+    },
+    "features": {
+      "message": "AI 功能"
+    },
+    "smartQuality": {
+      "message": "智能质量预测"
+    },
+    "smartQualityTooltip": {
+      "message": "AI会分析图像的纹理、边缘、色彩复杂度等特征，自动预测最适合的质量参数。避免过度压缩导致画质损失，也避免质量过高导致文件过大"
+    },
+    "formatRecommend": {
+      "message": "格式智能推荐"
+    },
+    "formatRecommendTooltip": {
+      "message": "AI会根据图像特征（透明度、动画、色彩复杂度等）智能推荐最优格式。例如：透明图推荐PNG/WebP，动图推荐AVIF/JXL，照片推荐JPEG/JXL"
+    },
+    "ssimValidation": {
+      "message": "SSIM 质量验证"
+    },
+    "ssimValidationTooltip": {
+      "message": "转换完成后，使用结构相似性指数（SSIM）算法对比原始图像和转换后的图像，确保画质损失在可接受范围内。如果相似度过低（如<0.95），会在日志中警告"
+    },
+    "videoForAnimation": {
+      "message": "动图转视频"
+    },
+    "videoForAnimationTooltip": {
+      "message": "当检测到大型动图（如高分辨率GIF或超长WebP动画）时，AI会智能推荐转换为视频格式（如MP4/WebM），可大幅减小文件体积，提升播放性能"
+    }
+  },
+  "conversion": {
+    "start": {
+      "message": "开始智能转换"
+    }
+  },
+  "progress": {
+    "converting": {
+      "message": "转换中..."
+    }
+  },
+  "result": {
+    "complete": {
+      "message": "转换完成"
+    },
+    "openFolder": {
+      "message": "打开输出文件夹"
+    }
+  }
+}

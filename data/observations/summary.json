@@ -1,0 +1,7 @@
+{
+  "total_images": 200,
+  "success": 200,
+  "failed": 0,
+  "average_reward": 0.605775,
+  "output_dir": "data/observations"
+}

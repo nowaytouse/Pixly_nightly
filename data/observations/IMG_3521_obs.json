@@ -1,0 +1,21 @@
+{
+  "image_path": "/Users/nyamiiko/Downloads/\u53c2\u8003/11/IMG_3521.jpg",
+  "image_type": ".jpg",
+  "width": 8961,
+  "height": 4059,
+  "pixel_count": 36372699,
+  "has_alpha": false,
+  "input_size": 5478103,
+  "tool": "jxl",
+  "optimize_mode": "balanced",
+  "params": {
+    "quality": 90,
+    "confidence": 0.5,
+    "effort": 5,
+    "lossless_jpeg": true,
+    "ppo_optimized": false,
+    "ppo_unavailable": true
+  },
+  "reward": 0.6472222222222221,
+  "timestamp": "1761353123.0781286"
+}

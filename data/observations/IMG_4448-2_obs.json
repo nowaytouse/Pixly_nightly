@@ -1,0 +1,21 @@
+{
+  "image_path": "/Users/nyamiiko/Downloads/\u53c2\u8003/11/IMG_4448-2.jpg",
+  "image_type": ".jpg",
+  "width": 1216,
+  "height": 1520,
+  "pixel_count": 1848320,
+  "has_alpha": false,
+  "input_size": 714646,
+  "tool": "jxl",
+  "optimize_mode": "balanced",
+  "params": {
+    "quality": 90,
+    "confidence": 0.5,
+    "effort": 7,
+    "lossless_jpeg": true,
+    "ppo_optimized": false,
+    "ppo_unavailable": true
+  },
+  "reward": 0.6361111111111111,
+  "timestamp": "1761353191.6899753"
+}

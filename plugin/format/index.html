@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title data-i18n="app.title">PIXLY Format - 专业格式转换</title>
+    <link rel="stylesheet" href="css/format-styles.css">
+    <link rel="stylesheet" href="css/tooltip.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="format-header">
+            <div class="header-left">
+                <img src="logo.png" alt="PIXLY Format" class="header-logo">
+                <div class="header-title-group">
+                    <h1 class="header-title" data-i18n="app.title">⚙️ PIXLY Format</h1>
+                    <p class="header-subtitle" data-i18n="app.subtitle">专业格式转换 · 精确控制</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="refreshFilesBtn" class="refresh-btn" data-i18n="[title]files.refresh" onclick="window.loadFilesFromEagle && window.loadFilesFromEagle()">
+                    <span>🔄</span>
+                </button>
+                <select id="languageSelect" class="language-select" data-i18n="[title]language.switchLanguage">
+                    <option value="zh_CN">简中</option>
+                    <option value="en">EN</option>
+                </select>
+                <button id="themeToggle" class="theme-toggle" data-i18n="[title]theme.toggle">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 转换类型切换 -->
+        <div class="type-selector">
+            <button class="type-tab active" data-type="image">
+                <span class="type-icon">📷</span>
+                <span data-i18n="conversion.image">图像转换</span>
+            </button>
+            <button class="type-tab" data-type="video">
+                <span class="type-icon">🎬</span>
+                <span data-i18n="conversion.video">视频处理</span>
+            </button>
+        </div>
+
+        <!-- 空状态 -->
+        <div class="empty-state" id="emptyState">
+            <div class="empty-icon">📁</div>
+            <h3 data-i18n="empty.title">未选择文件</h3>
+            <p data-i18n="empty.desc">在 Eagle 中选择图片或视频，然后返回此插件</p>
+        </div>
+
+        <!-- 主内容区域（宽布局：左右两列） -->
+        <div class="main-grid" id="mainGrid" style="display: none;">
+            <!-- 左列：参数设置 -->
+            <div class="left-column">
+                <!-- 图像转换面板 -->
+                <div id="imagePanel" class="conversion-panel">
+                    <!-- 格式选择 -->
+                    <div class="panel format-panel">
+                        <h3 class="panel-title">
+                            <span>📦</span>
+                            <span data-i18n="format.title">输出格式</span>
+                        </h3>
+                        <div class="format-buttons">
+                            <label class="format-btn active">
+                                <input type="radio" name="format" value="jxl" checked>
+                                <span class="format-icon">✨</span>
+                                <span class="format-name">JXL</span>
+                                <span class="format-desc" data-i18n="format.jxlDesc">次世代格式</span>
+                            </label>
+                            <label class="format-btn">
+                                <input type="radio" name="format" value="avif">
+                                <span class="format-icon">🎬</span>
+                                <span class="format-name">AVIF</span>
+                                <span class="format-desc" data-i18n="format.avifDesc">AV1编码</span>
+                            </label>
+                            <label class="format-btn">
+                                <input type="radio" name="format" value="webp">
+                                <span class="format-icon">🌐</span>
+                                <span class="format-name">WebP</span>
+                                <span class="format-desc" data-i18n="format.webpDesc">Web优化</span>
+                            </label>
+                            <label class="format-btn">
+                                <input type="radio" name="format" value="heic">
+                                <span class="format-icon">🍎</span>
+                                <span class="format-name">HEIC</span>
+                                <span class="format-desc" data-i18n="format.heicDesc">Apple生态</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 质量设置 -->
+                    <div class="panel quality-panel">
+                        <h3 class="panel-title">
+                            <span>🎯</span>
+                            <span data-i18n="quality.title">质量设置</span>
+                        </h3>
+                        <div class="slider-group">
+                            <label class="slider-label">
+                                <span data-i18n="quality.label">质量</span>
+                                <span class="slider-value" id="qualityValue">90</span>
+                            </label>
+                            <input type="range" id="quality" min="1" max="100" value="90" class="slider">
+                            <div class="slider-hint" id="qualityHint" data-i18n="quality.balanced">平衡</div>
+                        </div>
+                    </div>
+
+                    <!-- JXL专属参数 -->
+                    <div class="panel format-specific-panel" id="jxlParams">
+                        <h3 class="panel-title">
+                            <span>✨</span>
+                            <span data-i18n="jxl.title">JXL 高级参数</span>
+                        </h3>
+                        
+                        <!-- JPEG无损转码 -->
+                        <div class="option-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="jpegLossless">
+                                <span data-i18n="jxl.jpegLosslessTranscode">JPEG 无损转码</span>
+                            </label>
+                            <p class="option-hint" data-i18n="jxl.jpegLosslessInfo">启用后将禁用部分选项以确保100%可逆转码</p>
+                        </div>
+
+                        <!-- Effort -->
+                        <div class="slider-group">
+                            <label class="slider-label">
+                                <span data-i18n="jxl.effort">Effort 努力值</span>
+                                <span class="slider-value" id="jxlEffortValue">7</span>
+                            </label>
+                            <input type="range" id="jxlEffort" min="1" max="9" value="7" class="slider">
+                            <div class="slider-hint" data-i18n="jxl.effortHint">1-3: 快速 | 4-6: 平衡 | 7-9: 极致</div>
+                        </div>
+
+                        <!-- Distance -->
+                        <div class="slider-group">
+                            <label class="slider-label">
+                                <span data-i18n="jxl.distance">Distance 失真度</span>
+                                <span class="slider-value" id="jxlDistanceValue">1.0</span>
+                            </label>
+                            <input type="range" id="jxlDistance" min="0" max="15" step="0.1" value="1.0" class="slider">
+                            <div class="slider-hint" data-i18n="jxl.distanceHint">0.0: 无损 | 1.0-3.0: 高质量</div>
+                        </div>
+
+                        <!-- 编码模式 -->
+                        <div class="option-group">
+                            <label class="option-label" data-i18n="jxl.encodingModes">编码模式</label>
+                            <div class="checkbox-grid">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="jxlModular">
+                                    <span data-i18n="jxl.modular">Modular</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="jxlProgressive">
+                                    <span data-i18n="jxl.progressive">渐进式</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="jxlResponsive">
+                                    <span data-i18n="jxl.responsive">响应式</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="jxlGaborish">
+                                    <span data-i18n="jxl.gaborish">Gaborish</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 色彩设置 -->
+                        <div class="select-group">
+                            <label class="select-label" data-i18n="jxl.bitDepth">色彩位深度</label>
+                            <select id="jxlBitDepth" class="select">
+                                <option value="auto" selected data-i18n="jxl.bitDepthAuto">自动 (根据源文件)</option>
+                                <option value="8" data-i18n="jxl.bitDepth8">8-bit (标准)</option>
+                                <option value="10" data-i18n="jxl.bitDepth10">10-bit (HDR)</option>
+                                <option value="12" data-i18n="jxl.bitDepth12">12-bit (专业)</option>
+                                <option value="16" data-i18n="jxl.bitDepth16">16-bit (极致)</option>
+                            </select>
+                        </div>
+
+                        <div class="select-group">
+                            <label class="select-label" data-i18n="jxl.colorSpace">色彩空间</label>
+                            <select id="jxlColorSpace" class="select">
+                                <option value="auto" selected data-i18n="jxl.colorSpaceAuto">自动 (保持源色彩空间)</option>
+                                <option value="srgb" data-i18n="jxl.colorSpaceSRGB">sRGB (标准)</option>
+                                <option value="p3" data-i18n="jxl.colorSpaceP3">Display P3 (广色域)</option>
+                                <option value="adobe" data-i18n="jxl.colorSpaceAdobe">Adobe RGB (专业)</option>
+                                <option value="prophoto" data-i18n="jxl.colorSpaceProPhoto">ProPhoto RGB (极致)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- AVIF专属参数 -->
+                    <div class="panel format-specific-panel" id="avifParams" style="display: none;">
+                        <h3 class="panel-title">
+                            <span>🎬</span>
+                            <span data-i18n="avif.title">AVIF 高级参数</span>
+                        </h3>
+                        
+                        <!-- Speed -->
+                        <div class="slider-group">
+                            <label class="slider-label">
+                                <span data-i18n="avif.speed">编码速度</span>
+                                <span class="slider-value" id="avifSpeedValue">6</span>
+                            </label>
+                            <input type="range" id="avifSpeed" min="0" max="10" value="6" class="slider">
+                            <div class="slider-hint" data-i18n="avif.speedHint">0-3: 极致质量 | 4-6: 平衡 | 7-10: 快速</div>
+                        </div>
+
+                        <!-- Min/Max Quantizer -->
+                        <div class="slider-group">
+                            <label class="slider-label">
+                                <span data-i18n="avif.minQuantizer">最小量化器</span>
+                                <span class="slider-value" id="avifMinQuantizerValue">0</span>
+                            </label>
+                            <input type="range" id="avifMinQuantizer" min="0" max="63" value="0" class="slider">
+                        </div>
+
+                        <div class="slider-group">
+                            <label class="slider-label">
+                                <span data-i18n="avif.maxQuantizer">最大量化器</span>
+                                <span class="slider-value" id="avifMaxQuantizerValue">63</span>
+                            </label>
+                            <input type="range" id="avifMaxQuantizer" min="0" max="63" value="63" class="slider">
+                        </div>
+
+                        <!-- 色度子采样 -->
+                        <div class="select-group">
+                            <label class="select-label" data-i18n="avif.chromaSubsampling">色度子采样</label>
+                            <select id="avifChroma" class="select">
+                                <option value="auto" selected data-i18n="avif.chromaAuto">自动 (FFmpeg智能选择)</option>
+                                <option value="420" data-i18n="avif.chroma420">4:2:0 (标准)</option>
+                                <option value="422" data-i18n="avif.chroma422">4:2:2 (平衡)</option>
+                                <option value="444" data-i18n="avif.chroma444">4:4:4 (最佳)</option>
+                            </select>
+                        </div>
+
+                        <!-- Tiles -->
+                        <div class="tiles-group">
+                            <label class="option-label" data-i18n="avif.tiles">Tiles 行×列</label>
+                            <div class="tiles-inputs">
+                                <input type="number" id="avifTilesRows" min="1" max="8" value="1" class="tiles-input">
+                                <span>×</span>
+                                <input type="number" id="avifTilesCols" min="1" max="8" value="1" class="tiles-input">
+                            </div>
+                            <div class="slider-hint" data-i18n="avif.tilesHint">分块并行编码，提升大图速度</div>
+                        </div>
+                    </div>
+
+                    <!-- WebP专属参数 -->
+                    <div class="panel format-specific-panel" id="webpParams" style="display: none;">
+                        <h3 class="panel-title">
+                            <span>🌐</span>
+                            <span data-i18n="webp.title">WebP 高级参数</span>
+                        </h3>
+                        
+                        <!-- Method -->
+                        <div class="slider-group">
+                            <label class="slider-label">
+                                <span data-i18n="webp.method">压缩方法</span>
+                                <span class="slider-value" id="webpMethodValue">4</span>
+                            </label>
+                            <input type="range" id="webpMethod" min="0" max="6" value="4" class="slider">
+                            <div class="slider-hint" data-i18n="webp.methodHint">0-2: 快速 | 3-4: 平衡 | 5-6: 最佳</div>
+                        </div>
+
+                        <!-- Filtering -->
+                        <div class="slider-group">
+                            <label class="slider-label">
+                                <span data-i18n="webp.filtering">滤镜强度</span>
+                                <span class="slider-value" id="webpFilterStrengthValue">60</span>
+                            </label>
+                            <input type="range" id="webpFilterStrength" min="0" max="100" value="60" class="slider">
+                        </div>
+
+                        <!-- Sharpness -->
+                        <div class="slider-group">
+                            <label class="slider-label">
+                                <span data-i18n="webp.sharpness">锐化级别</span>
+                                <span class="slider-value" id="webpSharpnessValue">0</span>
+                            </label>
+                            <input type="range" id="webpSharpness" min="0" max="7" value="0" class="slider">
+                        </div>
+                    </div>
+
+                    <!-- HEIC专属参数 -->
+                    <div class="panel format-specific-panel" id="heicParams" style="display: none;">
+                        <h3 class="panel-title">
+                            <span>🍎</span>
+                            <span data-i18n="heic.title">HEIC 高级参数</span>
+                        </h3>
+                        
+                        <!-- Encoder -->
+                        <div class="select-group">
+                            <label class="select-label" data-i18n="heic.encoder">编码器</label>
+                            <select id="heicEncoder" class="select">
+                                <option value="x265" data-i18n="heic.encoderX265">x265 (推荐)</option>
+                                <option value="libheif" data-i18n="heic.encoderLibheif">libheif (标准)</option>
+                            </select>
+                        </div>
+
+                        <!-- 色度子采样 -->
+                        <div class="select-group">
+                            <label class="select-label" data-i18n="heic.chromaSubsampling">色度子采样</label>
+                            <select id="heicChroma" class="select">
+                                <option value="auto" selected data-i18n="heic.chromaAuto">自动 (FFmpeg智能选择)</option>
+                                <option value="420" data-i18n="heic.chroma420">4:2:0 (标准)</option>
+                                <option value="444" data-i18n="heic.chroma444">4:4:4 (最佳)</option>
+                            </select>
+                        </div>
+
+                        <!-- 高级选项 -->
+                        <div class="option-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="heicLossless">
+                                <span data-i18n="heic.lossless">无损编码</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="heicThumbnail">
+                                <span data-i18n="heic.embedThumbnails">嵌入缩略图</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 视频处理面板 -->
+                <div id="videoPanel" class="conversion-panel" style="display: none;">
+                    <!-- 容器格式 -->
+                    <div class="panel format-panel">
+                        <h3 class="panel-title">
+                            <span>📦</span>
+                            <span data-i18n="video.containerFormat">容器格式</span>
+                        </h3>
+                        <div class="format-buttons">
+                            <label class="format-btn active">
+                                <input type="radio" name="videoContainer" value="mp4" checked>
+                                <span class="format-icon">📦</span>
+                                <span class="format-name">MP4</span>
+                                <span class="format-desc" data-i18n="video.mp4Desc">最广泛兼容</span>
+                            </label>
+                            <label class="format-btn">
+                                <input type="radio" name="videoContainer" value="mov">
+                                <span class="format-icon">🍎</span>
+                                <span class="format-name">MOV</span>
+                                <span class="format-desc" data-i18n="video.movDesc">Apple优化</span>
+                            </label>
+                            <label class="format-btn">
+                                <input type="radio" name="videoContainer" value="webm">
+                                <span class="format-icon">🌐</span>
+                                <span class="format-name">WebM</span>
+                                <span class="format-desc" data-i18n="video.webmDesc">Web优化</span>
+                            </label>
+                            <label class="format-btn">
+                                <input type="radio" name="videoContainer" value="mkv">
+                                <span class="format-icon">📦</span>
+                                <span class="format-name">MKV</span>
+                                <span class="format-desc" data-i18n="video.mkvDesc">通用容器</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 编码器 -->
+                    <div class="panel encoder-panel">
+                        <h3 class="panel-title">
+                            <span>🎬</span>
+                            <span data-i18n="video.targetEncoder">目标编码器</span>
+                        </h3>
+                        <div class="encoder-buttons">
+                            <label class="encoder-btn">
+                                <input type="radio" name="videoEncoder" value="h264">
+                                <span class="encoder-name">H.264</span>
+                                <span class="encoder-desc" data-i18n="video.h264Desc">通用性最好</span>
+                            </label>
+                            <label class="encoder-btn active">
+                                <input type="radio" name="videoEncoder" value="h265" checked>
+                                <span class="encoder-name">H.265</span>
+                                <span class="encoder-desc" data-i18n="video.h265Desc">更高压缩率</span>
+                            </label>
+                            <label class="encoder-btn">
+                                <input type="radio" name="videoEncoder" value="av1">
+                                <span class="encoder-name">AV1</span>
+                                <span class="encoder-desc" data-i18n="video.av1Desc">次世代</span>
+                            </label>
+                            <label class="encoder-btn">
+                                <input type="radio" name="videoEncoder" value="prores">
+                                <span class="encoder-name">ProRes</span>
+                                <span class="encoder-desc" data-i18n="video.proresDesc">专业后期</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 质量控制 -->
+                    <div class="panel quality-panel">
+                        <h3 class="panel-title">
+                            <span>🎯</span>
+                            <span data-i18n="video.qualityControl">质量控制</span>
+                        </h3>
+                        
+                        <!-- CRF -->
+                        <div class="slider-group">
+                            <label class="slider-label">
+                                <span data-i18n="video.crfValue">CRF 值</span>
+                                <span class="slider-value" id="videoCrfValue">23</span>
+                            </label>
+                            <input type="range" id="videoCrf" min="0" max="51" value="23" class="slider">
+                            <div class="slider-hint" data-i18n="video.crfHint">0=无损 | 18=视觉无损 | 23=高质量 | 28=平衡</div>
+                        </div>
+
+                        <!-- 码率控制模式 -->
+                        <div class="select-group">
+                            <label class="select-label" data-i18n="video.bitrateMode">码率控制模式</label>
+                            <select id="videoRateControl" class="select">
+                                <option value="crf" data-i18n="video.crfMode">CRF (恒定质量)</option>
+                                <option value="cbr" data-i18n="video.cbrMode">CBR (恒定码率)</option>
+                                <option value="vbr" data-i18n="video.vbrMode">VBR (可变码率)</option>
+                                <option value="abr" data-i18n="video.abrMode">ABR (平均码率)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 编码参数 -->
+                    <div class="panel encoding-panel">
+                        <h3 class="panel-title">
+                            <span>⚙️</span>
+                            <span data-i18n="video.encodingParams">编码参数</span>
+                        </h3>
+                        
+                        <!-- GOP -->
+                        <div class="slider-group">
+                            <label class="slider-label">
+                                <span data-i18n="video.gopSize">GOP 大小</span>
+                                <span class="slider-value" id="videoGopValue">250</span>
+                            </label>
+                            <input type="range" id="videoGop" min="1" max="600" value="250" class="slider">
+                            <div class="slider-hint" data-i18n="video.gopHint">关键帧间隔 (250=10秒@25fps)</div>
+                        </div>
+
+                        <!-- B帧 -->
+                        <div class="slider-group">
+                            <label class="slider-label">
+                                <span data-i18n="video.bframes">B帧数量</span>
+                                <span class="slider-value" id="videoBframesValue">3</span>
+                            </label>
+                            <input type="range" id="videoBframes" min="0" max="16" value="3" class="slider">
+                        </div>
+
+                        <!-- 参考帧 -->
+                        <div class="slider-group">
+                            <label class="slider-label">
+                                <span data-i18n="video.refFrames">参考帧数量</span>
+                                <span class="slider-value" id="videoRefsValue">3</span>
+                            </label>
+                            <input type="range" id="videoRefs" min="1" max="16" value="3" class="slider">
+                        </div>
+
+                        <!-- 运动估计 -->
+                        <div class="select-group">
+                            <label class="select-label" data-i18n="video.meAlgorithm">运动估计算法</label>
+                            <select id="videoMeMethod" class="select">
+                                <option value="dia" data-i18n="video.meDiamond">Diamond (最快)</option>
+                                <option value="hex" selected data-i18n="video.meHexagon">Hexagon (推荐)</option>
+                                <option value="umh" data-i18n="video.meUmh">UMH (高质量)</option>
+                                <option value="esa" data-i18n="video.meEsa">ESA (详尽搜索)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 像素格式 -->
+                        <div class="select-group">
+                            <label class="select-label" data-i18n="video.pixelFormat">像素格式</label>
+                            <select id="videoPixFmt" class="select">
+                                <option value="auto" selected data-i18n="video.pixFmtAuto">自动 (FFmpeg智能选择)</option>
+                                <option value="yuv420p" data-i18n="video.pixFmt420p">YUV 4:2:0 8-bit</option>
+                                <option value="yuv422p" data-i18n="video.pixFmt422p">YUV 4:2:2 8-bit</option>
+                                <option value="yuv444p" data-i18n="video.pixFmt444p">YUV 4:4:4 8-bit</option>
+                                <option value="yuv420p10le" data-i18n="video.pixFmt420p10">YUV 4:2:0 10-bit</option>
+                                <option value="yuv422p10le" data-i18n="video.pixFmt422p10">YUV 4:2:2 10-bit</option>
+                                <option value="yuv444p10le" data-i18n="video.pixFmt444p10">YUV 4:4:4 10-bit</option>
+                            </select>
+                            <div class="slider-hint" data-i18n="video.pixFmtHint">自动模式让FFmpeg根据源文件和编码器能力选择损失最小的格式</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右列：文件列表 + 转换按钮 -->
+            <div class="right-column">
+                <div class="panel files-panel">
+                    <div class="files-header">
+                        <div class="files-info">
+                            <span class="files-count" id="filesCount">0</span>
+                            <span data-i18n="files.selected">个文件已选择</span>
+                        </div>
+                        <button class="btn-clear" id="clearFilesBtn" data-i18n="[title]files.clear">
+                            <span>🗑️</span>
+                        </button>
+                    </div>
+                    <div class="files-list" id="filesList"></div>
+                </div>
+
+                <!-- 转换按钮 -->
+                <button id="convertBtn" class="btn-convert" disabled>
+                    <span class="btn-icon">🚀</span>
+                    <span class="btn-text" data-i18n="conversion.start">开始转换</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 进度显示 -->
+        <div id="progressPanel" class="progress-panel" style="display: none;">
+            <div class="progress-header">
+                <span data-i18n="progress.converting">转换中...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-info" id="progressInfo"></div>
+        </div>
+
+        <!-- 结果显示 -->
+        <div id="resultPanel" class="result-panel" style="display: none;">
+            <div class="result-header">
+                <span class="result-icon">✅</span>
+                <span data-i18n="result.complete">转换完成</span>
+            </div>
+            <div class="result-stats" id="resultStats"></div>
+            <button class="btn-open-folder" id="openFolderBtn">
+                <span>📂</span>
+                <span data-i18n="result.openFolder">打开输出文件夹</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 配置系统 -->
+    <script src="js/config.js"></script>
+    <!-- 日志系统 -->
+    <script src="js/log-constants.js"></script>
+    <script src="js/logger.js"></script>
+    <!-- 国际化系统 -->
+    <script src="js/i18n.js"></script>
+    <!-- Format 核心脚本 -->
+    <script src="js/format-core.js"></script>
+</body>
+</html>

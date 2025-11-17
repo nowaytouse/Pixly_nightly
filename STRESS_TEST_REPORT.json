@@ -1,0 +1,49 @@
+{
+  "total": 8,
+  "passed": 8,
+  "failed": 0,
+  "total_time": 6.280647277832031,
+  "pass_rate": "100.0%",
+  "results": [
+    {
+      "name": "\u7f16\u8bd1",
+      "passed": true,
+      "time": 0.5501799583435059
+    },
+    {
+      "name": "\u5355\u5143\u6d4b\u8bd5",
+      "passed": true,
+      "time": 4.848342657089233
+    },
+    {
+      "name": "SIMD\u5904\u7406\u5668",
+      "passed": true,
+      "time": 0.13983774185180664
+    },
+    {
+      "name": "\u6279\u5904\u7406\u7cfb\u7edf",
+      "passed": true,
+      "time": 0.13463926315307617
+    },
+    {
+      "name": "\u8d28\u91cf\u68c0\u67e5\u5668",
+      "passed": true,
+      "time": 0.1806199550628662
+    },
+    {
+      "name": "\u7279\u5f81\u63d0\u53d6\u5668",
+      "passed": true,
+      "time": 0.15484309196472168
+    },
+    {
+      "name": "\u6279\u91cf\u51b3\u7b56",
+      "passed": true,
+      "time": 0.1221468448638916
+    },
+    {
+      "name": "SIMD\u9510\u5316",
+      "passed": true,
+      "time": 0.1500377655029297
+    }
+  ]
+}
