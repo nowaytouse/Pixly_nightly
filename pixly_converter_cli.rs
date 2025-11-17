@@ -437,16 +437,23 @@ fn merge_xmp_sidecar(input_path: &Path, output_path: &Path, provided_xmp_path: O
         .output();
     
     match merge_result {
-        Ok(merge_output) if merge_output.status.success() || {
-            // 允许exiftool的[minor]警告
-            let stderr_str = String::from_utf8_lossy(&merge_output.stderr);
-            !merge_output.status.success() && 
-            stderr_str.contains("[minor]") && 
-            !stderr_str.to_lowercase().contains("error")
-        } => {
+        Ok(merge_output) => {
             let stderr_str = String::from_utf8_lossy(&merge_output.stderr);
             
-            // 记录警告但继续执行
+            // 判断是否成功：
+            // 1. exit code = 0，或
+            // 2. 包含[minor]警告但不包含真正的error
+            let is_success = merge_output.status.success() || 
+                (stderr_str.contains("[minor]") && !stderr_str.to_lowercase().contains("error"));
+            
+            if !is_success {
+                // 真正的失败
+                println!("   ❌ XMP merge failed: {}", stderr_str);
+                println!("   Keeping XMP sidecar");
+                return Ok(());
+            }
+            
+            // 成功或minor警告，记录警告但继续
             if stderr_str.contains("[minor]") {
                 let warning = stderr_str.lines()
                     .find(|line| line.contains("[minor]"))
@@ -503,11 +510,6 @@ fn merge_xmp_sidecar(input_path: &Path, output_path: &Path, provided_xmp_path: O
                     println!("   Keeping XMP sidecar for safety");
                 }
             }
-        }
-        Ok(merge_output) => {
-            let stderr = String::from_utf8_lossy(&merge_output.stderr);
-            println!("   ❌ XMP merge failed: {}", stderr);
-            println!("   Keeping XMP sidecar");
         }
         Err(e) => {
             println!("   ❌ XMP merge failed: {}", e);
