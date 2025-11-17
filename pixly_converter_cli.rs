@@ -75,6 +75,10 @@ enum Commands {
         #[arg(long, default_value = "true")]
         merge_xmp: bool,
         
+        /// Normalize filenames (handle special characters)
+        #[arg(long, default_value = "false")]
+        normalize_filenames: bool,
+        
         // JXL specific
         #[arg(long)]
         jpeg_lossless: bool,
@@ -218,8 +222,9 @@ fn run(cli: Cli) -> Result<()> {
             refs: _,
             me_method: _,
             pix_fmt: _,
-            // XMP
+            // Tools
             merge_xmp,
+            normalize_filenames,
         } => {
             // 确定输出格式
             let target_format = format.unwrap_or_else(|| {
@@ -249,7 +254,14 @@ fn run(cli: Cli) -> Result<()> {
                 parent.join(format!("{}.{}", filename.to_string_lossy(), target_format))
             };
             
-            println!("🔄 Converting: {:?}", input);
+            // 🔥 文件名规范化处理（如果启用）
+            let (actual_input, temp_normalized) = if normalize_filenames {
+                normalize_filename_if_needed(&input)?
+            } else {
+                (input.clone(), None)
+            };
+            
+            println!("🔄 Converting: {:?}", actual_input);
             println!("📦 Format: {}", target_format);
             println!("🎯 Quality: {}", quality);
             println!("📁 Output: {:?}", output_path);
@@ -307,11 +319,17 @@ fn run(cli: Cli) -> Result<()> {
             
             // 执行转换
             let result = execute_conversion(
-                &input,
+                &actual_input,
                 &output_path,
                 &target_format,
                 &config,
             )?;
+            
+            // 🔥 清理临时规范化文件
+            if let Some(temp_path) = temp_normalized {
+                let _ = std::fs::remove_file(&temp_path);
+                println!("   🧹 Cleaned up temporary normalized file");
+            }
             
             println!("✅ Conversion complete!");
             println!("   Input size: {} bytes", result.input_size);
@@ -442,4 +460,52 @@ fn merge_xmp_sidecar(input_path: &Path, output_path: &Path) -> Result<()> {
     }
     
     Ok(())
+}
+
+/// Normalize filename if it contains special characters
+/// Returns (actual_input_path, optional_temp_path)
+fn normalize_filename_if_needed(input: &Path) -> Result<(PathBuf, Option<PathBuf>)> {
+    use std::fs;
+    
+    let filename = input.file_name()
+        .and_then(|n| n.to_str())
+        .context("Invalid filename")?;
+    
+    // 检查是否需要规范化（包含特殊字符、空格等）
+    let needs_normalization = filename.chars().any(|c| {
+        !c.is_ascii_alphanumeric() && c != '.' && c != '-' && c != '_'
+    });
+    
+    if !needs_normalization {
+        // 不需要规范化，直接返回原路径
+        return Ok((input.to_path_buf(), None));
+    }
+    
+    println!("📝 Normalizing filename: {}", filename);
+    
+    // 生成规范化的文件名
+    let normalized_name = filename
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '.' || c == '-' {
+                c
+            } else if c.is_whitespace() {
+                '_'
+            } else {
+                '_'
+            }
+        })
+        .collect::<String>();
+    
+    // 创建临时规范化文件
+    let parent = input.parent().unwrap_or(Path::new("."));
+    let temp_path = parent.join(&normalized_name);
+    
+    // 复制文件到临时规范化路径
+    fs::copy(input, &temp_path)
+        .context("Failed to create normalized temp file")?;
+    
+    println!("   ✅ Normalized to: {}", normalized_name);
+    
+    Ok((temp_path.clone(), Some(temp_path)))
 }

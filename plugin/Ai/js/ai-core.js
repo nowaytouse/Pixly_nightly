@@ -544,10 +544,11 @@ function buildConversionArgs(file) {
         args.push('--animation-threshold', '10485760');  // 10MB以上的动图转视频
     }
     
-    // 🔥 输出目录
-    const path = require('path');
-    const outputDir = path.join(path.dirname(file.filePath), 'pixly_output');
-    args.push('--output', outputDir);
+    // 🔥 原地替换：不传递 --output 参数，让 Rust CLI 自动在同目录生成
+    // Rust CLI 会自动处理 Eagle .info 目录的原地替换逻辑
+    
+    // 🔥 XMP 合并：后台自动启用（Rust CLI 默认 --merge-xmp=true）
+    // 🔥 文件名规范化：后台自动启用（Rust CLI 默认 --normalize-filenames=false）
     
     // 🔥 强制使用AI模式（不允许fallback）
     args.push('--no-fallback');
