@@ -235,7 +235,7 @@ fn run(cli: Cli) -> Result<()> {
             xmp_path,
             normalize_filenames,
             // AI
-            ai,
+            ai: _,  // TODO: 实现AI参数预测
         } => {
             // 确定输出格式
             let target_format = format.unwrap_or_else(|| {
