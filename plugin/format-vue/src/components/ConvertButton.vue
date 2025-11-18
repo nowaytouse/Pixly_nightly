@@ -34,29 +34,29 @@ const handleClick = async () => {
 <style scoped>
 .convert-btn {
   width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
+  padding: 12px;
+  background: var(--color-primary);
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   color: white;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
 }
 
 .convert-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(64, 158, 255, 0.4);
+  background: var(--color-primary-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .convert-btn:active:not(:disabled) {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 .convert-btn:disabled {
@@ -65,10 +65,10 @@ const handleClick = async () => {
 }
 
 .convert-btn.converting {
-  background: linear-gradient(135deg, #67c23a 0%, #85ce61 100%);
+  background: var(--success-color);
 }
 
 .btn-icon {
-  font-size: 18px;
+  font-size: 16px;
 }
 </style>

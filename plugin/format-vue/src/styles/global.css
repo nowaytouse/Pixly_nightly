@@ -7,35 +7,34 @@
 }
 
 :root {
-  /* 亮色主题 */
-  --bg-primary: #f5f7fa;
-  --bg-secondary: #ffffff;
+  /* Eagle官方配色系统 */
+  --color-brand: #0072ef;
+  --color-primary: #0072ef;
+  --color-primary-hover: #3d94f6;
+  
+  /* 背景色 */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
   --bg-tertiary: #f0f2f5;
-  --text-primary: #303133;
-  --text-secondary: #606266;
-  --text-tertiary: #909399;
-  --border-color: #dcdfe6;
-  --primary-color: #409eff;
-  --primary-hover: #66b1ff;
-  --success-color: #67c23a;
-  --danger-color: #f56c6c;
-  --shadow: rgba(0, 0, 0, 0.1);
-}
-
-.dark-theme {
-  /* 暗色主题 */
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #2a2a2a;
-  --bg-tertiary: #3a3a3a;
-  --text-primary: #e5e5e5;
-  --text-secondary: #b3b3b3;
-  --text-tertiary: #808080;
-  --border-color: #4a4a4a;
-  --primary-color: #409eff;
-  --primary-hover: #66b1ff;
-  --success-color: #67c23a;
-  --danger-color: #f56c6c;
-  --shadow: rgba(0, 0, 0, 0.3);
+  
+  /* 文字色 */
+  --text-primary: #1f2329;
+  --text-secondary: #646a73;
+  --text-tertiary: #8f959e;
+  
+  /* 边框色 */
+  --border-color: #e5e6eb;
+  --border-color-light: #f0f1f5;
+  
+  /* 功能色 */
+  --success-color: #00c48c;
+  --danger-color: #f54a45;
+  --warning-color: #ff8800;
+  
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 body {
@@ -68,40 +67,41 @@ body {
 
 /* 通用面板样式 */
 .panel {
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 16px;
-  box-shadow: 0 2px 8px var(--shadow);
+  box-shadow: var(--shadow-sm);
 }
 
 .panel-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 12px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 /* 按钮样式 */
 .btn {
-  padding: 10px 20px;
+  padding: 9px 16px;
   border: none;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
 .btn-primary {
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--primary-hover);
+  background: var(--color-primary-hover);
 }
 
 .btn:disabled {
@@ -110,20 +110,23 @@ body {
 }
 
 /* 输入框样式 */
-.input {
+.input,
+select {
   width: 100%;
-  padding: 8px 12px;
-  background: var(--bg-tertiary);
+  padding: 9px 12px;
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   color: var(--text-primary);
-  font-size: 14px;
-  transition: all 0.3s;
+  font-size: 13px;
+  transition: all 0.2s;
 }
 
-.input:focus {
+.input:focus,
+select:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 114, 239, 0.1);
 }
 
 /* 动画 */

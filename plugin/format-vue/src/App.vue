@@ -1,6 +1,6 @@
 <template>
-  <div class="pixly-app" :class="{ 'dark-theme': isDark }">
-    <Header @toggle-theme="toggleTheme" />
+  <div class="pixly-app">
+    <Header />
     
     <div class="main-container">
       <div class="left-panel">
@@ -29,15 +29,10 @@ import AdvancedParams from './components/AdvancedParams.vue'
 import FileList from './components/FileList.vue'
 import ConvertButton from './components/ConvertButton.vue'
 
-const isDark = ref(true)
 const selectedFormat = ref('jxl')
 const quality = ref(90)
 const advancedParams = ref({})
 const files = ref([])
-
-const toggleTheme = () => {
-  isDark.value = !isDark.value
-}
 
 const removeFile = (index) => {
   files.value.splice(index, 1)
@@ -72,14 +67,14 @@ onMounted(async () => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
   color: var(--text-primary);
 }
 
 .main-container {
   flex: 1;
   display: grid;
-  grid-template-columns: 420px 1fr;
+  grid-template-columns: 360px 1fr;
   gap: 16px;
   padding: 16px;
   overflow: hidden;
