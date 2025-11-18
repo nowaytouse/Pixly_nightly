@@ -12,11 +12,17 @@
       <div class="right-panel">
         <FileList :files="files" @remove="removeFile" />
         <ConvertButton 
-          :disabled="files.length === 0" 
+          :disabled="files.length === 0 || isConverting" 
           @click="startConversion" 
         />
       </div>
     </div>
+    
+    <ProgressBar 
+      :show="isConverting"
+      :progress="progress"
+      :current-file="currentFile"
+    />
   </div>
 </template>
 
@@ -28,36 +34,64 @@ import QualityPanel from './components/QualityPanel.vue'
 import AdvancedParams from './components/AdvancedParams.vue'
 import FileList from './components/FileList.vue'
 import ConvertButton from './components/ConvertButton.vue'
+import ProgressBar from './components/ProgressBar.vue'
+import { useEagleAPI } from './composables/useEagleAPI'
+import { useRustCLI } from './composables/useRustCLI'
 
 const selectedFormat = ref('jxl')
 const quality = ref(90)
 const advancedParams = ref({})
 const files = ref([])
 
+const { loadSelectedFiles, refreshLibrary, showNotification } = useEagleAPI()
+const { convertImages, isConverting, progress, currentFile } = useRustCLI()
+
 const removeFile = (index) => {
   files.value.splice(index, 1)
 }
 
 const startConversion = async () => {
-  console.log('Starting conversion...', {
-    format: selectedFormat.value,
-    quality: quality.value,
-    files: files.value.length
-  })
+  if (files.value.length === 0) {
+    showNotification('请先选择文件', 'warning')
+    return
+  }
+
+  try {
+    const options = {
+      format: selectedFormat.value,
+      quality: quality.value,
+      ...advancedParams.value
+    }
+
+    const result = await convertImages(files.value, options)
+
+    if (result.success) {
+      showNotification(`转换完成！成功转换 ${files.value.length} 个文件`, 'success')
+      await refreshLibrary()
+      
+      // 重新加载文件列表
+      await loadFiles()
+    } else {
+      showNotification(`转换失败：${result.error}`, 'error')
+    }
+  } catch (error) {
+    console.error('Conversion error:', error)
+    showNotification(`转换出错：${error.message}`, 'error')
+  }
+}
+
+const loadFiles = async () => {
+  try {
+    const items = await loadSelectedFiles()
+    files.value = items
+  } catch (error) {
+    console.error('Failed to load files:', error)
+    showNotification('加载文件失败', 'error')
+  }
 }
 
 onMounted(async () => {
-  // 从Eagle加载文件
-  if (window.eagle) {
-    const items = await window.eagle.item.getSelected()
-    files.value = items.map(item => ({
-      id: item.id,
-      name: item.name,
-      path: item.filePath,
-      size: item.size,
-      ext: item.ext
-    }))
-  }
+  await loadFiles()
 })
 </script>
 
