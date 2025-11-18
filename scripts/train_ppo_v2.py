@@ -382,29 +382,31 @@ def convert_and_measure(input_path, quality, effort, target_format='webp'):
             shutil.rmtree(temp_dir, ignore_errors=True)
 
 def calculate_ssim(original, converted):
-    """计算SSIM（使用ImageMagick）"""
+    """
+    计算SSIM（使用Python脚本）
+    
+    Phase 3.3修复：使用scikit-image替代ImageMagick
+    """
     try:
         result = subprocess.run(
-            ['magick', 'compare', '-metric', 'SSIM',
-             str(original), str(converted), 'null:'],
+            ['python3', 'scripts/calculate_ssim.py',
+             str(original), str(converted)],
             capture_output=True,
             text=True,
             timeout=30
         )
-        stderr = result.stderr.strip()
-        if stderr:
-            # 解析格式：可能是 "0.95" 或 "0.95 (0.95, 0.95, 0.95)"
-            ssim_str = stderr.split()[0]
-            # 移除可能的百分号
-            ssim_str = ssim_str.replace('%', '')
+        
+        if result.returncode == 0:
+            ssim_str = result.stdout.strip()
             ssim = float(ssim_str)
-            # 如果是百分比形式（>1），转换为0-1
-            if ssim > 1.0:
-                ssim = ssim / 100.0
             return min(1.0, max(0.0, ssim))
-        return 0.95
+        else:
+            # Fallback: 使用默认值
+            print(f"   ⚠️  SSIM calculation failed, using default 0.95")
+            return 0.95
+            
     except Exception as e:
-        print(f"   ⚠️  SSIM calculation failed: {e}, using default 0.95")
+        print(f"   ⚠️  SSIM calculation error: {e}, using default 0.95")
         return 0.95
 
 def calculate_reward(original_size, output_size, ssim, processing_time):
