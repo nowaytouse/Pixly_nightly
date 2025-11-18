@@ -35,7 +35,9 @@ export function useEagleAPI() {
         width: item.width,
         height: item.height,
         tags: item.tags || [],
-        folders: item.folders || []
+        folders: item.folders || [],
+        // 缩略图路径 - Eagle协议
+        thumbnail: `eagle://item/${item.id}`
       }))
 
       logger.info(LOG_KEYS.EAGLE_API_SUCCESS, 'Files loaded successfully', { 

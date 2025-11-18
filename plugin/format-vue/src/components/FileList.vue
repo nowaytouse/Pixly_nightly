@@ -16,7 +16,14 @@
         :key="file.id"
         class="file-item"
       >
-        <span class="file-icon">{{ getFileIcon(file) }}</span>
+        <img 
+          v-if="file.thumbnail" 
+          :src="file.thumbnail" 
+          class="file-thumbnail"
+          :alt="file.name"
+          @error="handleImageError"
+        />
+        <span v-else class="file-icon">{{ getFileIcon(file) }}</span>
         <div class="file-info">
           <div class="file-name">{{ file.name }}</div>
           <div class="file-meta">{{ formatFileSize(file.size) }} · {{ file.ext }}</div>
@@ -46,6 +53,11 @@ const getFileIcon = (file) => {
   if (type === 'image') return '🖼️'
   if (type === 'video') return '🎬'
   return '📄'
+}
+
+const handleImageError = (event) => {
+  // 缩略图加载失败时隐藏图片
+  event.target.style.display = 'none'
 }
 </script>
 
@@ -138,10 +150,32 @@ const getFileIcon = (file) => {
   box-shadow: var(--shadow-sm);
 }
 
+.file-thumbnail {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: transform var(--transition-base) var(--ease-out);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.file-item:hover .file-thumbnail {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
 .file-icon {
   font-size: 24px;
   flex-shrink: 0;
   transition: transform var(--transition-base) var(--ease-bounce);
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border-radius: 6px;
 }
 
 .file-item:hover .file-icon {
