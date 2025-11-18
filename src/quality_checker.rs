@@ -190,7 +190,7 @@ impl Default for QualityChecker {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use image::{ImageBuffer, Rgba};
+    use image::Rgba;
     
     #[test]
     fn test_pixel_similarity() {

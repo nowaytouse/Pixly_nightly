@@ -44,6 +44,9 @@ pub mod cli_batch;
 pub mod cli_audio;
 pub mod cli_analyze;  // ✅ AI-powered media analysis
 pub mod conversion_core;
+
+// Phase 3.1: PPO强化学习
+pub mod reward_calculator;
 pub mod metadata_handler;
 pub mod video_handler;
 pub mod gif_handler;
