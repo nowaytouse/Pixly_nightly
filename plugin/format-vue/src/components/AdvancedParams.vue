@@ -7,23 +7,29 @@
     </div>
     
     <div v-if="expanded" class="params-content">
-      <p class="hint">根据格式显示不同的高级参数</p>
-      <!-- 后续添加具体参数 -->
+      <JxlParams v-if="format === 'jxl'" v-model="localParams" />
+      <div v-else class="hint">{{ format.toUpperCase() }} 参数待实现</div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import JxlParams from './JxlParams.vue'
 
-defineProps({
+const props = defineProps({
   format: String,
   modelValue: Object
 })
 
-defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue'])
 
 const expanded = ref(false)
+const localParams = ref(props.modelValue || {})
+
+watch(localParams, (newVal) => {
+  emit('update:modelValue', newVal)
+}, { deep: true })
 </script>
 
 <style scoped>
@@ -34,7 +40,7 @@ const expanded = ref(false)
 }
 
 .params-content {
-  padding-top: 8px;
+  padding-top: 12px;
 }
 
 .hint {
