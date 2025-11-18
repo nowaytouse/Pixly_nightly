@@ -1,0 +1,17 @@
+{
+  "id": "com.pixly.format.vue",
+  "version": "3.0.0",
+  "platform": "all",
+  "arch": "all",
+  "name": "PIXLY Format Vue",
+  "logo": "./logo.png",
+  "keywords": ["format", "converter", "jxl", "avif", "webp", "heic", "vue"],
+  "devTools": false,
+  "main": {
+    "url": "dist/index.html",
+    "width": 1200,
+    "height": 800,
+    "minWidth": 1000,
+    "minHeight": 600
+  }
+}
