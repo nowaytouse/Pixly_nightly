@@ -47,6 +47,8 @@ pub mod conversion_core;
 
 // Phase 3.1: PPO强化学习
 pub mod reward_calculator;
+// Phase 3.2: 在线学习
+pub mod online_learning;
 pub mod metadata_handler;
 pub mod video_handler;
 pub mod gif_handler;
