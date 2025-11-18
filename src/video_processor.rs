@@ -57,7 +57,7 @@ pub enum AudioMode {
 impl Default for VideoConversionConfig {
     fn default() -> Self {
         Self {
-            codec: "h265".to_string(),
+            codec: "h266".to_string(),  // 🔥 默认使用最新的H.266/VVC
             container: "mp4".to_string(),
             crf: 23,
             preset: "medium".to_string(),
@@ -142,12 +142,13 @@ impl VideoProcessor {
     
     fn get_software_encoder(&self, codec: &str) -> String {
         match codec {
-            "h264" => "libx264".to_string(),
+            "h266" | "vvc" => "libvvenc".to_string(),  // 🔥 H.266/VVC - 最新标准
             "h265" | "hevc" => "libx265".to_string(),
-            "vp9" => "libvpx-vp9".to_string(),
+            "h264" => "libx264".to_string(),
             "av1" => "libaom-av1".to_string(),
-            "prores" => "prores_ks".to_string(),  // ✅ ProRes编码器
-            _ => "libx265".to_string(),
+            "vp9" => "libvpx-vp9".to_string(),
+            "prores" => "prores_ks".to_string(),
+            _ => "libvvenc".to_string(),  // 🔥 默认使用H.266
         }
     }
     
@@ -166,14 +167,23 @@ impl VideoProcessor {
     
     fn try_hardware_encoder(&self, codec: &str, hw_type: &str) -> String {
         match (codec, hw_type) {
-            ("h264", "nvenc") => "h264_nvenc".to_string(),
+            // 🔥 H.266/VVC 硬件加速（未来支持）
+            ("h266" | "vvc", "nvenc") => "vvc_nvenc".to_string(),  // 未来NVIDIA支持
+            ("h266" | "vvc", "qsv") => "vvc_qsv".to_string(),      // 未来Intel支持
+            ("h266" | "vvc", _) => self.get_software_encoder(codec), // 当前仅软件编码
+            
+            // H.265/HEVC
             ("h265" | "hevc", "nvenc") => "hevc_nvenc".to_string(),
-            ("h264", "qsv") => "h264_qsv".to_string(),
             ("h265" | "hevc", "qsv") => "hevc_qsv".to_string(),
-            ("h264", "videotoolbox") => "h264_videotoolbox".to_string(),
             ("h265" | "hevc", "videotoolbox") => "hevc_videotoolbox".to_string(),
-            ("h264", "amf") => "h264_amf".to_string(),
             ("h265" | "hevc", "amf") => "hevc_amf".to_string(),
+            
+            // H.264/AVC
+            ("h264", "nvenc") => "h264_nvenc".to_string(),
+            ("h264", "qsv") => "h264_qsv".to_string(),
+            ("h264", "videotoolbox") => "h264_videotoolbox".to_string(),
+            ("h264", "amf") => "h264_amf".to_string(),
+            
             _ => self.get_software_encoder(codec),
         }
     }
