@@ -1,55 +1,52 @@
 <template>
   <div class="params-group">
-    <!-- Effort滑条 -->
+    <!-- Speed滑条 -->
     <div class="slider-group">
       <div class="slider-header">
-        <span>Effort</span>
-        <span class="slider-value">{{ localParams.effort }}</span>
+        <span>Speed</span>
+        <span class="slider-value">{{ localParams.speed }}</span>
       </div>
       <input 
         type="range" 
-        v-model.number="localParams.effort"
-        min="1" 
-        max="9" 
+        v-model.number="localParams.speed"
+        min="0" 
+        max="10" 
         step="1"
         class="slider"
       />
-      <div class="slider-hint">1-3: 快速 | 4-6: 平衡 | 7-9: 极致</div>
+      <div class="slider-hint">0-3: 极致质量 | 4-6: 平衡 | 7-10: 快速</div>
     </div>
     
-    <!-- Distance滑条 -->
+    <!-- Min Quantizer -->
     <div class="slider-group">
       <div class="slider-header">
-        <span>Distance</span>
-        <span class="slider-value">{{ localParams.distance.toFixed(1) }}</span>
+        <span>Min Quantizer</span>
+        <span class="slider-value">{{ localParams.minQuantizer }}</span>
       </div>
       <input 
         type="range" 
-        v-model.number="localParams.distance"
+        v-model.number="localParams.minQuantizer"
         min="0" 
-        max="15" 
-        step="0.1"
+        max="63" 
+        step="1"
         class="slider"
       />
-      <div class="slider-hint">0.0: 无损 | 1.0-3.0: 高质量 | 3.0+: 压缩</div>
     </div>
     
-    <!-- JPEG无损转码 -->
-    <div class="checkbox-group">
-      <label class="checkbox-label">
-        <input type="checkbox" v-model="localParams.jpegLossless" />
-        <span>JPEG 无损转码</span>
-      </label>
-      <div class="checkbox-hint">启用后将JPEG 100%可逆转码为JXL</div>
-    </div>
-    
-    <!-- 无损模式 -->
-    <div class="checkbox-group">
-      <label class="checkbox-label">
-        <input type="checkbox" v-model="localParams.lossless" />
-        <span>数学无损</span>
-      </label>
-      <div class="checkbox-hint">完全无损压缩（非JPEG）</div>
+    <!-- Max Quantizer -->
+    <div class="slider-group">
+      <div class="slider-header">
+        <span>Max Quantizer</span>
+        <span class="slider-value">{{ localParams.maxQuantizer }}</span>
+      </div>
+      <input 
+        type="range" 
+        v-model.number="localParams.maxQuantizer"
+        min="0" 
+        max="63" 
+        step="1"
+        class="slider"
+      />
     </div>
   </div>
 </template>
@@ -64,10 +61,9 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const localParams = ref({
-  effort: 7,
-  distance: 1.0,
-  lossless: false,
-  jpegLossless: false,
+  speed: 6,
+  minQuantizer: 0,
+  maxQuantizer: 63,
   ...props.modelValue
 })
 
@@ -138,33 +134,5 @@ watch(localParams, (newVal) => {
 .slider-hint {
   font-size: 11px;
   color: var(--text-tertiary);
-}
-
-.checkbox-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--text-primary);
-  cursor: pointer;
-}
-
-.checkbox-label input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: var(--color-primary);
-}
-
-.checkbox-hint {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  padding-left: 24px;
 }
 </style>

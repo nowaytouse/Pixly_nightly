@@ -8,7 +8,10 @@
     
     <div v-if="expanded" class="params-content">
       <JxlParams v-if="format === 'jxl'" v-model="localParams" />
-      <div v-else class="hint">{{ format.toUpperCase() }} 参数待实现</div>
+      <AvifParams v-else-if="format === 'avif'" v-model="localParams" />
+      <WebpParams v-else-if="format === 'webp'" v-model="localParams" />
+      <HeicParams v-else-if="format === 'heic'" v-model="localParams" />
+      <div v-else class="hint">{{ format.toUpperCase() }} 参数</div>
     </div>
   </div>
 </template>
@@ -16,6 +19,9 @@
 <script setup>
 import { ref, watch } from 'vue'
 import JxlParams from './JxlParams.vue'
+import AvifParams from './AvifParams.vue'
+import WebpParams from './WebpParams.vue'
+import HeicParams from './HeicParams.vue'
 
 const props = defineProps({
   format: String,

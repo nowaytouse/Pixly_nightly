@@ -1,55 +1,28 @@
 <template>
   <div class="params-group">
-    <!-- Effort滑条 -->
+    <!-- Method滑条 -->
     <div class="slider-group">
       <div class="slider-header">
-        <span>Effort</span>
-        <span class="slider-value">{{ localParams.effort }}</span>
+        <span>Method</span>
+        <span class="slider-value">{{ localParams.method }}</span>
       </div>
       <input 
         type="range" 
-        v-model.number="localParams.effort"
-        min="1" 
-        max="9" 
+        v-model.number="localParams.method"
+        min="0" 
+        max="6" 
         step="1"
         class="slider"
       />
-      <div class="slider-hint">1-3: 快速 | 4-6: 平衡 | 7-9: 极致</div>
-    </div>
-    
-    <!-- Distance滑条 -->
-    <div class="slider-group">
-      <div class="slider-header">
-        <span>Distance</span>
-        <span class="slider-value">{{ localParams.distance.toFixed(1) }}</span>
-      </div>
-      <input 
-        type="range" 
-        v-model.number="localParams.distance"
-        min="0" 
-        max="15" 
-        step="0.1"
-        class="slider"
-      />
-      <div class="slider-hint">0.0: 无损 | 1.0-3.0: 高质量 | 3.0+: 压缩</div>
-    </div>
-    
-    <!-- JPEG无损转码 -->
-    <div class="checkbox-group">
-      <label class="checkbox-label">
-        <input type="checkbox" v-model="localParams.jpegLossless" />
-        <span>JPEG 无损转码</span>
-      </label>
-      <div class="checkbox-hint">启用后将JPEG 100%可逆转码为JXL</div>
+      <div class="slider-hint">0-2: 快速 | 3-4: 平衡 | 5-6: 最佳</div>
     </div>
     
     <!-- 无损模式 -->
     <div class="checkbox-group">
       <label class="checkbox-label">
         <input type="checkbox" v-model="localParams.lossless" />
-        <span>数学无损</span>
+        <span>无损模式</span>
       </label>
-      <div class="checkbox-hint">完全无损压缩（非JPEG）</div>
     </div>
   </div>
 </template>
@@ -64,10 +37,8 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const localParams = ref({
-  effort: 7,
-  distance: 1.0,
+  method: 4,
   lossless: false,
-  jpegLossless: false,
   ...props.modelValue
 })
 
@@ -160,11 +131,5 @@ watch(localParams, (newVal) => {
   height: 16px;
   cursor: pointer;
   accent-color: var(--color-primary);
-}
-
-.checkbox-hint {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  padding-left: 24px;
 }
 </style>
