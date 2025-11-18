@@ -67,16 +67,19 @@ pub fn handle_analyze(input: &str, options: &AnalyzeOptions) -> Result<()> {
         .context("Failed to analyze media file")?;
     
     // 2. 提取特征
+    // 🔥 修复TODO: 使用image库检测透明度和复杂度
+    let (has_alpha, complexity) = detect_image_features(input_path)?;
+    
     let features = MediaFeatures {
         width: media_info.resolution.0,
         height: media_info.resolution.1,
         file_size: media_info.size,
         format: media_info.format.clone(),
         is_animated: media_info.media_type == crate::media_analyzer::MediaType::Animation,
-        has_alpha: false, // TODO: 实现透明度检测
+        has_alpha,
         frame_count: media_info.frame_count.unwrap_or(1),
         duration: media_info.duration.unwrap_or(0.0) as f64,
-        complexity: 0.75, // TODO: 实现复杂度计算
+        complexity,
     };
     
     // 3. AI推荐（如果启用）
@@ -196,6 +199,49 @@ fn get_ai_recommendation(_media_info: &crate::media_analyzer::MediaInfo, feature
         quality_score: format!("{}/100", best_recommendation.quality_score),
         confidence: best_recommendation.confidence,
     })
+}
+
+/// 🔥 检测图像特征（透明度和复杂度）
+/// 
+/// 使用image库进行真实的图像分析
+fn detect_image_features(path: &Path) -> Result<(bool, f64)> {
+    use image::GenericImageView;
+    
+    // 尝试打开图像
+    let img = match image::open(path) {
+        Ok(img) => img,
+        Err(e) => {
+            // 如果无法打开（可能是视频或音频），返回默认值
+            eprintln!("⚠️  Cannot open as image ({}), using defaults", e);
+            return Ok((false, 0.5));
+        }
+    };
+    
+    // 检测透明度
+    let has_alpha = img.color().has_alpha();
+    
+    // 简化的复杂度计算
+    // 基于图像尺寸和颜色类型的启发式估算
+    let (width, height) = img.dimensions();
+    let pixels = (width * height) as f64;
+    
+    // 复杂度因素：
+    // 1. 分辨率（大图通常更复杂）
+    let resolution_factor = (pixels / 1_000_000.0).min(1.0); // 归一化到0-1
+    
+    // 2. 颜色类型（RGB/RGBA更复杂）
+    let color_factor = match img.color() {
+        image::ColorType::L8 | image::ColorType::L16 => 0.3,  // 灰度
+        image::ColorType::La8 | image::ColorType::La16 => 0.4, // 灰度+Alpha
+        image::ColorType::Rgb8 | image::ColorType::Rgb16 => 0.6, // RGB
+        image::ColorType::Rgba8 | image::ColorType::Rgba16 => 0.8, // RGBA
+        _ => 0.5,
+    };
+    
+    // 综合复杂度（加权平均）
+    let complexity = (resolution_factor * 0.4 + color_factor * 0.6).clamp(0.0, 1.0);
+    
+    Ok((has_alpha, complexity))
 }
 
 /// 打印人类可读格式

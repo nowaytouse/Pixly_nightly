@@ -106,6 +106,42 @@ impl ValidationDisplay {
 pub struct ConversionFlowValidator;
 
 impl ConversionFlowValidator {
+    /// 🔥 启发式动画检测
+    /// 
+    /// 根据文件扩展名和大小判断是否可能是动画
+    /// 
+    /// 注意：这是启发式方法，不是100%准确
+    /// 真实的动画检测需要解析文件内容（使用image库或ffprobe）
+    fn detect_animation_heuristic(path: &Path, ext: &str) -> bool {
+        let ext_lower = ext.to_lowercase();
+        
+        // GIF: 通过文件大小启发式判断
+        if ext_lower == ".gif" {
+            if let Ok(metadata) = std::fs::metadata(path) {
+                let size_kb = metadata.len() as f64 / 1024.0;
+                // 大于100KB的GIF很可能是动画
+                return size_kb > 100.0;
+            }
+        }
+        
+        // WebP: 通过文件大小启发式判断
+        if ext_lower == ".webp" {
+            if let Ok(metadata) = std::fs::metadata(path) {
+                let size_kb = metadata.len() as f64 / 1024.0;
+                // 大于200KB的WebP可能是动画
+                return size_kb > 200.0;
+            }
+        }
+        
+        // APNG: PNG动画格式
+        if ext_lower == ".apng" {
+            return true;
+        }
+        
+        // 其他格式默认为静态
+        false
+    }
+    
     /// 验证转换前的准备工作
     pub fn validate_pre_conversion(
         input_paths: &[PathBuf],
@@ -131,12 +167,15 @@ impl ConversionFlowValidator {
                 .map(|e| format!(".{}", e))
                 .unwrap_or_default();
             
+            // 🔥 修复TODO: 使用启发式方法检测动画
+            let is_animated = Self::detect_animation_heuristic(&path, &ext);
+            
             files.push(InputFile {
                 file_path: path.clone(),
                 name,
                 ext,
                 size: metadata.len(),
-                is_animated: false, // TODO: 检测动画
+                is_animated,
             });
         }
         
