@@ -36,7 +36,7 @@
       </div>
       <div class="slider-group">
         <div class="slider-header">
-          <span>CRF</span>
+          <span>{{ t('video.crfLabel') }}</span>
           <span class="slider-value">{{ localParams.crf }}</span>
         </div>
         <input 

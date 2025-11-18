@@ -3,6 +3,14 @@
     <div class="panel-title">
       <span>🎯</span>
       <span>{{ t('quality.title') }}</span>
+      <label class="lossless-toggle">
+        <input 
+          type="checkbox" 
+          :checked="lossless"
+          @change="$emit('update:lossless', $event.target.checked)"
+        />
+        <span>{{ t('quality.lossless') }}</span>
+      </label>
     </div>
     
     <div class="quality-control">
@@ -17,6 +25,7 @@
         min="1" 
         max="100" 
         class="slider"
+        :disabled="lossless"
       />
       <div class="quality-hint">{{ qualityHint }}</div>
     </div>
@@ -30,10 +39,11 @@ import { useI18n } from '../composables/useI18n'
 const { t } = useI18n()
 
 const props = defineProps({
-  modelValue: Number
+  modelValue: Number,
+  lossless: Boolean
 })
 
-defineEmits(['update:modelValue'])
+defineEmits(['update:modelValue', 'update:lossless'])
 
 const qualityHint = computed(() => {
   const q = props.modelValue
@@ -107,5 +117,31 @@ const qualityHint = computed(() => {
   font-size: 12px;
   color: var(--text-tertiary);
   text-align: center;
+}
+
+.lossless-toggle {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.lossless-toggle input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.lossless-toggle:hover {
+  color: var(--text-primary);
+}
+
+.slider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

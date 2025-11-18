@@ -25,7 +25,7 @@
         <!-- 图像面板 -->
         <template v-if="conversionType === 'image'">
           <FormatSelector v-model="selectedFormat" />
-          <QualityPanel v-model="quality" />
+          <QualityPanel v-model:modelValue="quality" v-model:lossless="lossless" />
           <AdvancedParams :format="selectedFormat" v-model="advancedParams" />
         </template>
         
@@ -89,6 +89,7 @@ import { logger, LOG_KEYS } from './utils/logger'
 const conversionType = ref('image') // 'image' or 'video'
 const selectedFormat = ref('jxl')
 const quality = ref(90)
+const lossless = ref(false)
 const advancedParams = ref({})
 const videoParams = ref({})
 const files = ref([])
@@ -140,6 +141,7 @@ const startConversion = async () => {
       const options = {
         format: selectedFormat.value,
         quality: quality.value,
+        lossless: lossless.value,
         ...advancedParams.value
       }
       result = await convertImages(files.value, options)

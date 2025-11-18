@@ -17,6 +17,7 @@
   "quality": {
     "title": "质量设置",
     "label": "质量",
+    "lossless": "💎 数学无损",
     "extreme": "🔥 极致质量",
     "high": "✨ 高质量",
     "balanced": "⚖️ 平衡",
@@ -26,9 +27,9 @@
   "advanced": {
     "title": "高级参数",
     "jxl": {
-      "effort": "Effort",
+      "effort": "编码强度",
       "effortHint": "1-3: 快速 | 4-6: 平衡 | 7-9: 极致",
-      "distance": "Distance",
+      "distance": "失真度",
       "distanceHint": "0.0: 无损 | 1.0-3.0: 高质量 | 3.0+: 压缩",
       "jpegLossless": "JPEG 无损转码",
       "jpegLosslessHint": "启用后将JPEG 100%可逆转码为JXL",
@@ -36,13 +37,13 @@
       "losslessHint": "完全无损压缩（非JPEG）"
     },
     "avif": {
-      "speed": "Speed",
+      "speed": "编码速度",
       "speedHint": "0-3: 极致质量 | 4-6: 平衡 | 7-10: 快速",
-      "minQuantizer": "Min Quantizer",
-      "maxQuantizer": "Max Quantizer"
+      "minQuantizer": "最小量化器",
+      "maxQuantizer": "最大量化器"
     },
     "webp": {
-      "method": "Method",
+      "method": "压缩方法",
       "methodHint": "0-2: 快速 | 3-4: 平衡 | 5-6: 最佳",
       "lossless": "无损模式"
     },
@@ -74,13 +75,15 @@
   },
   "video": {
     "title": "视频参数",
-    "codec": "编码器",
+    "codec": "视频编码器",
     "container": "容器格式",
-    "crf": "CRF (质量)",
-    "speed": "速度",
-    "gopSize": "GOP 大小",
+    "crf": "质量控制 (CRF)",
+    "crfLabel": "CRF",
+    "speed": "编码速度",
+    "gopSize": "关键帧间隔 (GOP)",
+    "gopLabel": "GOP",
     "bframes": "B帧数量",
-    "refs": "参考帧",
+    "refs": "参考帧数",
     "pixelFormat": "像素格式",
     "hwAccel": "硬件加速",
     "twoPass": "两遍编码"
