@@ -59,7 +59,7 @@ const qualityHint = computed(() => {
 
 .quality-value {
   font-weight: 700;
-  color: var(--primary-color);
+  color: var(--color-primary);
   font-size: 16px;
 }
 
@@ -77,12 +77,26 @@ const qualityHint = computed(() => {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: var(--primary-color);
+  background: var(--color-primary);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
 .slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.slider::-moz-range-thumb:hover {
   transform: scale(1.2);
 }
 

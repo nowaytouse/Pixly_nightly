@@ -1,0 +1,71 @@
+{
+  "app": {
+    "title": "PIXLY Format",
+    "subtitle": "Professional Format Converter"
+  },
+  "format": {
+    "title": "Output Format",
+    "jxl": "JXL - Next-gen Format",
+    "avif": "AVIF - AV1 Encoding",
+    "webp": "WebP - Web Optimized",
+    "heic": "HEIC - Apple Ecosystem"
+  },
+  "quality": {
+    "title": "Quality Settings",
+    "label": "Quality",
+    "extreme": "🔥 Extreme Quality",
+    "high": "✨ High Quality",
+    "balanced": "⚖️ Balanced",
+    "compressed": "📦 Compression Priority",
+    "maximum": "🗜️ Maximum Compression"
+  },
+  "advanced": {
+    "title": "Advanced Parameters",
+    "jxl": {
+      "effort": "Effort",
+      "effortHint": "1-3: Fast | 4-6: Balanced | 7-9: Best",
+      "distance": "Distance",
+      "distanceHint": "0.0: Lossless | 1.0-3.0: High Quality | 3.0+: Compressed",
+      "jpegLossless": "JPEG Lossless Transcode",
+      "jpegLosslessHint": "100% reversible JPEG to JXL conversion",
+      "lossless": "Mathematical Lossless",
+      "losslessHint": "Fully lossless compression (non-JPEG)"
+    },
+    "avif": {
+      "speed": "Speed",
+      "speedHint": "0-3: Best Quality | 4-6: Balanced | 7-10: Fast",
+      "minQuantizer": "Min Quantizer",
+      "maxQuantizer": "Max Quantizer"
+    },
+    "webp": {
+      "method": "Method",
+      "methodHint": "0-2: Fast | 3-4: Balanced | 5-6: Best",
+      "lossless": "Lossless Mode"
+    },
+    "heic": {
+      "encoder": "Encoder",
+      "encoderX265": "x265 (Recommended)",
+      "encoderLibheif": "libheif (Standard)",
+      "lossless": "Lossless Encoding"
+    }
+  },
+  "files": {
+    "title": "File List",
+    "count": "files",
+    "empty": "Select files in Eagle"
+  },
+  "convert": {
+    "start": "Start Conversion",
+    "converting": "Converting...",
+    "progress": "Progress",
+    "complete": "Complete",
+    "failed": "Failed"
+  },
+  "notification": {
+    "selectFiles": "Please select files first",
+    "convertSuccess": "Conversion complete! {count} files converted",
+    "convertFailed": "Conversion failed: {error}",
+    "convertError": "Conversion error: {error}",
+    "loadFailed": "Failed to load files"
+  }
+}

@@ -47,14 +47,20 @@ import FileList from './components/FileList.vue'
 import ProgressBar from './components/ProgressBar.vue'
 import { useEagleAPI } from './composables/useEagleAPI'
 import { useRustCLI } from './composables/useRustCLI'
+import { useI18n } from './composables/useI18n'
+import { logger, LOG_KEYS } from './utils/logger'
 
 const selectedFormat = ref('jxl')
 const quality = ref(90)
 const advancedParams = ref({})
 const files = ref([])
 
+const { t } = useI18n()
 const { loadSelectedFiles, refreshLibrary, showNotification } = useEagleAPI()
 const { convertImages, isConverting, progress, currentFile } = useRustCLI()
+
+// 日志：应用初始化
+logger.info(LOG_KEYS.APP_INIT, 'PIXLY Format Vue initialized')
 
 const removeFile = (index) => {
   files.value.splice(index, 1)
@@ -62,9 +68,16 @@ const removeFile = (index) => {
 
 const startConversion = async () => {
   if (files.value.length === 0) {
-    showNotification('请先选择文件', 'warning')
+    showNotification(t('notification.selectFiles'), 'warning')
+    logger.warn(LOG_KEYS.CONVERT_START, 'No files selected')
     return
   }
+
+  logger.info(LOG_KEYS.CONVERT_START, 'Starting conversion', {
+    format: selectedFormat.value,
+    quality: quality.value,
+    fileCount: files.value.length
+  })
 
   try {
     const options = {
@@ -76,31 +89,36 @@ const startConversion = async () => {
     const result = await convertImages(files.value, options)
 
     if (result.success) {
-      showNotification(`转换完成！成功转换 ${files.value.length} 个文件`, 'success')
+      logger.info(LOG_KEYS.CONVERT_SUCCESS, 'Conversion completed', {
+        fileCount: files.value.length
+      })
+      showNotification(t('notification.convertSuccess', { count: files.value.length }), 'success')
       await refreshLibrary()
-      
-      // 重新加载文件列表
       await loadFiles()
     } else {
-      showNotification(`转换失败：${result.error}`, 'error')
+      logger.error(LOG_KEYS.CONVERT_ERROR, 'Conversion failed', { error: result.error })
+      showNotification(t('notification.convertFailed', { error: result.error }), 'error')
     }
   } catch (error) {
-    console.error('Conversion error:', error)
-    showNotification(`转换出错：${error.message}`, 'error')
+    logger.error(LOG_KEYS.CONVERT_ERROR, 'Conversion exception', { error: error.message })
+    showNotification(t('notification.convertError', { error: error.message }), 'error')
   }
 }
 
 const loadFiles = async () => {
+  logger.info(LOG_KEYS.FILE_LOAD, 'Loading files from Eagle')
   try {
     const items = await loadSelectedFiles()
     files.value = items
+    logger.info(LOG_KEYS.FILE_LOAD_SUCCESS, 'Files loaded', { count: items.length })
   } catch (error) {
-    console.error('Failed to load files:', error)
-    showNotification('加载文件失败', 'error')
+    logger.error(LOG_KEYS.FILE_LOAD_ERROR, 'Failed to load files', { error: error.message })
+    showNotification(t('notification.loadFailed'), 'error')
   }
 }
 
 onMounted(async () => {
+  logger.info(LOG_KEYS.APP_MOUNT, 'App mounted')
   await loadFiles()
 })
 </script>
