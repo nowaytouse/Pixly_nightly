@@ -2,37 +2,51 @@
 
 ## 高优先级 🔴
 
-### AI-001: 实现真实的GO AI服务集成
+### AI-001: 集成现有的Python ML + Rust推理系统
 **状态**: ❌ 未开始  
 **优先级**: 🔴 高  
-**预计时间**: 8-12小时  
+**预计时间**: 4-6小时  
 
 **当前问题**:
 - `cli_analyze.rs`中的`get_ai_recommendation()`使用硬编码规则
-- 不是真实的机器学习AI推荐
+- 项目中已有完整的Python ML训练 + Rust推理系统但未使用
 - 违反了"反对作弊代码"原则
 
+**真实架构** (Python + Rust):
+- ✅ Python训练: `scripts/ml_bridge.py` + LightGBM模型
+- ✅ Rust推理: `src/ml_bridge.rs` + 128维特征提取
+- ✅ 特征提取器: `src/feature_extractor_128d.rs`
+- ✅ 统一AI接口: `src/unified_ai_interface.rs`
+- ✅ 格式推荐器: `src/format_recommender.rs`
+- ❌ **没有GO服务**（过时架构，已废弃）
+
 **需要实现**:
-1. GO AI HTTP服务
-   - 端口: 50052
-   - API: `/api/v1/analyze`
-   - 输入: 媒体特征（JSON）
-   - 输出: 推荐参数（JSON）
+1. 在`cli_analyze.rs`中调用现有的ML系统
+   ```rust
+   use crate::unified_ai_interface::UnifiedAIPredictor;
+   use crate::feature_extractor_128d::FeatureExtractor128D;
+   use crate::format_recommender::AIFormatRecommender;
+   
+   // 提取128维特征
+   let extractor = FeatureExtractor128D::new();
+   let features = extractor.extract(file_path)?;
+   
+   // AI预测
+   let predictor = UnifiedAIPredictor::new();
+   let prediction = predictor.predict(&features, target_format)?;
+   
+   // 或使用格式推荐器
+   let recommender = AIFormatRecommender::new();
+   let recommendation = recommender.recommend(&features)?;
+   ```
 
-2. 特征向量提取
-   - 128维标准化特征
-   - 图片: 分辨率/复杂度/透明度/动画
-   - 视频: 分辨率/帧率/码率/编码器
-   - 音频: 采样率/比特率/声道数
+2. 删除硬编码规则
+   - 移除临时的match语句
+   - 使用真实的ML预测
 
-3. 机器学习模型
-   - 训练数据收集
-   - 模型训练
-   - 模型部署
-
-4. Rust CLI集成
-   - HTTP客户端调用GO服务
-   - 错误处理（AI服务不可用时响亮报错）
+3. 错误处理
+   - Python进程不可用时响亮报错
+   - 模型文件缺失时明确提示
    - 无fallback到硬编码规则
 
 **参考**:

@@ -69,7 +69,7 @@
   },
   "notification": {
     "selectFiles": "Please select files first",
-    "convertSuccess": "Conversion complete! {count} files converted",
+    "convertSuccess": "✅ Conversion complete! {count} files converted\n\n💡 Tip: Select new files in Eagle, then click refresh button to start next conversion",
     "convertFailed": "Conversion failed: {error}",
     "convertError": "Conversion error: {error}",
     "loadFailed": "Failed to load files"
@@ -112,8 +112,27 @@
     "outputFormat": "Output Format",
     "converting": "Converting...",
     "selectInEagle": "Select files in Eagle",
-    "loadFiles": "Load Files",
+    "clickRefresh": "Click refresh button below to load files",
     "expandIcon": "▶",
-    "collapseIcon": "▼"
+    "collapseIcon": "▼",
+    "refresh": "Refresh",
+    "refreshFiles": "Reload selected files from Eagle",
+    "minimize": "Minimize",
+    "maximize": "Maximize/Restore",
+    "close": "Close"
+  },
+  "tools": {
+    "title": "Quick Tools",
+    "autoMergeXmp": "Auto Merge XMP",
+    "autoMergeXmpHint": "Automatically detect and merge XMP sidecar files into output",
+    "normalizeFilenames": "Normalize Filenames",
+    "normalizeFilenamesHint": "Handle special characters and spaces to avoid encoder compatibility issues"
+  },
+  "errors": {
+    "jxlNotInstalled": "JXL encoder not installed! Install: brew install jpeg-xl",
+    "avifNotInstalled": "AVIF encoder not installed! Install: brew install libavif",
+    "fileNotFound": "Input file not found or path error",
+    "rustCliNotFound": "pixly-converter not found",
+    "conversionFailed": "Conversion failed"
   }
 }

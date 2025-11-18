@@ -1,6 +1,6 @@
 {
   "id": "com.pixly.format.vue",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "platform": "all",
   "arch": "all",
   "name": "PIXLY Format Vue",
@@ -12,6 +12,9 @@
     "width": 1200,
     "height": 800,
     "minWidth": 1000,
-    "minHeight": 600
+    "minHeight": 600,
+    "frameless": true,
+    "frame": false,
+    "titleBarStyle": "hidden"
   }
 }

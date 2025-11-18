@@ -69,7 +69,7 @@
   },
   "notification": {
     "selectFiles": "请先选择文件",
-    "convertSuccess": "转换完成！成功转换 {count} 个文件",
+    "convertSuccess": "✅ 转换完成！成功转换 {count} 个文件\n\n💡 提示：在 Eagle 中选择新文件后，点击刷新按钮开始下一轮转换",
     "convertFailed": "转换失败：{error}",
     "convertError": "转换出错：{error}",
     "loadFailed": "加载文件失败"
@@ -112,8 +112,27 @@
     "outputFormat": "输出格式",
     "converting": "转换中...",
     "selectInEagle": "在 Eagle 中选择文件",
-    "loadFiles": "加载文件",
+    "clickRefresh": "点击下方刷新按钮加载文件",
     "expandIcon": "▶",
-    "collapseIcon": "▼"
+    "collapseIcon": "▼",
+    "refresh": "刷新",
+    "refreshFiles": "重新加载 Eagle 中选中的文件",
+    "minimize": "最小化",
+    "maximize": "最大化/还原",
+    "close": "关闭"
+  },
+  "tools": {
+    "title": "快捷工具",
+    "autoMergeXmp": "自动合并 XMP",
+    "autoMergeXmpHint": "自动检测并合并 XMP sidecar 文件到输出文件",
+    "normalizeFilenames": "规范化文件名",
+    "normalizeFilenamesHint": "处理特殊字符和空格，避免编码器兼容性问题"
+  },
+  "errors": {
+    "jxlNotInstalled": "JXL编码器未安装！请安装：brew install jpeg-xl",
+    "avifNotInstalled": "AVIF编码器未安装！请安装：brew install libavif",
+    "fileNotFound": "输入文件不存在或路径错误",
+    "rustCliNotFound": "pixly-converter 未找到",
+    "conversionFailed": "转换失败"
   }
 }

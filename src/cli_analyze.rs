@@ -105,23 +105,26 @@ pub fn handle_analyze(input: &str, options: &AnalyzeOptions) -> Result<()> {
     Ok(())
 }
 
-/// 获取推荐参数
+/// 获取AI推荐参数
 /// 
 /// ⚠️ 重要说明：
 /// 当前使用**基于规则的推荐**，不是真实的机器学习AI。
 /// 这是临时实现，用于提供基础功能。
 /// 
-/// TODO(AI-001): 集成GO AI服务进行真实的机器学习推荐
-/// - 需要实现GO AI HTTP服务
-/// - 需要训练模型
-/// - 需要特征向量提取
+/// TODO(AI-001): 集成现有的Python ML预测系统
+/// - 使用 src/unified_ai_interface.rs
+/// - 使用 src/feature_extractor_128d.rs
+/// - 调用 scripts/ml_bridge.py
 /// 
 /// 参考：PROJECT_QUALITY_MANIFESTO.md - 反对作弊代码
 fn get_ai_recommendation(media_info: &crate::media_analyzer::MediaInfo, features: &MediaFeatures) -> Result<Recommendation> {
     // 🔥 响亮的警告：这不是真实的AI
-    eprintln!("⚠️  WARNING: Using rule-based recommendation (NOT AI)");
-    eprintln!("   For true AI recommendations, GO AI service is required");
-    eprintln!("   Current implementation uses hardcoded rules based on media type");
+    eprintln!("⚠️  WARNING: Using rule-based recommendation (NOT ML)");
+    eprintln!("   Real ML system exists but not yet integrated:");
+    eprintln!("   - Python ML: scripts/ml_bridge.py");
+    eprintln!("   - Rust bridge: src/ml_bridge.rs");
+    eprintln!("   - Feature extractor: src/feature_extractor_128d.rs");
+    eprintln!("   Current implementation uses hardcoded rules as temporary fallback");
     
     let recommended_format = match media_info.media_type {
         crate::media_analyzer::MediaType::Image => {

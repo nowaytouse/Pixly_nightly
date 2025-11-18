@@ -49,14 +49,31 @@
   --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 🔥 无边框窗口 */
+  background: var(--bg-secondary);
   /* 性能优化 */
   will-change: auto;
+}
+
+/* 🔥 无边框窗口 - 移除默认边距 */
+#app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* 滚动条样式 - 悬停时显示 */

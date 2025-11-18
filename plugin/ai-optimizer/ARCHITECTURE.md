@@ -78,14 +78,29 @@ src/
     └── global.css          # 全局样式
 ```
 
-### 后端 (Rust CLI)
+### 后端 (Python ML + Rust CLI)
+
+**真实架构**：
 ```
 pixly-rust analyze <file> --ai
     ↓
-返回JSON:
+Rust: 提取128维标准化特征 (ml_bridge.rs)
+    ↓
+Python: LightGBM模型预测 (ml_bridge.py)
+    ↓
+Rust: 返回JSON结果
+    ↓
 {
   "media_type": "image|video|audio",
-  "features": {...},
+  "features": {
+    "basic": [16维],
+    "color": [16维],
+    "texture": [16维],
+    "shape": [16维],
+    "quality": [16维],
+    "metadata": [32维],
+    "context": [16维]
+  },
   "recommendations": {
     "format": "avif",
     "params": {

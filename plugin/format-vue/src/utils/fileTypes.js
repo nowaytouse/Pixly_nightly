@@ -7,10 +7,24 @@ export const IMAGE_FORMATS = {
   avif: { name: 'AVIF', extensions: ['.avif'] },
   webp: { name: 'WebP', extensions: ['.webp'] },
   heic: { name: 'HEIC', extensions: ['.heic', '.heif'] },
-  png: { name: 'PNG', extensions: ['.png'] },
+  png: { name: 'PNG', extensions: ['.png', '.apng'] },
   jpg: { name: 'JPEG', extensions: ['.jpg', '.jpeg'] },
-  gif: { name: 'GIF', extensions: ['.gif'] }
+  gif: { name: 'GIF', extensions: ['.gif'] },
+  bmp: { name: 'BMP', extensions: ['.bmp'] },
+  tiff: { name: 'TIFF', extensions: ['.tiff', '.tif'] }
 }
+
+// 🔥 明确排除的文件类型（非媒体文件）
+export const EXCLUDED_EXTENSIONS = [
+  '.xmp',           // XMP sidecar 元数据
+  '.json',          // JSON 元数据
+  '.txt',           // 文本文件
+  '.xml',           // XML 文件
+  '_thumbnail.png', // Eagle 缩略图
+  '_thumbnail.jpg', // Eagle 缩略图
+  '.db',            // 数据库文件
+  '.info'           // Eagle info 目录
+]
 
 export const VIDEO_FORMATS = {
   mp4: { name: 'MP4', extensions: ['.mp4'] },
@@ -28,11 +42,23 @@ export const SUPPORTED_VIDEO_EXTENSIONS = Object.values(VIDEO_FORMATS)
 
 export function isImageFile(filename) {
   const ext = getFileExtension(filename)
+  
+  // 🔥 先检查是否在排除列表中
+  if (EXCLUDED_EXTENSIONS.some(excluded => filename.toLowerCase().endsWith(excluded))) {
+    return false
+  }
+  
   return SUPPORTED_IMAGE_EXTENSIONS.includes(ext)
 }
 
 export function isVideoFile(filename) {
   const ext = getFileExtension(filename)
+  
+  // 🔥 先检查是否在排除列表中
+  if (EXCLUDED_EXTENSIONS.some(excluded => filename.toLowerCase().endsWith(excluded))) {
+    return false
+  }
+  
   return SUPPORTED_VIDEO_EXTENSIONS.includes(ext)
 }
 
