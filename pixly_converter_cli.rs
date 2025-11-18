@@ -83,6 +83,10 @@ enum Commands {
         #[arg(long, default_value = "false")]
         normalize_filenames: bool,
         
+        /// 🤖 Use AI to predict optimal parameters
+        #[arg(long, default_value = "false")]
+        ai: bool,
+        
         // JXL specific
         #[arg(long)]
         jpeg_lossless: bool,
@@ -230,6 +234,8 @@ fn run(cli: Cli) -> Result<()> {
             merge_xmp,
             xmp_path,
             normalize_filenames,
+            // AI
+            ai,
         } => {
             // 确定输出格式
             let target_format = format.unwrap_or_else(|| {

@@ -46,9 +46,18 @@
       <div class="left-panel">
         <!-- 图像面板 -->
         <template v-if="conversionType === 'image'">
-          <FormatSelector v-model="selectedFormat" />
-          <QualityPanel v-model:modelValue="quality" v-model:lossless="lossless" />
-          <AdvancedParams :format="selectedFormat" v-model="advancedParams" :lossless="lossless" />
+          <FormatSelector v-model="selectedFormat" :aiMode="aiMode" />
+          <QualityPanel 
+            v-model:modelValue="quality" 
+            v-model:lossless="lossless"
+            v-model:aiMode="aiMode"
+          />
+          <AdvancedParams 
+            :format="selectedFormat" 
+            v-model="advancedParams" 
+            :lossless="lossless"
+            :aiMode="aiMode"
+          />
         </template>
         
         <!-- 视频面板 -->

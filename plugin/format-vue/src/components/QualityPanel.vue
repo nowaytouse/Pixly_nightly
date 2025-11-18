@@ -13,7 +13,21 @@
       </label>
     </div>
     
-    <div class="quality-control">
+    <!-- 🤖 AI智能模式开关 -->
+    <div class="ai-mode-toggle">
+      <label class="ai-toggle-label">
+        <input 
+          type="checkbox" 
+          :checked="aiMode"
+          @change="$emit('update:aiMode', $event.target.checked)"
+        />
+        <span class="ai-icon">🤖</span>
+        <span>{{ t('quality.aiMode') }}</span>
+      </label>
+      <span v-if="aiMode" class="ai-hint">{{ t('quality.aiHint') }}</span>
+    </div>
+    
+    <div class="quality-control" :class="{ 'ai-disabled': aiMode }">
       <div class="quality-header">
         <span>{{ t('quality.label') }}</span>
         <span class="quality-value">{{ modelValue }}</span>
@@ -25,9 +39,11 @@
         min="1" 
         max="100" 
         class="slider"
-        :disabled="lossless"
+        :disabled="lossless || aiMode"
       />
-      <div class="quality-hint">{{ qualityHint }}</div>
+      <div class="quality-hint">
+        {{ aiMode ? t('quality.aiControlled') : qualityHint }}
+      </div>
     </div>
   </div>
 </template>
@@ -40,10 +56,11 @@ const { t } = useI18n()
 
 const props = defineProps({
   modelValue: Number,
-  lossless: Boolean
+  lossless: Boolean,
+  aiMode: Boolean
 })
 
-defineEmits(['update:modelValue', 'update:lossless'])
+defineEmits(['update:modelValue', 'update:lossless', 'update:aiMode'])
 
 const qualityHint = computed(() => {
   const q = props.modelValue
@@ -176,6 +193,50 @@ const qualityHint = computed(() => {
   filter: grayscale(0.5);
 }
 
+/* AI模式样式 */
+.ai-mode-toggle {
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  transition: all var(--transition-base) var(--ease-out);
+}
+
+.ai-mode-toggle:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.15));
+}
+
+.ai-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.ai-icon {
+  font-size: 16px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.ai-hint {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.quality-control.ai-disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 /* 动画效果 */
 @keyframes fadeIn {
   from {
@@ -185,6 +246,15 @@ const qualityHint = computed(() => {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
   }
 }
 </style>
