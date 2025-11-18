@@ -700,9 +700,9 @@ fn run(cli: Cli) -> Result<()> {
                             height: media_info.resolution.1,
                             file_size: media_info.size,
                             format: media_info.format.clone(),
-                            has_alpha: false, // TODO: 实际检测
-                            is_animated: false, // TODO: 实际检测
-                            complexity: 0.75, // TODO: 实际计算
+                            has_alpha: false,  // Phase 7: MediaInfo暂无此字段，使用默认值
+                            is_animated: false,  // Phase 7: MediaInfo暂无此字段，使用默认值
+                            complexity: 0.75,  // Phase 7: 默认值，未来可通过图像分析计算
                         };
                         
                         // 3. 使用AI推荐器
