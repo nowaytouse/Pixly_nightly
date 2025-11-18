@@ -3,7 +3,7 @@
     <!-- Effort滑条 -->
     <div class="slider-group">
       <div class="slider-header">
-        <span>Effort</span>
+        <span>{{ t('advanced.jxl.effort') }}</span>
         <span class="slider-value">{{ localParams.effort }}</span>
       </div>
       <input 
@@ -14,13 +14,13 @@
         step="1"
         class="slider"
       />
-      <div class="slider-hint">1-3: 快速 | 4-6: 平衡 | 7-9: 极致</div>
+      <div class="slider-hint">{{ t('advanced.jxl.effortHint') }}</div>
     </div>
     
     <!-- Distance滑条 -->
     <div class="slider-group">
       <div class="slider-header">
-        <span>Distance</span>
+        <span>{{ t('advanced.jxl.distance') }}</span>
         <span class="slider-value">{{ localParams.distance.toFixed(1) }}</span>
       </div>
       <input 
@@ -31,72 +31,34 @@
         step="0.1"
         class="slider"
       />
-      <div class="slider-hint">0.0: 无损 | 1.0-3.0: 高质量 | 3.0+: 压缩</div>
+      <div class="slider-hint">{{ t('advanced.jxl.distanceHint') }}</div>
     </div>
     
     <!-- JPEG无损转码 -->
     <div class="checkbox-group">
       <label class="checkbox-label">
         <input type="checkbox" v-model="localParams.jpegLossless" />
-        <span>JPEG 无损转码</span>
+        <span>{{ t('advanced.jxl.jpegLossless') }}</span>
       </label>
-      <div class="checkbox-hint">启用后将JPEG 100%可逆转码为JXL</div>
+      <div class="checkbox-hint">{{ t('advanced.jxl.jpegLosslessHint') }}</div>
     </div>
     
     <!-- 无损模式 -->
     <div class="checkbox-group">
       <label class="checkbox-label">
         <input type="checkbox" v-model="localParams.lossless" />
-        <span>数学无损</span>
+        <span>{{ t('advanced.jxl.lossless') }}</span>
       </label>
-      <div class="checkbox-hint">完全无损压缩（非JPEG）</div>
-    </div>
-
-    <!-- 色彩位深度 -->
-    <div class="select-group">
-      <label class="select-label">色彩位深度</label>
-      <select v-model="localParams.bitDepth" class="param-select">
-        <option value="auto">自动（根据源文件）</option>
-        <option value="8">8-bit（标准）</option>
-        <option value="10">10-bit（HDR）</option>
-        <option value="12">12-bit（专业）</option>
-        <option value="16">16-bit（极致）</option>
-      </select>
-    </div>
-
-    <!-- 色彩空间 -->
-    <div class="select-group">
-      <label class="select-label">色彩空间</label>
-      <select v-model="localParams.colorSpace" class="param-select">
-        <option value="auto">自动（保持源色彩空间）</option>
-        <option value="srgb">sRGB（标准）</option>
-        <option value="p3">Display P3（广色域）</option>
-        <option value="adobe">Adobe RGB（专业）</option>
-        <option value="prophoto">ProPhoto RGB（极致）</option>
-      </select>
-    </div>
-
-    <!-- 高级选项 -->
-    <div class="checkbox-group">
-      <label class="checkbox-label">
-        <input type="checkbox" v-model="localParams.modular" />
-        <span>Modular 模式</span>
-      </label>
-      <div class="checkbox-hint">适合无损和高质量场景</div>
-    </div>
-
-    <div class="checkbox-group">
-      <label class="checkbox-label">
-        <input type="checkbox" v-model="localParams.progressive" />
-        <span>渐进式加载</span>
-      </label>
-      <div class="checkbox-hint">支持逐步显示</div>
+      <div class="checkbox-hint">{{ t('advanced.jxl.losslessHint') }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   modelValue: Object
@@ -107,12 +69,8 @@ const emit = defineEmits(['update:modelValue'])
 const localParams = ref({
   effort: 7,
   distance: 1.0,
-  lossless: false,
   jpegLossless: false,
-  bitDepth: 'auto',
-  colorSpace: 'auto',
-  modular: false,
-  progressive: false,
+  lossless: false,
   ...props.modelValue
 })
 
@@ -131,7 +89,7 @@ watch(localParams, (newVal) => {
 .slider-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .slider-header {
@@ -143,7 +101,7 @@ watch(localParams, (newVal) => {
 }
 
 .slider-value {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-primary);
 }
 
@@ -163,11 +121,6 @@ watch(localParams, (newVal) => {
   border-radius: 50%;
   background: var(--color-primary);
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
 }
 
 .slider::-moz-range-thumb {
@@ -177,7 +130,6 @@ watch(localParams, (newVal) => {
   background: var(--color-primary);
   cursor: pointer;
   border: none;
-  transition: all 0.2s;
 }
 
 .slider-hint {
@@ -204,40 +156,11 @@ watch(localParams, (newVal) => {
   width: 16px;
   height: 16px;
   cursor: pointer;
-  accent-color: var(--color-primary);
 }
 
 .checkbox-hint {
   font-size: 11px;
   color: var(--text-tertiary);
   padding-left: 24px;
-}
-
-.select-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.select-label {
-  font-size: 13px;
-  color: var(--text-primary);
-}
-
-.param-select {
-  width: 100%;
-  padding: 8px 12px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 13px;
-  color: var(--text-primary);
-  cursor: pointer;
-}
-
-.param-select:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(0, 114, 239, 0.1);
 }
 </style>

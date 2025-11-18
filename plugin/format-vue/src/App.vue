@@ -9,14 +9,14 @@
         :class="{ active: conversionType === 'image' }"
         @click="conversionType = 'image'"
       >
-        📷 图像转换
+        {{ t('tabs.image') }}
       </button>
       <button 
         class="type-tab"
         :class="{ active: conversionType === 'video' }"
         @click="conversionType = 'video'"
       >
-        🎬 视频处理
+        {{ t('tabs.video') }}
       </button>
     </div>
     
@@ -42,7 +42,7 @@
     
     <footer class="footer">
       <div class="footer-left">
-        <span class="file-count">{{ files.length }} 个文件</span>
+        <span class="file-count">{{ files.length }} {{ t('files.count') }}</span>
       </div>
       <div class="footer-right">
         <button 
@@ -50,7 +50,7 @@
           :disabled="files.length === 0 || isConverting"
           @click="startConversion"
         >
-          {{ isConverting ? '转换中...' : '开始转换' }}
+          {{ isConverting ? t('convert.converting') : t('convert.start') }}
         </button>
       </div>
     </footer>

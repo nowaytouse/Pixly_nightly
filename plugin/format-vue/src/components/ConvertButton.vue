@@ -6,12 +6,15 @@
     @click="handleClick"
   >
     <span class="btn-icon">{{ isConverting ? '⏳' : '🚀' }}</span>
-    <span class="btn-text">{{ isConverting ? '转换中...' : '开始转换' }}</span>
+    <span class="btn-text">{{ isConverting ? t('convert.converting') : t('convert.start') }}</span>
   </button>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
 
 defineProps({
   disabled: Boolean

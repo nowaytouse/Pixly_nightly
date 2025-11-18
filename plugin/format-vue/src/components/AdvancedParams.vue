@@ -2,8 +2,8 @@
   <div class="panel">
     <div class="panel-title" @click="expanded = !expanded" style="cursor: pointer;">
       <span>⚙️</span>
-      <span>高级参数</span>
-      <span class="expand-icon">{{ expanded ? '▼' : '▶' }}</span>
+      <span>{{ t('ui.advancedParams') }}</span>
+      <span class="expand-icon">{{ expanded ? t('ui.collapseIcon') : t('ui.expandIcon') }}</span>
     </div>
     
     <div v-if="expanded" class="params-content">
@@ -11,17 +11,20 @@
       <AvifParams v-else-if="format === 'avif'" v-model="localParams" />
       <WebpParams v-else-if="format === 'webp'" v-model="localParams" />
       <HeicParams v-else-if="format === 'heic'" v-model="localParams" />
-      <div v-else class="hint">{{ format.toUpperCase() }} 参数</div>
+      <div v-else class="hint">{{ format.toUpperCase() }} {{ t('ui.advancedParams') }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useI18n } from '../composables/useI18n'
 import JxlParams from './JxlParams.vue'
 import AvifParams from './AvifParams.vue'
 import WebpParams from './WebpParams.vue'
 import HeicParams from './HeicParams.vue'
+
+const { t } = useI18n()
 
 const props = defineProps({
   format: String,

@@ -2,12 +2,12 @@
   <div class="panel">
     <div class="panel-title">
       <span>🎯</span>
-      <span>质量设置</span>
+      <span>{{ t('quality.title') }}</span>
     </div>
     
     <div class="quality-control">
       <div class="quality-header">
-        <span>质量</span>
+        <span>{{ t('quality.label') }}</span>
         <span class="quality-value">{{ modelValue }}</span>
       </div>
       <input 
@@ -25,6 +25,9 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   modelValue: Number
@@ -34,11 +37,11 @@ defineEmits(['update:modelValue'])
 
 const qualityHint = computed(() => {
   const q = props.modelValue
-  if (q >= 95) return '🔥 极致质量'
-  if (q >= 85) return '✨ 高质量'
-  if (q >= 70) return '⚖️ 平衡'
-  if (q >= 50) return '📦 压缩优先'
-  return '🗜️ 极限压缩'
+  if (q >= 95) return t('quality.extreme')
+  if (q >= 85) return t('quality.high')
+  if (q >= 70) return t('quality.balanced')
+  if (q >= 50) return t('quality.compressed')
+  return t('quality.maximum')
 })
 </script>
 

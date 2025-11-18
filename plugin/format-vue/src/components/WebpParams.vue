@@ -3,7 +3,7 @@
     <!-- Method滑条 -->
     <div class="slider-group">
       <div class="slider-header">
-        <span>Method</span>
+        <span>{{ t('advanced.webp.method') }}</span>
         <span class="slider-value">{{ localParams.method }}</span>
       </div>
       <input 
@@ -14,48 +14,14 @@
         step="1"
         class="slider"
       />
-      <div class="slider-hint">0-2: 快速 | 3-4: 平衡 | 5-6: 最佳</div>
+      <div class="slider-hint">{{ t('advanced.webp.methodHint') }}</div>
     </div>
     
-    <!-- Filter Strength -->
-    <div class="slider-group">
-      <div class="slider-header">
-        <span>滤镜强度</span>
-        <span class="slider-value">{{ localParams.filterStrength }}</span>
-      </div>
-      <input 
-        type="range" 
-        v-model.number="localParams.filterStrength"
-        min="0" 
-        max="100" 
-        step="1"
-        class="slider"
-      />
-      <div class="slider-hint">0=禁用 | 60=推荐 | 100=最强</div>
-    </div>
-
-    <!-- Sharpness -->
-    <div class="slider-group">
-      <div class="slider-header">
-        <span>锐化级别</span>
-        <span class="slider-value">{{ localParams.sharpness }}</span>
-      </div>
-      <input 
-        type="range" 
-        v-model.number="localParams.sharpness"
-        min="0" 
-        max="7" 
-        step="1"
-        class="slider"
-      />
-      <div class="slider-hint">0=禁用 | 7=最强</div>
-    </div>
-
     <!-- 无损模式 -->
     <div class="checkbox-group">
       <label class="checkbox-label">
         <input type="checkbox" v-model="localParams.lossless" />
-        <span>无损模式</span>
+        <span>{{ t('advanced.webp.lossless') }}</span>
       </label>
     </div>
   </div>
@@ -63,6 +29,9 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   modelValue: Object
@@ -72,8 +41,6 @@ const emit = defineEmits(['update:modelValue'])
 
 const localParams = ref({
   method: 4,
-  filterStrength: 60,
-  sharpness: 0,
   lossless: false,
   ...props.modelValue
 })
@@ -93,7 +60,7 @@ watch(localParams, (newVal) => {
 .slider-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .slider-header {
@@ -105,7 +72,7 @@ watch(localParams, (newVal) => {
 }
 
 .slider-value {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-primary);
 }
 
@@ -125,11 +92,6 @@ watch(localParams, (newVal) => {
   border-radius: 50%;
   background: var(--color-primary);
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
 }
 
 .slider::-moz-range-thumb {
@@ -139,7 +101,6 @@ watch(localParams, (newVal) => {
   background: var(--color-primary);
   cursor: pointer;
   border: none;
-  transition: all 0.2s;
 }
 
 .slider-hint {
@@ -166,6 +127,5 @@ watch(localParams, (newVal) => {
   width: 16px;
   height: 16px;
   cursor: pointer;
-  accent-color: var(--color-primary);
 }
 </style>

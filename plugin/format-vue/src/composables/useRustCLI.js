@@ -4,6 +4,7 @@
  */
 
 import { ref } from 'vue'
+import { logger, LOG_KEYS } from '../utils/logger'
 
 export function useRustCLI() {
   const isConverting = ref(false)
@@ -17,6 +18,12 @@ export function useRustCLI() {
     isConverting.value = true
     progress.value = 0
 
+    logger.info(LOG_KEYS.CONVERT_START, 'Starting video conversion', {
+      fileCount: files.length,
+      codec: options.codec,
+      container: options.container
+    })
+
     try {
       const results = []
       
@@ -24,6 +31,13 @@ export function useRustCLI() {
         const file = files[i]
         currentFile.value = file.name
         progress.value = Math.round((i / files.length) * 100)
+
+        logger.info(LOG_KEYS.CONVERT_PROGRESS, 'Converting video file', {
+          file: file.name,
+          progress: progress.value,
+          index: i + 1,
+          total: files.length
+        })
 
         // 构建Rust CLI参数
         const outputPath = file.path.replace(/\.[^.]+$/, `.${options.container}`)
@@ -58,15 +72,23 @@ export function useRustCLI() {
           args.push('--two-pass')
         }
 
+        logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Executing Rust CLI', { args })
+
         // 调用Rust CLI
         const result = await executeRustCLI(args)
         results.push(result)
       }
 
       progress.value = 100
+      logger.info(LOG_KEYS.CONVERT_SUCCESS, 'Video conversion completed', {
+        successCount: results.length
+      })
       return { success: true, results }
     } catch (error) {
-      console.error('Video conversion failed:', error)
+      logger.error(LOG_KEYS.CONVERT_ERROR, 'Video conversion failed', {
+        error: error.message,
+        file: currentFile.value
+      })
       return { success: false, error: error.message }
     } finally {
       isConverting.value = false
@@ -81,6 +103,12 @@ export function useRustCLI() {
     isConverting.value = true
     progress.value = 0
 
+    logger.info(LOG_KEYS.CONVERT_START, 'Starting image conversion', {
+      fileCount: files.length,
+      format: options.format,
+      quality: options.quality
+    })
+
     try {
       const results = []
       
@@ -88,6 +116,13 @@ export function useRustCLI() {
         const file = files[i]
         currentFile.value = file.name
         progress.value = Math.round((i / files.length) * 100)
+
+        logger.info(LOG_KEYS.CONVERT_PROGRESS, 'Converting image file', {
+          file: file.name,
+          progress: progress.value,
+          index: i + 1,
+          total: files.length
+        })
 
         // 构建Rust CLI参数
         const outputPath = file.path.replace(/\.[^.]+$/, `.${options.format}`)
@@ -140,15 +175,23 @@ export function useRustCLI() {
           if (options.embedThumbnail) args.push('--embed-thumbnail')
         }
 
+        logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Executing Rust CLI', { args })
+
         // 调用Rust CLI
         const result = await executeRustCLI(args)
         results.push(result)
       }
 
       progress.value = 100
+      logger.info(LOG_KEYS.CONVERT_SUCCESS, 'Image conversion completed', {
+        successCount: results.length
+      })
       return { success: true, results }
     } catch (error) {
-      console.error('Conversion failed:', error)
+      logger.error(LOG_KEYS.CONVERT_ERROR, 'Image conversion failed', {
+        error: error.message,
+        file: currentFile.value
+      })
       return { success: false, error: error.message }
     } finally {
       isConverting.value = false
@@ -162,12 +205,19 @@ export function useRustCLI() {
   const executeRustCLI = async (args) => {
     // 检查Rust CLI是否可用
     if (!window.rustCLI) {
-      throw new Error('Rust CLI not available')
+      const error = new Error('Rust CLI not available')
+      logger.error(LOG_KEYS.RUST_CLI_ERROR, 'Rust CLI not available')
+      throw error
     }
 
     return new Promise((resolve, reject) => {
       const { spawn } = require('child_process')
       const rustBinary = getRustBinaryPath()
+
+      logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Spawning Rust CLI process', { 
+        binary: rustBinary,
+        args 
+      })
 
       const process = spawn(rustBinary, args)
       let stdout = ''
@@ -175,23 +225,32 @@ export function useRustCLI() {
 
       process.stdout.on('data', (data) => {
         stdout += data.toString()
-        console.log('[Rust CLI]', data.toString())
+        logger.debug(LOG_KEYS.RUST_CLI_STDOUT, 'Rust CLI output', { output: data.toString() })
       })
 
       process.stderr.on('data', (data) => {
         stderr += data.toString()
-        console.error('[Rust CLI Error]', data.toString())
+        logger.warn(LOG_KEYS.RUST_CLI_STDERR, 'Rust CLI stderr', { output: data.toString() })
       })
 
       process.on('close', (code) => {
         if (code === 0) {
+          logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Rust CLI process completed successfully', { code })
           resolve({ success: true, stdout })
         } else {
-          reject(new Error(stderr || `Process exited with code ${code}`))
+          const errorMsg = stderr || `Process exited with code ${code}`
+          logger.error(LOG_KEYS.RUST_CLI_ERROR, 'Rust CLI process failed', { 
+            code, 
+            stderr 
+          })
+          reject(new Error(errorMsg))
         }
       })
 
       process.on('error', (error) => {
+        logger.error(LOG_KEYS.RUST_CLI_ERROR, 'Rust CLI process error', { 
+          error: error.message 
+        })
         reject(error)
       })
     })
@@ -215,14 +274,25 @@ export function useRustCLI() {
       path.join(process.cwd(), 'target/debug', binaryName)
     ]
 
+    logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Searching for Rust CLI binary', { 
+      platform,
+      binaryName,
+      searchPaths: possiblePaths 
+    })
+
     for (const p of possiblePaths) {
       const fs = require('fs')
       if (fs.existsSync(p)) {
+        logger.info(LOG_KEYS.RUST_CLI_EXEC, 'Rust CLI binary found', { path: p })
         return p
       }
     }
 
-    throw new Error('Rust CLI binary not found. Please build the project first.')
+    const error = new Error('Rust CLI binary not found. Please build the project first.')
+    logger.error(LOG_KEYS.RUST_CLI_ERROR, 'Rust CLI binary not found', { 
+      searchPaths: possiblePaths 
+    })
+    throw error
   }
 
   return {

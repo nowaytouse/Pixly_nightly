@@ -3,6 +3,10 @@
     "title": "PIXLY Format",
     "subtitle": "Professional Format Converter"
   },
+  "tabs": {
+    "image": "📷 Image Conversion",
+    "video": "🎬 Video Processing"
+  },
   "format": {
     "title": "Output Format",
     "jxl": "JXL - Next-gen Format",
@@ -67,5 +71,44 @@
     "convertFailed": "Conversion failed: {error}",
     "convertError": "Conversion error: {error}",
     "loadFailed": "Failed to load files"
+  },
+  "video": {
+    "title": "Video Parameters",
+    "codec": "Codec",
+    "container": "Container",
+    "crf": "CRF (Quality)",
+    "speed": "Speed",
+    "gopSize": "GOP Size",
+    "bframes": "B-Frames",
+    "refs": "Reference Frames",
+    "pixelFormat": "Pixel Format",
+    "hwAccel": "Hardware Acceleration",
+    "twoPass": "Two-Pass Encoding"
+  },
+  "params": {
+    "encoder": "Encoder",
+    "encoderX265": "x265 (Recommended)",
+    "encoderLibheif": "libheif (Standard)",
+    "chromaSubsampling": "Chroma Subsampling",
+    "chromaAuto": "Auto",
+    "chroma420": "4:2:0 (Standard)",
+    "chroma422": "4:2:2 (Balanced)",
+    "chroma444": "4:4:4 (Best)",
+    "lossless": "Lossless Mode",
+    "embedThumbnail": "Embed Thumbnail",
+    "embedThumbnailHint": "Embed preview thumbnail in file",
+    "tiles": "Tiles (Rows×Cols)",
+    "tilesHint": "Parallel encoding for large images",
+    "filterStrength": "Filter Strength",
+    "sharpness": "Sharpness"
+  },
+  "ui": {
+    "advancedParams": "Advanced Parameters",
+    "fileList": "File List",
+    "outputFormat": "Output Format",
+    "converting": "Converting...",
+    "selectInEagle": "Select files in Eagle",
+    "expandIcon": "▶",
+    "collapseIcon": "▼"
   }
 }

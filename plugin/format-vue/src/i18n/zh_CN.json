@@ -3,6 +3,10 @@
     "title": "PIXLY Format",
     "subtitle": "专业格式转换"
   },
+  "tabs": {
+    "image": "📷 图像转换",
+    "video": "🎬 视频处理"
+  },
   "format": {
     "title": "输出格式",
     "jxl": "JXL - 次世代格式",
@@ -67,5 +71,44 @@
     "convertFailed": "转换失败：{error}",
     "convertError": "转换出错：{error}",
     "loadFailed": "加载文件失败"
+  },
+  "video": {
+    "title": "视频参数",
+    "codec": "编码器",
+    "container": "容器格式",
+    "crf": "CRF (质量)",
+    "speed": "速度",
+    "gopSize": "GOP 大小",
+    "bframes": "B帧数量",
+    "refs": "参考帧",
+    "pixelFormat": "像素格式",
+    "hwAccel": "硬件加速",
+    "twoPass": "两遍编码"
+  },
+  "params": {
+    "encoder": "编码器",
+    "encoderX265": "x265 (推荐)",
+    "encoderLibheif": "libheif (标准)",
+    "chromaSubsampling": "色度子采样",
+    "chromaAuto": "自动",
+    "chroma420": "4:2:0（标准）",
+    "chroma422": "4:2:2（平衡）",
+    "chroma444": "4:4:4（最佳）",
+    "lossless": "无损模式",
+    "embedThumbnail": "嵌入缩略图",
+    "embedThumbnailHint": "在文件中嵌入预览缩略图",
+    "tiles": "Tiles (行×列)",
+    "tilesHint": "分块并行编码，提升大图速度",
+    "filterStrength": "滤镜强度",
+    "sharpness": "锐度"
+  },
+  "ui": {
+    "advancedParams": "高级参数",
+    "fileList": "文件列表",
+    "outputFormat": "输出格式",
+    "converting": "转换中...",
+    "selectInEagle": "在 Eagle 中选择文件",
+    "expandIcon": "▶",
+    "collapseIcon": "▼"
   }
 }

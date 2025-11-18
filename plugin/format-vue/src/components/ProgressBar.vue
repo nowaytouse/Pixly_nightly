@@ -3,7 +3,7 @@
     <div class="progress-card">
       <div class="progress-header">
         <span>⏳</span>
-        <span>转换中...</span>
+        <span>{{ t('ui.converting') }}</span>
       </div>
       
       <div class="progress-bar">
@@ -19,6 +19,10 @@
 </template>
 
 <script setup>
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
+
 defineProps({
   show: Boolean,
   progress: Number,

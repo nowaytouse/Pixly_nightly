@@ -2,12 +2,12 @@
   <div class="panel file-panel">
     <div class="panel-title">
       <span>📁</span>
-      <span>文件列表 ({{ files.length }})</span>
+      <span>{{ t('ui.fileList') }} ({{ files.length }})</span>
     </div>
     
     <div v-if="files.length === 0" class="empty-state">
       <div class="empty-icon">📂</div>
-      <p>在 Eagle 中选择文件</p>
+      <p>{{ t('ui.selectInEagle') }}</p>
     </div>
     
     <div v-else class="file-list">
@@ -30,7 +30,10 @@
 </template>
 
 <script setup>
+import { useI18n } from '../composables/useI18n'
 import { formatFileSize, getFileType } from '../utils/fileTypes'
+
+const { t } = useI18n()
 
 defineProps({
   files: Array

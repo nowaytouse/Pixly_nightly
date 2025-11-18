@@ -4,13 +4,13 @@
     <div class="panel">
       <div class="panel-title">
         <span>📦</span>
-        <span>容器格式</span>
+        <span>{{ t('video.container') }}</span>
       </div>
       <select v-model="localParams.container" class="param-select">
-        <option value="mp4">MP4 - 最广泛兼容</option>
-        <option value="mov">MOV - Apple优化</option>
-        <option value="webm">WebM - Web优化</option>
-        <option value="mkv">MKV - 通用容器</option>
+        <option value="mp4">MP4</option>
+        <option value="mov">MOV</option>
+        <option value="webm">WebM</option>
+        <option value="mkv">MKV</option>
       </select>
     </div>
 
@@ -18,13 +18,13 @@
     <div class="panel">
       <div class="panel-title">
         <span>🎬</span>
-        <span>视频编码器</span>
+        <span>{{ t('video.codec') }}</span>
       </div>
       <select v-model="localParams.codec" class="param-select">
-        <option value="h264">H.264 - 通用性最好</option>
-        <option value="h265">H.265 - 更高压缩率</option>
-        <option value="av1">AV1 - 次世代</option>
-        <option value="vp9">VP9 - Web优化</option>
+        <option value="h264">H.264</option>
+        <option value="h265">H.265</option>
+        <option value="av1">AV1</option>
+        <option value="vp9">VP9</option>
       </select>
     </div>
 
@@ -32,7 +32,7 @@
     <div class="panel">
       <div class="panel-title">
         <span>🎯</span>
-        <span>质量控制</span>
+        <span>{{ t('video.crf') }}</span>
       </div>
       <div class="slider-group">
         <div class="slider-header">
@@ -47,7 +47,6 @@
           step="1"
           class="slider"
         />
-        <div class="slider-hint">0=无损 | 18=视觉无损 | 23=高质量 | 28=平衡</div>
       </div>
     </div>
 
@@ -55,13 +54,13 @@
     <div class="panel">
       <div class="panel-title">
         <span>⚙️</span>
-        <span>编码参数</span>
+        <span>{{ t('ui.advancedParams') }}</span>
       </div>
       
-      <!-- Speed -->
+      <!-- 编码速度 -->
       <div class="slider-group">
         <div class="slider-header">
-          <span>编码速度</span>
+          <span>{{ t('video.speed') }}</span>
           <span class="slider-value">{{ localParams.speed }}</span>
         </div>
         <input 
@@ -72,13 +71,12 @@
           step="1"
           class="slider"
         />
-        <div class="slider-hint">0=最快 | 5=平衡 | 9=最慢最优</div>
       </div>
 
-      <!-- GOP Size -->
+      <!-- GOP大小 -->
       <div class="slider-group">
         <div class="slider-header">
-          <span>GOP Size</span>
+          <span>{{ t('video.gopSize') }}</span>
           <span class="slider-value">{{ localParams.gopSize }}</span>
         </div>
         <input 
@@ -89,13 +87,12 @@
           step="1"
           class="slider"
         />
-        <div class="slider-hint">关键帧间隔 (250=10秒@25fps)</div>
       </div>
 
-      <!-- B-frames -->
+      <!-- B帧数量 -->
       <div class="slider-group">
         <div class="slider-header">
-          <span>B帧数量</span>
+          <span>{{ t('video.bframes') }}</span>
           <span class="slider-value">{{ localParams.bframes }}</span>
         </div>
         <input 
@@ -106,13 +103,12 @@
           step="1"
           class="slider"
         />
-        <div class="slider-hint">0=禁用 | 3=推荐 | 16=最大</div>
       </div>
 
-      <!-- Reference Frames -->
+      <!-- 参考帧 -->
       <div class="slider-group">
         <div class="slider-header">
-          <span>参考帧</span>
+          <span>{{ t('video.refs') }}</span>
           <span class="slider-value">{{ localParams.refs }}</span>
         </div>
         <input 
@@ -123,7 +119,6 @@
           step="1"
           class="slider"
         />
-        <div class="slider-hint">1=最快 | 3=推荐 | 16=最佳质量</div>
       </div>
     </div>
 
@@ -131,42 +126,38 @@
     <div class="panel">
       <div class="panel-title">
         <span>🔧</span>
-        <span>高级选项</span>
+        <span>{{ t('ui.advancedParams') }}</span>
       </div>
 
       <!-- 像素格式 -->
       <div class="param-group">
-        <label class="param-label">像素格式</label>
+        <label class="param-label">{{ t('video.pixelFormat') }}</label>
         <select v-model="localParams.pixelFormat" class="param-select">
-          <option value="auto">自动</option>
+          <option value="auto">Auto</option>
           <option value="yuv420p">YUV 4:2:0 8-bit</option>
           <option value="yuv422p">YUV 4:2:2 8-bit</option>
           <option value="yuv444p">YUV 4:4:4 8-bit</option>
-          <option value="yuv420p10le">YUV 4:2:0 10-bit</option>
-          <option value="yuv422p10le">YUV 4:2:2 10-bit</option>
         </select>
       </div>
 
       <!-- 硬件加速 -->
       <div class="param-group">
-        <label class="param-label">硬件加速</label>
+        <label class="param-label">{{ t('video.hwAccel') }}</label>
         <select v-model="localParams.hwAccel" class="param-select">
-          <option value="auto">自动检测</option>
-          <option value="none">禁用</option>
+          <option value="auto">Auto</option>
+          <option value="none">None</option>
           <option value="nvenc">NVIDIA (NVENC)</option>
           <option value="qsv">Intel (QSV)</option>
           <option value="videotoolbox">Apple (VideoToolbox)</option>
-          <option value="amf">AMD (AMF)</option>
         </select>
       </div>
 
-      <!-- Two-pass -->
+      <!-- Two-pass编码 -->
       <div class="checkbox-group">
         <label class="checkbox-label">
           <input type="checkbox" v-model="localParams.twoPass" />
-          <span>Two-pass 编码</span>
+          <span>{{ t('video.twoPass') }}</span>
         </label>
-        <div class="checkbox-hint">两次编码，更好的码率分配（速度慢2倍）</div>
       </div>
     </div>
   </div>
@@ -174,6 +165,9 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   modelValue: Object
@@ -207,27 +201,11 @@ watch(localParams, (newVal) => {
   gap: 12px;
 }
 
-.param-select {
-  width: 100%;
-  padding: 10px 12px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-primary);
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.param-select:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(0, 114, 239, 0.1);
-}
-
 .slider-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .slider-header {
@@ -239,7 +217,7 @@ watch(localParams, (newVal) => {
 }
 
 .slider-value {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-primary);
 }
 
@@ -254,26 +232,20 @@ watch(localParams, (newVal) => {
 
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: var(--color-primary);
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
 }
 
 .slider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: var(--color-primary);
   cursor: pointer;
   border: none;
-  transition: all 0.2s;
 }
 
 .slider-hint {
@@ -282,20 +254,34 @@ watch(localParams, (newVal) => {
 }
 
 .param-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin-bottom: 12px;
 }
 
 .param-label {
-  display: block;
   font-size: 13px;
   color: var(--text-primary);
-  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.param-select {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
 }
 
 .checkbox-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin-bottom: 12px;
 }
 
 .checkbox-label {
@@ -311,7 +297,6 @@ watch(localParams, (newVal) => {
   width: 16px;
   height: 16px;
   cursor: pointer;
-  accent-color: var(--color-primary);
 }
 
 .checkbox-hint {

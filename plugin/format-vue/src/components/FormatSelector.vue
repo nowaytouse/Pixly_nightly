@@ -2,7 +2,7 @@
   <div class="panel">
     <div class="panel-title">
       <span>📦</span>
-      <span>输出格式</span>
+      <span>{{ t('format.title') }}</span>
     </div>
     
     <select 
@@ -10,30 +10,24 @@
       @change="$emit('update:modelValue', $event.target.value)"
       class="format-select"
     >
-      <option 
-        v-for="format in formats" 
-        :key="format.value"
-        :value="format.value"
-      >
-        {{ format.icon }} {{ format.name }} - {{ format.desc }}
-      </option>
+      <option value="jxl">✨ {{ t('format.jxl') }}</option>
+      <option value="avif">🎬 {{ t('format.avif') }}</option>
+      <option value="webp">🌐 {{ t('format.webp') }}</option>
+      <option value="heic">🍎 {{ t('format.heic') }}</option>
     </select>
   </div>
 </template>
 
 <script setup>
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
+
 defineProps({
   modelValue: String
 })
 
 defineEmits(['update:modelValue'])
-
-const formats = [
-  { value: 'jxl', name: 'JXL', icon: '✨', desc: '次世代格式' },
-  { value: 'avif', name: 'AVIF', icon: '🎬', desc: 'AV1编码' },
-  { value: 'webp', name: 'WebP', icon: '🌐', desc: 'Web优化' },
-  { value: 'heic', name: 'HEIC', icon: '🍎', desc: 'Apple生态' }
-]
 </script>
 
 <style scoped>

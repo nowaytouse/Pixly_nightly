@@ -2,20 +2,20 @@
   <div class="params-group">
     <!-- 编码器选择 -->
     <div class="select-group">
-      <label class="select-label">编码器</label>
+      <label class="select-label">{{ t('params.encoder') }}</label>
       <select v-model="localParams.encoder" class="param-select">
-        <option value="x265">x265 (推荐)</option>
-        <option value="libheif">libheif (标准)</option>
+        <option value="x265">{{ t('params.encoderX265') }}</option>
+        <option value="libheif">{{ t('params.encoderLibheif') }}</option>
       </select>
     </div>
 
     <!-- 色度子采样 -->
     <div class="select-group">
-      <label class="select-label">色度子采样</label>
+      <label class="select-label">{{ t('params.chromaSubsampling') }}</label>
       <select v-model="localParams.chromaSubsampling" class="param-select">
-        <option value="auto">自动</option>
-        <option value="420">4:2:0（标准）</option>
-        <option value="444">4:4:4（最佳）</option>
+        <option value="auto">{{ t('params.chromaAuto') }}</option>
+        <option value="420">{{ t('params.chroma420') }}</option>
+        <option value="444">{{ t('params.chroma444') }}</option>
       </select>
     </div>
     
@@ -23,7 +23,7 @@
     <div class="checkbox-group">
       <label class="checkbox-label">
         <input type="checkbox" v-model="localParams.lossless" />
-        <span>无损编码</span>
+        <span>{{ t('params.lossless') }}</span>
       </label>
     </div>
 
@@ -31,15 +31,18 @@
     <div class="checkbox-group">
       <label class="checkbox-label">
         <input type="checkbox" v-model="localParams.embedThumbnail" />
-        <span>嵌入缩略图</span>
+        <span>{{ t('params.embedThumbnail') }}</span>
       </label>
-      <div class="checkbox-hint">在文件中嵌入预览缩略图</div>
+      <div class="checkbox-hint">{{ t('params.embedThumbnailHint') }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   modelValue: Object
