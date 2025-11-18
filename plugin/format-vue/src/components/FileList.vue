@@ -3,17 +3,12 @@
     <div class="panel-title">
       <span>📁</span>
       <span>{{ t('ui.fileList') }} ({{ files.length }})</span>
-      <button class="refresh-btn" @click="$emit('refresh')" title="刷新文件列表">
-        🔄
-      </button>
     </div>
     
     <div v-if="files.length === 0" class="empty-state">
       <div class="empty-icon">📂</div>
       <p>{{ t('ui.selectInEagle') }}</p>
-      <button class="load-btn" @click="$emit('refresh')">
-        {{ t('ui.loadFiles') || '加载文件' }}
-      </button>
+      <p class="empty-hint">{{ t('ui.clickRefresh') }}</p>
     </div>
     
     <div v-else class="file-list">
@@ -27,12 +22,15 @@
           :src="file.thumbnail" 
           class="file-thumbnail"
           :alt="file.name"
-          @error="handleImageError"
+          @error="(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex' }"
         />
-        <span v-else class="file-icon">{{ getFileIcon(file) }}</span>
+        <div class="file-thumbnail-placeholder" :style="{ display: file.thumbnail ? 'none' : 'flex' }">
+          <span class="file-emoji">{{ getFileEmoji(file) }}</span>
+          <span class="file-ext-badge">{{ (file.ext || '').toUpperCase() }}</span>
+        </div>
         <div class="file-info">
           <div class="file-name">{{ file.name }}</div>
-          <div class="file-meta">{{ formatFileSize(file.size) }} · {{ file.ext }}</div>
+          <div class="file-meta">{{ formatFileSize(file.size) }} · {{ file.ext || 'unknown' }}</div>
         </div>
         <button class="remove-btn" @click="$emit('remove', index)">
           ✕
@@ -52,18 +50,62 @@ defineProps({
   files: Array
 })
 
-defineEmits(['remove', 'refresh'])
+defineEmits(['remove'])
 
-const getFileIcon = (file) => {
-  const type = getFileType(file.name)
-  if (type === 'image') return '🖼️'
-  if (type === 'video') return '🎬'
+// 根据文件类型返回对应的 emoji
+const getFileEmoji = (file) => {
+  const ext = (file.ext || '').toLowerCase()
+  
+  // XMP元数据文件（特殊处理）
+  if (ext === 'xmp') {
+    return '📎'
+  }
+  
+  // 图像格式
+  const imageFormats = {
+    'jxl': '🎨',
+    'avif': '🖼️',
+    'webp': '🌐',
+    'heic': '🍎',
+    'heif': '🍎',
+    'png': '🖼️',
+    'jpg': '📷',
+    'jpeg': '📷',
+    'gif': '🎞️',
+    'bmp': '🖼️',
+    'tiff': '🖼️',
+    'svg': '🎨'
+  }
+  
+  // 视频格式
+  const videoFormats = {
+    'mp4': '🎬',
+    'mov': '🎥',
+    'avi': '📹',
+    'mkv': '🎞️',
+    'webm': '🌐',
+    'm4v': '📱',
+    'flv': '📺',
+    'wmv': '🎬'
+  }
+  
+  // 音频格式
+  const audioFormats = {
+    'mp3': '🎵',
+    'wav': '🎶',
+    'flac': '🎼',
+    'aac': '🎧',
+    'm4a': '🎵',
+    'ogg': '🎶'
+  }
+  
+  // 返回对应的 emoji
+  if (imageFormats[ext]) return imageFormats[ext]
+  if (videoFormats[ext]) return videoFormats[ext]
+  if (audioFormats[ext]) return audioFormats[ext]
+  
+  // 默认文件图标
   return '📄'
-}
-
-const handleImageError = (event) => {
-  // 缩略图加载失败时隐藏图片
-  event.target.style.display = 'none'
 }
 </script>
 
@@ -92,45 +134,10 @@ const handleImageError = (event) => {
   animation: float 3s ease-in-out infinite;
 }
 
-.load-btn {
-  padding: 10px 20px;
-  background: var(--color-primary);
-  border: none;
-  border-radius: 6px;
-  color: white;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-base) var(--ease-out);
-}
-
-.load-btn:hover {
-  background: var(--color-primary-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.refresh-btn {
-  margin-left: auto;
-  width: 24px;
-  height: 24px;
-  background: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  color: var(--text-secondary);
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-base) var(--ease-out);
-}
-
-.refresh-btn:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  transform: rotate(180deg);
+.empty-hint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 8px;
 }
 
 @keyframes float {
@@ -212,21 +219,49 @@ const handleImageError = (event) => {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.file-icon {
-  font-size: 24px;
-  flex-shrink: 0;
-  transition: transform var(--transition-base) var(--ease-bounce);
+.file-thumbnail-placeholder {
   width: 48px;
   height: 48px;
+  border-radius: 6px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-secondary);
-  border-radius: 6px;
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition-base) var(--ease-out);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.file-item:hover .file-icon {
-  transform: scale(1.1) rotate(5deg);
+.file-item:hover .file-thumbnail-placeholder {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.file-emoji {
+  font-size: 32px;
+  line-height: 1;
+  transition: transform var(--transition-base) var(--ease-bounce);
+}
+
+.file-item:hover .file-emoji {
+  transform: scale(1.1);
+}
+
+.file-ext-badge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background: var(--color-primary);
+  color: white;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 3px;
+  border-radius: 2px;
+  line-height: 1;
+  text-transform: uppercase;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .file-info {
