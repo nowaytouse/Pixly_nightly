@@ -1,0 +1,146 @@
+{
+  "app": {
+    "title": { "message": "PIXLY Format - 专业格式转换" },
+    "subtitle": { "message": "专业格式转换 · 精确控制" }
+  },
+  "language": {
+    "switchLanguage": { "message": "切换语言" }
+  },
+  "theme": {
+    "toggle": { "message": "切换主题" }
+  },
+  "conversion": {
+    "image": { "message": "图像转换" },
+    "video": { "message": "视频处理" },
+    "start": { "message": "开始转换" }
+  },
+  "empty": {
+    "title": { "message": "未选择文件" },
+    "desc": { "message": "在 Eagle 中选择图片或视频，然后返回此插件" }
+  },
+  "files": {
+    "selected": { "message": "个文件已选择" },
+    "clear": { "message": "清空" },
+    "refresh": { "message": "刷新文件列表" }
+  },
+  "format": {
+    "title": { "message": "输出格式" },
+    "jxlDesc": { "message": "次世代格式" },
+    "avifDesc": { "message": "AV1编码" },
+    "webpDesc": { "message": "Web优化" },
+    "heicDesc": { "message": "Apple生态" }
+  },
+  "quality": {
+    "title": { "message": "质量设置" },
+    "label": { "message": "质量" },
+    "high": { "message": "高质量：细节丰富" },
+    "balanced": { "message": "平衡：质量与大小兼顾" },
+    "compressed": { "message": "压缩：文件较小" },
+    "size": { "message": "体积优先：最小文件" }
+  },
+  "jxl": {
+    "title": { "message": "JXL 高级参数" },
+    "jpegLosslessTranscode": { "message": "JPEG 无损转码" },
+    "jpegLosslessInfo": { "message": "启用后将禁用部分选项以确保100%可逆转码" },
+    "effort": { "message": "Effort 努力值" },
+    "effortHint": { "message": "1-3: 快速 | 4-6: 平衡 | 7-9: 极致" },
+    "distance": { "message": "Distance 失真度" },
+    "distanceHint": { "message": "0.0: 无损 | 1.0-3.0: 高质量" },
+    "encodingModes": { "message": "编码模式" },
+    "modular": { "message": "Modular" },
+    "progressive": { "message": "渐进式" },
+    "responsive": { "message": "响应式" },
+    "gaborish": { "message": "Gaborish" },
+    "bitDepth": { "message": "色彩位深度" },
+    "bitDepthAuto": { "message": "自动 (根据源文件)" },
+    "bitDepth8": { "message": "8-bit (标准)" },
+    "bitDepth10": { "message": "10-bit (HDR)" },
+    "bitDepth12": { "message": "12-bit (专业)" },
+    "bitDepth16": { "message": "16-bit (极致)" },
+    "colorSpace": { "message": "色彩空间" },
+    "colorSpaceAuto": { "message": "自动 (保持源色彩空间)" },
+    "colorSpaceSRGB": { "message": "sRGB (标准)" },
+    "colorSpaceP3": { "message": "Display P3 (广色域)" },
+    "colorSpaceAdobe": { "message": "Adobe RGB (专业)" },
+    "colorSpaceProPhoto": { "message": "ProPhoto RGB (极致)" }
+  },
+  "avif": {
+    "title": { "message": "AVIF 高级参数" },
+    "speed": { "message": "编码速度" },
+    "speedHint": { "message": "0-3: 极致质量 | 4-6: 平衡 | 7-10: 快速" },
+    "minQuantizer": { "message": "最小量化器" },
+    "maxQuantizer": { "message": "最大量化器" },
+    "chromaSubsampling": { "message": "色度子采样" },
+    "chromaAuto": { "message": "自动 (FFmpeg智能选择)" },
+    "chroma420": { "message": "4:2:0 (标准)" },
+    "chroma422": { "message": "4:2:2 (平衡)" },
+    "chroma444": { "message": "4:4:4 (最佳)" },
+    "tiles": { "message": "Tiles 行×列" },
+    "tilesHint": { "message": "分块并行编码，提升大图速度" }
+  },
+  "webp": {
+    "title": { "message": "WebP 高级参数" },
+    "method": { "message": "压缩方法" },
+    "methodHint": { "message": "0-2: 快速 | 3-4: 平衡 | 5-6: 最佳" },
+    "filtering": { "message": "滤镜强度" },
+    "sharpness": { "message": "锐化级别" }
+  },
+  "heic": {
+    "title": { "message": "HEIC 高级参数" },
+    "encoder": { "message": "编码器" },
+    "encoderX265": { "message": "x265 (推荐)" },
+    "encoderLibheif": { "message": "libheif (标准)" },
+    "chromaSubsampling": { "message": "色度子采样" },
+    "chromaAuto": { "message": "自动 (FFmpeg智能选择)" },
+    "chroma420": { "message": "4:2:0 (标准)" },
+    "chroma444": { "message": "4:4:4 (最佳)" },
+    "lossless": { "message": "无损编码" },
+    "embedThumbnails": { "message": "嵌入缩略图" }
+  },
+  "video": {
+    "containerFormat": { "message": "容器格式" },
+    "mp4Desc": { "message": "最广泛兼容" },
+    "movDesc": { "message": "Apple优化" },
+    "webmDesc": { "message": "Web优化" },
+    "mkvDesc": { "message": "通用容器" },
+    "targetEncoder": { "message": "目标编码器" },
+    "h264Desc": { "message": "通用性最好" },
+    "h265Desc": { "message": "更高压缩率" },
+    "av1Desc": { "message": "次世代" },
+    "proresDesc": { "message": "专业后期" },
+    "qualityControl": { "message": "质量控制" },
+    "crfValue": { "message": "CRF 值" },
+    "crfHint": { "message": "0=无损 | 18=视觉无损 | 23=高质量 | 28=平衡" },
+    "bitrateMode": { "message": "码率控制模式" },
+    "crfMode": { "message": "CRF (恒定质量)" },
+    "cbrMode": { "message": "CBR (恒定码率)" },
+    "vbrMode": { "message": "VBR (可变码率)" },
+    "abrMode": { "message": "ABR (平均码率)" },
+    "encodingParams": { "message": "编码参数" },
+    "gopSize": { "message": "GOP 大小" },
+    "gopHint": { "message": "关键帧间隔 (250=10秒@25fps)" },
+    "bframes": { "message": "B帧数量" },
+    "refFrames": { "message": "参考帧数量" },
+    "meAlgorithm": { "message": "运动估计算法" },
+    "meDiamond": { "message": "Diamond (最快)" },
+    "meHexagon": { "message": "Hexagon (推荐)" },
+    "meUmh": { "message": "UMH (高质量)" },
+    "meEsa": { "message": "ESA (详尽搜索)" },
+    "pixelFormat": { "message": "像素格式" },
+    "pixFmtAuto": { "message": "自动 (FFmpeg智能选择)" },
+    "pixFmt420p": { "message": "YUV 4:2:0 8-bit" },
+    "pixFmt422p": { "message": "YUV 4:2:2 8-bit" },
+    "pixFmt444p": { "message": "YUV 4:4:4 8-bit" },
+    "pixFmt420p10": { "message": "YUV 4:2:0 10-bit" },
+    "pixFmt422p10": { "message": "YUV 4:2:2 10-bit" },
+    "pixFmt444p10": { "message": "YUV 4:4:4 10-bit" },
+    "pixFmtHint": { "message": "自动模式让FFmpeg根据源文件和编码器能力选择损失最小的格式" }
+  },
+  "progress": {
+    "converting": { "message": "转换中..." }
+  },
+  "result": {
+    "complete": { "message": "转换完成" },
+    "openFolder": { "message": "打开输出文件夹" }
+  }
+}

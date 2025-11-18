@@ -1,0 +1,15 @@
+{
+    "id": "com.pixly.format.professional",
+    "version": "2.0.1",
+    "platform": "all",
+    "arch": "all",
+    "name": "PIXLY Format",
+    "logo": "logo.png",
+    "keywords": ["format", "converter", "jxl", "avif", "webp", "heic"],
+    "devTools": false,
+    "main": {
+        "url": "index.html",
+        "width": 1600,
+        "height": 1000
+    }
+}
