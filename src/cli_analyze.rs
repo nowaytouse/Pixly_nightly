@@ -318,6 +318,13 @@ fn print_human_readable(result: &AnalysisResult) {
     println!("   Transparent: {}", if result.basic_info.has_alpha { "Yes" } else { "No" });
     println!("   Complexity: {:.2}", result.basic_info.complexity);
     
+    // 🔥 Phase 3.1: 输出128维特征向量（供PPO训练使用）
+    println!("\n🧬 Features (128-dim):");
+    println!("   [{}]", result.features.iter()
+        .map(|f| format!("{:.6}", f))
+        .collect::<Vec<_>>()
+        .join(", "));
+    
     if let Some(rec) = &result.recommendation {
         println!("\n🤖 AI Recommendation:");
         println!("   Format: {}", rec.format.to_uppercase());

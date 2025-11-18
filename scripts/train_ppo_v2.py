@@ -281,8 +281,7 @@ def extract_features(image_path):
     """提取128维特征"""
     try:
         result = subprocess.run(
-            ['cargo', 'run', '--release', '--bin', 'pixly-converter', 
-             '--', 'analyze', str(image_path)],
+            ['./target/release/pixly-converter', 'analyze', str(image_path)],
             capture_output=True,
             text=True,
             timeout=30
@@ -293,10 +292,25 @@ def extract_features(image_path):
         
         output = result.stdout
         if "Features (128-dim):" in output:
-            features_line = output.split("Features (128-dim):")[1].split("\n")[0].strip()
-            features_str = features_line.strip('[]')
-            features = [float(x.strip()) for x in features_str.split(',')]
-            return features
+            # 提取特征部分（可能跨多行）
+            features_start = output.find("Features (128-dim):")
+            features_end = output.find("🤖 AI Recommendation:", features_start)
+            if features_end == -1:
+                features_end = output.find("\n\n", features_start + 100)
+            
+            features_text = output[features_start:features_end]
+            
+            # 提取方括号内的内容
+            bracket_start = features_text.find('[')
+            bracket_end = features_text.find(']')
+            if bracket_start != -1 and bracket_end != -1:
+                features_str = features_text[bracket_start+1:bracket_end]
+                # 移除所有换行和多余空格
+                features_str = features_str.replace('\n', '').replace('\r', '')
+                # 分割并转换为float
+                features = [float(x.strip()) for x in features_str.split(',') if x.strip()]
+                if len(features) == 128:
+                    return features
         
         return None
     except Exception as e:
@@ -314,35 +328,39 @@ def convert_and_measure(input_path, quality, effort, target_format='webp'):
     import tempfile
     import os
     import time
+    from pathlib import Path
     
-    # 创建临时输出文件
-    with tempfile.NamedTemporaryFile(suffix=f'.{target_format}', delete=False) as tmp:
-        output_path = tmp.name
+    # 创建临时输出目录
+    temp_dir = tempfile.mkdtemp(prefix='pixly_ppo_')
     
     try:
         input_size = os.path.getsize(input_path)
+        input_stem = Path(input_path).stem
         
-        # 执行转换
+        # 执行转换（输出到临时目录）
         start_time = time.time()
         result = subprocess.run(
-            ['cargo', 'run', '--release', '--bin', 'pixly-converter',
-             '--', 'convert', str(input_path), output_path,
+            ['./target/release/pixly-converter',
+             'convert', str(input_path),
              '--format', target_format,
              '--quality', str(int(quality)),
-             '--effort', str(int(effort))],
+             '--output', temp_dir],
             capture_output=True,
             text=True,
             timeout=60
         )
         processing_time = time.time() - start_time
         
-        if result.returncode != 0 or not os.path.exists(output_path):
+        # 查找输出文件
+        output_path = Path(temp_dir) / f"{input_stem}.{target_format}"
+        
+        if result.returncode != 0 or not output_path.exists():
             return -1.0, None
         
-        output_size = os.path.getsize(output_path)
+        output_size = output_path.stat().st_size
         
         # 计算SSIM（简化版，使用ImageMagick）
-        ssim = calculate_ssim(input_path, output_path)
+        ssim = calculate_ssim(input_path, str(output_path))
         
         # 计算奖励
         reward = calculate_reward(input_size, output_size, ssim, processing_time)
@@ -358,9 +376,10 @@ def convert_and_measure(input_path, quality, effort, target_format='webp'):
         return reward, result_dict
         
     finally:
-        # 清理临时文件
-        if os.path.exists(output_path):
-            os.remove(output_path)
+        # 清理临时目录
+        import shutil
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir, ignore_errors=True)
 
 def calculate_ssim(original, converted):
     """计算SSIM（使用ImageMagick）"""
@@ -374,10 +393,18 @@ def calculate_ssim(original, converted):
         )
         stderr = result.stderr.strip()
         if stderr:
+            # 解析格式：可能是 "0.95" 或 "0.95 (0.95, 0.95, 0.95)"
             ssim_str = stderr.split()[0]
-            return float(ssim_str)
+            # 移除可能的百分号
+            ssim_str = ssim_str.replace('%', '')
+            ssim = float(ssim_str)
+            # 如果是百分比形式（>1），转换为0-1
+            if ssim > 1.0:
+                ssim = ssim / 100.0
+            return min(1.0, max(0.0, ssim))
         return 0.95
-    except:
+    except Exception as e:
+        print(f"   ⚠️  SSIM calculation failed: {e}, using default 0.95")
         return 0.95
 
 def calculate_reward(original_size, output_size, ssim, processing_time):
