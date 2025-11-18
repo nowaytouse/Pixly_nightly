@@ -659,15 +659,40 @@ fn run(cli: Cli) -> Result<()> {
             preprocess,
             format_correction,
         } => {
-            // 确定输出格式
-            let target_format = format.unwrap_or_else(|| {
-                // 如果没有指定格式，从输入文件扩展名推断
-                input
-                    .extension()
-                    .and_then(|e| e.to_str())
-                    .unwrap_or("jxl")
-                    .to_string()
-            });
+            // 🎯 Phase 8: 智能格式选择
+            let target_format = if let Some(user_format) = format {
+                // 用户指定格式，使用格式选择器验证
+                use pixly_kernel::format_selector::FormatSelector;
+                let selector = FormatSelector::new(false);
+                match selector.select_best_format(&input, Some(&user_format)) {
+                    Ok(recommendation) => {
+                        if recommendation.confidence < 0.7 {
+                            println!("⚠️  {}", recommendation.reason);
+                        }
+                        user_format
+                    }
+                    Err(_) => user_format,
+                }
+            } else {
+                // 自动选择最佳格式
+                use pixly_kernel::format_selector::FormatSelector;
+                let selector = FormatSelector::new(false);
+                match selector.select_best_format(&input, None) {
+                    Ok(recommendation) => {
+                        println!("🎯 智能格式选择: {}", recommendation.recommended_format.to_uppercase());
+                        println!("   💡 {}", recommendation.reason);
+                        println!("   📊 置信度: {:.0}%", recommendation.confidence * 100.0);
+                        if recommendation.estimated_size_change < 0.0 {
+                            println!("   📉 预估减小: {:.0}%", -recommendation.estimated_size_change * 100.0);
+                        }
+                        recommendation.recommended_format
+                    }
+                    Err(_) => {
+                        // Fallback到默认
+                        "jxl".to_string()
+                    }
+                }
+            };
             
             // 创建可变的参数变量（用于AI覆盖）
             let mut final_quality = quality;
