@@ -26,16 +26,61 @@ export function useRustCLI() {
         progress.value = Math.round((i / files.length) * 100)
 
         // 构建Rust CLI参数
+        const outputPath = file.path.replace(/\.[^.]+$/, `.${options.format}`)
         const args = [
           'convert',
           file.path,
-          file.path.replace(/\.[^.]+$/, `.${options.format}`),
+          outputPath,
           '--quality', options.quality.toString()
         ]
 
-        // 添加高级参数
-        if (options.lossless) {
-          args.push('--lossless')
+        // JXL高级参数
+        if (options.format === 'jxl') {
+          if (options.effort !== undefined) {
+            args.push('--effort', options.effort.toString())
+          }
+          if (options.distance !== undefined) {
+            args.push('--distance', options.distance.toString())
+          }
+          if (options.jpegLossless) {
+            args.push('--jpeg-lossless')
+          }
+          if (options.lossless) {
+            args.push('--lossless')
+          }
+        }
+
+        // AVIF高级参数
+        if (options.format === 'avif') {
+          if (options.speed !== undefined) {
+            args.push('--speed', options.speed.toString())
+          }
+          if (options.minQuantizer !== undefined) {
+            args.push('--min-quantizer', options.minQuantizer.toString())
+          }
+          if (options.maxQuantizer !== undefined) {
+            args.push('--max-quantizer', options.maxQuantizer.toString())
+          }
+        }
+
+        // WebP高级参数
+        if (options.format === 'webp') {
+          if (options.method !== undefined) {
+            args.push('--method', options.method.toString())
+          }
+          if (options.lossless) {
+            args.push('--lossless')
+          }
+        }
+
+        // HEIC高级参数
+        if (options.format === 'heic') {
+          if (options.encoder) {
+            args.push('--encoder', options.encoder)
+          }
+          if (options.lossless) {
+            args.push('--lossless')
+          }
         }
 
         // 调用Rust CLI

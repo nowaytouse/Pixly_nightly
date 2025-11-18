@@ -2,11 +2,37 @@
   <div class="pixly-app">
     <Header />
     
+    <!-- 类型切换 -->
+    <div class="type-tabs">
+      <button 
+        class="type-tab"
+        :class="{ active: conversionType === 'image' }"
+        @click="conversionType = 'image'"
+      >
+        📷 图像转换
+      </button>
+      <button 
+        class="type-tab"
+        :class="{ active: conversionType === 'video' }"
+        @click="conversionType = 'video'"
+      >
+        🎬 视频处理
+      </button>
+    </div>
+    
     <div class="main-container">
       <div class="left-panel">
-        <FormatSelector v-model="selectedFormat" />
-        <QualityPanel v-model="quality" />
-        <AdvancedParams :format="selectedFormat" v-model="advancedParams" />
+        <!-- 图像面板 -->
+        <template v-if="conversionType === 'image'">
+          <FormatSelector v-model="selectedFormat" />
+          <QualityPanel v-model="quality" />
+          <AdvancedParams :format="selectedFormat" v-model="advancedParams" />
+        </template>
+        
+        <!-- 视频面板 -->
+        <template v-else>
+          <VideoPanel v-model="videoParams" />
+        </template>
       </div>
       
       <div class="right-panel">
@@ -43,6 +69,7 @@ import Header from './components/Header.vue'
 import FormatSelector from './components/FormatSelector.vue'
 import QualityPanel from './components/QualityPanel.vue'
 import AdvancedParams from './components/AdvancedParams.vue'
+import VideoPanel from './components/VideoPanel.vue'
 import FileList from './components/FileList.vue'
 import ProgressBar from './components/ProgressBar.vue'
 import { useEagleAPI } from './composables/useEagleAPI'
@@ -50,9 +77,11 @@ import { useRustCLI } from './composables/useRustCLI'
 import { useI18n } from './composables/useI18n'
 import { logger, LOG_KEYS } from './utils/logger'
 
+const conversionType = ref('image') // 'image' or 'video'
 const selectedFormat = ref('jxl')
 const quality = ref(90)
 const advancedParams = ref({})
+const videoParams = ref({})
 const files = ref([])
 
 const { t } = useI18n()
@@ -203,5 +232,34 @@ onMounted(async () => {
 .btn-convert:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.type-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 0;
+  background: var(--bg-secondary);
+}
+
+.type-tab {
+  flex: 1;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.type-tab:hover {
+  color: var(--text-primary);
+}
+
+.type-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
 }
 </style>
