@@ -231,8 +231,8 @@ body {
 /* ==================== 横屏布局：主网格 ==================== */
 .main-grid {
     display: grid;
-    grid-template-columns: 380px 1fr; /* 左侧380px，右侧自适应 */
-    gap: 12px;
+    grid-template-columns: 520px 1fr; /* 左侧520px（4个按钮横排需要足够空间），右侧自适应 */
+    gap: 14px;
     flex: 1;
     overflow: hidden;
     animation: fadeIn 0.3s;
@@ -300,13 +300,14 @@ body {
 .encoder-buttons {
     display: grid;
     grid-template-columns: repeat(4, 1fr); /* 4个按钮横排 */
-    gap: 8px;
+    gap: 10px;
+    min-width: 0; /* 允许按钮收缩 */
 }
 
 .format-btn,
 .encoder-btn {
     position: relative;
-    padding: 10px 6px;
+    padding: 12px 8px;
     background: var(--bg-tertiary);
     border: 2px solid var(--border);
     border-radius: 6px;
@@ -315,7 +316,9 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     text-align: center;
+    min-height: 70px; /* 确保按钮有足够高度 */
 }
 
 .format-btn input[type="radio"],
@@ -338,23 +341,27 @@ body {
 }
 
 .format-icon {
-    font-size: 20px;
-    margin-bottom: 4px;
+    font-size: 22px;
+    margin-bottom: 5px;
 }
 
 .format-name,
 .encoder-name {
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 1px;
+    margin-bottom: 2px;
 }
 
 .format-desc,
 .encoder-desc {
-    font-size: 9px;
+    font-size: 10px;
     color: var(--text-secondary);
-    line-height: 1.2;
+    line-height: 1.3;
+    white-space: nowrap; /* 防止描述文字换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 /* ==================== 滑块控件（紧凑） ==================== */
