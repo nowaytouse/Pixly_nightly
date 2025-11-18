@@ -1,0 +1,58 @@
+/* 官方 Eagle 插件配色系统 */
+:root {
+  /* AI 渐变色 */
+  --color-ai-gradient-1: #667eea;
+  --color-ai-gradient-2: #764ba2;
+  --color-ai-gradient-1-20: rgba(102, 126, 234, 0.2);
+  --color-ai-gradient-2-20: rgba(118, 75, 162, 0.2);
+  
+  /* 品牌色 */
+  --color-brand: #0072ef;
+  --color-primary: #0072ef;
+  
+  /* 文本颜色 - 浅色模式 */
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #6b7280;
+  
+  /* 背景色 - 浅色模式 */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f9fafb;
+  --color-bg-hover: #f3f4f6;
+  --color-bg-active: #e5e7eb;
+  
+  /* 边框色 */
+  --color-border-primary: #e5e7eb;
+  --color-border-secondary: #d1d5db;
+  
+  /* 状态色 */
+  --color-positive: #10b981;
+  --color-warning: #f59e0b;
+  --color-negative: #ef4444;
+  
+  /* 透明度辅助 */
+  --color-black-15: rgba(0, 0, 0, 0.15);
+  --color-black-25: rgba(0, 0, 0, 0.25);
+  --color-black-30: rgba(0, 0, 0, 0.3);
+  --color-black-50: rgba(0, 0, 0, 0.5);
+  --color-white-15: rgba(255, 255, 255, 0.15);
+  --color-white-30: rgba(255, 255, 255, 0.3);
+  --color-white-50: rgba(255, 255, 255, 0.5);
+  --color-white-70: rgba(255, 255, 255, 0.7);
+}
+
+/* 暗色模式 - 官方配色 */
+html[data-theme="dark"] {
+  /* 文本颜色 - 暗色模式 */
+  --color-text-primary: #e5e7eb;
+  --color-text-secondary: #9ca3af;
+  
+  /* 背景色 - 暗色模式（深灰色，不是蓝色）*/
+  --color-bg-primary: #2d2d2d;
+  --color-bg-secondary: #1e1e1e;
+  --color-bg-hover: #3a3a3a;
+  --color-bg-active: #454545;
+  
+  /* 边框色 - 暗色模式 */
+  --color-border-primary: #3a3a3a;
+  --color-border-secondary: #454545;
+}

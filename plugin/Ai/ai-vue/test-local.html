@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIXLY AI - 本地测试页面</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      padding: 40px;
+      max-width: 800px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 16px;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .status-card {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+    }
+
+    .status-card h3 {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-card p {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .status-card.success {
+      border-left-color: #10b981;
+    }
+
+    .status-card.error {
+      border-left-color: #ef4444;
+    }
+
+    .info-section {
+      background: #f0f9ff;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border-left: 4px solid #3b82f6;
+    }
+
+    .info-section h2 {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: #1e40af;
+    }
+
+    .info-section ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .info-section li {
+      padding: 8px 0;
+      color: #334155;
+      display: flex;
+      align-items: center;
+    }
+
+    .info-section li::before {
+      content: "✓";
+      color: #10b981;
+      font-weight: bold;
+      margin-right: 10px;
+      font-size: 18px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .network-info {
+      background: #fef3c7;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      border-left: 4px solid #f59e0b;
+    }
+
+    .network-info h3 {
+      font-size: 14px;
+      color: #92400e;
+      margin-bottom: 10px;
+    }
+
+    .network-info code {
+      background: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      color: #dc2626;
+    }
+
+    .footer {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 PIXLY AI Vue Plugin</h1>
+    <p class="subtitle">本地开发测试页面</p>
+
+    <div class="status-grid">
+      <div class="status-card success">
+        <h3>开发服务器</h3>
+        <p>✅ 运行中</p>
+      </div>
+      <div class="status-card">
+        <h3>端口</h3>
+        <p>5173</p>
+      </div>
+      <div class="status-card">
+        <h3>模式</h3>
+        <p>开发模式</p>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h2>📋 快速开始</h2>
+      <ul>
+        <li>Vue 3 + Element Plus UI 框架</li>
+        <li>真实集成 Rust CLI 后端</li>
+        <li>Eagle API 完整支持</li>
+        <li>本地开发 Mock 数据</li>
+        <li>热重载开发体验</li>
+      </ul>
+    </div>
+
+    <div class="button-group">
+      <a href="http://localhost:5173" class="btn btn-primary" target="_blank">
+        🌐 打开应用 (localhost)
+      </a>
+      <a href="#" class="btn btn-secondary" onclick="copyNetworkURL(); return false;">
+        📱 复制局域网地址
+      </a>
+    </div>
+
+    <div class="network-info">
+      <h3>🌍 局域网访问</h3>
+      <p>在同一网络的其他设备上访问：</p>
+      <p style="margin-top: 10px;">
+        <code id="networkURL">http://[你的IP]:5173</code>
+      </p>
+      <p style="margin-top: 10px; font-size: 12px; color: #92400e;">
+        💡 查看本机 IP: 终端运行 <code>ifconfig | grep "inet "</code>
+      </p>
+    </div>
+
+    <div class="info-section" style="background: #fef2f2; border-left-color: #ef4444;">
+      <h2 style="color: #991b1b;">⚠️ 架构原则提醒</h2>
+      <ul>
+        <li style="color: #7f1d1d;">Vue 层仅负责 UI 交互，禁止实现转换逻辑</li>
+        <li style="color: #7f1d1d;">所有文件处理必须调用 Rust CLI</li>
+        <li style="color: #7f1d1d;">错误必须响亮报告，不允许静默失败</li>
+        <li style="color: #7f1d1d;">参考 PROJECT_QUALITY_MANIFESTO.md</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <p>PIXLY AI © 2024 | Vue 3 + Vite + Element Plus</p>
+      <p style="margin-top: 5px;">遵循 PROJECT_QUALITY_MANIFESTO.md 质量标准</p>
+    </div>
+  </div>
+
+  <script>
+    function copyNetworkURL() {
+      const url = document.getElementById('networkURL').textContent;
+      navigator.clipboard.writeText(url).then(() => {
+        alert('✅ 已复制到剪贴板！\n\n请将 [你的IP] 替换为实际 IP 地址');
+      });
+    }
+
+    // 自动检测并显示网络地址
+    fetch('http://localhost:5173')
+      .then(() => {
+        console.log('✅ 开发服务器运行正常');
+      })
+      .catch(() => {
+        console.warn('⚠️ 开发服务器未启动，请运行: npm run dev');
+      });
+  </script>
+</body>
+</html>

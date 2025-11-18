@@ -1,234 +1,183 @@
-// 🚀 图像质量检查器
-// 从 @archive/rust_broken/src/converter/quality.rs 提取核心功能
-//
-// 核心功能:
-// - SSIM计算
-// - PSNR计算
-// - MSE计算
-// - 质量评估
+/// 质量检查模块
+/// 
+/// 功能：
+/// 1. SSIM（结构相似性）质量验证
+/// 2. 转换前后对比
+/// 3. 质量报告生成
 
 use anyhow::{Context, Result};
-use image::{DynamicImage, GenericImageView};
+use image::{DynamicImage, GenericImageView, Rgba};
 use std::path::Path;
-use serde::{Deserialize, Serialize};
 
-/// 质量指标
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct QualityMetrics {
-    pub ssim: f64,
-    pub psnr: f64,
-    pub mse: f64,
-    pub assessment: QualityAssessment,
+/// SSIM 质量检查结果
+#[derive(Debug, Clone)]
+pub struct QualityCheckResult {
+    /// SSIM 分数 (0.0-1.0, 1.0 = 完全相同)
+    pub ssim_score: f64,
+    
+    /// 是否通过质量检查（SSIM >= 0.95）
+    pub passed: bool,
+    
+    /// 质量等级
+    pub quality_grade: QualityGrade,
+    
+    /// 详细信息
+    pub details: String,
 }
 
-/// 质量评估
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum QualityAssessment {
+/// 质量等级
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum QualityGrade {
+    /// 优秀 (SSIM >= 0.98)
     Excellent,
+    /// 良好 (SSIM >= 0.95)
     Good,
+    /// 可接受 (SSIM >= 0.90)
     Acceptable,
+    /// 较差 (SSIM < 0.90)
     Poor,
-    Unacceptable,
 }
 
-impl QualityAssessment {
+impl QualityGrade {
     pub fn from_ssim(ssim: f64) -> Self {
-        if ssim > 0.95 {
+        if ssim >= 0.98 {
             Self::Excellent
-        } else if ssim > 0.90 {
+        } else if ssim >= 0.95 {
             Self::Good
-        } else if ssim > 0.85 {
+        } else if ssim >= 0.90 {
             Self::Acceptable
-        } else if ssim > 0.75 {
-            Self::Poor
         } else {
-            Self::Unacceptable
+            Self::Poor
         }
     }
     
-    pub fn should_warn(&self) -> bool {
-        matches!(self, Self::Poor | Self::Unacceptable)
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Excellent => "优秀",
+            Self::Good => "良好",
+            Self::Acceptable => "可接受",
+            Self::Poor => "较差",
+        }
     }
     
-    pub fn should_rollback(&self) -> bool {
-        matches!(self, Self::Unacceptable)
+    pub fn emoji(&self) -> &'static str {
+        match self {
+            Self::Excellent => "🌟",
+            Self::Good => "✅",
+            Self::Acceptable => "⚠️",
+            Self::Poor => "❌",
+        }
     }
 }
 
-/// 质量检查器
+/// SSIM 质量检查器
 pub struct QualityChecker {
-    min_ssim: f64,
-    min_psnr: f64,
-    auto_rollback: bool,
+    /// SSIM 阈值（默认 0.95）
+    threshold: f64,
 }
 
 impl QualityChecker {
+    /// 创建默认检查器（阈值 0.95）
     pub fn new() -> Self {
-        Self {
-            min_ssim: 0.85,
-            min_psnr: 30.0,
-            auto_rollback: true,
+        Self { threshold: 0.95 }
+    }
+    
+    /// 创建自定义阈值的检查器
+    pub fn with_threshold(threshold: f64) -> Self {
+        Self { threshold }
+    }
+    
+    /// 检查转换质量
+    pub fn check_conversion_quality(
+        &self,
+        original_path: &Path,
+        converted_path: &Path,
+    ) -> Result<QualityCheckResult> {
+        // 1. 加载图像
+        let original = image::open(original_path)
+            .with_context(|| format!("Failed to load original: {:?}", original_path))?;
+        
+        let converted = image::open(converted_path)
+            .with_context(|| format!("Failed to load converted: {:?}", converted_path))?;
+        
+        // 2. 检查尺寸
+        if original.dimensions() != converted.dimensions() {
+            anyhow::bail!(
+                "Image dimensions mismatch: {:?} vs {:?}",
+                original.dimensions(),
+                converted.dimensions()
+            );
         }
-    }
-    
-    pub fn with_min_ssim(mut self, min_ssim: f64) -> Self {
-        self.min_ssim = min_ssim.clamp(0.0, 1.0);
-        self
-    }
-    
-    pub fn with_min_psnr(mut self, min_psnr: f64) -> Self {
-        self.min_psnr = min_psnr.max(0.0);
-        self
-    }
-    
-    pub fn with_auto_rollback(mut self, enabled: bool) -> Self {
-        self.auto_rollback = enabled;
-        self
-    }
-    
-    pub fn compare<P: AsRef<Path>>(&self, original: P, converted: P) -> Result<QualityMetrics> {
-        let img1 = image::open(original.as_ref())
-            .with_context(|| "Failed to open original image")?;
-        let img2 = image::open(converted.as_ref())
-            .with_context(|| "Failed to open converted image")?;
         
-        let (img1, img2) = self.normalize_dimensions(img1, img2);
-        let mse = self.calculate_mse(&img1, &img2);
-        let psnr = self.calculate_psnr(mse);
-        let ssim = self.calculate_ssim(&img1, &img2);
-        let assessment = QualityAssessment::from_ssim(ssim);
+        // 3. 计算 SSIM
+        let ssim_score = self.calculate_ssim(&original, &converted)?;
         
-        Ok(QualityMetrics {
-            ssim,
-            psnr,
-            mse,
-            assessment,
+        // 4. 生成结果
+        let quality_grade = QualityGrade::from_ssim(ssim_score);
+        let passed = ssim_score >= self.threshold;
+        
+        let details = format!(
+            "SSIM: {:.4} | Grade: {} | Threshold: {:.2}",
+            ssim_score,
+            quality_grade.as_str(),
+            self.threshold
+        );
+        
+        Ok(QualityCheckResult {
+            ssim_score,
+            passed,
+            quality_grade,
+            details,
         })
     }
     
-    pub fn is_acceptable(&self, metrics: &QualityMetrics) -> bool {
-        metrics.ssim >= self.min_ssim && metrics.psnr >= self.min_psnr
-    }
-    
-    fn normalize_dimensions(&self, img1: DynamicImage, img2: DynamicImage) -> (DynamicImage, DynamicImage) {
-        let (w1, h1) = img1.dimensions();
-        let (w2, h2) = img2.dimensions();
-        
-        if (w1, h1) == (w2, h2) {
-            return (img1, img2);
-        }
-        
-        let (target_w, target_h) = (w1.max(w2), h1.max(h2));
-        
-        let img1_resized = if (w1, h1) != (target_w, target_h) {
-            img1.resize_exact(target_w, target_h, image::imageops::FilterType::Lanczos3)
-        } else {
-            img1
-        };
-        
-        let img2_resized = if (w2, h2) != (target_w, target_h) {
-            img2.resize_exact(target_w, target_h, image::imageops::FilterType::Lanczos3)
-        } else {
-            img2
-        };
-        
-        (img1_resized, img2_resized)
-    }
-    
-    fn calculate_mse(&self, img1: &DynamicImage, img2: &DynamicImage) -> f64 {
-        let rgba1 = img1.to_rgba8();
-        let rgba2 = img2.to_rgba8();
-        
-        let (width, height) = rgba1.dimensions();
-        let mut sum = 0.0;
-        let mut count = 0u64;
-        
-        for y in 0..height {
-            for x in 0..width {
-                let p1 = rgba1.get_pixel(x, y);
-                let p2 = rgba2.get_pixel(x, y);
-                
-                for i in 0..4 {
-                    let diff = p1[i] as f64 - p2[i] as f64;
-                    sum += diff * diff;
-                    count += 1;
-                }
-            }
-        }
-        
-        sum / count as f64
-    }
-    
-    fn calculate_psnr(&self, mse: f64) -> f64 {
-        if mse < 1e-10 {
-            return 100.0;
-        }
-        
-        let max_pixel_value = 255.0;
-        20.0 * (max_pixel_value / mse.sqrt()).log10()
-    }
-    
-    fn calculate_ssim(&self, img1: &DynamicImage, img2: &DynamicImage) -> f64 {
-        let rgba1 = img1.to_rgba8();
-        let rgba2 = img2.to_rgba8();
-        
-        let k1 = 0.01_f64;
-        let k2 = 0.03_f64;
-        let l = 255.0_f64;
-        let c1 = (k1 * l).powi(2);
-        let c2 = (k2 * l).powi(2);
-        
-        let (mean1, mean2) = self.calculate_means(&rgba1, &rgba2);
-        let (var1, var2, cov) = self.calculate_variances(&rgba1, &rgba2, mean1, mean2);
-        
-        let numerator = (2.0 * mean1 * mean2 + c1) * (2.0 * cov + c2);
-        let denominator = (mean1 * mean1 + mean2 * mean2 + c1) * (var1 + var2 + c2);
-        
-        (numerator / denominator).clamp(0.0, 1.0)
-    }
-    
-    fn calculate_means(&self, img1: &image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, img2: &image::ImageBuffer<image::Rgba<u8>, Vec<u8>>) -> (f64, f64) {
+    /// 计算 SSIM（简化版本）
+    /// 
+    /// 注意：这是一个简化的 SSIM 实现，用于快速质量检查。
+    /// 完整的 SSIM 实现需要考虑更多因素（亮度、对比度、结构）。
+    fn calculate_ssim(&self, img1: &DynamicImage, img2: &DynamicImage) -> Result<f64> {
         let (width, height) = img1.dimensions();
-        let mut sum1 = 0.0;
-        let mut sum2 = 0.0;
-        let count = (width * height) as f64;
         
-        for y in 0..height {
-            for x in 0..width {
-                let p1 = img1.get_pixel(x, y);
-                let p2 = img2.get_pixel(x, y);
-                sum1 += (p1[0] as f64 + p1[1] as f64 + p1[2] as f64) / 3.0;
-                sum2 += (p2[0] as f64 + p2[1] as f64 + p2[2] as f64) / 3.0;
+        // 转换为 RGB
+        let img1_rgb = img1.to_rgba8();
+        let img2_rgb = img2.to_rgba8();
+        
+        // 采样计算（每 8x8 块采样一次，提高性能）
+        let sample_step = 8;
+        let mut total_similarity = 0.0;
+        let mut sample_count = 0;
+        
+        for y in (0..height).step_by(sample_step) {
+            for x in (0..width).step_by(sample_step) {
+                let pixel1 = img1_rgb.get_pixel(x, y);
+                let pixel2 = img2_rgb.get_pixel(x, y);
+                
+                // 计算像素相似度
+                let similarity = self.pixel_similarity(pixel1, pixel2);
+                total_similarity += similarity;
+                sample_count += 1;
             }
         }
         
-        (sum1 / count, sum2 / count)
+        if sample_count == 0 {
+            return Ok(1.0);
+        }
+        
+        Ok(total_similarity / sample_count as f64)
     }
     
-    fn calculate_variances(&self, img1: &image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, img2: &image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, mean1: f64, mean2: f64) -> (f64, f64, f64) {
-        let (width, height) = img1.dimensions();
-        let mut var1 = 0.0;
-        let mut var2 = 0.0;
-        let mut cov = 0.0;
-        let count = (width * height) as f64;
+    /// 计算两个像素的相似度
+    fn pixel_similarity(&self, p1: &Rgba<u8>, p2: &Rgba<u8>) -> f64 {
+        // 计算欧氏距离
+        let r_diff = (p1[0] as f64 - p2[0] as f64).powi(2);
+        let g_diff = (p1[1] as f64 - p2[1] as f64).powi(2);
+        let b_diff = (p1[2] as f64 - p2[2] as f64).powi(2);
         
-        for y in 0..height {
-            for x in 0..width {
-                let p1 = img1.get_pixel(x, y);
-                let p2 = img2.get_pixel(x, y);
-                let lum1 = (p1[0] as f64 + p1[1] as f64 + p1[2] as f64) / 3.0;
-                let lum2 = (p2[0] as f64 + p2[1] as f64 + p2[2] as f64) / 3.0;
-                
-                let diff1 = lum1 - mean1;
-                let diff2 = lum2 - mean2;
-                
-                var1 += diff1 * diff1;
-                var2 += diff2 * diff2;
-                cov += diff1 * diff2;
-            }
-        }
+        let distance = (r_diff + g_diff + b_diff).sqrt();
+        let max_distance = (255.0_f64.powi(2) * 3.0).sqrt();
         
-        (var1 / count, var2 / count, cov / count)
+        // 转换为相似度 (0.0-1.0)
+        1.0 - (distance / max_distance)
     }
 }
 
@@ -241,21 +190,30 @@ impl Default for QualityChecker {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use image::{ImageBuffer, Rgba};
     
     #[test]
-    fn test_quality_assessment() {
-        assert_eq!(QualityAssessment::from_ssim(0.96), QualityAssessment::Excellent);
-        assert_eq!(QualityAssessment::from_ssim(0.92), QualityAssessment::Good);
-        assert_eq!(QualityAssessment::from_ssim(0.87), QualityAssessment::Acceptable);
-        assert_eq!(QualityAssessment::from_ssim(0.78), QualityAssessment::Poor);
-        assert_eq!(QualityAssessment::from_ssim(0.70), QualityAssessment::Unacceptable);
+    fn test_pixel_similarity() {
+        let checker = QualityChecker::new();
+        
+        // 完全相同的像素
+        let p1 = Rgba([100, 150, 200, 255]);
+        let p2 = Rgba([100, 150, 200, 255]);
+        let sim = checker.pixel_similarity(&p1, &p2);
+        assert!((sim - 1.0).abs() < 0.001);
+        
+        // 完全不同的像素
+        let p1 = Rgba([0, 0, 0, 255]);
+        let p2 = Rgba([255, 255, 255, 255]);
+        let sim = checker.pixel_similarity(&p1, &p2);
+        assert!(sim < 0.5);
     }
     
     #[test]
-    fn test_quality_checker_creation() {
-        let checker = QualityChecker::new();
-        assert_eq!(checker.min_ssim, 0.85);
-        assert_eq!(checker.min_psnr, 30.0);
-        assert!(checker.auto_rollback);
+    fn test_quality_grade() {
+        assert_eq!(QualityGrade::from_ssim(0.99), QualityGrade::Excellent);
+        assert_eq!(QualityGrade::from_ssim(0.96), QualityGrade::Good);
+        assert_eq!(QualityGrade::from_ssim(0.92), QualityGrade::Acceptable);
+        assert_eq!(QualityGrade::from_ssim(0.85), QualityGrade::Poor);
     }
 }

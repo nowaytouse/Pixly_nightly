@@ -1,0 +1,19 @@
+{
+  "id": "pixly-ai-vue",
+  "version": "3.0.0",
+  "platform": "all",
+  "arch": "all",
+  "name": "PIXLY AI",
+  "logo": "./logo.png",
+  "keywords": ["AI", "converter"],
+  "main": {
+    "frame": false,
+    "vibrancy": true,
+    "url": "index.html",
+    "width": 1280,
+    "minWidth": 800,
+    "height": 720,
+    "minHeight": 600,
+    "opacity": 1
+  }
+}

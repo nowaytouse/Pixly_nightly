@@ -72,6 +72,79 @@ enum Commands {
         format: Option<String>,
     },
     
+    /// 🎬 Convert video files with AI optimization
+    Video {
+        /// Input video file path
+        input: PathBuf,
+        
+        /// Output video file path
+        output: PathBuf,
+        
+        /// Video codec (h264, h265, h266, av1, vp9)
+        #[arg(short, long, default_value = "h265")]
+        codec: String,
+        
+        /// Container format (mp4, mov, webm, mkv)
+        #[arg(long, default_value = "mp4")]
+        container: String,
+        
+        /// CRF quality (0-51, lower = better quality)
+        #[arg(long, default_value = "23")]
+        crf: u8,
+        
+        /// Encoding preset (ultrafast, fast, medium, slow, veryslow)
+        #[arg(long, default_value = "medium")]
+        preset: String,
+        
+        /// 🤖 Use AI to predict optimal parameters
+        #[arg(long, default_value = "false")]
+        ai: bool,
+        
+        /// 🎯 Optimize mode (balanced, quality, size)
+        #[arg(long, default_value = "balanced")]
+        optimize_mode: String,
+        
+        /// ⚡ Enable GPU acceleration
+        #[arg(long, default_value = "true")]
+        gpu: bool,
+        
+        /// 🎬 Enable animation-to-video conversion recommendation
+        #[arg(long, default_value = "true")]
+        video_for_animation: bool,
+        
+        /// 🎞️ Enable scene detection
+        #[arg(long, default_value = "false")]
+        scene_detection: bool,
+        
+        /// 📊 Enable VMAF quality validation
+        #[arg(long, default_value = "false")]
+        vmaf: bool,
+        
+        /// 🔄 Enable Two-Pass encoding
+        #[arg(long, default_value = "false")]
+        two_pass: bool,
+        
+        /// GOP size (keyframe interval)
+        #[arg(long)]
+        gop: Option<u32>,
+        
+        /// Number of B-frames
+        #[arg(long)]
+        bframes: Option<u8>,
+        
+        /// Number of reference frames
+        #[arg(long)]
+        refs: Option<u8>,
+        
+        /// Motion estimation method
+        #[arg(long)]
+        me_method: Option<String>,
+        
+        /// Pixel format
+        #[arg(long)]
+        pix_fmt: Option<String>,
+    },
+    
     /// Convert media files
     Convert {
         /// Input file path
@@ -104,6 +177,30 @@ enum Commands {
         /// 🤖 Use AI to predict optimal parameters
         #[arg(long, default_value = "false")]
         ai: bool,
+        
+        /// 🎯 Optimize mode (balanced, quality, size)
+        #[arg(long, default_value = "balanced")]
+        optimize_mode: String,
+        
+        /// 🔒 Enable Magika AI file validation
+        #[arg(long, default_value = "false")]
+        validate_files: bool,
+        
+        /// 📊 Enable SSIM quality check after conversion
+        #[arg(long, default_value = "false")]
+        check_quality: bool,
+        
+        /// ⚡ Enable GPU acceleration (default: true)
+        #[arg(long, default_value = "true")]
+        gpu: bool,
+        
+        /// 🔗 Enable intelligent preprocessing
+        #[arg(long, default_value = "false")]
+        preprocess: bool,
+        
+        /// 🔧 Enable format auto-correction (experimental)
+        #[arg(long, default_value = "false")]
+        format_correction: bool,
         
         // JXL specific
         #[arg(long)]
@@ -196,6 +293,110 @@ enum Commands {
     },
 }
 
+/// 🎞️ 场景检测 - 优化GOP大小
+fn detect_scenes(input: &Path, config: &mut pixly_kernel::video_processor::VideoConversionConfig) -> Result<()> {
+    use std::process::Command;
+    
+    // 使用ffmpeg的场景检测
+    let output = Command::new("ffmpeg")
+        .arg("-i")
+        .arg(input)
+        .arg("-vf")
+        .arg("select='gt(scene,0.3)',showinfo")
+        .arg("-f")
+        .arg("null")
+        .arg("-")
+        .output()
+        .context("Failed to run scene detection")?;
+    
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    
+    // 统计场景变化次数
+    let scene_count = stderr.matches("Parsed_showinfo").count();
+    
+    if scene_count > 0 {
+        println!("   ✅ Detected {} scene changes", scene_count);
+        
+        // 根据场景变化调整GOP大小
+        // 更多场景变化 = 更小的GOP
+        let recommended_gop = if scene_count > 100 {
+            50  // 频繁场景变化
+        } else if scene_count > 50 {
+            100
+        } else {
+            250  // 默认值
+        };
+        
+        if config.gop_size.is_none() || config.gop_size.unwrap() > recommended_gop {
+            println!("   💡 Adjusting GOP size: {} → {}", 
+                     config.gop_size.unwrap_or(250), recommended_gop);
+            config.gop_size = Some(recommended_gop);
+        }
+    } else {
+        println!("   ℹ️  No significant scene changes detected");
+    }
+    
+    Ok(())
+}
+
+/// 📊 VMAF质量验证
+fn validate_vmaf(original: &Path, converted: &Path) -> Result<()> {
+    use std::process::Command;
+    
+    println!("   🔍 Calculating VMAF score (this may take a while)...");
+    
+    // 使用ffmpeg的libvmaf过滤器
+    let output = Command::new("ffmpeg")
+        .arg("-i")
+        .arg(converted)
+        .arg("-i")
+        .arg(original)
+        .arg("-lavfi")
+        .arg("libvmaf=log_fmt=json:log_path=/dev/stdout")
+        .arg("-f")
+        .arg("null")
+        .arg("-")
+        .output();
+    
+    match output {
+        Ok(result) => {
+            let stdout = String::from_utf8_lossy(&result.stdout);
+            
+            // 解析VMAF分数
+            if let Some(vmaf_line) = stdout.lines().find(|l| l.contains("\"vmaf\"")) {
+                if let Some(score_str) = vmaf_line.split(':').nth(1) {
+                    if let Ok(score) = score_str.trim().trim_end_matches(',').parse::<f64>() {
+                        println!("   📊 VMAF Score: {:.2}", score);
+                        
+                        if score >= 95.0 {
+                            println!("   ✅ Excellent quality (VMAF ≥ 95)");
+                        } else if score >= 90.0 {
+                            println!("   ✅ Very good quality (VMAF ≥ 90)");
+                        } else if score >= 80.0 {
+                            println!("   ✅ Good quality (VMAF ≥ 80)");
+                        } else if score >= 70.0 {
+                            println!("   ⚠️  Acceptable quality (VMAF ≥ 70)");
+                        } else {
+                            println!("   ⚠️  Warning: Quality loss detected (VMAF < 70)");
+                        }
+                        
+                        return Ok(());
+                    }
+                }
+            }
+            
+            println!("   ⚠️  Could not parse VMAF score");
+            Ok(())
+        }
+        Err(e) => {
+            println!("   ⚠️  VMAF validation failed: {}", e);
+            println!("   💡 Make sure FFmpeg is compiled with libvmaf support");
+            // 不阻止转换
+            Ok(())
+        }
+    }
+}
+
 fn main() {
     // Setup PATH to include common tool locations
     setup_path();
@@ -210,6 +411,180 @@ fn main() {
 
 fn run(cli: Cli) -> Result<()> {
     match cli.command {
+        Commands::Video {
+            input,
+            output,
+            codec,
+            container,
+            crf,
+            preset,
+            ai,
+            optimize_mode,
+            gpu,
+            video_for_animation,
+            scene_detection,
+            vmaf,
+            two_pass,
+            gop,
+            bframes,
+            refs,
+            me_method,
+            pix_fmt,
+        } => {
+            use pixly_kernel::video_processor::{VideoProcessor, VideoConversionConfig, AudioMode};
+            use pixly_kernel::FeatureToggles;
+            
+            println!("🎬 Video Conversion Mode");
+            println!("   Input: {:?}", input);
+            println!("   Output: {:?}", output);
+            println!("   Codec: {}", codec);
+            println!("   Container: {}", container);
+            
+            // 🎛️ 构建功能开关
+            let feature_toggles = FeatureToggles {
+                enable_ai_prediction: ai,
+                enable_file_validation: false,  // 视频不需要Magika验证
+                enable_ssim: false,
+                enable_gpu: gpu,
+                enable_preprocess: false,
+                enable_format_correction: false,
+                enable_video_for_animation: video_for_animation,
+                enable_scene_detection: scene_detection,
+                enable_vmaf: vmaf,
+                enable_two_pass: two_pass,
+            };
+            
+            println!("   Features: {}", feature_toggles.summary());
+            
+            // 🤖 AI参数预测
+            let (final_crf, final_preset, final_codec, final_two_pass) = if ai {
+                println!("🤖 AI Smart Mode: Analyzing video features...");
+                println!("   🎯 Optimize mode: {}", optimize_mode);
+                
+                // 🔥 提取视频特征
+                use pixly_kernel::video_features::{extract_video_features, video_features_to_128d};
+                use pixly_kernel::python_ml_caller::{call_python_ml, MLPredictRequest};
+                
+                match extract_video_features(&input) {
+                    Ok(video_features) => {
+                        println!("   📊 Video: {}x{}, {:.1}s, {:.1} fps", 
+                            video_features.width, 
+                            video_features.height,
+                            video_features.duration,
+                            video_features.fps);
+                        println!("   📦 Size: {:.2} MB, Codec: {}", 
+                            video_features.size_mb(),
+                            video_features.codec);
+                        
+                        // 转换为128维特征
+                        let feature_vector = video_features_to_128d(&video_features);
+                        
+                        // 调用Python ML
+                        let ml_request = MLPredictRequest {
+                            features: feature_vector,
+                            target_format: "video".to_string(),
+                            quality_mode: optimize_mode.clone(),
+                        };
+                        
+                        match call_python_ml(&ml_request) {
+                            Ok(ml_response) => {
+                                println!("✅ Python ML video prediction received:");
+                                
+                                // 解析format_options
+                                let mut ml_codec = codec.clone();
+                                let mut ml_preset = preset.clone();
+                                let mut ml_two_pass = false;
+                                
+                                for opt in &ml_response.format_options {
+                                    if let Some(value) = opt.strip_prefix("codec=") {
+                                        ml_codec = value.to_string();
+                                    } else if let Some(value) = opt.strip_prefix("preset=") {
+                                        ml_preset = value.to_string();
+                                    } else if let Some(value) = opt.strip_prefix("two_pass=") {
+                                        ml_two_pass = value == "true" || value == "True";
+                                    }
+                                }
+                                
+                                println!("   Codec: {} (confidence: {:.2})", ml_codec, ml_response.confidence);
+                                println!("   CRF: {}", ml_response.quality);
+                                println!("   Preset: {}", ml_preset);
+                                println!("   Two-pass: {}", ml_two_pass);
+                                println!("   Model: {}", ml_response.model_version);
+                                
+                                (
+                                    Some(ml_response.quality as u32),
+                                    Some(ml_preset),
+                                    ml_codec,
+                                    ml_two_pass
+                                )
+                            }
+                            Err(e) => {
+                                eprintln!("⚠️ Python ML failed: {}", e);
+                                eprintln!("   Using default parameters");
+                                (Some(crf as u32), Some(preset.clone()), codec.clone(), false)
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("⚠️ Video feature extraction failed: {}", e);
+                        eprintln!("   Using default parameters");
+                        (Some(crf as u32), Some(preset.clone()), codec.clone(), false)
+                    }
+                }
+            } else {
+                (Some(crf as u32), Some(preset.clone()), codec.clone(), false)
+            };
+            
+            // 构建视频转换配置
+            let mut config = VideoConversionConfig {
+                codec: final_codec,  // 🔥 使用ML预测的codec
+                container: container.clone(),
+                crf: final_crf.unwrap_or(crf as u32) as u8,  // 🔥 使用ML预测的CRF
+                preset: final_preset.unwrap_or(preset.clone()),  // 🔥 使用ML预测的preset
+                target_resolution: None,
+                target_fps: None,
+                audio_mode: AudioMode::Copy,
+                two_pass: if ai { final_two_pass } else { feature_toggles.enable_two_pass },  // 🔥 使用ML预测的two_pass
+                hw_accel: if gpu { "auto".to_string() } else { "none".to_string() },
+                gop_size: gop,
+                bframes: bframes,
+                ref_frames: refs,
+                me_method: me_method,
+                pix_fmt: pix_fmt,
+            };
+            
+            // 🎞️ 场景检测
+            if feature_toggles.enable_scene_detection {
+                println!("🎞️ Running scene detection...");
+                detect_scenes(&input, &mut config)?;
+            }
+            
+            // 执行转换
+            let processor = VideoProcessor::new();
+            let result = processor.convert_video(&input, &output, &config, Some(|progress| {
+                println!("   Progress: {:.1}%", progress * 100.0);
+            }))?;
+            
+            if result.success {
+                println!("✅ Video conversion completed!");
+                println!("   Original size: {:.2} MB", result.original_size as f64 / 1024.0 / 1024.0);
+                println!("   Converted size: {:.2} MB", result.converted_size as f64 / 1024.0 / 1024.0);
+                println!("   Compression ratio: {:.1}%", result.compression_ratio * 100.0);
+                println!("   Duration: {:.2}s", result.duration);
+                
+                // 📊 VMAF质量验证
+                if feature_toggles.enable_vmaf {
+                    println!("📊 Running VMAF quality validation...");
+                    validate_vmaf(&input, &output)?;
+                }
+            } else {
+                eprintln!("❌ Video conversion failed: {}", result.error.unwrap_or_default());
+                std::process::exit(1);
+            }
+            
+            Ok(())
+        }
+        
         Commands::Analyze {
             input,
             ai,
@@ -277,6 +652,12 @@ fn run(cli: Cli) -> Result<()> {
             normalize_filenames,
             // AI
             ai,
+            optimize_mode,
+            validate_files,
+            check_quality,
+            gpu,
+            preprocess,
+            format_correction,
         } => {
             // 确定输出格式
             let target_format = format.unwrap_or_else(|| {
@@ -296,10 +677,18 @@ fn run(cli: Cli) -> Result<()> {
             // 🤖 AI参数预测
             if ai {
                 println!("🤖 AI Smart Mode: Analyzing image features...");
+                println!("   🎯 Optimize mode: {}", optimize_mode);
                 
                 // 🔥 质量宣言：使用真实的AI预测，不fallback！
                 use pixly_kernel::{MediaAnalyzer, ImageFeatures, QualityMode};
                 use pixly_kernel::format_recommender::{AIFormatRecommender, UserPreferences};
+                
+                // 解析优化模式
+                let quality_mode = match optimize_mode.as_str() {
+                    "quality" => QualityMode::Quality,
+                    "size" => QualityMode::Speed,  // 速度模式 = 体积优先
+                    _ => QualityMode::Balanced,
+                };
                 
                 // 1. 分析媒体文件
                 let analyzer = MediaAnalyzer::new();
@@ -322,7 +711,7 @@ fn run(cli: Cli) -> Result<()> {
                         
                         match recommender.get_best_recommendation(
                             &image_features,
-                            QualityMode::Balanced,
+                            quality_mode,
                             &user_prefs
                         ) {
                             Some(recommendation) => {
@@ -400,9 +789,26 @@ fn run(cli: Cli) -> Result<()> {
                 }
             }
             
+            // 🎛️ 构建功能开关配置
+            use pixly_kernel::FeatureToggles;
+            let feature_toggles = FeatureToggles {
+                enable_ai_prediction: ai,
+                enable_file_validation: validate_files,
+                enable_ssim: check_quality,
+                enable_gpu: gpu,
+                enable_preprocess: preprocess,
+                enable_format_correction: format_correction,
+                enable_video_for_animation: true,  // 🎬 检测大型动图，推荐转视频
+                enable_scene_detection: false,
+                enable_vmaf: false,
+                enable_two_pass: false,
+            };
+            
             // 构建转换配置
             let mut config = ConversionConfig::default();
             config.quality = final_quality;
+            config.feature_toggles = Some(feature_toggles);
+            config.normalize_filenames = normalize_filenames;
             
             // 根据格式设置参数（AI推荐的参数优先）
             match target_format.as_str() {
@@ -443,6 +849,144 @@ fn run(cli: Cli) -> Result<()> {
                 _ => {}
             }
             
+            // 🔥 Phase X.0: 格式自动修正
+            let corrected_input = if format_correction {
+                println!("🔧 Checking file format...");
+                use pixly_kernel::format_corrector::FormatCorrector;
+                
+                let corrector = FormatCorrector::new(false); // 不自动重命名，只检测
+                match corrector.check_and_correct(&input) {
+                    Ok(result) => {
+                        if result.needs_correction {
+                            println!("   ⚠️  Format mismatch detected!");
+                            println!("   Extension: .{}", result.original_extension);
+                            println!("   Actual format: {}", result.detected_format);
+                            println!("   💡 Recommendation: Rename to .{}", result.detected_format);
+                            
+                            // 创建修正后的路径（不实际重命名）
+                            if let Some(corrected) = result.corrected_path {
+                                println!("   Suggested path: {:?}", corrected);
+                            }
+                        } else {
+                            println!("   ✅ Format matches extension");
+                        }
+                        input.clone()
+                    }
+                    Err(e) => {
+                        println!("   ⚠️  Format check failed: {}", e);
+                        input.clone()
+                    }
+                }
+            } else {
+                input.clone()
+            };
+            
+            // 使用修正后的路径
+            let input = corrected_input;
+            
+            // 🔥 Phase X.1: 动图转视频推荐
+            let ext = input.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
+            if matches!(ext.as_str(), "gif" | "apng" | "webp") {
+                if let Ok(metadata) = std::fs::metadata(&input) {
+                    let file_size = metadata.len();
+                    let size_mb = file_size as f64 / 1_000_000.0;
+                    
+                    if size_mb > 5.0 {
+                        println!("💡 Large animated image detected!");
+                        println!("   Format: {}", ext.to_uppercase());
+                        println!("   Size: {:.2} MB", size_mb);
+                        println!("");
+                        println!("   🎬 Recommendation: Convert to video format");
+                        println!("   Expected size reduction: 60-80%");
+                        println!("   Suggested command:");
+                        println!("   pixly-rust video {} output.mp4 --codec h265", input.display());
+                        println!("");
+                    }
+                }
+            }
+            
+            // 🔥 Phase X.1: Magika AI 文件验证
+            if validate_files {
+                println!("🔒 Validating file with Magika AI...");
+                use pixly_kernel::magika_detector::MagikaDetector;
+                
+                let detector = MagikaDetector::with_defaults();
+                match detector.detect_file_type(&actual_input) {
+                    Ok(detection) => {
+                        println!("   ✅ Detected type: {} (confidence: {:.1}%)", 
+                                 detection.detected_type, detection.confidence * 100.0);
+                        
+                        // 验证扩展名匹配
+                        if let Some(ext) = actual_input.extension().and_then(|e| e.to_str()) {
+                            if !detector.extension_matches_type(ext, &detection.detected_type) {
+                                println!("   ⚠️  Warning: Extension '{}' doesn't match detected type '{}'", 
+                                         ext, detection.detected_type);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        println!("   ⚠️  File validation failed: {}", e);
+                    }
+                }
+            }
+            
+            // 🔥 Phase X.2: 智能预处理
+            let preprocessed_input = if preprocess {
+                println!("🔗 Applying intelligent preprocessing...");
+                use pixly_kernel::preprocessing::{PreprocessPipeline, PreprocessStep};
+                
+                // 加载图像
+                match image::open(&actual_input) {
+                    Ok(img) => {
+                        // 创建自动增强管道
+                        let pipeline = PreprocessPipeline::new()
+                            .add_step(PreprocessStep::Auto);
+                        
+                        match pipeline.process(img) {
+                            Ok(processed_img) => {
+                                // 保存预处理后的图像到临时文件
+                                let temp_path = actual_input.with_extension("preprocessed.tmp");
+                                if let Err(e) = processed_img.save(&temp_path) {
+                                    println!("   ⚠️  Failed to save preprocessed image: {}", e);
+                                    actual_input.clone()
+                                } else {
+                                    println!("   ✅ Preprocessing complete (auto-enhance)");
+                                    temp_path
+                                }
+                            }
+                            Err(e) => {
+                                println!("   ⚠️  Preprocessing failed: {}", e);
+                                actual_input.clone()
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        println!("   ⚠️  Failed to load image for preprocessing: {}", e);
+                        actual_input.clone()
+                    }
+                }
+            } else {
+                actual_input.clone()
+            };
+            
+            // 更新 actual_input 为预处理后的路径
+            let actual_input = preprocessed_input;
+            
+            // 🔥 Phase X.3: 捕获原始文件属性（时间戳 + 扩展属性）
+            use pixly_kernel::file_attributes::FileAttributes;
+            println!("📦 Capturing file attributes...");
+            let file_attrs = FileAttributes::capture(&input)
+                .unwrap_or_else(|e| {
+                    println!("   ⚠️  Failed to capture attributes: {}", e);
+                    // 返回空属性，不阻止转换
+                    FileAttributes {
+                        modified: None,
+                        accessed: None,
+                        #[cfg(any(target_os = "macos", target_os = "linux"))]
+                        xattrs: Vec::new(),
+                    }
+                });
+            
             // 执行转换
             let result = execute_conversion(
                 &actual_input,
@@ -455,6 +999,12 @@ fn run(cli: Cli) -> Result<()> {
             if let Some(temp_path) = temp_normalized {
                 let _ = std::fs::remove_file(&temp_path);
                 println!("   🧹 Cleaned up temporary normalized file");
+            }
+            
+            // 🔥 清理预处理临时文件
+            if preprocess && actual_input.extension().and_then(|e| e.to_str()) == Some("tmp") {
+                let _ = std::fs::remove_file(&actual_input);
+                println!("   🧹 Cleaned up preprocessed temporary file");
             }
             
             println!("✅ Conversion complete!");
@@ -480,6 +1030,54 @@ fn run(cli: Cli) -> Result<()> {
             println!("   📦 Checking for Eagle .info directory...");
             if let Err(e) = handle_eagle_in_place_replacement(&input, &output_path) {
                 println!("   ⚠️  Eagle update failed: {}", e);
+            }
+            
+            // 🔥 Phase X.4: SSIM 质量验证
+            if check_quality {
+                println!("   📊 Checking quality with SSIM...");
+                use pixly_kernel::quality_checker::QualityChecker;
+                
+                let checker = QualityChecker::new();
+                match checker.check_conversion_quality(&input, &output_path) {
+                    Ok(result) => {
+                        println!("   {} SSIM Score: {:.4} ({})", 
+                                 result.quality_grade.emoji(),
+                                 result.ssim_score,
+                                 result.quality_grade.as_str());
+                        
+                        if !result.passed {
+                            println!("   ⚠️  Warning: Quality below threshold (0.95)");
+                            println!("   💡 Consider using higher quality settings");
+                        }
+                    }
+                    Err(e) => {
+                        println!("   ⚠️  SSIM check failed: {}", e);
+                    }
+                }
+            }
+            
+            // 🔥 Phase X.5: 恢复文件属性（时间戳 + 扩展属性）
+            println!("   ⏰ Restoring file attributes...");
+            if let Err(e) = file_attrs.apply(&output_path) {
+                println!("   ⚠️  Failed to restore attributes: {}", e);
+            } else {
+                let mut restored = Vec::new();
+                if file_attrs.modified.is_some() {
+                    restored.push("timestamps".to_string());
+                }
+                #[cfg(any(target_os = "macos", target_os = "linux"))]
+                if !file_attrs.xattrs.is_empty() {
+                    restored.push(format!("{} xattrs", file_attrs.xattrs.len()));
+                }
+                if !restored.is_empty() {
+                    println!("   ✓ Restored: {}", restored.join(", "));
+                }
+            }
+            
+            println!("\n🎉 All processing complete!");
+            if !gpu {
+                println!("   ℹ️  GPU acceleration was disabled");
+                println!("   💡 Note: GPU acceleration mainly benefits video encoding");
             }
             
             Ok(())

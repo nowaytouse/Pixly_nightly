@@ -1,0 +1,118 @@
+{
+    "manifest": {
+        "app": {
+            "name": "AI Eraser"
+        }
+    },
+    "header": {
+        "thumbtack": {
+            "isAlwaysOnTop": "Always on Top",
+            "isNotAlwaysOnTop": "Disable Always on Top"
+        },
+        "dialog": {
+            "exit": {
+                "title": "Exit Plugin?",
+                "description": "Exiting will stop the task. Images that are not fully converted will no longer be converted.",
+                "cancel": "Cancel",
+                "ok": "Exit"
+            }
+        }
+    },
+    "main": {
+        "cursorTip": "Hold <key>{{key}}</key> to draw multiple selections",
+        "empty": {
+            "title": "Drop Images Here",
+            "content": "Please add images from Eagle or your hard drive."
+        },
+        "toolbar": {
+            "brushSize": "Brush Size",
+            "undo": "Undo",
+            "redo": "Redo",
+            "eye": "View Original",
+            "exportFile": "Save"
+        },
+        "status": {
+            "processing": "Erasing, please wait...",
+            "success": "Export Successful",
+            "fail": "Export Failed",
+            "retry": "Retry",
+            "cancel": "Cancel"
+        },
+        "error": "Image Error",
+        "download": {
+            "saveAs": "Save As New Image",
+            "replace": "Replace Original Image"
+        }
+    },
+    "component": {
+        "dropZone": {
+            "tip": "Drag and drop images here to start editing"
+        },
+        "dialog": {
+            "exit": {
+                "title": "Exit Plugin?",
+                "description": "Exiting will stop exporting the images.",
+                "ok": "Exit",
+                "cancel": "Cancel"
+            }
+        },
+        "crosshair": {
+            "tip": "Drag the cursor to select the cropping area"
+        },
+        "compare": {
+            "sync": {
+                "tip": "Side-by-side Comparison"
+            },
+            "split": {
+                "tip": "Split Comparison"
+            },
+            "overlay": {
+                "tip": "Overlay Comparison"
+            },
+            "toolbar": {
+                "scale": {
+                    "origin": "Original Size",
+                    "fit": "Fit Width"
+                }
+            }
+        }
+    },
+    "modelDialog": {
+		"downloading": {
+			"cancel": "Cancel Download",
+            "description": "Downloading and installing the AI model, please wait.",
+			"title": "Downloading and Installing..."
+		},
+		"failed": {
+			"description": "Unable to download the AI model link, possibly due to the current network environment not being accessible. Please try switching to another network connection and try again. (Ensure that you can open this link: https://r2-plugin.eagle.cool/test.png)",
+			"ok": "Retry Download",
+			"title": "AI Model Download Failed"
+		},
+		"initialize": {
+			"cancel": "Close Plugin",
+			"description": "Initializing AI local model, this will take approximately <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>15 to 45</span> seconds.",
+			"title": "AI Model Initialization"
+		},
+		"prepare": {
+			"cancel": "Close Plugin",
+			"description": "To ensure the smooth operation of the plugin, it is necessary to download and install the pre-trained AI model.",
+			"ok": "Download and Install",
+			"title": "Download and Install AI Model"
+		},
+		"success": {
+			"description": "The pre-trained AI model has been successfully downloaded and installed. You can now start using the plugin and enjoy its powerful features.",
+			"ok": "Start Using",
+			"title": "AI Model Installed Successfully!"
+		}
+	},
+    "error": {
+        "equalExtension": "Same File Extension",
+        "imageLoadError": "Image Load Failed",
+        "fileExtensionNotSupported": "Unsupported Image Format.",
+        "fileSizeNotSupported": "File Size Not Supported, the maximum supported size is 50MB",
+        "resolutionNotSupported": "Image exceeds the maximum size limit, the maximum supported resolution is 10000 pixels",
+        "fileResolutionIsNotEqual": "Conversion failed, abnormal output (ERROR_RESOLUTION)",
+        "fileHistogramsAbnormality": "Conversion failed, abnormal output (ERROR_HISTOGRAMS)",
+        "fileSizeAbnormality": "Conversion failed, abnormal output (ERROR_SIZE)"
+    }
+}

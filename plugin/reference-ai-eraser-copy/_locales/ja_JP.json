@@ -1,0 +1,118 @@
+{
+    "manifest": {
+        "app": {
+            "name": "AI イレーサー"
+        }
+    },
+    "header": {
+        "thumbtack": {
+            "isAlwaysOnTop": "ウィンドウを常に最前面に表示",
+            "isNotAlwaysOnTop": "常に最前面を解除"
+        },
+        "dialog": {
+            "exit": {
+                "title": "プラグインを終了しますか？",
+                "description": "終了すると、タスクは停止します。未完了の画像変換は変換されません。",
+                "cancel": "キャンセル",
+                "ok": "終了"
+            }
+        }
+    },
+    "main": {
+        "cursorTip": "<key>{{key}}</key> を押しながら複数の選択範囲を描画",
+        "empty": {
+            "title": "画像をここにドロップ",
+            "content": "Eagle またはハードディスクから画像を追加してください。"
+        },
+        "toolbar": {
+            "brushSize": "ブラシサイズ",
+            "undo": "元に戻す",
+            "redo": "やり直す",
+            "eye": "元画像を見る",
+            "exportFile": "保存"
+        },
+        "status": {
+            "processing": "消去中、お待ちください...",
+            "success": "エクスポート成功",
+            "fail": "エクスポート失敗",
+            "retry": "再試行",
+            "cancel": "キャンセル"
+        },
+        "error": "画像エラー",
+        "download": {
+            "saveAs": "新しい画像として保存",
+            "replace": "元の画像を置き換える"
+        }
+    },
+    "component": {
+        "dropZone": {
+            "tip": "画像をここにドラッグ＆ドロップして編集開始"
+        },
+        "dialog": {
+            "exit": {
+                "title": "プラグインを終了しますか？",
+                "description": "終了すると、未エクスポートの画像はエクスポートされません。",
+                "ok": "終了",
+                "cancel": "キャンセル"
+            }
+        },
+        "crosshair": {
+            "tip": "カーソルをドラッグして切り取り領域を選択"
+        },
+        "compare": {
+            "sync": {
+                "tip": "並べて比較"
+            },
+            "split": {
+                "tip": "分割比較"
+            },
+            "overlay": {
+                "tip": "オーバーレイ比較"
+            },
+            "toolbar": {
+                "scale": {
+                    "origin": "元のサイズ",
+                    "fit": "幅に合わせる"
+                }
+            }
+        }
+    },
+    "modelDialog": {
+		"downloading": {
+			"cancel": "ダウンロードをキャンセル",
+			"description": "AIモデルをダウンロードしてインストールしています。お待ちください。",
+			"title": "ダウンロードしてインストール中..."
+		},
+		"failed": {
+			"description": "AIモデルのリンクをダウンロードできません。現在のネットワーク環境がアクセスできない可能性があります。他のネットワーク接続に切り替えて再試行してください。 (このリンクを開けることを確認してください: https://r2-plugin.eagle.cool/test.png)",
+			"ok": "再ダウンロード",
+			"title": "AIモデルのダウンロードに失敗しました"
+		},
+		"initialize": {
+			"cancel": "プラグインを閉じる",
+            "description": "AI ローカルモデルの初期化中です、約 <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>15から45</span> 秒かかります。",
+			"title": "AIモデルの初期化"
+		},
+		"prepare": {
+			"cancel": "プラグインを閉じる",
+			"description": "プラグインがスムーズに動作するために、事前にトレーニングされたAIモデルをダウンロードしてインストールする必要があります。",
+			"ok": "ダウンロードしてインストール",
+			"title": "AIモデルをダウンロードしてインストール"
+		},
+		"success": {
+			"description": "事前にトレーニングされたAIモデルが正常にダウンロードされ、インストールされました。これでプラグインを使用してその強力な機能を楽しむことができます。",
+			"ok": "使用を開始",
+			"title": "AIモデルのインストールが成功しました！"
+		}
+	},
+    "error": {
+        "equalExtension": "拡張子が同じ",
+        "imageLoadError": "画像の読み込みに失敗しました",
+        "fileExtensionNotSupported": "サポートされていない画像形式です。",
+        "fileSizeNotSupported": "ファイルサイズがサポートされていません。現在サポートされている最大サイズは 50MB です",
+        "resolutionNotSupported": "画像が最大サイズ制限を超えています。現在サポートされている最大ピクセル数は 10000 です",
+        "fileResolutionIsNotEqual": "変換に失敗しました。出力結果が異常です（ERROR_RESOLUTION）",
+        "fileHistogramsAbnormality": "変換に失敗しました。出力結果が異常です（ERROR_HISTOGRAMS）",
+        "fileSizeAbnormality": "変換に失敗しました。出力結果が異常です（ERROR_SIZE）"
+    }
+}

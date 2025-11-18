@@ -4,16 +4,13 @@
  * 统一Python训练 ↔ Rust推理的完整数据流
  */
 use crate::ml_bridge::{StandardFeatures, StandardPrediction, TrainingSample};
-use crate::feature_extractor_128d::FeatureExtractor128D;
+use crate::feature_extractor_128d::extract_128d_features;
 use image::DynamicImage;
 use std::collections::HashMap;
 use std::path::Path;
 
 /// ML数据流管理器
 pub struct MLDataFlow {
-    /// 特征提取器
-    extractor: FeatureExtractor128D,
-    
     /// 训练样本缓冲区
     training_buffer: Vec<TrainingSample>,
     
@@ -28,12 +25,28 @@ impl MLDataFlow {
     /// 创建新的数据流管理器
     pub fn new() -> Self {
         Self {
-            extractor: FeatureExtractor128D::new(),
             training_buffer: Vec::new(),
             max_buffer_size: 1000,
             auto_save_path: None,
         }
     }
+    
+    /// 提取特征（使用函数式API）
+    fn extract_features(&self, img: &DynamicImage, path: &Path) -> Vec<f64> {
+        let basic_features = crate::ImageFeatures {
+            width: img.width(),
+            height: img.height(),
+            file_size: 0,
+            format: "unknown".to_string(),
+            has_alpha: img.color().has_alpha(),
+            is_animated: false,
+            complexity: 0.5,
+        };
+        
+        extract_128d_features(img, path, &basic_features)
+    }
+    
+
     
     /// 设置自动保存路径
     pub fn with_auto_save(mut self, path: String) -> Self {
@@ -51,9 +64,9 @@ impl MLDataFlow {
     pub fn extract_standard_features(
         &mut self, 
         img: &DynamicImage, 
-        metadata: &HashMap<String, String>
+        _metadata: &HashMap<String, String>
     ) -> StandardFeatures {
-        let features_vec = self.extractor.extract_features(img, metadata);
+        let features_vec = self.extract_features(img, Path::new(""));
         StandardFeatures::from_vector(&features_vec).expect("特征向量转换失败")
     }
     

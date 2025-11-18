@@ -1,0 +1,118 @@
+{
+    "manifest": {
+        "app": {
+            "name": "AI 지우개"
+        }
+    },
+    "header": {
+        "thumbtack": {
+            "isAlwaysOnTop": "최상위 창",
+            "isNotAlwaysOnTop": "최상위 해제"
+        },
+        "dialog": {
+            "exit": {
+                "title": "플러그인을 종료하시겠습니까?",
+                "description": "종료하면 작업이 중지됩니다. 완료되지 않은 형식 변환 이미지는 더 이상 변환되지 않습니다.",
+                "cancel": "취소",
+                "ok": "종료"
+            }
+        }
+    },
+    "main": {
+        "cursorTip": "<key>{{key}}</key> 를 눌러 여러 선택 영역을 그릴 수 있습니다.",
+        "empty": {
+            "title": "여기에 이미지를 드롭하세요",
+            "content": "Eagle 또는 하드 드라이브에서 이미지를 추가하십시오."
+        },
+        "toolbar": {
+            "brushSize": "브러시 크기",
+            "undo": "되돌리기",
+            "redo": "다시 실행",
+            "eye": "원본 보기",
+            "exportFile": "저장"
+        },
+        "status": {
+            "processing": "지우는 중, 잠시만 기다려주세요...",
+            "success": "내보내기 성공",
+            "fail": "내보내기 실패",
+            "retry": "다시 시도",
+            "cancel": "취소"
+        },
+        "error": "이미지 오류",
+        "download": {
+            "saveAs": "새 이미지로 저장",
+            "replace": "원본 이미지 교체"
+        }
+    },
+    "component": {
+        "dropZone": {
+            "tip": "이미지를 여기에 드래그 앤 드롭하여 편집을 시작하세요."
+        },
+        "dialog": {
+            "exit": {
+                "title": "플러그인을 종료하시겠습니까?",
+                "description": "종료하면 내보내지 않은 이미지는 더 이상 내보내지 않습니다.",
+                "ok": "종료",
+                "cancel": "취소"
+            }
+        },
+        "crosshair": {
+            "tip": "커서를 드래그하여 자르기 영역을 선택하십시오."
+        },
+        "compare": {
+            "sync": {
+                "tip": "나란히 비교"
+            },
+            "split": {
+                "tip": "분할 비교"
+            },
+            "overlay": {
+                "tip": "오버레이 비교"
+            },
+            "toolbar": {
+                "scale": {
+                    "origin": "원래 크기",
+                    "fit": "너비에 맞추기"
+                }
+            }
+        }
+    },
+    "modelDialog": {
+		"downloading": {
+			"cancel": "다운로드 취소",
+			"description": "AI 모델을 다운로드하고 설치 중입니다. 잠시 기다려주세요.",
+			"title": "다운로드 및 설치 중..."
+		},
+		"failed": {
+			"description": "AI 모델 링크를 다운로드할 수 없습니다. 현재 네트워크 환경에 접근할 수 없기 때문일 수 있습니다. 다른 네트워크 연결로 전환한 후 다시 시도해 보세요. (다음 링크를 열 수 있는지 확인하세요: https://r2-plugin.eagle.cool/test.png)",
+			"ok": "다시 다운로드",
+			"title": "AI 모델 다운로드 실패"
+		},
+		"initialize": {
+			"cancel": "플러그인 닫기",
+			"description": "AI 로컬 모델 초기화 중, 약 <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>15~45</span>초 소요됩니다.",
+			"title": "AI 모델 초기화"
+		},
+		"prepare": {
+			"cancel": "플러그인 닫기",
+			"description": "플러그인이 원활하게 작동하려면 사전 훈련된 AI 모델을 다운로드하고 설치해야 합니다.",
+			"ok": "다운로드 및 설치",
+			"title": "AI 모델 다운로드 및 설치"
+		},
+		"success": {
+			"description": "사전 훈련된 AI 모델이 성공적으로 다운로드되고 설치되었습니다. 이제 플러그인을 사용하여 강력한 기능을 즐길 수 있습니다.",
+			"ok": "사용 시작",
+			"title": "AI 모델 설치 성공!"
+		}
+	},
+    "error": {
+        "equalExtension": "같은 확장자",
+        "imageLoadError": "이미지 로드 실패",
+        "fileExtensionNotSupported": "지원되지 않는 이미지 형식입니다.",
+        "fileSizeNotSupported": "지원되지 않는 파일 크기입니다. 현재 지원되는 최대 크기는 50MB입니다.",
+        "resolutionNotSupported": "이미지 해상도가 최대 크기 제한을 초과합니다. 현재 지원되는 최대 해상도는 10000 픽셀입니다.",
+        "fileResolutionIsNotEqual": "변환 실패, 출력 결과 이상 (ERROR_RESOLUTION)",
+        "fileHistogramsAbnormality": "변환 실패, 출력 결과 이상 (ERROR_HISTOGRAMS)",
+        "fileSizeAbnormality": "변환 실패, 출력 결과 이상 (ERROR_SIZE)"
+    }
+}

@@ -210,11 +210,21 @@ impl MLBridge {
     
     /// 默认特征提取
     fn default_feature_extraction(&self, img: &image::DynamicImage) -> StandardFeatures {
-        // 使用feature_extractor_128d
-        use crate::feature_extractor_128d::FeatureExtractor128D;
-        let mut extractor = FeatureExtractor128D::new();
-        let metadata = std::collections::HashMap::new();
-        let features_vec = extractor.extract_features(img, &metadata);
+        // 使用feature_extractor_128d函数式API
+        use crate::feature_extractor_128d::extract_128d_features;
+        
+        // 创建基础特征
+        let basic_features = crate::ImageFeatures {
+            width: img.width(),
+            height: img.height(),
+            file_size: 0,  // 未知
+            format: "unknown".to_string(),
+            has_alpha: img.color().has_alpha(),
+            is_animated: false,
+            complexity: 0.5,  // 默认值
+        };
+        
+        let features_vec = extract_128d_features(img, std::path::Path::new(""), &basic_features);
         
         StandardFeatures::from_vector(&features_vec).unwrap()
     }

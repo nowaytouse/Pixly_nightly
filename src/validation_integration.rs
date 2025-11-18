@@ -106,40 +106,36 @@ impl ValidationDisplay {
 pub struct ConversionFlowValidator;
 
 impl ConversionFlowValidator {
-    /// 🔥 启发式动画检测
+    /// 🔥 真实的动画检测（使用ffprobe）
     /// 
-    /// 根据文件扩展名和大小判断是否可能是动画
+    /// 使用ffprobe精准检测文件的帧数
     /// 
-    /// 注意：这是启发式方法，不是100%准确
-    /// 真实的动画检测需要解析文件内容（使用image库或ffprobe）
+    /// 注意：需要ffprobe工具，如果不可用则fallback到扩展名判断
     fn detect_animation_heuristic(path: &Path, ext: &str) -> bool {
+        use std::process::Command;
+        
+        // 尝试使用ffprobe精准检测
+        if let Ok(output) = Command::new("ffprobe")
+            .arg("-v").arg("error")
+            .arg("-select_streams").arg("v:0")
+            .arg("-show_entries").arg("stream=nb_frames")
+            .arg("-of").arg("default=noprint_wrappers=1:nokey=1")
+            .arg(path)
+            .output()
+        {
+            if output.status.success() {
+                if let Ok(frames_str) = String::from_utf8(output.stdout) {
+                    if let Ok(frames) = frames_str.trim().parse::<u32>() {
+                        // 超过1帧就是动画
+                        return frames > 1;
+                    }
+                }
+            }
+        }
+        
+        // Fallback: 基于扩展名判断（ffprobe不可用时）
         let ext_lower = ext.to_lowercase();
-        
-        // GIF: 通过文件大小启发式判断
-        if ext_lower == ".gif" {
-            if let Ok(metadata) = std::fs::metadata(path) {
-                let size_kb = metadata.len() as f64 / 1024.0;
-                // 大于100KB的GIF很可能是动画
-                return size_kb > 100.0;
-            }
-        }
-        
-        // WebP: 通过文件大小启发式判断
-        if ext_lower == ".webp" {
-            if let Ok(metadata) = std::fs::metadata(path) {
-                let size_kb = metadata.len() as f64 / 1024.0;
-                // 大于200KB的WebP可能是动画
-                return size_kb > 200.0;
-            }
-        }
-        
-        // APNG: PNG动画格式
-        if ext_lower == ".apng" {
-            return true;
-        }
-        
-        // 其他格式默认为静态
-        false
+        matches!(ext_lower.as_str(), ".gif" | ".apng" | ".webp")
     }
     
     /// 验证转换前的准备工作

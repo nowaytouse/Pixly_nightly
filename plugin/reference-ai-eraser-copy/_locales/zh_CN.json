@@ -1,0 +1,118 @@
+{
+    "manifest": {
+        "app": {
+            "name": "AI 橡皮擦"
+        }
+    },
+    "header": {
+        "thumbtack": {
+            "isAlwaysOnTop": "置顶窗口",
+            "isNotAlwaysOnTop": "取消置顶"
+        },
+        "dialog": {
+            "exit": {
+                "title": "退出插件？",
+                "description": "退出后，任务将停止。未完成格式转换的图片将不再转换。",
+                "cancel": "取消",
+                "ok": "退出"
+            }
+        }
+    },
+    "main": {
+        "cursorTip": "按住 <key>{{key}}</key> 可绘制多个选区",
+        "empty": {
+            "title": "拖放图片到这里",
+            "content": "请从 Eagle 或硬盘中新增图片。"
+        },
+        "toolbar": {
+            "brushSize": "画笔大小",
+            "undo": "撤销",
+            "redo": "重做",
+            "eye": "查看原图",
+            "exportFile": "保存"
+        },
+        "status": {
+            "processing": "擦除中，请稍等...",
+            "success": "导出成功",
+            "fail": "导出失败",
+            "retry": "重试",
+            "cancel": "取消"
+        },
+        "error": "图片错误",
+        "download": {
+            "saveAs": "另存新图",
+            "replace": "替换原图"
+        }
+    },
+    "component": {
+        "dropZone": {
+            "tip": "将图片拖放至此开始编辑"
+        },
+        "dialog": {
+            "exit": {
+                "title": "退出插件？",
+                "description": "退出后，未导出的图片将不再导出。",
+                "ok": "退出",
+                "cancel": "取消"
+            }
+        },
+        "crosshair": {
+            "tip": "拖拽光标框选裁剪区域"
+        },
+        "compare": {
+            "sync": {
+                "tip": "并排对比"
+            },
+            "split": {
+                "tip": "分割对比"
+            },
+            "overlay": {
+                "tip": "重叠对比"
+            },
+            "toolbar": {
+                "scale": {
+                    "origin": "原始尺寸",
+                    "fit": "自适应宽度"
+                }
+            }
+        }
+    },
+    "modelDialog": {
+        "downloading": {
+            "cancel": "取消下载",
+            "description": "正在下载并安装 AI 模型，请稍候。",
+            "title": "下载并安装中..."
+        },
+        "failed": {
+            "description": "无法下载 AI 模型链接，可能是当前网络环境无法访问，请尝试切换其他网络或使用代理工具再试试。（确保你可以打开此链接：https://r2-plugin.eagle.cool/test.png）",
+            "ok": "重新下载",
+            "title": "AI 模型下载失败"
+        },
+        "initialize": {
+            "cancel": "关闭插件",
+            "description": "正在初始化 AI 本地模型，大约需要 <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>15 至 45</span> 秒。",
+            "title": "AI 本地模型初始化"
+        },
+        "prepare": {
+            "cancel": "关闭插件",
+            "description": "为保证插件顺利运行，需要下载并安装 AI 模型。",
+            "ok": "下载并安装",
+            "title": "下载并安装 AI 模型"
+        },
+        "success": {
+            "description": "AI 模型已成功下载并安装。现在您可以开始使用该插件并享受其强大功能了。",
+            "ok": "开始使用",
+            "title": "AI 模型安装成功！"
+        }
+    },
+    "error": {
+        "equalExtension": "副档名相同",
+        "imageLoadError": "图片加载失败",
+        "fileExtensionNotSupported": "不支持的图片格式。",
+        "fileSizeNotSupported": "文件大小不支持，目前支持的最大尺寸为 50MB",
+        "resolutionNotSupported": "图像超出最大尺寸限制，目前支持的最大像素为 10000",
+        "fileResolutionIsNotEqual": "转换失败，输出结果异常(ERROR_RESOLUTION)",
+        "fileHistogramsAbnormality": "转换失败，输出结果异常(ERROR_HISTOGRAMS)",
+        "fileSizeAbnormality": "转换失败，输出结果异常(ERROR_SIZE)"
+    }
+}

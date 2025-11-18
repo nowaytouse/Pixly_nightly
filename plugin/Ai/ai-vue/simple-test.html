@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIXLY AI - 简单测试页面</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://unpkg.com/element-plus"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    #app {
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <el-card>
+      <template #header>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>🤖 PIXLY AI - 本地测试</span>
+          <el-tag>{{ status }}</el-tag>
+        </div>
+      </template>
+
+      <el-alert 
+        title="本地开发模式" 
+        type="info" 
+        description="这是一个简单的测试页面，用于验证 Vue + Element Plus 是否正常工作"
+        :closable="false"
+        style="margin-bottom: 20px;"
+      />
+
+      <el-form label-width="120px">
+        <el-form-item label="处理模式">
+          <el-radio-group v-model="mode">
+            <el-radio label="smart">智能模式</el-radio>
+            <el-radio label="manual">手动模式</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="输出格式">
+          <el-select v-model="format" style="width: 100%">
+            <el-option label="自动选择" value="auto" />
+            <el-option label="AVIF" value="avif" />
+            <el-option label="JXL" value="jxl" />
+            <el-option label="WebP" value="webp" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item>
+          <el-button type="primary" @click="handleTest">
+            测试按钮
+          </el-button>
+          <el-button @click="handleReset">
+            重置
+          </el-button>
+        </el-form-item>
+      </el-form>
+
+      <el-divider />
+
+      <h3>测试结果</h3>
+      <el-table :data="results" style="width: 100%">
+        <el-table-column prop="name" label="测试项" />
+        <el-table-column prop="status" label="状态">
+          <template #default="{ row }">
+            <el-tag :type="row.status === '✅' ? 'success' : 'info'">
+              {{ row.status }}
+            </el-tag>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
+  </div>
+
+  <script>
+    const { createApp, ref } = Vue;
+    
+    createApp({
+      setup() {
+        const status = ref('就绪');
+        const mode = ref('smart');
+        const format = ref('auto');
+        const results = ref([
+          { name: 'Vue 3', status: '✅' },
+          { name: 'Element Plus', status: '✅' },
+          { name: '本地服务器', status: '✅' }
+        ]);
+
+        const handleTest = () => {
+          ElementPlus.ElMessage.success('测试成功！');
+          status.value = '测试完成';
+        };
+
+        const handleReset = () => {
+          mode.value = 'smart';
+          format.value = 'auto';
+          status.value = '就绪';
+          ElementPlus.ElMessage.info('已重置');
+        };
+
+        return {
+          status,
+          mode,
+          format,
+          results,
+          handleTest,
+          handleReset
+        };
+      }
+    }).use(ElementPlus).mount('#app');
+  </script>
+</body>
+</html>

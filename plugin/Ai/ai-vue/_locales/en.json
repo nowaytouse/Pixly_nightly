@@ -1,0 +1,12 @@
+{
+  "manifest": {
+    "app": {
+      "name": "PIXLY AI (Vue)"
+    }
+  },
+  "subtitle": "Smart Media Processor",
+  "empty": {
+    "title": "No files selected",
+    "desc": "Select images or videos in Eagle, then return to this plugin"
+  }
+}

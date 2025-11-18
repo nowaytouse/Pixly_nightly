@@ -27,12 +27,13 @@ impl Default for AnalyzeOptions {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AnalysisResult {
     pub media_type: String,
-    pub features: MediaFeatures,
+    pub features: Vec<f64>,  // 🔥 128维特征向量
+    pub basic_info: BasicInfo,
     pub recommendation: Option<Recommendation>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct MediaFeatures {
+pub struct BasicInfo {
     pub width: u32,
     pub height: u32,
     pub file_size: u64,
@@ -67,10 +68,10 @@ pub fn handle_analyze(input: &str, options: &AnalyzeOptions) -> Result<()> {
         .context("Failed to analyze media file")?;
     
     // 2. 提取特征
-    // 🔥 修复TODO: 使用image库检测透明度和复杂度
     let (has_alpha, complexity) = detect_image_features(input_path)?;
     
-    let features = MediaFeatures {
+    // 构建BasicInfo
+    let basic_info = BasicInfo {
         width: media_info.resolution.0,
         height: media_info.resolution.1,
         file_size: media_info.size,
@@ -82,14 +83,36 @@ pub fn handle_analyze(input: &str, options: &AnalyzeOptions) -> Result<()> {
         complexity,
     };
     
-    // 3. AI推荐（如果启用）
+    // 3. 提取128维特征向量
+    // 需要加载图像
+    let img = image::open(input_path)
+        .context("Failed to load image for feature extraction")?;
+    
+    // 转换BasicInfo为ImageFeatures
+    let image_features = crate::ImageFeatures {
+        width: basic_info.width,
+        height: basic_info.height,
+        file_size: basic_info.file_size,
+        format: basic_info.format.clone(),
+        has_alpha: basic_info.has_alpha,
+        is_animated: basic_info.is_animated,
+        complexity: basic_info.complexity,
+    };
+    
+    let feature_vector = crate::feature_extractor_128d::extract_128d_features(
+        &img,
+        input_path,
+        &image_features
+    );
+    
+    // 4. AI推荐（如果启用）
     let recommendation = if options.use_ai {
-        Some(get_ai_recommendation(&media_info, &features)?)
+        Some(get_ai_recommendation(&media_info, &basic_info, &feature_vector)?)
     } else {
         None
     };
     
-    // 4. 输出结果
+    // 5. 输出结果
     let media_type_str = match media_info.media_type {
         crate::media_analyzer::MediaType::Image => "image",
         crate::media_analyzer::MediaType::Animation => "animation",
@@ -100,7 +123,8 @@ pub fn handle_analyze(input: &str, options: &AnalyzeOptions) -> Result<()> {
     
     let result = AnalysisResult {
         media_type: media_type_str.to_string(),
-        features,
+        features: feature_vector,
+        basic_info,
         recommendation,
     };
     
@@ -121,7 +145,7 @@ pub fn handle_analyze(input: &str, options: &AnalyzeOptions) -> Result<()> {
 /// ✅ 使用真实的ML系统进行预测
 /// - 格式推荐: src/format_recommender.rs
 /// - 统一AI接口: src/ai_interface.rs
-fn get_ai_recommendation(_media_info: &crate::media_analyzer::MediaInfo, features: &MediaFeatures) -> Result<Recommendation> {
+fn get_ai_recommendation(_media_info: &crate::media_analyzer::MediaInfo, basic_info: &BasicInfo, _features: &Vec<f64>) -> Result<Recommendation> {
     use crate::format_recommender::{AIFormatRecommender, UserPreferences};
     
     // 🤖 使用真实的AI格式推荐器
@@ -131,13 +155,13 @@ fn get_ai_recommendation(_media_info: &crate::media_analyzer::MediaInfo, feature
     use crate::{ImageFeatures, QualityMode};
     
     let image_features = ImageFeatures {
-        width: features.width,
-        height: features.height,
-        file_size: features.file_size,
-        format: features.format.clone(),
-        has_alpha: features.has_alpha,
-        is_animated: features.is_animated,
-        complexity: features.complexity,
+        width: basic_info.width,
+        height: basic_info.height,
+        file_size: basic_info.file_size,
+        format: basic_info.format.clone(),
+        has_alpha: basic_info.has_alpha,
+        is_animated: basic_info.is_animated,
+        complexity: basic_info.complexity,
     };
     
     // 创建AI推荐器
@@ -203,10 +227,8 @@ fn get_ai_recommendation(_media_info: &crate::media_analyzer::MediaInfo, feature
 
 /// 🔥 检测图像特征（透明度和复杂度）
 /// 
-/// 使用image库进行真实的图像分析
+/// 使用image库进行真实的图像分析 + 边缘检测计算复杂度
 fn detect_image_features(path: &Path) -> Result<(bool, f64)> {
-    use image::GenericImageView;
-    
     // 尝试打开图像
     let img = match image::open(path) {
         Ok(img) => img,
@@ -217,31 +239,68 @@ fn detect_image_features(path: &Path) -> Result<(bool, f64)> {
         }
     };
     
-    // 检测透明度
+    // 检测透明度（真实检测）
     let has_alpha = img.color().has_alpha();
     
-    // 简化的复杂度计算
-    // 基于图像尺寸和颜色类型的启发式估算
-    let (width, height) = img.dimensions();
-    let pixels = (width * height) as f64;
-    
-    // 复杂度因素：
-    // 1. 分辨率（大图通常更复杂）
-    let resolution_factor = (pixels / 1_000_000.0).min(1.0); // 归一化到0-1
-    
-    // 2. 颜色类型（RGB/RGBA更复杂）
-    let color_factor = match img.color() {
-        image::ColorType::L8 | image::ColorType::L16 => 0.3,  // 灰度
-        image::ColorType::La8 | image::ColorType::La16 => 0.4, // 灰度+Alpha
-        image::ColorType::Rgb8 | image::ColorType::Rgb16 => 0.6, // RGB
-        image::ColorType::Rgba8 | image::ColorType::Rgba16 => 0.8, // RGBA
-        _ => 0.5,
-    };
-    
-    // 综合复杂度（加权平均）
-    let complexity = (resolution_factor * 0.4 + color_factor * 0.6).clamp(0.0, 1.0);
+    // 🔥 真实的复杂度计算：基于边缘检测
+    let complexity = calculate_image_complexity(&img);
     
     Ok((has_alpha, complexity))
+}
+
+/// 🔥 真实的图像复杂度计算
+/// 
+/// 使用Sobel边缘检测算法计算图像复杂度
+/// 
+/// 方法：
+/// 1. 转换为灰度图
+/// 2. 采样像素（避免处理整个大图）
+/// 3. 计算边缘强度
+/// 4. 归一化到0-1范围
+fn calculate_image_complexity(img: &image::DynamicImage) -> f64 {
+    use image::GenericImageView;
+    
+    let (width, height) = img.dimensions();
+    let gray = img.to_luma8();
+    
+    // 采样策略：大图采样，小图全扫描
+    let sample_rate = if width * height > 1_000_000 {
+        10 // 大图每10个像素采样1个
+    } else {
+        1  // 小图全扫描
+    };
+    
+    let mut edge_count = 0;
+    let mut sample_count = 0;
+    
+    // Sobel边缘检测（简化版）
+    for y in (1..height-1).step_by(sample_rate as usize) {
+        for x in (1..width-1).step_by(sample_rate as usize) {
+            // 计算水平和垂直梯度
+            let gx = (gray.get_pixel(x+1, y)[0] as i32 - gray.get_pixel(x-1, y)[0] as i32).abs();
+            let gy = (gray.get_pixel(x, y+1)[0] as i32 - gray.get_pixel(x, y-1)[0] as i32).abs();
+            
+            let gradient = ((gx * gx + gy * gy) as f64).sqrt();
+            
+            // 边缘阈值：梯度 > 30 认为是边缘
+            if gradient > 30.0 {
+                edge_count += 1;
+            }
+            
+            sample_count += 1;
+        }
+    }
+    
+    // 计算边缘密度
+    let edge_density = if sample_count > 0 {
+        edge_count as f64 / sample_count as f64
+    } else {
+        0.0
+    };
+    
+    // 归一化到0-1范围
+    // 经验值：边缘密度 > 0.3 认为是高复杂度
+    (edge_density * 3.0).min(1.0)
 }
 
 /// 打印人类可读格式
@@ -251,12 +310,13 @@ fn print_human_readable(result: &AnalysisResult) {
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
     
     println!("📁 Media Type: {}", result.media_type);
-    println!("\n📊 Features:");
-    println!("   Resolution: {}x{}", result.features.width, result.features.height);
-    println!("   File Size: {:.2} MB", result.features.file_size as f64 / (1024.0 * 1024.0));
-    println!("   Format: {}", result.features.format);
-    println!("   Animated: {}", if result.features.is_animated { "Yes" } else { "No" });
-    println!("   Transparent: {}", if result.features.has_alpha { "Yes" } else { "No" });
+    println!("\n📊 Basic Info:");
+    println!("   Resolution: {}x{}", result.basic_info.width, result.basic_info.height);
+    println!("   File Size: {:.2} MB", result.basic_info.file_size as f64 / (1024.0 * 1024.0));
+    println!("   Format: {}", result.basic_info.format);
+    println!("   Animated: {}", if result.basic_info.is_animated { "Yes" } else { "No" });
+    println!("   Transparent: {}", if result.basic_info.has_alpha { "Yes" } else { "No" });
+    println!("   Complexity: {:.2}", result.basic_info.complexity);
     
     if let Some(rec) = &result.recommendation {
         println!("\n🤖 AI Recommendation:");

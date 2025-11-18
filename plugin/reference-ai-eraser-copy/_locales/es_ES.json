@@ -1,0 +1,118 @@
+{
+    "manifest": {
+        "app": {
+            "name": "Borrador de AI"
+        }
+    },
+    "header": {
+        "thumbtack": {
+            "isAlwaysOnTop": "Ventana siempre en la cima",
+            "isNotAlwaysOnTop": "Cancelar fijación"
+        },
+        "dialog": {
+            "exit": {
+                "title": "¿Salir del complemento?",
+                "description": "Al salir, la tarea se detendrá. Las imágenes que no se hayan convertido no se convertirán.",
+                "cancel": "Cancelar",
+                "ok": "Salir"
+            }
+        }
+    },
+    "main": {
+        "cursorTip": "Mantén presionada la tecla <key>{{key}}</key> para dibujar múltiples áreas de selección",
+        "empty": {
+            "title": "Arrastra imágenes aquí",
+            "content": "Por favor, añade imágenes desde Eagle o el disco duro."
+        },
+        "toolbar": {
+            "brushSize": "Tamaño del pincel",
+            "undo": "Deshacer",
+            "redo": "Rehacer",
+            "eye": "Ver imagen original",
+            "exportFile": "Guardar"
+        },
+        "status": {
+            "processing": "Borrando, por favor espera...",
+            "success": "Exportación exitosa",
+            "fail": "Exportación fallida",
+            "retry": "Reintentar",
+            "cancel": "Cancelar"
+        },
+        "error": "Error de imagen",
+        "download": {
+            "saveAs": "Guardar como nueva imagen",
+            "replace": "Reemplazar imagen original"
+        }
+    },
+    "component": {
+        "dropZone": {
+            "tip": "Arrastra imágenes aquí para empezar a editar"
+        },
+        "dialog": {
+            "exit": {
+                "title": "¿Salir del complemento?",
+                "description": "Al salir, las imágenes no exportadas no se exportarán.",
+                "ok": "Salir",
+                "cancel": "Cancelar"
+            }
+        },
+        "crosshair": {
+            "tip": "Arrastra el cursor para seleccionar el área de recorte"
+        },
+        "compare": {
+            "sync": {
+                "tip": "Comparación en paralelo"
+            },
+            "split": {
+                "tip": "Comparación dividida"
+            },
+            "overlay": {
+                "tip": "Comparación superpuesta"
+            },
+            "toolbar": {
+                "scale": {
+                    "origin": "Tamaño original",
+                    "fit": "Ajustar al ancho"
+                }
+            }
+        }
+    },
+    "modelDialog": {
+		"downloading": {
+			"cancel": "Cancelar descarga",
+			"description": "Descargando e instalando el modelo de IA, por favor espera.",
+			"title": "Descargando e instalando..."
+		},
+		"failed": {
+			"description": "No se puede descargar el enlace del modelo AI, posiblemente debido a que el entorno de red actual no es accesible. Intenta cambiar a otra conexión de red y prueba de nuevo. (Asegúrate de poder abrir este enlace: https://r2-plugin.eagle.cool/test.png)",
+			"ok": "Volver a descargar",
+			"title": "Error al descargar el modelo de IA"
+		},
+		"initialize": {
+			"cancel": "Cerrar complemento",
+			"description": "Inicializando el modelo local de IA, esto tomará aproximadamente <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>15 a 45</span> segundos.",
+			"title": "Inicialización del modelo de IA"
+		},
+		"prepare": {
+			"cancel": "Cerrar complemento",
+			"description": "Para garantizar el funcionamiento adecuado del complemento, es necesario descargar e instalar el modelo de IA preentrenado.",
+			"ok": "Descargar e instalar",
+			"title": "Descargar e instalar el modelo de IA"
+		},
+		"success": {
+			"description": "El modelo de IA preentrenado se ha descargado e instalado correctamente. Ahora puedes comenzar a usar el complemento y disfrutar de sus poderosas funciones.",
+			"ok": "Comenzar uso",
+			"title": "¡Instalación exitosa del modelo de IA!"
+		}
+	},
+    "error": {
+        "equalExtension": "Extensión de archivo igual",
+        "imageLoadError": "Error al cargar la imagen",
+        "fileExtensionNotSupported": "Formato de imagen no soportado.",
+        "fileSizeNotSupported": "Tamaño de archivo no soportado, el tamaño máximo soportado es 50MB",
+        "resolutionNotSupported": "La imagen excede el límite de tamaño máximo, el tamaño máximo de píxeles soportado es 10000",
+        "fileResolutionIsNotEqual": "Conversión fallida, resultado de salida anormal (ERROR_RESOLUTION)",
+        "fileHistogramsAbnormality": "Conversión fallida, resultado de salida anormal (ERROR_HISTOGRAMS)",
+        "fileSizeAbnormality": "Conversión fallida, resultado de salida anormal (ERROR_SIZE)"
+    }
+}

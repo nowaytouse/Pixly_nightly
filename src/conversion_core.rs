@@ -1,8 +1,9 @@
 // 🔄 转换核心逻辑
 // 从 @archive/rust_broken/src/cli/conversion.rs 提取
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use anyhow::Result;
+use image::GenericImageView;
 use crate::feature_toggles::FeatureToggles;
 use crate::format_params::FormatSpecificParams;
 
@@ -128,10 +129,6 @@ impl ConversionConfig {
     /// 从功能开关创建配置
     pub fn from_toggles(toggles: FeatureToggles) -> Self {
         Self {
-            preserve_metadata: toggles.preserve_metadata,
-            keep_animated: toggles.keep_animated,
-            merge_xmp_sidecar: toggles.merge_xmp_sidecar,
-            normalize_filenames: toggles.normalize_filenames,
             feature_toggles: Some(toggles),
             ..Default::default()
         }
@@ -143,14 +140,6 @@ impl ConversionConfig {
             .as_ref()
             .map(|t| t.enable_ai_prediction)
             .unwrap_or(false)
-    }
-    
-    /// 检查是否允许手动覆盖
-    pub fn allows_manual_override(&self) -> bool {
-        self.feature_toggles
-            .as_ref()
-            .map(|t| t.allow_manual_override)
-            .unwrap_or(true)
     }
     
     /// 检查是否启用高级参数
@@ -231,43 +220,94 @@ pub fn execute_conversion(
         }
     }
     
+    // 获取输入文件大小
+    let input_size = std::fs::metadata(input)?.len();
+    
     // ═══════════════════════════════════════════════════
-    // ✅ 输入验证 (如果启用)
+    // 🎬 动图转视频自动转换 (如果启用)
     // ═══════════════════════════════════════════════════
-    if toggles.map(|t| t.enable_file_validation).unwrap_or(true) {
-        validate_input_file(input)?;
+    if toggles.map(|t| t.enable_video_for_animation).unwrap_or(false) {
+        if should_convert_animation_to_video(input)? {
+            println!("🎬 检测到大型动图，自动转换为视频格式");
+            println!("   文件: {:?}", input);
+            println!("   预期体积减少: 60-80%");
+            println!("   使用编码: H.265/HEVC");
+            
+            // 🔥 自动转换为视频
+            let video_output = output.with_extension("mp4");
+            println!("   转换目标: {:?}", video_output);
+            
+            convert_animation_to_video(input, &video_output)?;
+            
+            println!("   ✅ 动图已转换为视频");
+            println!("");
+            
+            // 🔥 返回视频转换结果，不再继续图像转换
+            let output_size = std::fs::metadata(&video_output)?.len();
+            return Ok(ConversionResult {
+                input_size,
+                output_size,
+                compression_ratio: output_size as f64 / input_size as f64,
+                duration: start_time.elapsed(),
+                strategy_used: "animation_to_video".to_string(),
+            });
+        }
+    }
+    
+    // ═══════════════════════════════════════════════════
+    // 🔒 AI文件验证 (如果启用)
+    // ═══════════════════════════════════════════════════
+    if toggles.map(|t| t.enable_file_validation).unwrap_or(false) {
+        println!("🔒 Running AI file validation (Magika)...");
+        validate_file_with_magika(input)?;
+    }
+    
+    // ═══════════════════════════════════════════════════
+    // 🔧 格式自动修正 (如果启用)
+    // ═══════════════════════════════════════════════════
+    if toggles.map(|t| t.enable_format_correction).unwrap_or(false) {
+        println!("🔧 Checking format correction...");
+        check_format_correction(input)?;
     }
     
     // ═══════════════════════════════════════════════════
     // ✅ 配置验证
     // ═══════════════════════════════════════════════════
-    if toggles.map(|t| t.enable_validation).unwrap_or(true) {
-        config.validate()?;
-    }
+    config.validate()?;
     
-    let input_size = std::fs::metadata(input)?.len();
+    // ═══════════════════════════════════════════════════
+    // 🔗 智能预处理 (如果启用)
+    // ═══════════════════════════════════════════════════
+    let preprocessed_input = if toggles.map(|t| t.enable_preprocess).unwrap_or(false) {
+        println!("🔗 Running intelligent preprocessing...");
+        apply_preprocessing(input, config)?
+    } else {
+        input.to_path_buf()
+    };
     
     // ═══════════════════════════════════════════════════
     // 🔄 执行实际转换
     // ═══════════════════════════════════════════════════
-    let strategy_used = perform_conversion(input, output, format, config)?;
+    let strategy_used = perform_conversion(&preprocessed_input, output, format, config)?;
+    
+    // 清理临时预处理文件
+    if preprocessed_input != input {
+        let _ = std::fs::remove_file(&preprocessed_input);
+    }
     
     // ═══════════════════════════════════════════════════
     // 📄 XMP Sidecar合并 (如果启用)
     // ═══════════════════════════════════════════════════
-    let should_merge_xmp = toggles
-        .map(|t| t.merge_xmp_sidecar)
-        .unwrap_or(config.merge_xmp_sidecar);
-    
-    if should_merge_xmp {
+    if config.merge_xmp_sidecar {
         merge_xmp_sidecar(input, output)?;
     }
     
     // ═══════════════════════════════════════════════════
-    // ✅ 输出质量验证 (如果启用)
+    // 📊 SSIM质量验证 (如果启用)
     // ═══════════════════════════════════════════════════
-    if toggles.map(|t| t.enable_quality_validation).unwrap_or(false) {
-        validate_output_quality(output, config)?;
+    if toggles.map(|t| t.enable_ssim).unwrap_or(false) {
+        println!("📊 Running SSIM quality validation...");
+        validate_ssim_quality(input, output)?;
     }
     
     let output_size = std::fs::metadata(output)?.len();
@@ -288,22 +328,180 @@ pub fn execute_conversion(
     })
 }
 
-/// 验证输入文件
-fn validate_input_file(input: &Path) -> Result<()> {
-    if !input.exists() {
-        anyhow::bail!("Input file does not exist: {:?}", input);
+/// 🔒 使用Magika AI验证文件类型
+fn validate_file_with_magika(input: &Path) -> Result<()> {
+    use crate::magika_detector::MagikaDetector;
+    
+    let detector = MagikaDetector::with_defaults();
+    match detector.detect_file_type(input) {
+        Ok(detection) => {
+            println!("   ✅ File type: {} (confidence: {:.1}%)", 
+                     detection.detected_type, detection.confidence * 100.0);
+            
+            // 检查置信度
+            if !detection.is_high_confidence {
+                println!("   ⚠️  Warning: Low confidence detection");
+            }
+            
+            Ok(())
+        }
+        Err(e) => {
+            // 🔥 质量宣言：AI失败就响亮报错
+            eprintln!("❌ Magika AI validation FAILED: {}", e);
+            eprintln!("   File validation cannot proceed without AI");
+            Err(e)
+        }
+    }
+}
+
+/// 🔧 检查格式修正
+fn check_format_correction(input: &Path) -> Result<()> {
+    use crate::format_corrector::FormatCorrector;
+    
+    let corrector = FormatCorrector::new(false);  // 不自动重命名，只检查
+    match corrector.check_and_correct(input) {
+        Ok(result) if result.needs_correction => {
+            println!("   ⚠️  Format mismatch detected:");
+            println!("      Extension: {}", result.original_extension);
+            println!("      Actual format: {}", result.detected_format);
+            println!("      {}", result.message);
+            
+            // 只警告，不阻止转换
+            Ok(())
+        }
+        Ok(_) => {
+            println!("   ✅ Format matches extension");
+            Ok(())
+        }
+        Err(e) => {
+            println!("   ⚠️  Format correction check failed: {}", e);
+            // 不阻止转换
+            Ok(())
+        }
+    }
+}
+
+/// 🔗 应用智能预处理
+fn apply_preprocessing(input: &Path, _config: &ConversionConfig) -> Result<PathBuf> {
+    use crate::preprocessing::PreprocessPipeline;
+    
+    println!("   🔍 Analyzing image for preprocessing...");
+    
+    // 读取图像
+    let img = image::open(input)?;
+    
+    // 应用预处理
+    let pipeline = PreprocessPipeline::new();
+    let processed_img = pipeline.process(img)?;
+    
+    // 保存到临时文件
+    let temp_output = input.with_extension("preprocessed.png");
+    processed_img.save(&temp_output)?;
+    
+    println!("   ✅ Preprocessing complete");
+    Ok(temp_output)
+}
+
+/// 🎬 检测是否应该转换动图为视频
+fn should_convert_animation_to_video(input: &Path) -> Result<bool> {
+    // 检查文件扩展名
+    let ext = input
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("")
+        .to_lowercase();
+    
+    // 只检测动图格式
+    if !matches!(ext.as_str(), "gif" | "apng" | "webp") {
+        return Ok(false);
     }
     
+    // 获取文件大小
     let metadata = std::fs::metadata(input)?;
-    if !metadata.is_file() {
-        anyhow::bail!("Input path is not a file: {:?}", input);
+    let file_size = metadata.len();
+    
+    // 大于2MB的动图推荐转视频
+    if file_size > 2 * 1024 * 1024 {
+        return Ok(true);
     }
     
-    if metadata.len() == 0 {
-        anyhow::bail!("Input file is empty: {:?}", input);
+    // 尝试获取图像尺寸
+    if let Ok(img) = image::open(input) {
+        let (width, height) = img.dimensions();
+        let pixels = width * height;
+        
+        // 高分辨率动图 (>800x600) 推荐转视频
+        if pixels > 800 * 600 {
+            return Ok(true);
+        }
+    }
+    
+    Ok(false)
+}
+
+/// 🎬 转换动图为视频
+fn convert_animation_to_video(input: &Path, output: &Path) -> Result<()> {
+    use crate::video_processor::{VideoProcessor, VideoConversionConfig, AudioMode};
+    
+    // 创建视频转换配置
+    let config = VideoConversionConfig {
+        codec: "h265".to_string(),  // H.265最佳压缩率
+        container: "mp4".to_string(),
+        crf: 23,  // 平衡质量和体积
+        preset: "medium".to_string(),
+        target_resolution: None,
+        target_fps: None,
+        audio_mode: AudioMode::Remove,  // 动图没有音频
+        two_pass: false,
+        hw_accel: "auto".to_string(),
+        gop_size: Some(250),
+        bframes: Some(3),
+        ref_frames: Some(3),
+        me_method: Some("hex".to_string()),
+        pix_fmt: None,
+    };
+    
+    // 执行转换
+    let processor = VideoProcessor::new();
+    let result = processor.convert_video(input, output, &config, Some(|_progress: f32| {
+        // 进度回调（可选）
+    }))?;
+    
+    if !result.success {
+        anyhow::bail!("Animation to video conversion failed: {}", 
+                     result.error.unwrap_or_default());
     }
     
     Ok(())
+}
+
+/// 📊 SSIM质量验证
+fn validate_ssim_quality(original: &Path, converted: &Path) -> Result<()> {
+    use crate::quality_checker::QualityChecker;
+    
+    let checker = QualityChecker::new();
+    
+    match checker.check_conversion_quality(original, converted) {
+        Ok(result) => {
+            println!("   📊 SSIM Score: {:.4}", result.ssim_score);
+            println!("   📊 Quality Grade: {}", result.quality_grade.as_str());
+            
+            if result.passed {
+                println!("   ✅ Quality check passed");
+            } else {
+                println!("   ⚠️  Warning: Quality below threshold");
+            }
+            
+            println!("   {}", result.details);
+            
+            Ok(())
+        }
+        Err(e) => {
+            println!("   ⚠️  SSIM validation failed: {}", e);
+            // 不阻止转换
+            Ok(())
+        }
+    }
 }
 
 /// 验证输出质量

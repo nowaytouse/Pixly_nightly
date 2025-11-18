@@ -447,6 +447,9 @@ impl UnifiedAIPredictor {
     }
 
     /// 统一参数预测算法
+    /// 
+    /// 🤖 优先使用Python ML多模型路由
+    /// ⚠️ Python失败时Fallback到Rust智能规则
     pub fn predict_parameters(
         &self,
         features: &ImageFeatures,
@@ -455,6 +458,15 @@ impl UnifiedAIPredictor {
     ) -> (u32, u32, bool, HashMap<String, String>) {
         let target_format = target_format.to_lowercase();
 
+        // 🔥 Step 1: 尝试Python ML预测
+        if let Ok(ml_result) = self.try_python_ml_predict(features, &target_format, quality_mode) {
+            info!("✅ Using Python ML prediction");
+            return ml_result;
+        }
+
+        // ⚠️ Step 2: Fallback到Rust智能规则
+        warn!("⚠️ Python ML unavailable, using Rust fallback rules");
+        
         match target_format.as_str() {
             "avif" => self.predict_avif(features, quality_mode),
             "jxl" | "jpegxl" => self.predict_jxl(features, quality_mode),
@@ -463,6 +475,140 @@ impl UnifiedAIPredictor {
             "jpeg" | "jpg" => self.predict_jpeg(features, quality_mode),
             _ => self.predict_default(features, quality_mode),
         }
+    }
+
+    /// 🐍 尝试调用Python ML Bridge进行预测
+    fn try_python_ml_predict(
+        &self,
+        features: &ImageFeatures,
+        target_format: &str,
+        quality_mode: QualityMode,
+    ) -> Result<(u32, u32, bool, HashMap<String, String>)> {
+        // 1. 检查Python ML是否可用
+        if !is_python_ml_available() {
+            anyhow::bail!("Python ML Bridge not available");
+        }
+
+        // 2. 提取128维特征向量
+        let feature_vector = self.extract_128d_features(features);
+
+        // 3. 构建ML请求
+        let request = MLPredictRequest {
+            features: feature_vector,
+            target_format: target_format.to_string(),
+            quality_mode: quality_mode.as_str().to_string(),
+        };
+
+        // 4. 调用Python ML
+        let response = call_python_ml(&request)?;
+
+        // 5. 转换为Rust格式
+        let mut format_options = HashMap::new();
+        for opt in response.format_options {
+            // 解析格式选项（如 "--speed=6"）
+            if let Some((key, value)) = opt.split_once('=') {
+                format_options.insert(
+                    key.trim_start_matches("--").to_string(),
+                    value.to_string()
+                );
+            }
+        }
+
+        info!("🤖 Python ML: model={}, confidence={:.2}", 
+            response.model_version, response.confidence);
+
+        Ok((
+            response.quality as u32,
+            response.effort as u32,
+            response.lossless,
+            format_options,
+        ))
+    }
+
+    /// 🔬 提取128维标准化特征向量
+    /// 
+    /// 特征分组：
+    /// - Basic (16维): 基本属性
+    /// - Color (16维): 颜色分布
+    /// - Texture (16维): 纹理信息
+    /// - Shape (16维): 几何结构
+    /// - Quality (16维): 质量指标
+    /// - Metadata (32维): 元数据
+    /// - Context (16维): 上下文
+    fn extract_128d_features(&self, features: &ImageFeatures) -> Vec<f64> {
+        let mut vec = Vec::with_capacity(128);
+
+        // === Basic Features (16维) ===
+        vec.push(features.width as f64);
+        vec.push(features.height as f64);
+        vec.push(features.pixels() as f64);
+        vec.push(features.size_mb());
+        vec.push(features.aspect_ratio());
+        vec.push(if features.has_alpha { 1.0 } else { 0.0 });
+        vec.push(if features.is_animated { 1.0 } else { 0.0 });
+        vec.push(features.complexity);
+        vec.push(if features.is_high_resolution() { 1.0 } else { 0.0 });
+        vec.push(if features.is_large_image() { 1.0 } else { 0.0 });
+        // 格式编码（简化版）
+        let format_code = match features.format.as_str() {
+            "png" => 1.0,
+            "jpeg" | "jpg" => 2.0,
+            "webp" => 3.0,
+            "gif" => 4.0,
+            "avif" => 5.0,
+            "jxl" => 6.0,
+            _ => 0.0,
+        };
+        vec.push(format_code);
+        // 补齐到16维
+        while vec.len() < 16 {
+            vec.push(0.0);
+        }
+
+        // === Color Features (16维) ===
+        // TODO: 需要从图像数据提取真实颜色特征
+        // 当前使用占位符
+        for _ in 0..16 {
+            vec.push(0.5);  // 占位符
+        }
+
+        // === Texture Features (16维) ===
+        // TODO: 需要从图像数据提取纹理特征
+        for _ in 0..16 {
+            vec.push(features.complexity * 0.8);  // 基于复杂度的近似
+        }
+
+        // === Shape Features (16维) ===
+        // 基于宽高比和分辨率的几何特征
+        vec.push(features.aspect_ratio());
+        vec.push((features.width as f64).ln());
+        vec.push((features.height as f64).ln());
+        for _ in 3..16 {
+            vec.push(0.0);  // 占位符
+        }
+
+        // === Quality Features (16维) ===
+        // TODO: 需要从图像数据提取质量指标
+        for _ in 0..16 {
+            vec.push(0.7);  // 占位符
+        }
+
+        // === Metadata Features (32维) ===
+        // TODO: 需要从EXIF等元数据提取
+        for _ in 0..32 {
+            vec.push(0.0);  // 占位符
+        }
+
+        // === Context Features (16维) ===
+        // TODO: 处理历史、用户偏好等
+        for _ in 0..16 {
+            vec.push(0.0);  // 占位符
+        }
+
+        // 验证维度
+        assert_eq!(vec.len(), 128, "Feature vector must be 128 dimensions");
+
+        vec
     }
 
     /// 统一AVIF预测算法

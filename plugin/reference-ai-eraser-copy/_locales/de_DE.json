@@ -1,0 +1,118 @@
+{
+    "manifest": {
+        "app": {
+            "name": "AI Radiergummi"
+        }
+    },
+    "header": {
+        "thumbtack": {
+            "isAlwaysOnTop": "Fenster fixieren",
+            "isNotAlwaysOnTop": "Fixierung aufheben"
+        },
+        "dialog": {
+            "exit": {
+                "title": "Plugin beenden?",
+                "description": "Das Beenden stoppt die Aufgabe. Bilder, die nicht vollständig konvertiert wurden, werden nicht mehr konvertiert.",
+                "cancel": "Abbrechen",
+                "ok": "Beenden"
+            }
+        }
+    },
+    "main": {
+        "cursorTip": "Halten Sie <key>{{key}}</key> gedrückt, um mehrere Auswahlen zu zeichnen",
+        "empty": {
+            "title": "Bilder hier ablegen",
+            "content": "Bitte fügen Sie Bilder aus Eagle oder von Ihrer Festplatte hinzu."
+        },
+        "toolbar": {
+            "brushSize": "Pinselgröße",
+            "undo": "Rückgängig",
+            "redo": "Wiederholen",
+            "eye": "Original anzeigen",
+            "exportFile": "Speichern"
+        },
+        "status": {
+            "processing": "Löschen läuft, bitte warten...",
+            "success": "Export erfolgreich",
+            "fail": "Export fehlgeschlagen",
+            "retry": "Wiederholen",
+            "cancel": "Abbrechen"
+        },
+        "error": "Bildfehler",
+        "download": {
+            "saveAs": "Als neues Bild speichern",
+            "replace": "Originalbild ersetzen"
+        }
+    },
+    "component": {
+        "dropZone": {
+            "tip": "Bilder hier ablegen zum Bearbeiten"
+        },
+        "dialog": {
+            "exit": {
+                "title": "Plugin beenden?",
+                "description": "Das Beenden stoppt den Export der Bilder.",
+                "ok": "Beenden",
+                "cancel": "Abbrechen"
+            }
+        },
+        "crosshair": {
+            "tip": "Ziehen Sie den Cursor, um den Zuschnittbereich auszuwählen"
+        },
+        "compare": {
+            "sync": {
+                "tip": "Nebeneinander-Vergleich"
+            },
+            "split": {
+                "tip": "Geteilter Vergleich"
+            },
+            "overlay": {
+                "tip": "Überlagerungs-Vergleich"
+            },
+            "toolbar": {
+                "scale": {
+                    "origin": "Originalgröße",
+                    "fit": "An Breite anpassen"
+                }
+            }
+        }
+    },
+    "modelDialog": {
+		"downloading": {
+			"cancel": "Download abbrechen",
+			"description": "Das KI-Modell wird heruntergeladen und installiert, bitte warten.",
+			"title": "Herunterladen und installieren..."
+		},
+		"failed": {
+			"description": "Das KI-Modell kann nicht heruntergeladen werden, möglicherweise ist die aktuelle Netzwerkumgebung nicht zugänglich. Bitte versuchen Sie, zu einer anderen Netzwerkverbindung zu wechseln und es erneut zu versuchen. (Stellen Sie sicher, dass Sie diesen Link öffnen können: https://r2-plugin.eagle.cool/test.png)",
+			"ok": "Erneut herunterladen",
+			"title": "KI-Modell-Download fehlgeschlagen"
+		},
+		"initialize": {
+			"cancel": "Plugin schließen",
+			"description": "Das lokale KI-Modell wird initialisiert, dies dauert etwa <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>15 bis 45</span> Sekunden.",
+			"title": "KI-Modell-Initialisierung"
+		},
+		"prepare": {
+			"cancel": "Plugin schließen",
+			"description": "Um den reibungslosen Betrieb des Plugins zu gewährleisten, muss das vortrainierte KI-Modell heruntergeladen und installiert werden.",
+			"ok": "Herunterladen und installieren",
+			"title": "KI-Modell herunterladen und installieren"
+		},
+		"success": {
+			"description": "Das vortrainierte KI-Modell wurde erfolgreich heruntergeladen und installiert. Sie können nun das Plugin verwenden und seine leistungsstarken Funktionen genießen.",
+			"ok": "Verwendung starten",
+			"title": "KI-Modell erfolgreich installiert!"
+		}
+	},
+    "error": {
+        "equalExtension": "Gleiche Dateierweiterung",
+        "imageLoadError": "Bild laden fehlgeschlagen",
+        "fileExtensionNotSupported": "Nicht unterstütztes Bildformat.",
+        "fileSizeNotSupported": "Dateigröße nicht unterstützt, die maximal unterstützte Größe beträgt 50MB",
+        "resolutionNotSupported": "Bild überschreitet die maximale Größenbegrenzung, die maximal unterstützte Auflösung beträgt 10000 Pixel",
+        "fileResolutionIsNotEqual": "Konvertierung fehlgeschlagen, abnormale Ausgabe (ERROR_RESOLUTION)",
+        "fileHistogramsAbnormality": "Konvertierung fehlgeschlagen, abnormale Ausgabe (ERROR_HISTOGRAMS)",
+        "fileSizeAbnormality": "Konvertierung fehlgeschlagen, abnormale Ausgabe (ERROR_SIZE)"
+    }
+}

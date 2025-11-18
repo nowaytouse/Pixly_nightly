@@ -64,10 +64,6 @@ impl ConversionEngineConfig {
     /// 从功能开关创建配置
     pub fn from_toggles(toggles: crate::feature_toggles::FeatureToggles) -> Self {
         Self {
-            max_concurrent_conversions: toggles.max_concurrent_conversions,
-            enable_simd: toggles.enable_simd,
-            preserve_metadata: toggles.preserve_metadata,
-            merge_xmp_sidecar: toggles.merge_xmp_sidecar,
             feature_toggles: Some(toggles),
             ..Default::default()
         }
@@ -115,31 +111,30 @@ impl ConversionEngine {
         // ═══════════════════════════════════════════════════
         // 🔧 应用高级参数 (从advanced_options)
         // ═══════════════════════════════════════════════════
-        if let Some(toggles) = &self.config.feature_toggles {
-            if toggles.enable_advanced_params {
-                // 从advanced_options提取参数
-                if let Some(chroma) = request.advanced_options.get("chroma_subsampling") {
-                    if let Some(chroma_str) = chroma.as_str() {
-                        config.chroma_subsampling = Some(chroma_str.to_string());
-                    }
+        // 高级参数总是可用的，不需要功能开关
+        {
+            // 从advanced_options提取参数
+            if let Some(chroma) = request.advanced_options.get("chroma_subsampling") {
+                if let Some(chroma_str) = chroma.as_str() {
+                    config.chroma_subsampling = Some(chroma_str.to_string());
                 }
-                
-                if let Some(alpha_q) = request.advanced_options.get("alpha_quality") {
-                    if let Some(alpha_val) = alpha_q.as_u64() {
-                        config.alpha_quality = Some(alpha_val as u8);
-                    }
+            }
+            
+            if let Some(alpha_q) = request.advanced_options.get("alpha_quality") {
+                if let Some(alpha_val) = alpha_q.as_u64() {
+                    config.alpha_quality = Some(alpha_val as u8);
                 }
-                
-                if let Some(effort) = request.advanced_options.get("effort") {
-                    if let Some(effort_val) = effort.as_u64() {
-                        config.effort = Some(effort_val as u8);
-                    }
+            }
+            
+            if let Some(effort) = request.advanced_options.get("effort") {
+                if let Some(effort_val) = effort.as_u64() {
+                    config.effort = Some(effort_val as u8);
                 }
-                
-                if let Some(normalize) = request.advanced_options.get("normalize_filenames") {
-                    if let Some(normalize_bool) = normalize.as_bool() {
-                        config.normalize_filenames = normalize_bool;
-                    }
+            }
+            
+            if let Some(normalize) = request.advanced_options.get("normalize_filenames") {
+                if let Some(normalize_bool) = normalize.as_bool() {
+                    config.normalize_filenames = normalize_bool;
                 }
             }
         }

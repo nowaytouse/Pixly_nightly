@@ -48,6 +48,10 @@ pub mod metadata_handler;
 pub mod video_handler;
 pub mod gif_handler;
 pub mod conversion_engine;
+pub mod python_ml_caller;  // 🔥 Python ML Bridge调用模块
+pub mod video_features;  // 🎬 视频特征提取
+pub mod file_attributes;  // 🔥 文件属性保留（时间戳 + 扩展属性）
+pub mod format_corrector;  // 🔧 格式自动修正
 pub mod conversion_validator;
 pub mod validation_integration;
 pub mod memory_manager;
@@ -197,6 +201,6 @@ pub mod unified_ai_interface;
 pub mod format_params;
 
 // 导出功能开关
-pub use feature_toggles::{FeatureToggles, FeatureToggleManager};
+pub use feature_toggles::FeatureToggles;
 pub use unified_ai_interface::{UnifiedAIManager, UnifiedAIRequest, UnifiedAIResponse, AIPreferences};
 pub use format_params::{FormatSpecificParams, JxlParams, WebPParams, AvifParams, HeicParams};
