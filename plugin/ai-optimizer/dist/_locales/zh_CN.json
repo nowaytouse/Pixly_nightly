@@ -1,0 +1,52 @@
+{
+  "manifest": {
+    "app": {
+      "name": "PIXLY AI 全媒体智能优化"
+    }
+  },
+  "header": {
+    "title": "AI 智能优化",
+    "analyze": "开始分析",
+    "analyzing": "分析中...",
+    "apply": "应用推荐"
+  },
+  "main": {
+    "empty": {
+      "title": "添加媒体文件",
+      "content": "请从 Eagle 添加图片、视频或音频文件进行AI分析"
+    },
+    "mediaTypes": {
+      "image": "图片",
+      "video": "视频",
+      "audio": "音频",
+      "animated": "动图",
+      "transparent": "透明图"
+    },
+    "recommendations": {
+      "title": "AI 推荐方案",
+      "format": "推荐格式",
+      "params": "推荐参数",
+      "estimated": "预估效果",
+      "confidence": "置信度"
+    },
+    "strategies": {
+      "size": "最小文件",
+      "balanced": "平衡模式",
+      "quality": "最高质量"
+    }
+  },
+  "dialog": {
+    "analyzing": {
+      "title": "AI 分析中",
+      "description": "正在使用AI分析媒体特征，请稍候..."
+    },
+    "success": {
+      "title": "分析完成！",
+      "description": "已为 <span class='ai-gradient'>{{count}}</span> 个文件生成优化建议"
+    },
+    "error": {
+      "title": "分析失败",
+      "description": "AI分析过程中出现错误，请重试"
+    }
+  }
+}

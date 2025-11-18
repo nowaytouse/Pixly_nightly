@@ -414,16 +414,7 @@ fn handle_convert(
         keep_animated: animated,
         lossless,
         merge_xmp_sidecar: merge_xmp,
-        feature_toggles: None,
-        chroma_subsampling: None,
-        alpha_quality: None,
-        effort: None,
-        resize: None,
-        quantize: None,
-        sharpen: None,
-        output_dir: None,
-        normalize_filenames: false,
-        format_specific_params: None,
+        ..Default::default()
     };
     
     // 执行转换
@@ -492,16 +483,7 @@ fn handle_in_place_convert(
         keep_animated: animated,
         lossless,
         merge_xmp_sidecar: merge_xmp,
-        feature_toggles: None,
-        chroma_subsampling: None,
-        alpha_quality: None,
-        effort: None,
-        resize: None,
-        quantize: None,
-        sharpen: None,
-        output_dir: None,
-        normalize_filenames: false,
-        format_specific_params: None,
+        ..Default::default()
     };
     
     // Level 3: Execute conversion to temporary file
@@ -778,16 +760,7 @@ fn create_batch_config(
         keep_animated: animated,
         lossless,
         merge_xmp_sidecar: merge_xmp,
-        feature_toggles: None,
-        chroma_subsampling: None,
-        alpha_quality: None,
-        effort: None,
-        resize: None,
-        quantize: None,
-        sharpen: None,
-        output_dir: None,
-        normalize_filenames: false,
-        format_specific_params: None,
+        ..Default::default()
     };
     
     BatchConverterConfig {

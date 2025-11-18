@@ -62,15 +62,31 @@ export function useRustCLI() {
 
   /**
    * 分析媒体文件
-   * 调用: pixly-rust analyze <file> --ai --json
+   * 调用: pixly-converter analyze <file> --ai --json
    */
   async function analyzeMedia(filePath) {
     try {
       const args = ['analyze', filePath, '--ai', '--json']
       const output = await executeCommand(args)
       
+      // 🔥 重要：Rust CLI会在stderr输出日志，在stdout输出JSON
+      // 需要从混合输出中提取JSON部分
+      let jsonOutput = output
+      
+      // 如果输出包含日志行，提取JSON部分
+      const lines = output.split('\n')
+      const jsonStartIndex = lines.findIndex(line => line.trim().startsWith('{'))
+      if (jsonStartIndex !== -1) {
+        jsonOutput = lines.slice(jsonStartIndex).join('\n')
+      }
+      
       // 解析JSON输出
-      const result = JSON.parse(output)
+      const result = JSON.parse(jsonOutput)
+      
+      // 🔥 质量宣言：验证必需字段存在
+      if (!result.media_type || !result.features || !result.recommendation) {
+        throw new Error('Invalid response format from Rust CLI')
+      }
       
       return {
         mediaType: result.media_type,
@@ -98,7 +114,8 @@ export function useRustCLI() {
       // 🔥 质量宣言：失败就响亮报错，不降级！
       console.error('[Rust CLI] ❌ AI分析失败:', error)
       console.error('   Without Rust CLI, AI analysis cannot work!')
-      console.error('   Please ensure pixly-rust is compiled and accessible')
+      console.error('   Please ensure pixly-converter is compiled and accessible')
+      console.error('   Error details:', error.message)
       
       // 抛出错误，让用户知道真实情况
       throw new Error(`AI分析失败: ${error.message}`)

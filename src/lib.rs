@@ -42,7 +42,7 @@ pub mod dependency_checker;
 pub mod cli_convert;
 pub mod cli_batch;
 pub mod cli_audio;
-// pub mod cli_analyze;  // TODO: 重新实现analyze命令
+pub mod cli_analyze;  // ✅ AI-powered media analysis
 pub mod conversion_core;
 pub mod metadata_handler;
 pub mod video_handler;

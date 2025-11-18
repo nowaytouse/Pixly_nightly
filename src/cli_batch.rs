@@ -256,16 +256,7 @@ fn convert_single_file(
         keep_animated: options.keep_animated,
         lossless: options.lossless,
         merge_xmp_sidecar: options.merge_xmp_sidecar,
-        feature_toggles: None,
-        chroma_subsampling: None,
-        alpha_quality: None,
-        effort: None,
-        resize: None,
-        quantize: None,
-        sharpen: None,
-        output_dir: None,
-        normalize_filenames: false,
-        format_specific_params: None,
+        ..Default::default()
     };
     
     execute_conversion(input_path, output_path, format, &config)?;

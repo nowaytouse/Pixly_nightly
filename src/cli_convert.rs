@@ -34,6 +34,32 @@ pub struct ConvertOptions {
     pub quantize: Option<u8>,
     pub sharpen: Option<f32>,
     pub resize_filter: String,
+    
+    // 🔥 修复空壳功能：AVIF高级参数
+    pub avif_min_quantizer: Option<u8>,
+    pub avif_max_quantizer: Option<u8>,
+    pub avif_chroma: Option<String>,
+    pub avif_tiles: Option<String>,
+    
+    // 🔥 修复空壳功能：JXL高级参数
+    pub jxl_effort: Option<u8>,
+    pub jxl_distance: Option<f32>,
+    pub jxl_jpeg_lossless: bool,
+    pub jxl_modular: bool,
+    pub jxl_progressive: bool,
+    pub jxl_responsive: bool,
+    pub jxl_gaborish: bool,
+    
+    // 🔥 修复空壳功能：WebP高级参数
+    pub webp_method: Option<u8>,
+    pub webp_lossless: bool,
+    pub webp_filter_strength: Option<u8>,
+    pub webp_sharpness: Option<u8>,
+    
+    // 🔥 修复空壳功能：HEIC高级参数
+    pub heic_encoder: Option<String>,
+    pub heic_chroma: Option<String>,
+    pub heic_thumbnail: bool,
 }
 
 impl Default for ConvertOptions {
@@ -57,6 +83,26 @@ impl Default for ConvertOptions {
             quantize: None,
             sharpen: None,
             resize_filter: String::from("lanczos3"),
+            
+            // 🔥 修复空壳功能：默认值
+            avif_min_quantizer: None,
+            avif_max_quantizer: None,
+            avif_chroma: None,
+            avif_tiles: None,
+            jxl_effort: None,
+            jxl_distance: None,
+            jxl_jpeg_lossless: false,
+            jxl_modular: false,
+            jxl_progressive: false,
+            jxl_responsive: false,
+            jxl_gaborish: false,
+            webp_method: None,
+            webp_lossless: false,
+            webp_filter_strength: None,
+            webp_sharpness: None,
+            heic_encoder: None,
+            heic_chroma: None,
+            heic_thumbnail: false,
         }
     }
 }
@@ -189,6 +235,145 @@ pub fn parse_options(args: &[String]) -> ConvertOptions {
                     i += 1;
                 }
             }
+            
+            // 🔥 修复空壳功能：AVIF参数解析
+            "--min-quantizer" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse::<u8>() {
+                        options.avif_min_quantizer = Some(val.clamp(0, 63));
+                    }
+                    i += 2;
+                } else {
+                    i += 1;
+                }
+            }
+            "--max-quantizer" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse::<u8>() {
+                        options.avif_max_quantizer = Some(val.clamp(0, 63));
+                    }
+                    i += 2;
+                } else {
+                    i += 1;
+                }
+            }
+            "--chroma" => {
+                if i + 1 < args.len() {
+                    options.avif_chroma = Some(args[i + 1].clone());
+                    i += 2;
+                } else {
+                    i += 1;
+                }
+            }
+            "--tiles" => {
+                if i + 1 < args.len() {
+                    options.avif_tiles = Some(args[i + 1].clone());
+                    i += 2;
+                } else {
+                    i += 1;
+                }
+            }
+            
+            // 🔥 修复空壳功能：JXL参数解析
+            "--effort" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse::<u8>() {
+                        options.jxl_effort = Some(val.clamp(1, 9));
+                    }
+                    i += 2;
+                } else {
+                    i += 1;
+                }
+            }
+            "--distance" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse::<f32>() {
+                        options.jxl_distance = Some(val.clamp(0.0, 15.0));
+                    }
+                    i += 2;
+                } else {
+                    i += 1;
+                }
+            }
+            "--jpeg-lossless" => {
+                options.jxl_jpeg_lossless = true;
+                i += 1;
+            }
+            "--modular" => {
+                options.jxl_modular = true;
+                i += 1;
+            }
+            "--progressive" => {
+                options.jxl_progressive = true;
+                i += 1;
+            }
+            "--responsive" => {
+                options.jxl_responsive = true;
+                i += 1;
+            }
+            "--gaborish" => {
+                options.jxl_gaborish = true;
+                i += 1;
+            }
+            
+            // 🔥 修复空壳功能：WebP参数解析
+            "--method" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse::<u8>() {
+                        options.webp_method = Some(val.clamp(0, 6));
+                    }
+                    i += 2;
+                } else {
+                    i += 1;
+                }
+            }
+            "--lossless" => {
+                options.webp_lossless = true;
+                i += 1;
+            }
+            "--filter-strength" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse::<u8>() {
+                        options.webp_filter_strength = Some(val.clamp(0, 100));
+                    }
+                    i += 2;
+                } else {
+                    i += 1;
+                }
+            }
+            "--sharpness" => {
+                if i + 1 < args.len() {
+                    if let Ok(val) = args[i + 1].parse::<u8>() {
+                        options.webp_sharpness = Some(val.clamp(0, 7));
+                    }
+                    i += 2;
+                } else {
+                    i += 1;
+                }
+            }
+            
+            // 🔥 修复空壳功能：HEIC参数解析
+            "--encoder" => {
+                if i + 1 < args.len() {
+                    options.heic_encoder = Some(args[i + 1].clone());
+                    i += 2;
+                } else {
+                    i += 1;
+                }
+            }
+            "--heic-chroma" => {
+                if i + 1 < args.len() {
+                    options.heic_chroma = Some(args[i + 1].clone());
+                    i += 2;
+                } else {
+                    i += 1;
+                }
+            }
+            "--thumbnail" => {
+                options.heic_thumbnail = true;
+                i += 1;
+            }
+            
             _ => {
                 i += 1;
             }
@@ -352,16 +537,7 @@ fn execute_conversion(
         keep_animated: options.keep_animated,
         lossless: quality == 100,
         merge_xmp_sidecar: options.merge_xmp_sidecar,
-        feature_toggles: None,
-        chroma_subsampling: None,
-        alpha_quality: None,
-        effort: None,
-        resize: None,
-        quantize: None,
-        sharpen: None,
-        output_dir: None,
-        normalize_filenames: false,
-        format_specific_params: None,
+        ..Default::default()
     };
     
     core_convert(Path::new(final_input), output_path, format, &config)?;

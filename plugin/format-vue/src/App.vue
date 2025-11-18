@@ -128,6 +128,7 @@ const conversionType = ref('image') // 'image' or 'video'
 const selectedFormat = ref('jxl')
 const quality = ref(90)
 const lossless = ref(false)
+const aiMode = ref(false) // 🤖 AI智能模式
 const advancedParams = ref({})
 const videoParams = ref({})
 const files = ref([])

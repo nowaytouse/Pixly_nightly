@@ -49,6 +49,22 @@ pub struct ConversionConfig {
     pub normalize_filenames: bool,
     
     // ═══════════════════════════════════════════════════
+    // 📦 JXL专属参数 (修复空壳功能)
+    // ═══════════════════════════════════════════════════
+    
+    /// JXL: 使用模块化模式
+    pub jxl_modular: bool,
+    
+    /// JXL: 渐进式解码
+    pub jxl_progressive: bool,
+    
+    /// JXL: 响应式解码
+    pub jxl_responsive: bool,
+    
+    /// JXL: Gaborish滤镜
+    pub jxl_gaborish: bool,
+    
+    // ═══════════════════════════════════════════════════
     // 📦 格式专属参数 (完整支持HTML界面)
     // ═══════════════════════════════════════════════════
     
@@ -99,6 +115,10 @@ impl Default for ConversionConfig {
             sharpen: None,
             output_dir: None,
             normalize_filenames: false,
+            jxl_modular: false,
+            jxl_progressive: false,
+            jxl_responsive: false,
+            jxl_gaborish: false,
             format_specific_params: None,
         }
     }
@@ -373,15 +393,48 @@ fn perform_conversion(
 fn convert_to_avif(input: &Path, output: &Path, config: &ConversionConfig) -> Result<()> {
     use std::process::Command;
     
-    // Try avifenc first
-    let result = Command::new("avifenc")
-        .arg("--min").arg("0")
-        .arg("--max").arg("63")
-        .arg("--speed").arg(config.speed.to_string())
-        .arg("--quality").arg(config.quality.to_string())
-        .arg(input)
-        .arg(output)
-        .output();
+    // 🔥 Phase: 修复avifenc参数
+    // avifenc使用 -q/--qcolor 而不是 --quality
+    // avifenc使用 -s/--speed 而不是 --speed (虽然两者都支持)
+    let mut cmd = Command::new("avifenc");
+    
+    // 🔥 修复空壳功能：使用format_specific_params中的min/max quantizer
+    let (min_q, max_q) = if let Some(ref params) = config.format_specific_params {
+        if let crate::format_params::FormatSpecificParams::Avif(avif) = params {
+            (
+                avif.min_quantizer.unwrap_or(0),
+                avif.max_quantizer.unwrap_or(63)
+            )
+        } else {
+            (0, 63)  // 默认值
+        }
+    } else {
+        (0, 63)  // 默认值
+    };
+    
+    cmd.arg("--min").arg(min_q.to_string())
+        .arg("--max").arg(max_q.to_string())
+        .arg("-s").arg(config.speed.to_string())
+        .arg("-q").arg(config.quality.to_string());  // 修复：使用 -q 而不是 --quality
+    
+    println!("   🔧 AVIF: min_quantizer={}, max_quantizer={}", min_q, max_q);
+    
+    // 🔥 Phase: AVIF高级参数支持（修复潜在空壳）
+    // Chroma subsampling: -y 或 --yuv (420, 422, 444)
+    if let Some(ref chroma) = config.chroma_subsampling {
+        cmd.arg("-y").arg(chroma);
+        println!("   🔧 AVIF: Chroma subsampling {}", chroma);
+    }
+    
+    // Alpha quality: --qalpha (0-100)
+    if let Some(alpha_q) = config.alpha_quality {
+        cmd.arg("--qalpha").arg(alpha_q.to_string());
+        println!("   🔧 AVIF: Alpha quality {}", alpha_q);
+    }
+    
+    cmd.arg(input).arg(output);
+    
+    let result = cmd.output();
     
     match result {
         Ok(output_result) if output_result.status.success() => Ok(()),
@@ -390,7 +443,7 @@ fn convert_to_avif(input: &Path, output: &Path, config: &ConversionConfig) -> Re
             anyhow::bail!("avifenc failed: {}", error)
         }
         Err(e) => {
-            // 不再fallback！直接报错！
+            // 🔥 质量宣言：响亮的错误，不fallback！
             anyhow::bail!("avifenc not found or failed to execute: {}. Please install avifenc: brew install libavif", e)
         }
     }
@@ -438,6 +491,33 @@ fn convert_to_jxl(input: &Path, output: &Path, config: &ConversionConfig) -> Res
         cmd.arg("--distance").arg(distance.to_string());
     }
     // 如果config.lossless=true，不传递distance，让cjxl使用默认的无损模式
+    
+    // 🔥 Phase: JXL高级参数支持（修复空壳功能）
+    // 根据PROJECT_QUALITY_MANIFESTO.md - 反对摆设代码原则
+    
+    // Modular mode: -m 0|1 或 --modular=0|1
+    if config.jxl_modular {
+        cmd.arg("--modular=1");
+        println!("   🔧 JXL: Modular mode enabled");
+    }
+    
+    // Progressive decoding: -p 或 --progressive
+    if config.jxl_progressive {
+        cmd.arg("--progressive");
+        println!("   🔧 JXL: Progressive decoding enabled");
+    }
+    
+    // Responsive decoding: -R K 或 --responsive=K
+    if config.jxl_responsive {
+        cmd.arg("--responsive=1");
+        println!("   🔧 JXL: Responsive decoding enabled");
+    }
+    
+    // Gaborish filter: --gaborish=0|1
+    if config.jxl_gaborish {
+        cmd.arg("--gaborish=1");
+        println!("   🔧 JXL: Gaborish filter enabled");
+    }
     
     let result = cmd.output();
     

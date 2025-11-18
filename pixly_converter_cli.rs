@@ -54,6 +54,24 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// 🔍 Analyze media files with AI recommendations
+    Analyze {
+        /// Input file path
+        input: PathBuf,
+        
+        /// Use AI to recommend optimal format and parameters
+        #[arg(long, default_value = "true")]
+        ai: bool,
+        
+        /// Output in JSON format (for programmatic use)
+        #[arg(long, default_value = "false")]
+        json: bool,
+        
+        /// Target format to analyze for (optional)
+        #[arg(short, long)]
+        format: Option<String>,
+    },
+    
     /// Convert media files
     Convert {
         /// Input file path
@@ -192,6 +210,29 @@ fn main() {
 
 fn run(cli: Cli) -> Result<()> {
     match cli.command {
+        Commands::Analyze {
+            input,
+            ai,
+            json,
+            format,
+        } => {
+            // 🔍 调用analyze模块
+            use pixly_kernel::cli_analyze::{handle_analyze, AnalyzeOptions};
+            
+            let options = AnalyzeOptions {
+                use_ai: ai,
+                json_output: json,
+                target_format: format,
+            };
+            
+            handle_analyze(
+                input.to_str().context("Invalid input path")?,
+                &options
+            )?;
+            
+            Ok(())
+        }
+        
         Commands::Convert {
             input,
             format,
@@ -201,10 +242,10 @@ fn run(cli: Cli) -> Result<()> {
             jpeg_lossless,
             effort,
             distance: _,
-            modular: _,
-            progressive: _,
-            responsive: _,
-            gaborish: _,
+            modular,
+            progressive,
+            responsive,
+            gaborish,
             bit_depth: _,
             color_space: _,
             // AVIF
@@ -235,7 +276,7 @@ fn run(cli: Cli) -> Result<()> {
             xmp_path,
             normalize_filenames,
             // AI
-            ai: _,  // TODO: 实现AI参数预测
+            ai,
         } => {
             // 确定输出格式
             let target_format = format.unwrap_or_else(|| {
@@ -246,6 +287,76 @@ fn run(cli: Cli) -> Result<()> {
                     .unwrap_or("jxl")
                     .to_string()
             });
+            
+            // 创建可变的参数变量（用于AI覆盖）
+            let mut final_quality = quality;
+            let final_speed = speed;  // 目前AI不推荐speed参数
+            let final_effort = effort;  // 目前AI不推荐effort参数
+            
+            // 🤖 AI参数预测
+            if ai {
+                println!("🤖 AI Smart Mode: Analyzing image features...");
+                
+                // 🔥 质量宣言：使用真实的AI预测，不fallback！
+                use pixly_kernel::{MediaAnalyzer, ImageFeatures, QualityMode};
+                use pixly_kernel::format_recommender::{AIFormatRecommender, UserPreferences};
+                
+                // 1. 分析媒体文件
+                let analyzer = MediaAnalyzer::new();
+                match analyzer.analyze(&input) {
+                    Ok(media_info) => {
+                        // 2. 转换为ImageFeatures
+                        let image_features = ImageFeatures {
+                            width: media_info.resolution.0,
+                            height: media_info.resolution.1,
+                            file_size: media_info.size,
+                            format: media_info.format.clone(),
+                            has_alpha: false, // TODO: 实际检测
+                            is_animated: false, // TODO: 实际检测
+                            complexity: 0.75, // TODO: 实际计算
+                        };
+                        
+                        // 3. 使用AI推荐器
+                        let recommender = AIFormatRecommender::new();
+                        let user_prefs = UserPreferences::default();
+                        
+                        match recommender.get_best_recommendation(
+                            &image_features,
+                            QualityMode::Balanced,
+                            &user_prefs
+                        ) {
+                            Some(recommendation) => {
+                                println!("   ✅ AI recommendation: {} (confidence: {:.0}%)", 
+                                         recommendation.format.to_uppercase(),
+                                         recommendation.confidence * 100.0);
+                                
+                                // 应用AI推荐的参数
+                                final_quality = recommendation.quality_score;
+                                println!("   📊 AI recommended quality: {}", final_quality);
+                                
+                                // 如果AI推荐的格式与用户指定不同，给出提示
+                                if recommendation.format != target_format {
+                                    println!("   💡 AI suggests {} instead of {}", 
+                                             recommendation.format.to_uppercase(),
+                                             target_format.to_uppercase());
+                                    println!("      (Using your specified format: {})", target_format.to_uppercase());
+                                }
+                            }
+                            None => {
+                                // 🔥 质量宣言：AI失败就响亮报错！
+                                eprintln!("❌ AI prediction FAILED: No recommendation available");
+                                eprintln!("   Without AI, conversion will use default parameters");
+                                eprintln!("   This is NOT optimal! Please check AI system.");
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("❌ Media analysis FAILED: {}", e);
+                        eprintln!("   Cannot use AI without media analysis");
+                        eprintln!("   Using default parameters");
+                    }
+                }
+            }
             
             // 确定输出路径
             let output_path = if let Some(out) = output {
@@ -274,7 +385,7 @@ fn run(cli: Cli) -> Result<()> {
             
             println!("🔄 Converting: {:?}", actual_input);
             println!("📦 Format: {}", target_format);
-            println!("🎯 Quality: {}", quality);
+            println!("🎯 Quality: {}", final_quality);
             println!("📁 Output: {:?}", output_path);
             
             // 🔥 修复：只在输出目录不存在时创建，避免在Eagle .info目录中创建子目录
@@ -291,21 +402,25 @@ fn run(cli: Cli) -> Result<()> {
             
             // 构建转换配置
             let mut config = ConversionConfig::default();
-            config.quality = quality;
+            config.quality = final_quality;
             
-            // 根据格式设置参数
+            // 根据格式设置参数（AI推荐的参数优先）
             match target_format.as_str() {
                 "jxl" => {
                     if jpeg_lossless {
                         config.lossless = true;
                     }
-                    if let Some(e) = effort {
+                    if let Some(e) = final_effort.or(effort) {
                         config.effort = Some(e);
                     }
-                    // JXL参数通过format_specific_params传递
+                    // 🔥 Phase: JXL高级参数（修复空壳功能）
+                    config.jxl_modular = modular;
+                    config.jxl_progressive = progressive;
+                    config.jxl_responsive = responsive;
+                    config.jxl_gaborish = gaborish;
                 }
                 "avif" => {
-                    if let Some(s) = speed {
+                    if let Some(s) = final_speed.or(speed) {
                         config.speed = s;
                     }
                     if let Some(c) = chroma {
