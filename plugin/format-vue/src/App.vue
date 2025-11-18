@@ -103,7 +103,7 @@ const toast = ref({
 
 const { t } = useI18n()
 const { loadSelectedFiles, refreshLibrary, showNotification } = useEagleAPI()
-const { convertImages, isConverting, progress, currentFile } = useRustCLI()
+const { convertImages, convertVideos, isConverting, progress, currentFile } = useRustCLI()
 
 // 显示Toast
 const showToast = (type, title, message) => {
@@ -134,13 +134,21 @@ const startConversion = async () => {
   })
 
   try {
-    const options = {
-      format: selectedFormat.value,
-      quality: quality.value,
-      ...advancedParams.value
+    let result
+    
+    if (conversionType.value === 'image') {
+      const options = {
+        format: selectedFormat.value,
+        quality: quality.value,
+        ...advancedParams.value
+      }
+      result = await convertImages(files.value, options)
+    } else {
+      const options = {
+        ...videoParams.value
+      }
+      result = await convertVideos(files.value, options)
     }
-
-    const result = await convertImages(files.value, options)
 
     if (result.success) {
       logger.info(LOG_KEYS.CONVERT_SUCCESS, 'Conversion completed', {

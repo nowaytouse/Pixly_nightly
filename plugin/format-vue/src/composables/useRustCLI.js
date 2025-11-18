@@ -11,6 +11,70 @@ export function useRustCLI() {
   const currentFile = ref('')
 
   /**
+   * 执行视频转换
+   */
+  const convertVideos = async (files, options) => {
+    isConverting.value = true
+    progress.value = 0
+
+    try {
+      const results = []
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        currentFile.value = file.name
+        progress.value = Math.round((i / files.length) * 100)
+
+        // 构建Rust CLI参数
+        const outputPath = file.path.replace(/\.[^.]+$/, `.${options.container}`)
+        const args = [
+          'video',
+          file.path,
+          outputPath,
+          '--codec', options.codec,
+          '--crf', options.crf.toString()
+        ]
+
+        // 添加视频参数
+        if (options.preset) {
+          args.push('--preset', options.preset)
+        }
+        if (options.gopSize) {
+          args.push('--gop', options.gopSize.toString())
+        }
+        if (options.bframes !== undefined) {
+          args.push('--bframes', options.bframes.toString())
+        }
+        if (options.refs) {
+          args.push('--refs', options.refs.toString())
+        }
+        if (options.pixelFormat && options.pixelFormat !== 'auto') {
+          args.push('--pix-fmt', options.pixelFormat)
+        }
+        if (options.hwAccel && options.hwAccel !== 'auto') {
+          args.push('--hw-accel', options.hwAccel)
+        }
+        if (options.twoPass) {
+          args.push('--two-pass')
+        }
+
+        // 调用Rust CLI
+        const result = await executeRustCLI(args)
+        results.push(result)
+      }
+
+      progress.value = 100
+      return { success: true, results }
+    } catch (error) {
+      console.error('Video conversion failed:', error)
+      return { success: false, error: error.message }
+    } finally {
+      isConverting.value = false
+      currentFile.value = ''
+    }
+  }
+
+  /**
    * 执行图像转换
    */
   const convertImages = async (files, options) => {
@@ -172,6 +236,7 @@ export function useRustCLI() {
     isConverting,
     progress,
     currentFile,
-    convertImages
+    convertImages,
+    convertVideos
   }
 }

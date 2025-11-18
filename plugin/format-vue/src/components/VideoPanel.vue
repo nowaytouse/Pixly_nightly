@@ -50,6 +50,124 @@
         <div class="slider-hint">0=无损 | 18=视觉无损 | 23=高质量 | 28=平衡</div>
       </div>
     </div>
+
+    <!-- 编码参数 -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>⚙️</span>
+        <span>编码参数</span>
+      </div>
+      
+      <!-- Preset -->
+      <div class="param-group">
+        <label class="param-label">Preset</label>
+        <select v-model="localParams.preset" class="param-select">
+          <option value="ultrafast">ultrafast - 极速</option>
+          <option value="superfast">superfast - 超快</option>
+          <option value="veryfast">veryfast - 很快</option>
+          <option value="faster">faster - 较快</option>
+          <option value="fast">fast - 快速</option>
+          <option value="medium">medium - 平衡</option>
+          <option value="slow">slow - 慢速</option>
+          <option value="slower">slower - 较慢</option>
+          <option value="veryslow">veryslow - 极慢</option>
+        </select>
+      </div>
+
+      <!-- GOP Size -->
+      <div class="slider-group">
+        <div class="slider-header">
+          <span>GOP Size</span>
+          <span class="slider-value">{{ localParams.gopSize }}</span>
+        </div>
+        <input 
+          type="range" 
+          v-model.number="localParams.gopSize"
+          min="1" 
+          max="600" 
+          step="1"
+          class="slider"
+        />
+        <div class="slider-hint">关键帧间隔 (250=10秒@25fps)</div>
+      </div>
+
+      <!-- B-frames -->
+      <div class="slider-group">
+        <div class="slider-header">
+          <span>B帧数量</span>
+          <span class="slider-value">{{ localParams.bframes }}</span>
+        </div>
+        <input 
+          type="range" 
+          v-model.number="localParams.bframes"
+          min="0" 
+          max="16" 
+          step="1"
+          class="slider"
+        />
+        <div class="slider-hint">0=禁用 | 3=推荐 | 16=最大</div>
+      </div>
+
+      <!-- Reference Frames -->
+      <div class="slider-group">
+        <div class="slider-header">
+          <span>参考帧</span>
+          <span class="slider-value">{{ localParams.refs }}</span>
+        </div>
+        <input 
+          type="range" 
+          v-model.number="localParams.refs"
+          min="1" 
+          max="16" 
+          step="1"
+          class="slider"
+        />
+        <div class="slider-hint">1=最快 | 3=推荐 | 16=最佳质量</div>
+      </div>
+    </div>
+
+    <!-- 高级选项 -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>🔧</span>
+        <span>高级选项</span>
+      </div>
+
+      <!-- 像素格式 -->
+      <div class="param-group">
+        <label class="param-label">像素格式</label>
+        <select v-model="localParams.pixelFormat" class="param-select">
+          <option value="auto">自动</option>
+          <option value="yuv420p">YUV 4:2:0 8-bit</option>
+          <option value="yuv422p">YUV 4:2:2 8-bit</option>
+          <option value="yuv444p">YUV 4:4:4 8-bit</option>
+          <option value="yuv420p10le">YUV 4:2:0 10-bit</option>
+          <option value="yuv422p10le">YUV 4:2:2 10-bit</option>
+        </select>
+      </div>
+
+      <!-- 硬件加速 -->
+      <div class="param-group">
+        <label class="param-label">硬件加速</label>
+        <select v-model="localParams.hwAccel" class="param-select">
+          <option value="auto">自动检测</option>
+          <option value="none">禁用</option>
+          <option value="nvenc">NVIDIA (NVENC)</option>
+          <option value="qsv">Intel (QSV)</option>
+          <option value="videotoolbox">Apple (VideoToolbox)</option>
+          <option value="amf">AMD (AMF)</option>
+        </select>
+      </div>
+
+      <!-- Two-pass -->
+      <div class="checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" v-model="localParams.twoPass" />
+          <span>Two-pass 编码</span>
+        </label>
+        <div class="checkbox-hint">两次编码，更好的码率分配（速度慢2倍）</div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -66,6 +184,13 @@ const localParams = ref({
   container: 'mp4',
   codec: 'h265',
   crf: 23,
+  preset: 'medium',
+  gopSize: 250,
+  bframes: 3,
+  refs: 3,
+  pixelFormat: 'auto',
+  hwAccel: 'auto',
+  twoPass: false,
   ...props.modelValue
 })
 
@@ -153,5 +278,44 @@ watch(localParams, (newVal) => {
 .slider-hint {
   font-size: 11px;
   color: var(--text-tertiary);
+}
+
+.param-group {
+  margin-bottom: 12px;
+}
+
+.param-label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
+.checkbox-hint {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  padding-left: 24px;
 }
 </style>
