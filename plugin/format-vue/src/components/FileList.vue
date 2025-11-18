@@ -65,11 +65,33 @@ const getFileIcon = (file) => {
   justify-content: center;
   gap: 12px;
   color: var(--text-tertiary);
+  animation: fadeIn var(--transition-slow) var(--ease-out);
 }
 
 .empty-icon {
   font-size: 48px;
   opacity: 0.5;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .file-list {
@@ -78,6 +100,9 @@ const getFileIcon = (file) => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* 流畅滚动 */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 .file-item {
@@ -87,16 +112,40 @@ const getFileIcon = (file) => {
   padding: 12px;
   background: var(--bg-tertiary);
   border-radius: 6px;
-  transition: all 0.3s;
+  border: 1px solid transparent;
+  transition: all var(--transition-base) var(--ease-out);
+  animation: slideInRight var(--transition-base) var(--ease-out);
+  /* 性能优化 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .file-item:hover {
   background: var(--bg-primary);
+  border-color: var(--border-color-hover);
+  transform: translateX(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .file-icon {
   font-size: 24px;
   flex-shrink: 0;
+  transition: transform var(--transition-base) var(--ease-bounce);
+}
+
+.file-item:hover .file-icon {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .file-info {
@@ -111,11 +160,17 @@ const getFileIcon = (file) => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color var(--transition-fast) var(--ease-out);
+}
+
+.file-item:hover .file-name {
+  color: var(--color-primary);
 }
 
 .file-meta {
   font-size: 11px;
   color: var(--text-tertiary);
+  transition: color var(--transition-fast) var(--ease-out);
 }
 
 .remove-btn {

@@ -195,6 +195,9 @@ onMounted(async () => {
   flex-direction: column;
   background: var(--bg-secondary);
   color: var(--text-primary);
+  /* 性能优化 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .main-container {
@@ -204,6 +207,8 @@ onMounted(async () => {
   gap: 16px;
   padding: 16px;
   overflow: hidden;
+  /* 性能优化 */
+  will-change: auto;
 }
 
 .left-panel {
@@ -211,6 +216,29 @@ onMounted(async () => {
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
+  /* 流畅滚动 */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.left-panel > * {
+  animation: slideIn var(--transition-base) var(--ease-out);
+  animation-fill-mode: both;
+}
+
+.left-panel > *:nth-child(1) { animation-delay: 0ms; }
+.left-panel > *:nth-child(2) { animation-delay: 50ms; }
+.left-panel > *:nth-child(3) { animation-delay: 100ms; }
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .right-panel {
@@ -218,6 +246,16 @@ onMounted(async () => {
   flex-direction: column;
   gap: 12px;
   overflow: hidden;
+  animation: fadeIn var(--transition-base) var(--ease-out);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .footer {
@@ -229,6 +267,7 @@ onMounted(async () => {
   justify-content: space-between;
   background: var(--bg-primary);
   flex-shrink: 0;
+  transition: all var(--transition-fast) var(--ease-out);
 }
 
 .footer-left {
@@ -240,6 +279,7 @@ onMounted(async () => {
 .file-count {
   font-size: 13px;
   color: var(--text-secondary);
+  transition: color var(--transition-fast) var(--ease-out);
 }
 
 .footer-right {
@@ -257,16 +297,29 @@ onMounted(async () => {
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-base) var(--ease-out);
+  box-shadow: 0 2px 4px rgba(0, 114, 239, 0.3);
+  /* 性能优化 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .btn-convert:hover:not(:disabled) {
   background: var(--color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 114, 239, 0.4);
+}
+
+.btn-convert:active:not(:disabled) {
+  background: var(--color-primary-active);
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 114, 239, 0.3);
 }
 
 .btn-convert:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  filter: grayscale(0.3);
 }
 
 .type-tabs {
@@ -274,6 +327,7 @@ onMounted(async () => {
   gap: 8px;
   padding: 12px 16px 0;
   background: var(--bg-secondary);
+  position: relative;
 }
 
 .type-tab {
@@ -286,15 +340,34 @@ onMounted(async () => {
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-base) var(--ease-out);
+  position: relative;
+  /* 性能优化 */
+  transform: translateZ(0);
+}
+
+.type-tab::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--color-primary);
+  transition: all var(--transition-base) var(--ease-out);
+  transform: translateX(-50%);
 }
 
 .type-tab:hover {
   color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .type-tab.active {
   color: var(--color-primary);
-  border-bottom-color: var(--color-primary);
+}
+
+.type-tab.active::before {
+  width: 100%;
 }
 </style>

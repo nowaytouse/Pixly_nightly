@@ -42,15 +42,6 @@
       </label>
       <div class="checkbox-hint">{{ t('advanced.jxl.jpegLosslessHint') }}</div>
     </div>
-    
-    <!-- 无损模式 -->
-    <div class="checkbox-group">
-      <label class="checkbox-label">
-        <input type="checkbox" v-model="localParams.lossless" />
-        <span>{{ t('advanced.jxl.lossless') }}</span>
-      </label>
-      <div class="checkbox-hint">{{ t('advanced.jxl.losslessHint') }}</div>
-    </div>
   </div>
 </template>
 
@@ -70,7 +61,6 @@ const localParams = ref({
   effort: 7,
   distance: 1.0,
   jpegLossless: false,
-  lossless: false,
   ...props.modelValue
 })
 
