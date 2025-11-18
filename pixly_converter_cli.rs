@@ -202,6 +202,10 @@ enum Commands {
         #[arg(long, default_value = "false")]
         format_correction: bool,
         
+        /// 🎓 Enable online learning (record experiences for model improvement)
+        #[arg(long, default_value = "false")]
+        online_learning: bool,
+        
         // JXL specific
         #[arg(long)]
         jpeg_lossless: bool,
@@ -658,7 +662,12 @@ fn run(cli: Cli) -> Result<()> {
             gpu,
             preprocess,
             format_correction,
+            online_learning,
         } => {
+            // 🎓 Phase 11: 在线学习启用
+            if online_learning {
+                println!("🎓 在线学习已启用 - 转换经验将被记录用于模型改进");
+            }
             // 🎯 Phase 8: 智能格式选择
             let target_format = if let Some(user_format) = format {
                 // 用户指定格式，使用格式选择器验证
