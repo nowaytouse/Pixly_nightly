@@ -1,0 +1,155 @@
+{
+	"component": {
+		"compare": {
+			"overlay": {
+				"tip": "重叠对比"
+			},
+			"split": {
+				"tip": "分割对比"
+			},
+			"sync": {
+				"tip": "并排对比"
+			},
+			"toolbar": {
+				"scale": {
+					"fit": "自适应宽度",
+					"origin": "原始尺寸"
+				}
+			}
+		},
+		"crosshair": {
+			"tip": "拖曳光标框选裁切区域"
+		},
+		"dialog": {
+			"exit": {
+				"cancel": "取消",
+				"description": "退出后，未导出的图片将不再导出。",
+				"ok": "确认退出",
+				"title": "退出插件?"
+			}
+		},
+		"dropZone": {
+			"tip": "将文件拖放至此进行搜索"
+		},
+		"notify": {
+			"success": "{{count}} 个文件已替换"
+		}
+	},
+	"error": {
+		"convertError": "图片转换失败，可能是因为图片分辨率过高，导致显卡内存不足。请尝试使用分辨率较低的图片进行转换。如果此问题持续发生，建议使用具有较高显存的独立显卡运行此插件。",
+		"equalExtension": "文件扩展名相同",
+		"fileExtensionNotSupported": "不支持此文件格式。当前支持的格式包括：jpg、jpeg、png、webp、avif。",
+		"fileHistogramsAbnormality": "转换失败，输出结果异常(ERROR_HISTOGRAMS)",
+		"fileResolutionIsNotEqual": "转换失败，输出结果异常(ERROR_RESOLUTION)",
+		"fileSizeAbnormality": "转换失败，输出结果异常(ERROR_SIZE)",
+		"fileSizeNotSupported": "文件大小不支持，目前支持的最大尺寸为50MB",
+		"fileSsimAbnormality": "轉換失敗，輸出結果異常（錯誤碼：ERROR_SSIM）",
+		"imageLoadError": "无法加载图片。请确认图片文件存在并具有相应的读写权限。如果问题仍然存在，建议尝试在其他软件中打开此图片以进一步检查。",
+		"invalidGpuDevice": "当前设备的显示卡无法支撑此 AI 模型运行。可能由于显示卡过旧或显示卡驱动程序版本异常。建议使用 2019 年后生产的显示卡以获得更好的运行效果。",
+		"resolutionNotSupported": "图像超出最大尺寸限制，目前支持的最大像素为65535"
+	},
+	"header": {
+		"dialog": {
+			"exit": {
+				"cancel": "取消",
+				"description": "退出后，任务将停止。未完成格式转换的图片将不再转换。",
+				"ok": "确认退出",
+				"title": "退出插件?"
+			}
+		},
+		"setting": {
+			"algorithm": "算法",
+			"apply": "应用",
+			"cancel": "取消",
+			"disable": "关闭",
+			"enable": "开启",
+			"illustration": "插画",
+			"photo": "照片",
+			"tip": "转换设置"
+		},
+		"thumbtack": {
+			"isAlwaysOnTop": "置顶窗口",
+			"isNotAlwaysOnTop": "取消置顶"
+		}
+	},
+	"main": {
+		"dialog": {
+			"restart-tasks": {
+				"cancel": "不用",
+				"description": "您想用新配置重新运行已完成的任务吗？",
+				"ok": "是，重新运行",
+				"title": "重新运行任务？"
+			},
+			"success": {
+				"cancel": "关闭",
+				"description": "已经转换 <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>{{ count }}</span> 个文件。可在 Eagle 中选取其它图片继续转换。",
+				"ok": "确认",
+				"title": "转换完成！"
+			}
+		},
+		"download": {
+			"replace": "替换原图",
+			"saveAs": "另存为...",
+			"tip": "单独替换或另存"
+		},
+		"empty": {
+			"content": "请从 Eagle 添加图片，可添加多张。",
+			"title": "添加图片"
+		},
+		"feature": {
+			"algorithm": "算法",
+			"processing": "转换中...",
+			"replace": "全部替换",
+			"replacing": "替换中",
+			"saveAs": "全部另存"
+		},
+		"iGPUWarning": {
+			"description": "AI 技术对硬件要求高，如果设备没有独立显卡，可能会非常缓慢甚至无法生成图像。",
+			"title": "硬件需求提示"
+		},
+		"keyboard": {
+			"fit": "适应窗口",
+			"scaleIn": "放大",
+			"scaleOut": "缩小"
+		},
+		"status": {
+			"cancel": "从列表移除",
+			"failed": "转换失败",
+			"processing": "高清转换中，请稍候...",
+			"waiting": "等待转换中，请稍候..."
+		}
+	},
+	"manifest": {
+		"app": {
+			"name": "AI 图片放大"
+		}
+	},
+	"modelDialog": {
+		"downloading": {
+			"cancel": "取消下载",
+			"description": "正在下载并安装训练AI模型，请稍候。",
+			"title": "下载并安装中..."
+		},
+		"failed": {
+			"description": "无法下载 AI 模型链接，可能是当前网络环境无法访问，请尝试切换其他网络或使用代理工具再试试。（确保你可以打开此链接：https://r2-plugin.eagle.cool/test.png）",
+			"ok": "重新下载",
+			"title": "AI模型下载失败"
+		},
+		"initialize": {
+			"cancel": "关闭插件",
+			"description": "大约需要 <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>15~20</span> 秒",
+			"title": "AI模型初始化"
+		},
+		"prepare": {
+			"cancel": "关闭插件",
+			"description": "为保证插件顺利运行，需要下载并安装预训练AI模型。",
+			"ok": "下载并安装",
+			"title": "下载并安装AI模型"
+		},
+		"success": {
+			"description": "预训练AI模型已成功下载并安装。现在您可以开始使用该插件并享受其强大功能了。",
+			"ok": "开始使用",
+			"title": "AI模型安装成功！"
+		}
+	}
+}

@@ -1,0 +1,155 @@
+{
+	"component": {
+		"compare": {
+			"overlay": {
+				"tip": "重ねて比較"
+			},
+			"split": {
+				"tip": "分割比較"
+			},
+			"sync": {
+				"tip": "並列比較"
+			},
+			"toolbar": {
+				"scale": {
+					"fit": "幅に合わせる",
+					"origin": "元のサイズ"
+				}
+			}
+		},
+		"crosshair": {
+			"tip": "クロスヘアをドラッグしてクロップ領域を選択"
+		},
+		"dialog": {
+			"exit": {
+				"cancel": "キャンセル",
+				"description": "終了すると、エクスポートされていない画像はもはやエクスポートされません。",
+				"ok": "終了を確認",
+				"title": "プラグインを終了しますか？"
+			}
+		},
+		"dropZone": {
+			"tip": "ファイルをここにドラッグして検索"
+		},
+		"notify": {
+			"success": "{{count}} ファイルが置換されました"
+		}
+	},
+	"error": {
+		"convertError": "これは、画像の解像度が高すぎてグラフィックカードのメモリが不足している可能性があります。解像度が低い画像を使用して変換を試みてください。この問題が続く場合は、より多くのメモリを持つ専用グラフィックカードを使用することを検討してください。",
+		"equalExtension": "拡張子が同じです",
+		"fileExtensionNotSupported": "このファイル形式はサポートされていません。サポートされている形式: jpg, jpeg, png, webp, avif.",
+		"fileHistogramsAbnormality": "変換に失敗しました。出力結果が異常です(ERROR_HISTOGRAMS)",
+		"fileResolutionIsNotEqual": "変換に失敗しました。出力結果が異常です(ERROR_RESOLUTION)",
+		"fileSizeAbnormality": "変換に失敗しました。出力結果が異常です(ERROR_SIZE)",
+		"fileSizeNotSupported": "ファイルサイズがサポートされていません。現在の最大サイズは50MBです",
+		"fileSsimAbnormality": "変換に失敗しました。出力結果が異常です(ERROR_SSIM)",
+		"imageLoadError": "画像を読み込めません。画像ファイルが存在し、適切な読み書き権限があることを確認してください。問題が解決しない場合は、他のソフトウェアでこの画像を開いてさらに調査してください。",
+		"invalidGpuDevice": "現在のデバイスのグラフィックカードでは、この AI モデルを実行できません。グラフィックカードが古い、またはドライバーのバージョンに異常がある可能性があります。2019年以降に製造されたグラフィックカードの使用をお勧めします。",
+		"resolutionNotSupported": "画像が最大サイズを超えています。現在の最大ピクセルサイズは65535です"
+	},
+	"header": {
+		"dialog": {
+			"exit": {
+				"cancel": "キャンセル",
+				"description": "終了すると、タスクが停止します。変換が完了していない画像はもはや変換されません。",
+				"ok": "終了を確認",
+				"title": "プラグインを終了しますか？"
+			}
+		},
+		"setting": {
+			"algorithm": "アルゴリズム",
+			"apply": "適用",
+			"cancel": "キャンセル",
+			"disable": "無効",
+			"enable": "有効",
+			"illustration": "イラスト",
+			"photo": "写真",
+			"tip": "変換設定"
+		},
+		"thumbtack": {
+			"isAlwaysOnTop": "常にトップに固定",
+			"isNotAlwaysOnTop": "トップに固定解除"
+		}
+	},
+	"main": {
+		"dialog": {
+			"restart-tasks": {
+				"cancel": "いいえ",
+				"description": "新しい設定で完了したタスクを再実行しますか？",
+				"ok": "はい、再実行",
+				"title": "タスクを再実行しますか？"
+			},
+			"success": {
+				"cancel": "閉じる",
+				"description": "<span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>{{ count }}</span> ファイルが変換されました。Eagleで他の画像を選択して続けることができます。",
+				"ok": "確認",
+				"title": "変換完了！"
+			}
+		},
+		"download": {
+			"replace": "元の画像を置換",
+			"saveAs": "別名で保存...",
+			"tip": "個別に置換または別名保存"
+		},
+		"empty": {
+			"content": "Eagleから画像を追加してください。複数の画像を追加できます。",
+			"title": "画像を追加"
+		},
+		"feature": {
+			"algorithm": "アルゴリズム",
+			"processing": "変換中...",
+			"replace": "全て置換",
+			"replacing": "置換中",
+			"saveAs": "全て別名保存"
+		},
+		"iGPUWarning": {
+			"description": "AI 技術は高いハードウェア要求を必要とします。専用グラフィックカードがない場合、画像生成がに遅くなるか、または全く機能しない。",
+			"title": "ハードウェア要件"
+		},
+		"keyboard": {
+			"fit": "ウィンドウに合わせる",
+			"scaleIn": "拡大",
+			"scaleOut": "縮小"
+		},
+		"status": {
+			"cancel": "リストから削除",
+			"failed": "変換失敗",
+			"processing": "HD変換中、お待ちください...",
+			"waiting": "変換待ち、お待ちください..."
+		}
+	},
+	"manifest": {
+		"app": {
+			"name": "AI 画像拡大"
+		}
+	},
+	"modelDialog": {
+		"downloading": {
+			"cancel": "ダウンロードをキャンセル",
+			"description": "トレーニングされたAIモデルをダウンロードしてインストール中です。お待ちください。",
+			"title": "ダウンロードとインストール中..."
+		},
+		"failed": {
+			"description": "AIモデルのリンクをダウンロードできません。現在のネットワーク環境がアクセスできない可能性があります。他のネットワーク接続に切り替えて再試行してください。 (このリンクを開けることを確認してください: https://r2-plugin.eagle.cool/test.png)",
+			"ok": "再ダウンロード",
+			"title": "AIモデルのダウンロードに失敗しました"
+		},
+		"initialize": {
+			"cancel": "プラグインを閉じる",
+			"description": "約 <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>15~20</span> 秒かかります",
+			"title": "AIモデルの初期化"
+		},
+		"prepare": {
+			"cancel": "プラグインを閉じる",
+			"description": "プラグインがスムーズに動作するために、事前にトレーニングされたAIモデルをダウンロードしてインストールする必要があります。",
+			"ok": "ダウンロードとインストール",
+			"title": "AIモデルのダウンロードとインストール"
+		},
+		"success": {
+			"description": "事前にトレーニングされたAIモデルが正常にダウンロードおよびインストールされました。これでプラグインを使用してその強力な機能を楽しむことができます。",
+			"ok": "使用を開始",
+			"title": "AIモデルのインストール完了！"
+		}
+	}
+}

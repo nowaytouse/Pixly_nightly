@@ -1,0 +1,155 @@
+{
+	"component": {
+		"compare": {
+			"overlay": {
+				"tip": "오버레이 비교"
+			},
+			"split": {
+				"tip": "분할 비교"
+			},
+			"sync": {
+				"tip": "옆으로 비교"
+			},
+			"toolbar": {
+				"scale": {
+					"fit": "너비에 맞춤",
+					"origin": "원본 크기"
+				}
+			}
+		},
+		"crosshair": {
+			"tip": "드래그하여 자르기 영역 선택"
+		},
+		"dialog": {
+			"exit": {
+				"cancel": "취소",
+				"description": "종료하면 내보내지 않은 이미지는 더 이상 내보내지지 않습니다.",
+				"ok": "종료 확인",
+				"title": "플러그인 종료?"
+			}
+		},
+		"dropZone": {
+			"tip": "여기에 파일을 끌어다 놓아 검색"
+		},
+		"notify": {
+			"success": "{{count}} 개 파일이 교체되었습니다"
+		}
+	},
+	"error": {
+		"convertError": "이미지 변환에 실패했습니다. 가능한 원인으로는 이미지의 해상도가 너무 높아 그래픽 카드 메모리가 부족한 것입니다. 해상도가 낮은 이미지로 변환을 시도해 보세요. 이 문제가 계속된다면 더 많은 메모리를 가진 독립형 그래픽 카드를 사용하는 것을 고려해 보세요.",
+		"equalExtension": "확장자가 동일합니다",
+		"fileExtensionNotSupported": "지원하지 않는 파일 형식입니다. 지원하는 형식: jpg, jpeg, png, webp, avif.",
+		"fileHistogramsAbnormality": "변환 실패, 출력 결과가 이상합니다 (ERROR_HISTOGRAMS)",
+		"fileResolutionIsNotEqual": "변환 실패, 출력 결과가 이상합니다 (ERROR_RESOLUTION)",
+		"fileSizeAbnormality": "변환 실패, 출력 결과가 이상합니다 (ERROR_SIZE)",
+		"fileSizeNotSupported": "파일 크기가 지원되지 않습니다. 현재 최대 크기는 50MB입니다",
+		"fileSsimAbnormality": "변환 실패, 출력 결과가 이상합니다 (ERROR_SSIM)",
+		"imageLoadError": "이미지를 불러올 수 없습니다. 이미지 파일이 존재하며 적절한 읽기/쓰기 권한을 가지고 있는지 확인하세요. 문제가 계속된다면 다른 소프트웨어에서 해당 이미지를 열어 추가적으로 검토해 보세요.",
+		"invalidGpuDevice": "이미지 변환 실패. 현재 장치의 그래픽 카드가 이 AI 모델을 지원하지 않습니다. 그래픽 카드가 오래되었거나 드라이버 버전에 문제가 있을 수 있습니다. 2019년 이후 제조된 그래픽 카드 사용을 권장하여 보다 나은 성능을 얻을 수 있습니다.",
+		"resolutionNotSupported": "이미지가 최대 크기 제한을 초과했습니다. 현재 최대 픽셀 크기는 65535입니다"
+	},
+	"header": {
+		"dialog": {
+			"exit": {
+				"cancel": "취소",
+				"description": "종료하면 작업이 중지됩니다. 완료되지 않은 형식 변환 파일은 더 이상 변환되지 않습니다.",
+				"ok": "종료 확인",
+				"title": "플러그인 종료?"
+			}
+		},
+		"setting": {
+			"algorithm": "알고리즘",
+			"apply": "적용",
+			"cancel": "취소",
+			"disable": "끄기",
+			"enable": "켜기",
+			"illustration": "일러스트",
+			"photo": "사진",
+			"tip": "변환 설정"
+		},
+		"thumbtack": {
+			"isAlwaysOnTop": "항상 위에 고정",
+			"isNotAlwaysOnTop": "고정 해제"
+		}
+	},
+	"main": {
+		"dialog": {
+			"restart-tasks": {
+				"cancel": "아니요",
+				"description": "새로운 설정으로 완료된 작업을 다시 실행하시겠습니까?",
+				"ok": "예, 다시 실행",
+				"title": "작업을 다시 실행하시겠습니까?"
+			},
+			"success": {
+				"cancel": "닫기",
+				"description": "<span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>{{ count }}</span>개 파일이 변환되었습니다. 계속해서 이글에서 다른 이미지를 선택할 수 있습니다.",
+				"ok": "확인",
+				"title": "변환 완료!"
+			}
+		},
+		"download": {
+			"replace": "원본 이미지로 교체",
+			"saveAs": "다른 이름으로 저장...",
+			"tip": "개별 교체 또는 다른 이름으로 저장"
+		},
+		"empty": {
+			"content": "이글에서 이미지를 추가하려면 여기에 추가하십시오. 여러 장 추가 가능합니다.",
+			"title": "이미지 추가"
+		},
+		"feature": {
+			"algorithm": "알고리즘",
+			"processing": "변환 중...",
+			"replace": "모두 교체",
+			"replacing": "교체 중",
+			"saveAs": "모두 다른 이름으로 저장"
+		},
+		"iGPUWarning": {
+			"description": "AI 기술은 높은 하드웨어 요구 사항을 필요로 합니다. 장치에 독립 그래픽 카드가 없는 경우 이미지 생성이 매우 느리거나 전혀 작동하지 않을 수 있습니다.",
+			"title": "하드웨어 요구 사항"
+		},
+		"keyboard": {
+			"fit": "창에 맞춤",
+			"scaleIn": "확대",
+			"scaleOut": "축소"
+		},
+		"status": {
+			"cancel": "목록에서 제거",
+			"failed": "변환 실패",
+			"processing": "고화질 변환 중, 잠시 기다려주세요...",
+			"waiting": "변환 대기 중, 잠시 기다려주세요..."
+		}
+	},
+	"manifest": {
+		"app": {
+			"name": "AI 이미지 확대기"
+		}
+	},
+	"modelDialog": {
+		"downloading": {
+			"cancel": "다운로드 취소",
+			"description": "훈련된 AI 모델을 다운로드하고 설치 중입니다. 잠시 기다려주세요.",
+			"title": "다운로드 및 설치 중..."
+		},
+		"failed": {
+			"description": "AI 모델 링크를 다운로드할 수 없습니다. 현재 네트워크 환경에 접근할 수 없기 때문일 수 있습니다. 다른 네트워크 연결로 전환한 후 다시 시도해 보세요. (다음 링크를 열 수 있는지 확인하세요: https://r2-plugin.eagle.cool/test.png)",
+			"ok": "다시 다운로드",
+			"title": "AI 모델 다운로드 실패"
+		},
+		"initialize": {
+			"cancel": "플러그인 닫기",
+			"description": "약 <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>15~20</span>초가 소요됩니다.",
+			"title": "AI 모델 초기화"
+		},
+		"prepare": {
+			"cancel": "플러그인 닫기",
+			"description": "플러그인이 원활하게 작동하려면 사전 훈련된 AI 모델을 다운로드하고 설치해야 합니다.",
+			"ok": "다운로드 및 설치",
+			"title": "AI 모델 다운로드 및 설치"
+		},
+		"success": {
+			"description": "사전 훈련된 AI 모델이 성공적으로 다운로드되고 설치되었습니다. 이제 플러그인을 사용하여 강력한 기능을 즐길 수 있습니다.",
+			"ok": "사용 시작",
+			"title": "AI 모델 설치 완료!"
+		}
+	}
+}

@@ -1,0 +1,155 @@
+{
+	"component": {
+		"compare": {
+			"overlay": {
+				"tip": "Superposición de comparación"
+			},
+			"split": {
+				"tip": "División de comparación"
+			},
+			"sync": {
+				"tip": "Comparación en paralelo"
+			},
+			"toolbar": {
+				"scale": {
+					"fit": "Ajustar al ancho",
+					"origin": "Tamaño original"
+				}
+			}
+		},
+		"crosshair": {
+			"tip": "Arrastre para seleccionar el área de recorte"
+		},
+		"dialog": {
+			"exit": {
+				"cancel": "Cancelar",
+				"description": "Después de salir, las imágenes no exportadas ya no se exportarán.",
+				"ok": "Confirmar salida",
+				"title": "¿Salir del complemento?"
+			}
+		},
+		"dropZone": {
+			"tip": "Arrastre y suelte archivos aquí para buscar"
+		},
+		"notify": {
+			"success": "{{count}} archivos han sido reemplazados"
+		}
+	},
+	"error": {
+		"convertError": "La conversión de la imagen falló, posiblemente debido a la alta resolución de la imagen, lo que resultó en memoria insuficiente de la tarjeta gráfica. Por favor, intente usar una imagen con menor resolución para la conversión. Si este problema persiste, considere usar una tarjeta gráfica dedicada con más memoria para ejecutar este plugin.",
+		"equalExtension": "Extensión de archivo igual",
+		"fileExtensionNotSupported": "Formato de archivo no soportado. Formatos admitidos: jpg, jpeg, png, webp, avif.",
+		"fileHistogramsAbnormality": "Error de conversión, resultado de salida anormal (ERROR_HISTOGRAMS)",
+		"fileResolutionIsNotEqual": "Error de conversión, resultado de salida anormal (ERROR_RESOLUTION)",
+		"fileSizeAbnormality": "Error de conversión, resultado de salida anormal (ERROR_SIZE)",
+		"fileSizeNotSupported": "Tamaño de archivo no compatible, el tamaño máximo admitido es de 50 MB en la actualidad",
+		"fileSsimAbnormality": "Error de conversión, resultado de salida anormal (ERROR_SSIM)",
+		"imageLoadError": "No se puede cargar la imagen. Asegúrate de que el archivo de imagen existe y tiene los permisos de lectura/escritura adecuados. Si el problema persiste, intenta abrir la imagen con otro software para investigar más.",
+		"invalidGpuDevice": "La tarjeta gráfica del dispositivo actual no soporta la ejecución de este modelo AI. Esto podría deberse a una tarjeta gráfica obsoleta o una versión anormal del controlador. Se recomienda usar una tarjeta gráfica fabricada después de 2019 para obtener un mejor rendimiento.",
+		"resolutionNotSupported": "Imagen fuera de los límites de tamaño máximo admitido, la resolución máxima admitida es de 65535 píxeles"
+	},
+	"header": {
+		"dialog": {
+			"exit": {
+				"cancel": "Cancelar",
+				"description": "Después de salir, la tarea se detendrá. Las imágenes que no hayan completado la conversión de formato ya no se convertirán.",
+				"ok": "Confirmar salida",
+				"title": "¿Salir del complemento?"
+			}
+		},
+		"setting": {
+			"algorithm": "Algoritmo",
+			"apply": "Aplicar",
+			"cancel": "Cancelar",
+			"disable": "Deshabilitar",
+			"enable": "Habilitar",
+			"illustration": "Ilustración",
+			"photo": "Foto",
+			"tip": "Configuración de conversión"
+		},
+		"thumbtack": {
+			"isAlwaysOnTop": "Mantener en la parte superior",
+			"isNotAlwaysOnTop": "No mantener en la parte superior"
+		}
+	},
+	"main": {
+		"dialog": {
+			"restart-tasks": {
+				"cancel": "No",
+				"description": "¿Desea reejecutar las tareas completadas con las nuevas configuraciones?",
+				"ok": "Sí, reejecutar",
+				"title": "¿Reejecutar tarea?"
+			},
+			"success": {
+				"cancel": "Cerrar",
+				"description": "Se han convertido <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>{{ count }}</span> archivos. Puede seleccionar otras imágenes en Eagle para continuar con la conversión.",
+				"ok": "Confirmar",
+				"title": "¡Conversión completada!"
+			}
+		},
+		"download": {
+			"replace": "Reemplazar imagen original",
+			"saveAs": "Guardar como...",
+			"tip": "Reemplazar o guardar individualmente"
+		},
+		"empty": {
+			"content": "Agregue imágenes desde Eagle, se pueden agregar varias.",
+			"title": "Agregar Imágenes"
+		},
+		"feature": {
+			"algorithm": "Algoritmo",
+			"processing": "En proceso de conversión...",
+			"replace": "Reemplazar todo",
+			"replacing": "Reemplazando",
+			"saveAs": "Guardar todo como"
+		},
+		"iGPUWarning": {
+			"description": "Las tecnologías de IA requieren altos requisitos de hardware. Si tu dispositivo no tiene una tarjeta gráfica dedicada, la generación de imágenes puede ser muy lenta o incluso imposible.",
+			"title": "Requisitos de Hardware"
+		},
+		"keyboard": {
+			"fit": "Ajustar a la ventana",
+			"scaleIn": "Ampliar",
+			"scaleOut": "Reducir"
+		},
+		"status": {
+			"cancel": "Eliminar de la lista",
+			"failed": "Fallo en la conversión",
+			"processing": "Conversión de alta definición en curso, por favor espere...",
+			"waiting": "Esperando conversión, por favor espere..."
+		}
+	},
+	"manifest": {
+		"app": {
+			"name": "Ampliador de Imágenes con IA"
+		}
+	},
+	"modelDialog": {
+		"downloading": {
+			"cancel": "Cancelar descarga",
+			"description": "Descargando e instalando el modelo de IA preentrenado, por favor espere.",
+			"title": "Descargando e instalando..."
+		},
+		"failed": {
+			"description": "No se puede descargar el enlace del modelo AI, posiblemente debido a que el entorno de red actual no es accesible. Intenta cambiar a otra conexión de red y prueba de nuevo. (Asegúrate de poder abrir este enlace: https://r2-plugin.eagle.cool/test.png)",
+			"ok": "Volver a descargar",
+			"title": "Fallo en la descarga del modelo de IA"
+		},
+		"initialize": {
+			"cancel": "Cerrar complemento",
+			"description": "Aproximadamente tomará <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>15~20</span> segundos",
+			"title": "Inicialización del modelo de IA"
+		},
+		"prepare": {
+			"cancel": "Cerrar complemento",
+			"description": "Para garantizar el funcionamiento sin problemas del complemento, es necesario descargar e instalar un modelo de IA preentrenado.",
+			"ok": "Descargar e instalar",
+			"title": "Descargar e instalar el modelo de IA"
+		},
+		"success": {
+			"description": "El modelo de IA preentrenado se ha descargado e instalado correctamente. Ahora puede comenzar a utilizar el complemento y disfrutar de sus potentes funciones.",
+			"ok": "Comenzar a usar",
+			"title": "¡Instalación exitosa del modelo de IA!"
+		}
+	}
+}

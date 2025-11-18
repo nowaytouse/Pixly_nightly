@@ -1,0 +1,155 @@
+{
+	"component": {
+		"compare": {
+			"overlay": {
+				"tip": "Überlagerter Vergleich"
+			},
+			"split": {
+				"tip": "Geteilter Vergleich"
+			},
+			"sync": {
+				"tip": "Synchroner Vergleich"
+			},
+			"toolbar": {
+				"scale": {
+					"fit": "Anpassung an die Breite",
+					"origin": "Ursprüngliche Größe"
+				}
+			}
+		},
+		"crosshair": {
+			"tip": "Zum Auswählen des Ausschnittsbereichs ziehen Sie den Kreuzhaarkanal"
+		},
+		"dialog": {
+			"exit": {
+				"cancel": "Abbrechen",
+				"description": "Nach dem Verlassen werden nicht exportierte Bilder nicht mehr exportiert.",
+				"ok": "Bestätigen und verlassen",
+				"title": "Plugin verlassen?"
+			}
+		},
+		"dropZone": {
+			"tip": "Dateien hierher ziehen und ablegen, um zu suchen"
+		},
+		"notify": {
+			"success": "{{count}} Dateien wurden ersetzt"
+		}
+	},
+	"error": {
+		"convertError": "Bildkonvertierung fehlgeschlagen, möglicherweise aufgrund der hohen Auflösung des Bildes, was zu unzureichendem Grafikkartenspeicher führt. Bitte versuchen Sie, ein Bild mit niedrigerer Auflösung zur Konvertierung zu verwenden. Wenn das Problem weiterhin besteht, erwägen Sie die Verwendung einer dedizierten Grafikkarte mit mehr Speicher für dieses Plugin.",
+		"equalExtension": "Dateierweiterung gleich",
+		"fileExtensionNotSupported": "Dieses Dateiformat wird nicht unterstützt. Unterstützte Formate: jpg, jpeg, png, webp, avif.",
+		"fileHistogramsAbnormality": "Konvertierung fehlgeschlagen, Ausgabeergebnis ungewöhnlich (ERROR_HISTOGRAMS)",
+		"fileResolutionIsNotEqual": "Konvertierung fehlgeschlagen, Ausgabeergebnis ungewöhnlich (ERROR_RESOLUTION)",
+		"fileSizeAbnormality": "Konvertierung fehlgeschlagen, Ausgabeergebnis ungewöhnlich (ERROR_SIZE)",
+		"fileSizeNotSupported": "Dateigröße nicht unterstützt, maximale Größe beträgt derzeit 50 MB",
+		"fileSsimAbnormality": "Konvertierung fehlgeschlagen, Ausgabeergebnis ungewöhnlich (ERROR_SSIM)",
+		"imageLoadError": "Bild konnte nicht geladen werden. Bitte überprüfen Sie, ob die Bilddatei vorhanden ist und die notwendigen Lese-/Schreibrechte besitzt. Falls das Problem weiterhin besteht, versuchen Sie, das Bild mit einer anderen Software zu öffnen, um das Problem weiter zu untersuchen.",
+		"invalidGpuDevice": "Die Grafikkarte des aktuellen Geräts unterstützt dieses AI-Modell nicht. Eine veraltete Grafikkarte oder eine abnormale Treiberversion könnte das Problem verursachen. Es wird empfohlen, eine Grafikkarte zu verwenden, die nach 2019 hergestellt wurde, um eine bessere Leistung zu erzielen.",
+		"resolutionNotSupported": "Bild überschreitet die maximale Größenbeschränkung, maximale Pixelgröße beträgt derzeit 65535"
+	},
+	"header": {
+		"dialog": {
+			"exit": {
+				"cancel": "Abbrechen",
+				"description": "Nach dem Verlassen wird die Aufgabe gestoppt. Nicht konvertierte Bilder werden nicht mehr konvertiert.",
+				"ok": "Bestätigen und verlassen",
+				"title": "Plugin verlassen?"
+			}
+		},
+		"setting": {
+			"algorithm": "Algorithmus",
+			"apply": "Anwenden",
+			"cancel": "Abbrechen",
+			"disable": "Deaktivieren",
+			"enable": "Aktivieren",
+			"illustration": "Illustration",
+			"photo": "Foto",
+			"tip": "Konvertierungseinstellungen"
+		},
+		"thumbtack": {
+			"isAlwaysOnTop": "Immer im Vordergrund",
+			"isNotAlwaysOnTop": "Immer im Vordergrund aufheben"
+		}
+	},
+	"main": {
+		"dialog": {
+			"restart-tasks": {
+				"cancel": "Nein",
+				"description": "Möchten Sie die abgeschlossenen Aufgaben mit den neuen Einstellungen erneut ausführen?",
+				"ok": "Ja, erneut ausführen",
+				"title": "Aufgabe erneut ausführen?"
+			},
+			"success": {
+				"cancel": "Schließen",
+				"description": "Es wurden <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>{{ count }}</span> Dateien konvertiert. Sie können in Eagle andere Bilder auswählen und die Konvertierung fortsetzen.",
+				"ok": "Bestätigen",
+				"title": "Konvertierung abgeschlossen!"
+			}
+		},
+		"download": {
+			"replace": "Ursprüngliches Bild ersetzen",
+			"saveAs": "Speichern als...",
+			"tip": "Einzelnes Ersetzen oder als neue Datei speichern"
+		},
+		"empty": {
+			"content": "Fügen Sie Bilder von Eagle hinzu, Sie können mehrere hinzufügen.",
+			"title": "Bild hinzufügen"
+		},
+		"feature": {
+			"algorithm": "Algorithmus",
+			"processing": "Konvertierung läuft...",
+			"replace": "Alle ersetzen",
+			"replacing": "Ersetzen läuft",
+			"saveAs": "Alle speichern als"
+		},
+		"iGPUWarning": {
+			"description": "AI-Technologien stellen hohe Anforderungen an die Hardware. Ohne eine dedizierte Grafikkarte könnte das Generieren von Bildern sehr langsam sein oder gar nicht funktionieren.",
+			"title": "Hardware-Anforderungen"
+		},
+		"keyboard": {
+			"fit": "An Fenster anpassen",
+			"scaleIn": "Vergrößern",
+			"scaleOut": "Verkleinern"
+		},
+		"status": {
+			"cancel": "Aus Liste entfernen",
+			"failed": "Konvertierung fehlgeschlagen",
+			"processing": "HD-Konvertierung läuft, bitte warten...",
+			"waiting": "Warten auf Konvertierung, bitte warten..."
+		}
+	},
+	"manifest": {
+		"app": {
+			"name": "KI Bildvergrößerer"
+		}
+	},
+	"modelDialog": {
+		"downloading": {
+			"cancel": "Herunterladen abbrechen",
+			"description": "Das vortrainierte AI-Modell wird heruntergeladen und installiert, bitte warten.",
+			"title": "Herunterladen und installieren läuft..."
+		},
+		"failed": {
+			"description": "Download des AI-Modell-Links nicht möglich, möglicherweise aufgrund der aktuellen Netzwerkumgebung nicht zugänglich. Bitte versuchen Sie, eine andere Netzwerkverbindung zu verwenden und es erneut zu versuchen. (Stellen Sie sicher, dass Sie diesen Link öffnen können: https://r2-plugin.eagle.cool/test.png)",
+			"ok": "Erneut herunterladen",
+			"title": "Herunterladen des AI-Modells fehlgeschlagen"
+		},
+		"initialize": {
+			"cancel": "Plugin schließen",
+			"description": "Es dauert etwa <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>15~20</span> Sekunden",
+			"title": "Initialisierung des AI-Modells"
+		},
+		"prepare": {
+			"cancel": "Plugin schließen",
+			"description": "Um sicherzustellen, dass das Plugin reibungslos funktioniert, müssen Sie ein vortrainiertes AI-Modell herunterladen und installieren.",
+			"ok": "Herunterladen und installieren",
+			"title": "AI-Modell herunterladen und installieren"
+		},
+		"success": {
+			"description": "Das vortrainierte AI-Modell wurde erfolgreich heruntergeladen und installiert. Sie können jetzt das Plugin verwenden und seine leistungsstarken Funktionen genießen.",
+			"ok": "Starten Sie die Verwendung",
+			"title": "AI-Modell erfolgreich installiert!"
+		}
+	}
+}

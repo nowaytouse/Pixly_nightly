@@ -1,0 +1,155 @@
+{
+	"component": {
+		"compare": {
+			"overlay": {
+				"tip": "Overlay Comparison"
+			},
+			"split": {
+				"tip": "Split Comparison"
+			},
+			"sync": {
+				"tip": "Side-by-Side Comparison"
+			},
+			"toolbar": {
+				"scale": {
+					"fit": "Adapt to Width",
+					"origin": "Original Size"
+				}
+			}
+		},
+		"crosshair": {
+			"tip": "Drag the cursor to select the cropping area"
+		},
+		"dialog": {
+			"exit": {
+				"cancel": "Cancel",
+				"description": "After exiting, the images not exported will no longer be exported.",
+				"ok": "Confirm Exit",
+				"title": "Exit Plugin?"
+			}
+		},
+		"dropZone": {
+			"tip": "Drag and drop files here for search"
+		},
+		"notify": {
+			"success": "{{count}} files replaced"
+		}
+	},
+	"error": {
+		"convertError": "Image conversion failed, possibly due to the high resolution of the image, resulting in insufficient graphics card memory. Please try using an image with a lower resolution for the conversion. If this issue persists, consider using a dedicated graphics card with more memory to run this plugin.",
+		"equalExtension": "File extension is the same",
+		"fileExtensionNotSupported": "This file format is not supported. Supported formats include: jpg, jpeg, png, webp, avif.",
+		"fileHistogramsAbnormality": "Conversion failed, abnormal output result (ERROR_HISTOGRAMS)",
+		"fileResolutionIsNotEqual": "Conversion failed, abnormal output result (ERROR_RESOLUTION)",
+		"fileSizeAbnormality": "Conversion failed, abnormal output result (ERROR_SIZE)",
+		"fileSizeNotSupported": "File size not supported, the maximum supported size is currently 50MB",
+		"fileSsimAbnormality": "Conversion failed, abnormal output result (ERROR_SSIM)",
+		"imageLoadError": "Unable to load image. Please ensure the image file exists and has the appropriate read/write permissions. If the issue persists, try opening the image in another software to further investigate.",
+		"invalidGpuDevice": "The graphics card of the current device does not support running this AI model. This issue may be caused by an outdated graphics card or abnormal driver version. It is recommended to use a graphics card produced after 2019 for better performance.",
+		"resolutionNotSupported": "Image exceeds the maximum size limit, currently supporting a maximum pixel size of 65535"
+	},
+	"header": {
+		"dialog": {
+			"exit": {
+				"cancel": "Cancel",
+				"description": "Exiting will stop the task. Images with unfinished format conversion will no longer be processed.",
+				"ok": "Confirm Exit",
+				"title": "Exit Plugin?"
+			}
+		},
+		"setting": {
+			"algorithm": "Algorithm",
+			"apply": "Apply",
+			"cancel": "Cancel",
+			"disable": "Disable",
+			"enable": "Enable",
+			"illustration": "Illustration",
+			"photo": "Photo",
+			"tip": "Conversion Settings"
+		},
+		"thumbtack": {
+			"isAlwaysOnTop": "Pin Window",
+			"isNotAlwaysOnTop": "Unpin"
+		}
+	},
+	"main": {
+		"dialog": {
+			"restart-tasks": {
+				"cancel": "No",
+				"description": "Do you want to rerun the completed tasks with the new settings?",
+				"ok": "Yes, Rerun",
+				"title": "Rerun Task"
+			},
+			"success": {
+				"cancel": "Close",
+				"description": "Successfully converted <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>{{ count }}</span> files. You can select other images in Eagle to continue the conversion.",
+				"ok": "Confirm",
+				"title": "Conversion Complete!"
+			}
+		},
+		"download": {
+			"replace": "Replace Original",
+			"saveAs": "Save As...",
+			"tip": "Replace individually or save separately"
+		},
+		"empty": {
+			"content": "Please add images from Eagle. You can add multiple images.",
+			"title": "Add Images"
+		},
+		"feature": {
+			"algorithm": "Algorithm",
+			"processing": "Converting...",
+			"replace": "Replace All",
+			"replacing": "Replacing",
+			"saveAs": "Save All As"
+		},
+		"iGPUWarning": {
+			"description": "AI technologies require substantial hardware capabilities. If your device lacks a dedicated graphics card, image generation can be extremely slow or might not work at all.",
+			"title": "Hardware Requirements"
+		},
+		"keyboard": {
+			"fit": "Fit to Window",
+			"scaleIn": "Zoom In",
+			"scaleOut": "Zoom Out"
+		},
+		"status": {
+			"cancel": "Remove from List",
+			"failed": "Conversion Failed",
+			"processing": "HD Conversion in progress, please wait...",
+			"waiting": "Waiting for Conversion, please wait..."
+		}
+	},
+	"manifest": {
+		"app": {
+			"name": "AI Image Enlarger"
+		}
+	},
+	"modelDialog": {
+		"downloading": {
+			"cancel": "Cancel Download",
+			"description": "Downloading and installing the training AI model, please wait.",
+			"title": "Downloading and Installing..."
+		},
+		"failed": {
+			"description": "Unable to download the AI model link, possibly due to the current network environment not being accessible. Please try switching to another network connection and try again. (Ensure that you can open this link: https://r2-plugin.eagle.cool/test.png)",
+			"ok": "Retry Download",
+			"title": "AI Model Download Failed"
+		},
+		"initialize": {
+			"cancel": "Close Plugin",
+			"description": "It will take approximately <span style='background: -webkit-linear-gradient(45deg, var(--color-ai-gradient-1), var(--color-ai-gradient-2) 80%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>15~20</span> seconds",
+			"title": "Initializing AI Model"
+		},
+		"prepare": {
+			"cancel": "Close Plugin",
+			"description": "To ensure smooth operation of the plugin, it is necessary to download and install the pre-trained AI model.",
+			"ok": "Download and Install",
+			"title": "Download and Install AI Model"
+		},
+		"success": {
+			"description": "The pre-trained AI model has been successfully downloaded and installed. Now you can start using the plugin and enjoy its powerful features.",
+			"ok": "Start Using",
+			"title": "AI Model Installed Successfully!"
+		}
+	}
+}
