@@ -1,0 +1,23 @@
+[
+  {
+    "epoch": 1,
+    "avg_reward": -1.24159464,
+    "actor_loss": 0.07399384900927544,
+    "critic_loss": 6382898982.4,
+    "noise_scale": 1.0
+  },
+  {
+    "epoch": 2,
+    "avg_reward": -1.3658254399999998,
+    "actor_loss": 0.10871647857129574,
+    "critic_loss": 18364766361.6,
+    "noise_scale": 0.8333333333333334
+  },
+  {
+    "epoch": 3,
+    "avg_reward": -0.9837983000384145,
+    "actor_loss": 0.3578858464956284,
+    "critic_loss": 488492689.6,
+    "noise_scale": 0.6666666666666667
+  }
+]
