@@ -59,24 +59,34 @@ body {
   will-change: auto;
 }
 
-/* 滚动条样式 - 优化 */
+/* 滚动条样式 - 悬停时显示 */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-tertiary);
+  background: transparent;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-primary);
+  background: transparent;
   border-radius: 4px;
   transition: background var(--transition-fast) var(--ease-out);
 }
 
-::-webkit-scrollbar-thumb:hover {
+/* 悬停时显示滚动条 */
+*:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 114, 239, 0.3);
+}
+
+*:hover::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* 滚动时显示 */
+*::-webkit-scrollbar-thumb:active {
   background: var(--color-primary-hover);
 }
 
