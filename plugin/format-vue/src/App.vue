@@ -11,12 +11,23 @@
       
       <div class="right-panel">
         <FileList :files="files" @remove="removeFile" />
-        <ConvertButton 
-          :disabled="files.length === 0 || isConverting" 
-          @click="startConversion" 
-        />
       </div>
     </div>
+    
+    <footer class="footer">
+      <div class="footer-left">
+        <span class="file-count">{{ files.length }} 个文件</span>
+      </div>
+      <div class="footer-right">
+        <button 
+          class="btn-convert"
+          :disabled="files.length === 0 || isConverting"
+          @click="startConversion"
+        >
+          {{ isConverting ? '转换中...' : '开始转换' }}
+        </button>
+      </div>
+    </footer>
     
     <ProgressBar 
       :show="isConverting"
@@ -33,7 +44,6 @@ import FormatSelector from './components/FormatSelector.vue'
 import QualityPanel from './components/QualityPanel.vue'
 import AdvancedParams from './components/AdvancedParams.vue'
 import FileList from './components/FileList.vue'
-import ConvertButton from './components/ConvertButton.vue'
 import ProgressBar from './components/ProgressBar.vue'
 import { useEagleAPI } from './composables/useEagleAPI'
 import { useRustCLI } from './composables/useRustCLI'
@@ -125,5 +135,55 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow: hidden;
+}
+
+.footer {
+  border-top: 1px solid var(--border-color);
+  padding: 0 16px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.file-count {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-convert {
+  padding: 8px 24px;
+  background: var(--color-primary);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-convert:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-convert:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
