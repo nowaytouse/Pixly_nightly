@@ -17,6 +17,40 @@
       <div class="slider-hint">0-2: 快速 | 3-4: 平衡 | 5-6: 最佳</div>
     </div>
     
+    <!-- Filter Strength -->
+    <div class="slider-group">
+      <div class="slider-header">
+        <span>滤镜强度</span>
+        <span class="slider-value">{{ localParams.filterStrength }}</span>
+      </div>
+      <input 
+        type="range" 
+        v-model.number="localParams.filterStrength"
+        min="0" 
+        max="100" 
+        step="1"
+        class="slider"
+      />
+      <div class="slider-hint">0=禁用 | 60=推荐 | 100=最强</div>
+    </div>
+
+    <!-- Sharpness -->
+    <div class="slider-group">
+      <div class="slider-header">
+        <span>锐化级别</span>
+        <span class="slider-value">{{ localParams.sharpness }}</span>
+      </div>
+      <input 
+        type="range" 
+        v-model.number="localParams.sharpness"
+        min="0" 
+        max="7" 
+        step="1"
+        class="slider"
+      />
+      <div class="slider-hint">0=禁用 | 7=最强</div>
+    </div>
+
     <!-- 无损模式 -->
     <div class="checkbox-group">
       <label class="checkbox-label">
@@ -38,6 +72,8 @@ const emit = defineEmits(['update:modelValue'])
 
 const localParams = ref({
   method: 4,
+  filterStrength: 60,
+  sharpness: 0,
   lossless: false,
   ...props.modelValue
 })

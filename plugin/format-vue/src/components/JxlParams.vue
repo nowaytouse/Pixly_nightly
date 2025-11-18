@@ -51,6 +51,47 @@
       </label>
       <div class="checkbox-hint">完全无损压缩（非JPEG）</div>
     </div>
+
+    <!-- 色彩位深度 -->
+    <div class="select-group">
+      <label class="select-label">色彩位深度</label>
+      <select v-model="localParams.bitDepth" class="param-select">
+        <option value="auto">自动（根据源文件）</option>
+        <option value="8">8-bit（标准）</option>
+        <option value="10">10-bit（HDR）</option>
+        <option value="12">12-bit（专业）</option>
+        <option value="16">16-bit（极致）</option>
+      </select>
+    </div>
+
+    <!-- 色彩空间 -->
+    <div class="select-group">
+      <label class="select-label">色彩空间</label>
+      <select v-model="localParams.colorSpace" class="param-select">
+        <option value="auto">自动（保持源色彩空间）</option>
+        <option value="srgb">sRGB（标准）</option>
+        <option value="p3">Display P3（广色域）</option>
+        <option value="adobe">Adobe RGB（专业）</option>
+        <option value="prophoto">ProPhoto RGB（极致）</option>
+      </select>
+    </div>
+
+    <!-- 高级选项 -->
+    <div class="checkbox-group">
+      <label class="checkbox-label">
+        <input type="checkbox" v-model="localParams.modular" />
+        <span>Modular 模式</span>
+      </label>
+      <div class="checkbox-hint">适合无损和高质量场景</div>
+    </div>
+
+    <div class="checkbox-group">
+      <label class="checkbox-label">
+        <input type="checkbox" v-model="localParams.progressive" />
+        <span>渐进式加载</span>
+      </label>
+      <div class="checkbox-hint">支持逐步显示</div>
+    </div>
   </div>
 </template>
 
@@ -68,6 +109,10 @@ const localParams = ref({
   distance: 1.0,
   lossless: false,
   jpegLossless: false,
+  bitDepth: 'auto',
+  colorSpace: 'auto',
+  modular: false,
+  progressive: false,
   ...props.modelValue
 })
 
@@ -166,5 +211,33 @@ watch(localParams, (newVal) => {
   font-size: 11px;
   color: var(--text-tertiary);
   padding-left: 24px;
+}
+
+.select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.select-label {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.param-select {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.param-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 114, 239, 0.1);
 }
 </style>

@@ -58,20 +58,21 @@
         <span>编码参数</span>
       </div>
       
-      <!-- Preset -->
-      <div class="param-group">
-        <label class="param-label">Preset</label>
-        <select v-model="localParams.preset" class="param-select">
-          <option value="ultrafast">ultrafast - 极速</option>
-          <option value="superfast">superfast - 超快</option>
-          <option value="veryfast">veryfast - 很快</option>
-          <option value="faster">faster - 较快</option>
-          <option value="fast">fast - 快速</option>
-          <option value="medium">medium - 平衡</option>
-          <option value="slow">slow - 慢速</option>
-          <option value="slower">slower - 较慢</option>
-          <option value="veryslow">veryslow - 极慢</option>
-        </select>
+      <!-- Speed -->
+      <div class="slider-group">
+        <div class="slider-header">
+          <span>编码速度</span>
+          <span class="slider-value">{{ localParams.speed }}</span>
+        </div>
+        <input 
+          type="range" 
+          v-model.number="localParams.speed"
+          min="0" 
+          max="9" 
+          step="1"
+          class="slider"
+        />
+        <div class="slider-hint">0=最快 | 5=平衡 | 9=最慢最优</div>
       </div>
 
       <!-- GOP Size -->
@@ -184,7 +185,7 @@ const localParams = ref({
   container: 'mp4',
   codec: 'h265',
   crf: 23,
-  preset: 'medium',
+  speed: 5,
   gopSize: 250,
   bframes: 3,
   refs: 3,
