@@ -7,10 +7,10 @@
     </div>
     
     <div v-if="expanded" class="params-content">
-      <JxlParams v-if="format === 'jxl'" v-model="localParams" />
+      <JxlParams v-if="format === 'jxl'" v-model="localParams" :lossless="lossless" />
       <AvifParams v-else-if="format === 'avif'" v-model="localParams" />
-      <WebpParams v-else-if="format === 'webp'" v-model="localParams" />
-      <HeicParams v-else-if="format === 'heic'" v-model="localParams" />
+      <WebpParams v-else-if="format === 'webp'" v-model="localParams" :lossless="lossless" />
+      <HeicParams v-else-if="format === 'heic'" v-model="localParams" :lossless="lossless" />
       <div v-else class="hint">{{ format.toUpperCase() }} {{ t('ui.advancedParams') }}</div>
     </div>
   </div>
@@ -28,7 +28,8 @@ const { t } = useI18n()
 
 const props = defineProps({
   format: String,
-  modelValue: Object
+  modelValue: Object,
+  lossless: Boolean  // 全局lossless状态
 })
 
 const emit = defineEmits(['update:modelValue'])

@@ -34,7 +34,8 @@ import { useI18n } from '../composables/useI18n'
 const { t } = useI18n()
 
 const props = defineProps({
-  modelValue: Object
+  modelValue: Object,
+  lossless: Boolean  // 全局lossless状态（用于禁用质量相关参数）
 })
 
 const emit = defineEmits(['update:modelValue'])

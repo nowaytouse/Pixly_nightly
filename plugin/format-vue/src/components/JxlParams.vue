@@ -13,6 +13,7 @@
         max="9" 
         step="1"
         class="slider"
+        :disabled="lossless"
       />
       <div class="slider-hint">{{ t('advanced.jxl.effortHint') }}</div>
     </div>
@@ -30,17 +31,24 @@
         max="15" 
         step="0.1"
         class="slider"
+        :disabled="lossless"
       />
       <div class="slider-hint">{{ t('advanced.jxl.distanceHint') }}</div>
     </div>
     
     <!-- JPEG无损转码 -->
     <div class="checkbox-group">
-      <label class="checkbox-label">
-        <input type="checkbox" v-model="localParams.jpegLossless" />
+      <label class="checkbox-label" :class="{ disabled: lossless }">
+        <input 
+          type="checkbox" 
+          v-model="localParams.jpegLossless"
+          :disabled="lossless"
+        />
         <span>{{ t('advanced.jxl.jpegLossless') }}</span>
       </label>
-      <div class="checkbox-hint">{{ t('advanced.jxl.jpegLosslessHint') }}</div>
+      <div class="checkbox-hint">
+        {{ lossless ? t('advanced.jxl.jpegLosslessDisabled') : t('advanced.jxl.jpegLosslessHint') }}
+      </div>
     </div>
   </div>
 </template>
@@ -52,7 +60,8 @@ import { useI18n } from '../composables/useI18n'
 const { t } = useI18n()
 
 const props = defineProps({
-  modelValue: Object
+  modelValue: Object,
+  lossless: Boolean  // 从QualityPanel传入的全局lossless状态
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -152,5 +161,14 @@ watch(localParams, (newVal) => {
   font-size: 11px;
   color: var(--text-tertiary);
   padding-left: 24px;
+}
+
+.checkbox-label.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.checkbox-label.disabled span {
+  color: var(--text-tertiary);
 }
 </style>

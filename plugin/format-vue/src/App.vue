@@ -26,7 +26,7 @@
         <template v-if="conversionType === 'image'">
           <FormatSelector v-model="selectedFormat" />
           <QualityPanel v-model:modelValue="quality" v-model:lossless="lossless" />
-          <AdvancedParams :format="selectedFormat" v-model="advancedParams" />
+          <AdvancedParams :format="selectedFormat" v-model="advancedParams" :lossless="lossless" />
         </template>
         
         <!-- 视频面板 -->

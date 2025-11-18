@@ -32,7 +32,8 @@
       "distance": "Distance",
       "distanceHint": "0.0: Lossless | 1.0-3.0: High Quality | 3.0+: Compressed",
       "jpegLossless": "JPEG Lossless Transcode",
-      "jpegLosslessHint": "100% reversible JPEG to JXL conversion",
+      "jpegLosslessHint": "Only for JPEG input, 100% reversible transcoding",
+      "jpegLosslessDisabled": "⚠️ Disabled when mathematical lossless is enabled",
       "lossless": "Mathematical Lossless",
       "losslessHint": "Fully lossless compression (non-JPEG)"
     },

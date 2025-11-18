@@ -32,7 +32,8 @@
       "distance": "失真度",
       "distanceHint": "0.0: 无损 | 1.0-3.0: 高质量 | 3.0+: 压缩",
       "jpegLossless": "JPEG 无损转码",
-      "jpegLosslessHint": "启用后将JPEG 100%可逆转码为JXL",
+      "jpegLosslessHint": "仅对JPEG输入有效，100%可逆转码为JXL",
+      "jpegLosslessDisabled": "⚠️ 已启用数学无损，JPEG无损转码已禁用",
       "lossless": "数学无损",
       "losslessHint": "完全无损压缩（非JPEG）"
     },

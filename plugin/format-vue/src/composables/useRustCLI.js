@@ -137,8 +137,26 @@ export function useRustCLI() {
         if (options.format === 'jxl') {
           if (options.effort !== undefined) args.push('--effort', options.effort.toString())
           if (options.distance !== undefined) args.push('--distance', options.distance.toString())
-          if (options.jpegLossless) args.push('--jpeg-lossless')
-          if (options.lossless) args.push('--lossless')
+          
+          // 防呆处理：JPEG无损转码和数学无损互斥
+          // - jpegLossless: 仅用于JPEG输入，无损重新打包
+          // - lossless: 通用无损模式，适用于所有输入
+          // 优先级：lossless > jpegLossless
+          if (options.lossless) {
+            // 数学无损模式（全局）
+            args.push('--lossless')
+            logger.info(LOG_KEYS.PARAM_CHANGE, 'Using mathematical lossless mode', { 
+              file: file.name 
+            })
+          } else if (options.jpegLossless) {
+            // JPEG无损转码（仅JPEG输入有效）
+            // Rust CLI会自动检测输入格式
+            logger.info(LOG_KEYS.PARAM_CHANGE, 'JPEG lossless transcoding enabled', { 
+              file: file.name 
+            })
+            // 注意：不需要传递参数，Rust CLI会自动处理JPEG输入
+          }
+          
           if (options.bitDepth && options.bitDepth !== 'auto') args.push('--bit-depth', options.bitDepth)
           if (options.colorSpace && options.colorSpace !== 'auto') args.push('--color-space', options.colorSpace)
           if (options.modular) args.push('--modular')
