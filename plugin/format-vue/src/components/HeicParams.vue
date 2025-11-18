@@ -8,6 +8,16 @@
         <option value="libheif">libheif (标准)</option>
       </select>
     </div>
+
+    <!-- 色度子采样 -->
+    <div class="select-group">
+      <label class="select-label">色度子采样</label>
+      <select v-model="localParams.chromaSubsampling" class="param-select">
+        <option value="auto">自动</option>
+        <option value="420">4:2:0（标准）</option>
+        <option value="444">4:4:4（最佳）</option>
+      </select>
+    </div>
     
     <!-- 无损模式 -->
     <div class="checkbox-group">
@@ -15,6 +25,15 @@
         <input type="checkbox" v-model="localParams.lossless" />
         <span>无损编码</span>
       </label>
+    </div>
+
+    <!-- 嵌入缩略图 -->
+    <div class="checkbox-group">
+      <label class="checkbox-label">
+        <input type="checkbox" v-model="localParams.embedThumbnail" />
+        <span>嵌入缩略图</span>
+      </label>
+      <div class="checkbox-hint">在文件中嵌入预览缩略图</div>
     </div>
   </div>
 </template>
@@ -30,7 +49,9 @@ const emit = defineEmits(['update:modelValue'])
 
 const localParams = ref({
   encoder: 'x265',
+  chromaSubsampling: 'auto',
   lossless: false,
+  embedThumbnail: false,
   ...props.modelValue
 })
 
@@ -94,5 +115,11 @@ watch(localParams, (newVal) => {
   height: 16px;
   cursor: pointer;
   accent-color: var(--color-primary);
+}
+
+.checkbox-hint {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  padding-left: 24px;
 }
 </style>

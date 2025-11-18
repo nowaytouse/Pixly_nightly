@@ -36,8 +36,8 @@ export function useRustCLI() {
         ]
 
         // 添加视频参数
-        if (options.preset) {
-          args.push('--preset', options.preset)
+        if (options.speed !== undefined) {
+          args.push('--speed', options.speed.toString())
         }
         if (options.gopSize) {
           args.push('--gop', options.gopSize.toString())
@@ -100,51 +100,44 @@ export function useRustCLI() {
 
         // JXL高级参数
         if (options.format === 'jxl') {
-          if (options.effort !== undefined) {
-            args.push('--effort', options.effort.toString())
-          }
-          if (options.distance !== undefined) {
-            args.push('--distance', options.distance.toString())
-          }
-          if (options.jpegLossless) {
-            args.push('--jpeg-lossless')
-          }
-          if (options.lossless) {
-            args.push('--lossless')
-          }
+          if (options.effort !== undefined) args.push('--effort', options.effort.toString())
+          if (options.distance !== undefined) args.push('--distance', options.distance.toString())
+          if (options.jpegLossless) args.push('--jpeg-lossless')
+          if (options.lossless) args.push('--lossless')
+          if (options.bitDepth && options.bitDepth !== 'auto') args.push('--bit-depth', options.bitDepth)
+          if (options.colorSpace && options.colorSpace !== 'auto') args.push('--color-space', options.colorSpace)
+          if (options.modular) args.push('--modular')
+          if (options.progressive) args.push('--progressive')
         }
 
         // AVIF高级参数
         if (options.format === 'avif') {
-          if (options.speed !== undefined) {
-            args.push('--speed', options.speed.toString())
-          }
-          if (options.minQuantizer !== undefined) {
-            args.push('--min-quantizer', options.minQuantizer.toString())
-          }
-          if (options.maxQuantizer !== undefined) {
-            args.push('--max-quantizer', options.maxQuantizer.toString())
+          if (options.speed !== undefined) args.push('--speed', options.speed.toString())
+          if (options.minQuantizer !== undefined) args.push('--min-quantizer', options.minQuantizer.toString())
+          if (options.maxQuantizer !== undefined) args.push('--max-quantizer', options.maxQuantizer.toString())
+          if (options.tilesRows && options.tilesRows > 1) args.push('--tiles-rows', options.tilesRows.toString())
+          if (options.tilesCols && options.tilesCols > 1) args.push('--tiles-cols', options.tilesCols.toString())
+          if (options.chromaSubsampling && options.chromaSubsampling !== 'auto') {
+            args.push('--chroma-subsampling', options.chromaSubsampling)
           }
         }
 
         // WebP高级参数
         if (options.format === 'webp') {
-          if (options.method !== undefined) {
-            args.push('--method', options.method.toString())
-          }
-          if (options.lossless) {
-            args.push('--lossless')
-          }
+          if (options.method !== undefined) args.push('--method', options.method.toString())
+          if (options.filterStrength !== undefined) args.push('--filter-strength', options.filterStrength.toString())
+          if (options.sharpness !== undefined) args.push('--sharpness', options.sharpness.toString())
+          if (options.lossless) args.push('--lossless')
         }
 
         // HEIC高级参数
         if (options.format === 'heic') {
-          if (options.encoder) {
-            args.push('--encoder', options.encoder)
+          if (options.encoder) args.push('--encoder', options.encoder)
+          if (options.chromaSubsampling && options.chromaSubsampling !== 'auto') {
+            args.push('--chroma-subsampling', options.chromaSubsampling)
           }
-          if (options.lossless) {
-            args.push('--lossless')
-          }
+          if (options.lossless) args.push('--lossless')
+          if (options.embedThumbnail) args.push('--embed-thumbnail')
         }
 
         // 调用Rust CLI
