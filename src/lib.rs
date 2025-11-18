@@ -28,6 +28,7 @@ pub mod cache;
 pub mod parallel;
 pub mod progress;
 pub mod ram_optimizer;
+pub mod format_selector;  // Phase 4: 智能格式选择
 pub mod ai_interface;
 pub mod format_optimizer;
 pub mod strategy;
