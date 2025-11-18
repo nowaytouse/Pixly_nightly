@@ -17,14 +17,35 @@ export function useEagleAPI() {
     isLoading.value = true
     
     try {
+      // 检查Eagle API
+      logger.info(LOG_KEYS.EAGLE_API_CALL, 'Checking Eagle API availability', {
+        hasEagle: !!window.eagle,
+        hasItem: !!(window.eagle && window.eagle.item)
+      })
+      
       if (!window.eagle || !window.eagle.item) {
         const error = new Error('Eagle API not available')
         logger.error(LOG_KEYS.EAGLE_API_ERROR, 'Eagle API not available')
         throw error
       }
 
-      logger.info(LOG_KEYS.EAGLE_API_CALL, 'Loading selected files from Eagle')
+      logger.info(LOG_KEYS.EAGLE_API_CALL, 'Calling eagle.item.getSelected()')
       const items = await window.eagle.item.getSelected()
+      
+      logger.info(LOG_KEYS.EAGLE_API_CALL, 'Raw items received', { 
+        count: items ? items.length : 0,
+        firstItem: items && items[0] ? {
+          id: items[0].id,
+          name: items[0].name,
+          hasFilePath: !!items[0].filePath
+        } : null
+      })
+      
+      if (!items || items.length === 0) {
+        logger.warn(LOG_KEYS.EAGLE_API_CALL, 'No items selected in Eagle')
+        selectedItems.value = []
+        return []
+      }
       
       selectedItems.value = items.map(item => ({
         id: item.id,
@@ -41,13 +62,15 @@ export function useEagleAPI() {
       }))
 
       logger.info(LOG_KEYS.EAGLE_API_SUCCESS, 'Files loaded successfully', { 
-        count: selectedItems.value.length 
+        count: selectedItems.value.length,
+        files: selectedItems.value.map(f => f.name)
       })
 
       return selectedItems.value
     } catch (error) {
       logger.error(LOG_KEYS.EAGLE_API_ERROR, 'Failed to load Eagle files', { 
-        error: error.message 
+        error: error.message,
+        stack: error.stack
       })
       throw error
     } finally {

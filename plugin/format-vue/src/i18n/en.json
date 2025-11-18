@@ -112,6 +112,7 @@
     "outputFormat": "Output Format",
     "converting": "Converting...",
     "selectInEagle": "Select files in Eagle",
+    "loadFiles": "Load Files",
     "expandIcon": "▶",
     "collapseIcon": "▼"
   }

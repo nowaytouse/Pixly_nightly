@@ -112,6 +112,7 @@
     "outputFormat": "输出格式",
     "converting": "转换中...",
     "selectInEagle": "在 Eagle 中选择文件",
+    "loadFiles": "加载文件",
     "expandIcon": "▶",
     "collapseIcon": "▼"
   }

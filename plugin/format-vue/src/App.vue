@@ -36,7 +36,7 @@
       </div>
       
       <div class="right-panel">
-        <FileList :files="files" @remove="removeFile" />
+        <FileList :files="files" @remove="removeFile" @refresh="loadFiles" />
       </div>
     </div>
     

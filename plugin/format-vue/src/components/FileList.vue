@@ -3,11 +3,17 @@
     <div class="panel-title">
       <span>📁</span>
       <span>{{ t('ui.fileList') }} ({{ files.length }})</span>
+      <button class="refresh-btn" @click="$emit('refresh')" title="刷新文件列表">
+        🔄
+      </button>
     </div>
     
     <div v-if="files.length === 0" class="empty-state">
       <div class="empty-icon">📂</div>
       <p>{{ t('ui.selectInEagle') }}</p>
+      <button class="load-btn" @click="$emit('refresh')">
+        {{ t('ui.loadFiles') || '加载文件' }}
+      </button>
     </div>
     
     <div v-else class="file-list">
@@ -46,7 +52,7 @@ defineProps({
   files: Array
 })
 
-defineEmits(['remove'])
+defineEmits(['remove', 'refresh'])
 
 const getFileIcon = (file) => {
   const type = getFileType(file.name)
@@ -75,7 +81,7 @@ const handleImageError = (event) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
   color: var(--text-tertiary);
   animation: fadeIn var(--transition-slow) var(--ease-out);
 }
@@ -84,6 +90,47 @@ const handleImageError = (event) => {
   font-size: 48px;
   opacity: 0.5;
   animation: float 3s ease-in-out infinite;
+}
+
+.load-btn {
+  padding: 10px 20px;
+  background: var(--color-primary);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base) var(--ease-out);
+}
+
+.load-btn:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.refresh-btn {
+  margin-left: auto;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base) var(--ease-out);
+}
+
+.refresh-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: rotate(180deg);
 }
 
 @keyframes float {
