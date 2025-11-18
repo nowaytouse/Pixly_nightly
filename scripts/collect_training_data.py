@@ -60,7 +60,12 @@ def extract_features_rust(image_path, pixly_bin):
 def convert_with_params(image_path, output_format, quality, effort, pixly_bin):
     """执行转换并返回结果（包括SSIM质量评估）"""
     timestamp = int(time.time() * 1000)
-    output_file = f"/tmp/training_{Path(image_path).stem}_{timestamp}_q{quality}_e{effort}.{output_format}"
+    output_dir = "/tmp/pixly_training"
+    Path(output_dir).mkdir(exist_ok=True)
+    
+    # 预期的输出文件名（CLI会自动生成）
+    stem = Path(image_path).stem
+    output_file = Path(output_dir) / f"{stem}.{output_format}"
     
     try:
         start_time = time.time()
@@ -69,11 +74,10 @@ def convert_with_params(image_path, output_format, quality, effort, pixly_bin):
             pixly_bin,
             'convert',
             image_path,
-            output_file,
             '--format', output_format,
             '--quality', str(quality),
-            '--effort', str(effort),
-            '--no-ai'  # 禁用AI预测，使用指定参数
+            '--output', output_dir,
+            '--check-quality'  # 启用SSIM检查
         ]
         
         result = subprocess.run(
@@ -85,8 +89,8 @@ def convert_with_params(image_path, output_format, quality, effort, pixly_bin):
         
         processing_time = time.time() - start_time
         
-        if result.returncode == 0 and Path(output_file).exists():
-            output_size = Path(output_file).stat().st_size
+        if result.returncode == 0 and output_file.exists():
+            output_size = output_file.stat().st_size
             
             # 尝试提取SSIM（如果输出中包含）
             ssim = None
@@ -98,7 +102,7 @@ def convert_with_params(image_path, output_format, quality, effort, pixly_bin):
                         pass
             
             # 清理临时文件
-            Path(output_file).unlink()
+            output_file.unlink()
             
             return {
                 'success': True,

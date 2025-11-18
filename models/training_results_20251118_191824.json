@@ -1,0 +1,17 @@
+{
+  "avif": {
+    "quality_score": -0.017400644468313686,
+    "effort_score": -0.042386185243328045,
+    "samples": 36
+  },
+  "webp": {
+    "quality_score": -0.21887586757255306,
+    "effort_score": -0.807231096213004,
+    "samples": 60
+  },
+  "jxl": {
+    "quality_score": -0.017400644468313686,
+    "effort_score": -0.042386185243328045,
+    "samples": 36
+  }
+}
