@@ -16,10 +16,10 @@
         :key="file.id"
         class="file-item"
       >
-        <span class="file-icon">📄</span>
+        <span class="file-icon">{{ getFileIcon(file) }}</span>
         <div class="file-info">
           <div class="file-name">{{ file.name }}</div>
-          <div class="file-meta">{{ formatSize(file.size) }} · {{ file.ext }}</div>
+          <div class="file-meta">{{ formatFileSize(file.size) }} · {{ file.ext }}</div>
         </div>
         <button class="remove-btn" @click="$emit('remove', index)">
           ✕
@@ -30,16 +30,19 @@
 </template>
 
 <script setup>
+import { formatFileSize, getFileType } from '../utils/fileTypes'
+
 defineProps({
   files: Array
 })
 
 defineEmits(['remove'])
 
-const formatSize = (bytes) => {
-  if (bytes < 1024) return bytes + ' B'
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+const getFileIcon = (file) => {
+  const type = getFileType(file.name)
+  if (type === 'image') return '🖼️'
+  if (type === 'video') return '🎬'
+  return '📄'
 }
 </script>
 

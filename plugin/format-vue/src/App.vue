@@ -60,6 +60,14 @@
       :progress="progress"
       :current-file="currentFile"
     />
+    
+    <ErrorToast
+      :show="toast.show"
+      :type="toast.type"
+      :title="toast.title"
+      :message="toast.message"
+      @close="toast.show = false"
+    />
   </div>
 </template>
 
@@ -72,6 +80,7 @@ import AdvancedParams from './components/AdvancedParams.vue'
 import VideoPanel from './components/VideoPanel.vue'
 import FileList from './components/FileList.vue'
 import ProgressBar from './components/ProgressBar.vue'
+import ErrorToast from './components/ErrorToast.vue'
 import { useEagleAPI } from './composables/useEagleAPI'
 import { useRustCLI } from './composables/useRustCLI'
 import { useI18n } from './composables/useI18n'
@@ -84,9 +93,25 @@ const advancedParams = ref({})
 const videoParams = ref({})
 const files = ref([])
 
+// Toast状态
+const toast = ref({
+  show: false,
+  type: 'error',
+  title: '',
+  message: ''
+})
+
 const { t } = useI18n()
 const { loadSelectedFiles, refreshLibrary, showNotification } = useEagleAPI()
 const { convertImages, isConverting, progress, currentFile } = useRustCLI()
+
+// 显示Toast
+const showToast = (type, title, message) => {
+  toast.value = { show: true, type, title, message }
+  setTimeout(() => {
+    toast.value.show = false
+  }, 5000)
+}
 
 // 日志：应用初始化
 logger.info(LOG_KEYS.APP_INIT, 'PIXLY Format Vue initialized')
