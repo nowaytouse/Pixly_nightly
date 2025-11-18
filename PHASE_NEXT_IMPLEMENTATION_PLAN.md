@@ -203,21 +203,25 @@ fn extract_metadata_features(path: &Path) -> Vec<f64> {
 
 ---
 
-### 🟡 Phase 2: 视频转换ML集成 (中优先级)
+### ✅ Phase 2: 视频转换ML集成 (已完成)
 
 **目标**: 动图转视频使用Python ML预测参数
 
-**预计时间**: 4-6小时
+**完成时间**: 2025-11-18  
+**实际耗时**: 已完成（之前实现）
 
-#### 2.1 视频特征提取
+#### ✅ 2.1 视频特征提取 - 已完成
 
-**文件**: `src/video_features.rs` (新建)
+**文件**: `src/video_features.rs`
 
-**特征列表**:
-- 帧数、FPS、时长
-- 分辨率、宽高比
-- 码率、文件大小
-- 编解码器类型
+**已实现特征**:
+- ✅ 帧数、FPS、时长
+- ✅ 分辨率、宽高比
+- ✅ 码率、文件大小
+- ✅ 编解码器类型
+- ✅ 音频检测
+- ✅ 场景复杂度估算
+- ✅ 128维特征转换
 - 是否有音频
 - 场景复杂度
 
@@ -259,11 +263,11 @@ pub fn extract_video_features(path: &Path) -> Result<VideoFeatures> {
 }
 ```
 
-#### 2.2 Python ML视频预测
+#### ✅ 2.2 Python ML视频预测 - 已完成
 
-**文件**: `scripts/ml_bridge.py` - 扩展
+**文件**: `scripts/ml_bridge.py`
 
-**新增**:
+**已实现**:
 ```python
 def predict_video_params(features: Dict, target_codec: str, quality_mode: str) -> Dict:
     """
@@ -295,11 +299,11 @@ def predict_video_params(features: Dict, target_codec: str, quality_mode: str) -
     }
 ```
 
-#### 2.3 Rust集成
+#### ✅ 2.3 Rust集成 - 已完成
 
 **文件**: `pixly_converter_cli.rs` - video命令
 
-**修改**:
+**已实现**:
 ```rust
 "video" => {
     if ai {
