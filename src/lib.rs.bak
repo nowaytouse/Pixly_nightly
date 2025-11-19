@@ -143,6 +143,9 @@ pub use linear_regression::*;
 pub use progress_tracker::{ProgressTracker, ProgressInfo};
 pub use quality_reporter::{Reporter, QualityMetrics as ReporterQualityMetrics};
 pub use alpha_predictor::AlphaQualityPredictor;
+pub use predictor_core::{PredictorCore, FileFeatures as PredictorFileFeatures, ConversionParams, Prediction};
+pub use image_analyzer::{ImageAnalyzer, ImageQualityMetrics};
+pub use training_data::{TrainingDataset, TrainingRecord, TrainingReport, load_training_report};
 
 // CLI模块（通常不需要re-export，但保留声明）
 // pub use cli_convert::*;
