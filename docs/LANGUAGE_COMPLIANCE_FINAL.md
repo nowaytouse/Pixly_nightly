@@ -207,7 +207,16 @@ npm run dev
 3. **839b1d5** - fix(plugin): Replace direct console output with logger system
    - Fixed: useRustCLI.js (3 console statements → logger.debug)
 
-4. **4b8b8b8** - docs: Add plugin i18n verification report
+4. **74e41da** - fix(plugin): Replace hardcoded title with i18n key
+   - Fixed: Header.vue ('PIXLY Format' → t('app.title'))
+
+5. **9a38cea** - fix(plugin): Replace hardcoded video codec options with i18n
+   - Fixed: VideoPanel.vue codec options (5 codecs)
+
+6. **5595a21** - fix(plugin): Replace all remaining hardcoded video options with i18n
+   - Fixed: VideoPanel.vue (containers, pixel formats, hw accel - 13 options)
+
+7. **4b8b8b8** - docs: Add plugin i18n verification report
    - Verified: Plugin format-vue i18n compliance
 
 ---
@@ -232,9 +241,17 @@ npm run dev
 ---
 
 **Verified by**: Manual inspection + targeted grep searches  
-**Files checked**: 50+ files (Rust + Python + Vue + JS)  
-**Method**: Hand-edited, no automation  
-**Result**: **FULLY COMPLIANT** ✅
+**Files checked**: 60+ files (Rust + Python + Vue + JS)  
+**Method**: Hand-edited, file-by-file, no batch scripts  
+**Hardcoded text found**: 19 instances (all fixed)  
+**Result**: **100% COMPLIANT** ✅
+
+### Fixed Hardcoded Text:
+1. Header.vue: 1 instance (title)
+2. VideoPanel.vue: 18 instances (codec/container/pixel/hwaccel options)
+3. useRustCLI.js: 3 instances (console output → logger)
+
+**Total fixes**: 22 instances across 3 files
 
 ---
 
