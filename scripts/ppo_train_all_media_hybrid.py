@@ -325,27 +325,27 @@ def save_training_data(training_data, output_file):
         }, f, indent=2)
     
     print(f"\n💾 Training data saved: {output_path}")
-    print(f"   总样本数: {len(training_data)}")
-    print(f"   图像样本: {stats['image']}")
-    print(f"   视频样本: {stats['video']}")
-    print(f"   音频样本: {stats['audio']}")
+    print(f"   Total samples: {len(training_data)}")
+    print(f"   Image samples: {stats['image']}")
+    print(f"   Video samples: {stats['video']}")
+    print(f"   Audio samples: {stats['audio']}")
 
 def main():
-    """主函数"""
+    """Main function"""
     print("=" * 60)
-    print("🤖 PPO训练 - 全媒体类型支持 (混合策略)")
+    print("🤖 PPO Training - All Media Types Support (Hybrid Strategy)")
     print("=" * 60)
     
-    # 检查依赖
-    print("\n🔍 检查依赖工具...")
+    # Check dependencies
+    print("\n🔍 Checking dependencies...")
     if not check_dependencies():
         return 1
-    print("✅ 所有依赖工具已就绪")
+    print("✅ All dependencies ready")
     
     data_dir = '/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data'
     
-    # 查找所有媒体文件
-    print("\n📁 扫描媒体文件...")
+    # Find all media files
+    print("\n📁 Scanning media files...")
     media_files = find_media_files(data_dir)
     
     print(f"\n📊 文件统计:")
