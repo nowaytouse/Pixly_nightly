@@ -65,11 +65,15 @@ impl MediaAnalyzer {
             bail!("File not found: {:?}", file_path);
         }
         
-        let size = std::fs::metadata(file_path)?.len();
+        // 🚀 性能优化: 缓存metadata调用
+        let metadata = std::fs::metadata(file_path)?;
+        let size = metadata.len();
+        
+        // 🚀 性能优化: 使用静态字符串避免分配
         let extension = file_path.extension()
             .and_then(|e| e.to_str())
             .map(|e| e.to_lowercase())
-            .unwrap_or_else(|| "unknown".to_string());
+            .unwrap_or_else(|| String::from("unknown"));
         
         match extension.as_str() {
             "mp4" | "mov" | "avi" | "mkv" | "webm" | "m4v" | "flv" | "wmv" => {

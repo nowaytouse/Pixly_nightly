@@ -82,75 +82,96 @@ fn extract_basic_features(features: &crate::ImageFeatures) -> Vec<f64> {
     vec
 }
 
-/// Color Features (16维) - 真实实现
+/// Color Features (16维) - 🚀 性能优化版本
 fn extract_color_features(img: &DynamicImage) -> Vec<f64> {
     let rgba = img.to_rgba8();
-    let pixels: Vec<_> = rgba.pixels().collect();
+    let width = rgba.width() as usize;
+    let height = rgba.height() as usize;
+    let total_pixels = width * height;
     
-    if pixels.is_empty() {
+    if total_pixels == 0 {
         return vec![0.0; 16];
     }
     
-    // RGB统计
+    // 🚀 优化1: 智能采样 - 大图片采样，小图片全量
+    let step = if total_pixels > 1_000_000 { 20 } else if total_pixels > 100_000 { 10 } else { 1 };
+    
+    // 🚀 优化2: 单次遍历计算所有统计量
     let mut r_sum = 0u64;
     let mut g_sum = 0u64;
     let mut b_sum = 0u64;
+    let mut sample_count = 0usize;
     
-    for pixel in &pixels {
-        let channels = pixel.channels();
-        r_sum += channels[0] as u64;
-        g_sum += channels[1] as u64;
-        b_sum += channels[2] as u64;
+    // 预分配HSV值存储
+    let estimated_samples = (total_pixels / step).max(100);
+    let mut hsv_values = Vec::with_capacity(estimated_samples);
+    
+    // 单次遍历
+    for y in (0..height).step_by(step) {
+        for x in (0..width).step_by(step) {
+            let pixel = rgba.get_pixel(x as u32, y as u32);
+            let channels = pixel.channels();
+            
+            r_sum += channels[0] as u64;
+            g_sum += channels[1] as u64;
+            b_sum += channels[2] as u64;
+            sample_count += 1;
+            
+            // HSV转换（每10个像素采样一次）
+            if sample_count % 10 == 0 {
+                let (h, s, v) = rgb_to_hsv(
+                    channels[0] as f64 / 255.0,
+                    channels[1] as f64 / 255.0,
+                    channels[2] as f64 / 255.0,
+                );
+                hsv_values.push((h, s, v));
+            }
+        }
     }
     
-    let count = pixels.len() as f64;
+    let count = sample_count as f64;
     let r_mean = r_sum as f64 / count / 255.0;
     let g_mean = g_sum as f64 / count / 255.0;
     let b_mean = b_sum as f64 / count / 255.0;
     
-    // RGB标准差
+    // 🚀 优化3: 第二次遍历计算方差（仅在需要时）
     let mut r_var = 0.0;
     let mut g_var = 0.0;
     let mut b_var = 0.0;
     
-    for pixel in &pixels {
-        let channels = pixel.channels();
-        let r = channels[0] as f64 / 255.0;
-        let g = channels[1] as f64 / 255.0;
-        let b = channels[2] as f64 / 255.0;
-        
-        r_var += (r - r_mean).powi(2);
-        g_var += (g - g_mean).powi(2);
-        b_var += (b - b_mean).powi(2);
+    for y in (0..height).step_by(step) {
+        for x in (0..width).step_by(step) {
+            let pixel = rgba.get_pixel(x as u32, y as u32);
+            let channels = pixel.channels();
+            let r = channels[0] as f64 / 255.0;
+            let g = channels[1] as f64 / 255.0;
+            let b = channels[2] as f64 / 255.0;
+            
+            r_var += (r - r_mean).powi(2);
+            g_var += (g - g_mean).powi(2);
+            b_var += (b - b_mean).powi(2);
+        }
     }
     
     let r_std = (r_var / count).sqrt();
     let g_std = (g_var / count).sqrt();
     let b_std = (b_var / count).sqrt();
     
-    // HSV转换和统计
+    // HSV统计
     let mut h_sum = 0.0;
     let mut s_sum = 0.0;
     let mut v_sum = 0.0;
-    let mut hsv_values = Vec::new();
     
-    for pixel in pixels.iter().step_by(10) {  // 采样以提高性能
-        let channels = pixel.channels();
-        let (h, s, v) = rgb_to_hsv(
-            channels[0] as f64 / 255.0,
-            channels[1] as f64 / 255.0,
-            channels[2] as f64 / 255.0,
-        );
+    for (h, s, v) in &hsv_values {
         h_sum += h;
         s_sum += s;
         v_sum += v;
-        hsv_values.push((h, s, v));
     }
     
-    let sample_count = (pixels.len() / 10).max(1) as f64;
-    let h_mean = h_sum / sample_count;
-    let s_mean = s_sum / sample_count;
-    let v_mean = v_sum / sample_count;
+    let hsv_count = hsv_values.len().max(1) as f64;
+    let h_mean = h_sum / hsv_count;
+    let s_mean = s_sum / hsv_count;
+    let v_mean = v_sum / hsv_count;
     
     // HSV标准差
     let mut h_var = 0.0;
@@ -163,12 +184,12 @@ fn extract_color_features(img: &DynamicImage) -> Vec<f64> {
         v_var += (v - v_mean).powi(2);
     }
     
-    let h_std = (h_var / sample_count).sqrt();
-    let s_std = (s_var / sample_count).sqrt();
-    let v_std = (v_var / sample_count).sqrt();
+    let h_std = (h_var / hsv_count).sqrt();
+    let s_std = (s_var / hsv_count).sqrt();
+    let v_std = (v_var / hsv_count).sqrt();
     
-    // 颜色数量估算（量化到64色）
-    let color_count = estimate_color_count(&pixels, 64);
+    // 🚀 颜色数量估算 - 使用采样数据
+    let color_count = estimate_unique_colors(&rgba, step);
     
     vec![
         r_mean, g_mean, b_mean,
@@ -492,7 +513,30 @@ fn rgb_to_hsv(r: f64, g: f64, b: f64) -> (f64, f64, f64) {
     (h / 360.0, s, v)
 }
 
-/// 估算颜色数量
+/// 🚀 优化版：估算唯一颜色数量（直接从ImageBuffer采样）
+fn estimate_unique_colors(rgba: &image::RgbaImage, step: usize) -> usize {
+    use std::collections::HashSet;
+    
+    let mut colors = HashSet::new();
+    let (width, height) = rgba.dimensions();
+    let quantize = 64;
+    let q_step = 256 / quantize;
+    
+    for y in (0..height).step_by(step) {
+        for x in (0..width).step_by(step) {
+            let pixel = rgba.get_pixel(x, y);
+            let channels = pixel.channels();
+            let r = (channels[0] / q_step as u8) * q_step as u8;
+            let g = (channels[1] / q_step as u8) * q_step as u8;
+            let b = (channels[2] / q_step as u8) * q_step as u8;
+            colors.insert((r, g, b));
+        }
+    }
+    
+    colors.len()
+}
+
+/// 估算颜色数量（保留旧版本兼容性）
 fn estimate_color_count(pixels: &[&image::Rgba<u8>], quantize: usize) -> usize {
     use std::collections::HashSet;
     

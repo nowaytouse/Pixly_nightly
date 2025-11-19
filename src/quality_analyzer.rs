@@ -72,7 +72,7 @@ struct FFProbeStream {
 }
 
 /// 质量分布统计
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct QualityDistribution {
     pub extremely_high: usize,
     pub high: usize,

@@ -1,46 +1,15 @@
 // 质量报告器 - 生成完整的质量分析报告
 // 提取自: @archive/go/quality/reporter.go
+//
+// Phase 7重构: 使用quality_analyzer的QualityMetrics和QualityDistribution
+// 消除重复定义，保持单一职责原则
 
+use crate::quality_analyzer::{QualityMetrics, QualityDistribution};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::time::{Duration, SystemTime};
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct QualityMetrics {
-    pub file_path: String,
-    pub file_size: i64,
-    pub format: String,
-    pub media_type: String,
-    pub width: u32,
-    pub height: u32,
-    pub pixel_count: i64,
-    pub has_alpha: bool,
-    pub pixel_format: String,
-    pub bit_depth: u8,
-    pub color_space: String,
-    pub bytes_per_pixel: f64,
-    pub estimated_quality: u8,
-    pub complexity_score: f64,
-    pub noise_level: f64,
-    pub content_type: String,
-    pub compression_potential: f64,
-    pub is_already_compressed: bool,
-    pub compression_ratio: f64,
-    pub quality_class: String,
-    pub size_class: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct QualityDistribution {
-    pub extremely_high: usize,
-    pub high: usize,
-    pub medium: usize,
-    pub low: usize,
-    pub extremely_low: usize,
-    pub total: usize,
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CompressionStats {
@@ -294,10 +263,12 @@ mod tests {
 
     #[test]
     fn test_reporter_basic() {
+        use std::path::PathBuf;
+        
         let mut reporter = Reporter::new("test-session".to_string());
         
         let metrics = QualityMetrics {
-            file_path: "test.png".to_string(),
+            file_path: PathBuf::from("test.png"),
             file_size: 1024,
             format: "png".to_string(),
             media_type: "image".to_string(),
@@ -311,13 +282,14 @@ mod tests {
             bytes_per_pixel: 0.1024,
             estimated_quality: 85,
             complexity_score: 0.5,
-            noise_level: 0.1,
             content_type: "photo".to_string(),
             compression_potential: 0.7,
             is_already_compressed: false,
-            compression_ratio: 1.0,
             quality_class: "High".to_string(),
             size_class: "Small".to_string(),
+            analyzed_at: SystemTime::now(),
+            analysis_time: Duration::from_millis(10),
+            analysis_error: None,
         };
 
         reporter.add_metrics(&metrics);

@@ -180,9 +180,9 @@ pub use dynamic_concurrency::*;
 pub use linear_regression::*;
 
 // quality_metrics和quality_analyzer都有QualityMetrics/QualityDistribution，使用模块前缀
-// pub use quality_metrics::{QualityReporter, QualityReport, CompressionStats}; // 已被新的quality_metrics模块替代
+// Phase 7重构: quality_reporter现在使用quality_analyzer的QualityMetrics，无需别名
 pub use progress_tracker::{ProgressTracker, ProgressInfo};
-pub use quality_reporter::{Reporter, QualityMetrics as ReporterQualityMetrics};
+pub use quality_reporter::{Reporter, QualityReport, CompressionStats};
 pub use alpha_predictor::AlphaQualityPredictor;
 
 // CLI模块（通常不需要re-export，但保留声明）

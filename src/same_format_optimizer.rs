@@ -11,6 +11,15 @@ use std::process::Command;
 use std::time::Instant;
 use std::fs;
 
+use once_cell::sync::Lazy;
+use std::collections::HashMap;
+use std::sync::Mutex;
+
+// 🚀 性能优化: 缓存工具检测结果
+static TOOL_CACHE: Lazy<Mutex<HashMap<String, Option<String>>>> = Lazy::new(|| {
+    Mutex::new(HashMap::new())
+});
+
 /// 同格式优化器
 pub struct SameFormatOptimizer {
     preserve_metadata: bool,
@@ -22,35 +31,54 @@ impl SameFormatOptimizer {
     }
     
     /// 检查特定格式的工具是否可用
+    /// 🚀 性能优化: 缓存检测结果，避免重复调用
     pub fn check_tools_for_format(format: &str) -> Result<String> {
-        match format {
+        // 检查缓存
+        {
+            let cache = TOOL_CACHE.lock().unwrap();
+            if let Some(cached) = cache.get(format) {
+                return cached.clone()
+                    .ok_or_else(|| anyhow::anyhow!("No optimizer found for {}", format));
+            }
+        }
+        
+        // 执行检测
+        let tool = match format {
             "png" => {
                 if Command::new("oxipng").arg("--version").output().is_ok() {
-                    Ok("oxipng".to_string())
+                    Some(String::from("oxipng"))
                 } else if Command::new("optipng").arg("-v").output().is_ok() {
-                    Ok("optipng".to_string())
+                    Some(String::from("optipng"))
                 } else {
-                    anyhow::bail!("PNG optimizer not found (requires oxipng or optipng)")
+                    None
                 }
             }
             "jpg" | "jpeg" => {
                 if Command::new("mozjpeg").arg("--version").output().is_ok() {
-                    Ok("mozjpeg".to_string())
+                    Some(String::from("mozjpeg"))
                 } else if Command::new("jpegtran").arg("-version").output().is_ok() {
-                    Ok("jpegtran".to_string())
+                    Some(String::from("jpegtran"))
                 } else {
-                    anyhow::bail!("JPEG optimizer not found (requires mozjpeg or jpegtran)")
+                    None
                 }
             }
             "webp" => {
                 if Command::new("cwebp").arg("-version").output().is_ok() {
-                    Ok("cwebp".to_string())
+                    Some(String::from("cwebp"))
                 } else {
-                    anyhow::bail!("WebP optimizer not found (requires cwebp)")
+                    None
                 }
             }
-            _ => anyhow::bail!("Unsupported same-format optimization format: {}", format),
+            _ => None,
+        };
+        
+        // 缓存结果
+        {
+            let mut cache = TOOL_CACHE.lock().unwrap();
+            cache.insert(format.to_string(), tool.clone());
         }
+        
+        tool.ok_or_else(|| anyhow::anyhow!("No optimizer found for {}", format))
     }
     
     /// 优化PNG

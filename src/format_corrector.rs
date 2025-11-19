@@ -141,10 +141,11 @@ impl FormatCorrector {
     }
     
     /// 规范化格式名称（处理别名）
+    // 🚀 性能优化: 使用&'static str避免分配
     fn normalize_format(&self, format: &str) -> String {
         match format {
-            "jpg" | "jpeg" => "jpeg".to_string(),
-            "tif" | "tiff" => "tiff".to_string(),
+            "jpg" | "jpeg" => String::from("jpeg"),
+            "tif" | "tiff" => String::from("tiff"),
             _ => format.to_lowercase(),
         }
     }

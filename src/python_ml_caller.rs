@@ -72,10 +72,9 @@ pub fn call_python_ml(request: &MLPredictRequest) -> Result<MLPredictResponse> {
         anyhow::bail!("Python ML prediction failed: {}", stderr);
     }
     
-    // 4. 解析响应
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let response: MLPredictResponse = serde_json::from_str(&stdout)
-        .context(format!("Failed to parse Python ML response: {}", stdout))?;
+    // 4. 解析响应 (🚀 性能优化: 直接从字节解析，避免String分配)
+    let response: MLPredictResponse = serde_json::from_slice(&output.stdout)
+        .context("Failed to parse Python ML response")?;
     
     info!("✅ Python ML prediction received:");
     info!("   Quality: {}, Effort: {}, Lossless: {}", 
@@ -213,9 +212,9 @@ impl PythonMLCaller {
             anyhow::bail!("Python preprocessing recommendation failed: {}", stderr);
         }
         
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        let recommendations: PreprocessRecommendations = serde_json::from_str(&stdout)
-            .context(format!("Failed to parse preprocessing recommendations: {}", stdout))?;
+        // 🚀 性能优化: 直接从字节解析
+        let recommendations: PreprocessRecommendations = serde_json::from_slice(&output.stdout)
+            .context("Failed to parse preprocessing recommendations")?;
         
         Ok(recommendations)
     }
