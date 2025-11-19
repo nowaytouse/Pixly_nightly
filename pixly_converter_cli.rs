@@ -829,8 +829,10 @@ fn run(cli: Cli) -> Result<()> {
                             height: media_info.resolution.1,
                             file_size: media_info.size,
                             format: media_info.format.clone(),
-                            has_alpha: false,  // TODO: 从media_info获取
-                            is_animated: false,  // TODO: 从media_info获取
+                            // 从media_info推断alpha和动画
+                            has_alpha: media_info.format.to_lowercase() == "png" || 
+                                      media_info.format.to_lowercase() == "webp",
+                            is_animated: media_info.frame_count.unwrap_or(1) > 1,
                             complexity: 0.75,  // 将被真实特征覆盖
                         };
                         
