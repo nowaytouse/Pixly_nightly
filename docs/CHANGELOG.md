@@ -13,11 +13,15 @@
 
 ## [AI-001 & CLI-001 & QA-001 完成] - 2025-11-19
 
-### ✅ AI-001: Python ML训练数据收集
+### ✅ AI-001: Python ML模型训练完成 (核心任务)
 - 完成真实训练数据收集脚本 (collect_real_training_data.py)
 - 使用Rust CLI提取128维真实特征
-- 支持批量样本收集和参数组合
-- 遵循质量宣言：真实性原则，无模拟数据
+- **实现真实ML模型训练** (train_with_real_features.py)
+  - 调用Rust CLI执行实际转换
+  - 收集36个真实转换样本
+  - 训练LightGBM模型 (Quality + Effort)
+  - 模型保存: lightgbm_quality_128d.txt, lightgbm_effort_128d.txt
+- 遵循质量宣言：真实性原则，消除所有模拟数据
 
 ## [Phase 2.3 & QA 部分完成] - 2025-11-19
 
