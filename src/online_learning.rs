@@ -63,6 +63,11 @@ impl OnlineLearner {
     pub fn disable(&mut self) {
         self.enabled = false;
     }
+    
+    /// 启用在线学习
+    pub fn enable(&mut self) {
+        self.enabled = true;
+    }
 
     
     /// 记录转换经验

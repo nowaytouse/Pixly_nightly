@@ -667,6 +667,8 @@ fn run(cli: Cli) -> Result<()> {
             // 🎓 Phase 11: Online learning enabled
             if online_learning {
                 println!("🎓 Online learning enabled - Conversion experiences will be recorded for model improvement");
+                // 🔥 启用全局在线学习器
+                pixly_kernel::online_learner_manager::OnlineLearnerManager::enable();
             }
             // 🎯 Phase 8: 智能格式选择
             let target_format = if let Some(user_format) = format {
