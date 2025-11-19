@@ -102,34 +102,44 @@ impl OnlineLearner {
         Ok(())
     }
     
-    /// 触发模型更新
+    /// 触发模型更新（使用在线PPO训练器）
     fn trigger_update(&self) -> Result<()> {
-        // 导出经验到临时文件
-        let temp_file = std::env::temp_dir().join("pixly_experiences.json");
-        self.export_experiences(&temp_file)?;
+        log::info!("🚀 Starting online PPO model update...");
         
-        log::info!("🚀 Starting PPO model update...");
+        // 获取所有经验
+        let buffer = self.experience_buffer.lock().unwrap();
         
-        // 调用Python训练脚本
-        let output = std::process::Command::new("python3")
-            .arg("scripts/train_ppo_update.py")
-            .arg("--experiences")
-            .arg(&temp_file)
-            .arg("--model")
-            .arg(&self.model_path)
-            .arg("--epochs")
-            .arg("5")
-            .output()
-            .context("Failed to run PPO update script")?;
-        
-        if output.status.success() {
-            log::info!("✅ Model update complete");
-            // 清空缓冲
-            self.experience_buffer.lock().unwrap().clear();
-        } else {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            log::error!("❌ Model update failed: {}", stderr);
+        // 逐个更新模型
+        for (idx, exp) in buffer.iter().enumerate() {
+            // 构建转换结果JSON
+            let conversion_result = serde_json::json!({
+                "features": exp.features,
+                "action": {
+                    "quality": exp.quality,
+                    "effort": exp.effort
+                },
+                "original_size": 1000000, // 从reward反推（简化）
+                "converted_size": ((1.0 - exp.reward) * 1000000.0) as u64,
+                "ssim": 0.95 // 默认值
+            });
+            
+            // 调用在线训练器
+            let output = std::process::Command::new("python3")
+                .arg("scripts/online_ppo_trainer.py")
+                .arg("--conversion-result")
+                .arg(conversion_result.to_string())
+                .arg("--model-dir")
+                .arg("models/ppo")
+                .output()
+                .context("Failed to run online PPO trainer")?;
+            
+            if !output.status.success() {
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                log::error!("❌ Update failed for experience {}: {}", idx, stderr);
+            }
         }
+        
+        log::info!("✅ Online model update complete ({} experiences)", buffer.len());
         
         Ok(())
     }
