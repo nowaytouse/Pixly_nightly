@@ -348,76 +348,76 @@ def main():
     print("\n📁 Scanning media files...")
     media_files = find_media_files(data_dir)
     
-    print(f"\n📊 文件统计:")
-    print(f"   图像: {len(media_files['images'])} 个")
-    print(f"   视频: {len(media_files['videos'])} 个")
-    print(f"   音频: {len(media_files['audio'])} 个")
-    print(f"   总计: {len(media_files['images']) + len(media_files['videos']) + len(media_files['audio'])} 个")
+    print(f"\n📊 File statistics:")
+    print(f"   Images: {len(media_files['images'])} files")
+    print(f"   Videos: {len(media_files['videos'])} files")
+    print(f"   Audio: {len(media_files['audio'])} files")
+    print(f"   Total: {len(media_files['images']) + len(media_files['videos']) + len(media_files['audio'])} files")
     
-    # 步骤1: 小规模测试
+    # Step 1: Small-scale test
     print("\n" + "=" * 60)
-    print("🧪 步骤1: 小规模测试 (每种类型2个文件)")
+    print("🧪 Step 1: Small-scale test (2 files per type)")
     print("=" * 60)
     
     test_data = generate_training_data(media_files, sample_size=2, media_types=['image', 'video', 'audio'])
     
     if len(test_data) == 0:
-        print("\n❌ 测试失败：没有生成训练数据")
+        print("\n❌ Test failed: No training data generated")
         return 1
     
-    print(f"\n✅ 小规模测试成功！生成了 {len(test_data)} 个训练样本")
+    print(f"\n✅ Small-scale test successful! Generated {len(test_data)} training samples")
     
     # 保存测试数据
     save_training_data(test_data, 'models/ppo_training_all_media_test.json')
     
-    # 步骤2: 询问是否继续全量训练
+    # Step 2: Ask for full training
     print("\n" + "=" * 60)
-    print("🚀 步骤2: 全量训练")
+    print("🚀 Step 2: Full training")
     print("=" * 60)
     
-    response = input("\n是否继续全量训练？(y/n): ").strip().lower()
+    response = input("\nContinue with full training? (y/n): ").strip().lower()
     
     if response == 'y':
-        print("\n开始全量训练...")
+        print("\nStarting full training...")
         full_data = generate_training_data(media_files, sample_size=None, media_types=['image', 'video', 'audio'])
         
-        # 保存完整训练数据
+        # Save full training data
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         save_training_data(full_data, f'models/ppo_training_all_media_{timestamp}.json')
         
         print("\n" + "=" * 60)
-        print("🎉 训练完成！")
+        print("🎉 Training complete!")
         print("=" * 60)
         
-        # 分类统计
+        # Category statistics
         image_data = [d for d in full_data if d['media_type'] == 'image']
         video_data = [d for d in full_data if d['media_type'] == 'video']
         audio_data = [d for d in full_data if d['media_type'] == 'audio']
         
-        print(f"\n📈 训练统计:")
-        print(f"   总样本数: {len(full_data)}")
+        print(f"\n📈 Training statistics:")
+        print(f"   Total samples: {len(full_data)}")
         
         if image_data:
-            print(f"\n   图像:")
-            print(f"     样本数: {len(image_data)}")
-            print(f"     平均压缩率: {sum(d['compression_ratio'] for d in image_data) / len(image_data):.2%}")
-            print(f"     平均奖励: {sum(d['reward'] for d in image_data) / len(image_data):.4f}")
+            print(f"\n   Images:")
+            print(f"     Samples: {len(image_data)}")
+            print(f"     Avg compression: {sum(d['compression_ratio'] for d in image_data) / len(image_data):.2%}")
+            print(f"     Avg reward: {sum(d['reward'] for d in image_data) / len(image_data):.4f}")
         
         if video_data:
-            print(f"\n   视频:")
-            print(f"     样本数: {len(video_data)}")
-            print(f"     平均压缩率: {sum(d['compression_ratio'] for d in video_data) / len(video_data):.2%}")
-            print(f"     平均奖励: {sum(d['reward'] for d in video_data) / len(video_data):.4f}")
+            print(f"\n   Videos:")
+            print(f"     Samples: {len(video_data)}")
+            print(f"     Avg compression: {sum(d['compression_ratio'] for d in video_data) / len(video_data):.2%}")
+            print(f"     Avg reward: {sum(d['reward'] for d in video_data) / len(video_data):.4f}")
         
         if audio_data:
-            print(f"\n   音频:")
-            print(f"     样本数: {len(audio_data)}")
-            print(f"     平均压缩率: {sum(d['compression_ratio'] for d in audio_data) / len(audio_data):.2%}")
-            print(f"     平均奖励: {sum(d['reward'] for d in audio_data) / len(audio_data):.4f}")
+            print(f"\n   Audio:")
+            print(f"     Samples: {len(audio_data)}")
+            print(f"     Avg compression: {sum(d['compression_ratio'] for d in audio_data) / len(audio_data):.2%}")
+            print(f"     Avg reward: {sum(d['reward'] for d in audio_data) / len(audio_data):.4f}")
         
         return 0
     else:
-        print("\n⏸️  全量训练已取消")
+        print("\n⏸️  Full training cancelled")
         return 0
 
 if __name__ == '__main__':
