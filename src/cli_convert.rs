@@ -540,7 +540,23 @@ fn execute_conversion(
         ..Default::default()
     };
     
+    // 记录转换前的文件大小
+    let original_size = std::fs::metadata(final_input)?.len();
+    
+    // 执行转换
     core_convert(Path::new(final_input), output_path, format, &config)?;
+    
+    // 🎓 在线学习：记录转换经验
+    if let Ok(converted_size) = std::fs::metadata(output_path).map(|m| m.len()) {
+        record_conversion_experience(
+            final_input,
+            output_path,
+            quality,
+            speed,
+            original_size,
+            converted_size,
+        );
+    }
     
     // 清理临时文件
     if let Some(temp_path) = processed_input {
@@ -636,6 +652,87 @@ fn apply_sharpen(img: &image::DynamicImage, amount: f32) -> Result<image::Dynami
     
     let sharpener = SimdSharpener::new(config);
     sharpener.sharpen(img)
+}
+
+/// 🎓 记录转换经验用于在线学习
+fn record_conversion_experience(
+    input_path: &str,
+    output_path: &Path,
+    quality: u8,
+    effort: u8,
+    original_size: u64,
+    converted_size: u64,
+) {
+    use crate::online_learning::OnlineLearner;
+    use crate::feature_extractor_128d::extract_128d_features;
+    use crate::reward_calculator::ConversionResult;
+    use std::path::PathBuf;
+    
+    // 加载图像并提取特征
+    let img = match image::open(input_path) {
+        Ok(i) => i,
+        Err(e) => {
+            log::warn!("⚠️  Failed to open image for feature extraction: {}", e);
+            return;
+        }
+    };
+    
+    // 获取基础特征
+    let basic_features = crate::ImageFeatures {
+        width: img.width(),
+        height: img.height(),
+        format: String::from("unknown"),
+        has_alpha: img.color().has_alpha(),
+        is_animated: false,
+        complexity: 0.5, // 默认值
+        file_size: original_size,
+    };
+    
+    let features = extract_128d_features(&img, Path::new(input_path), &basic_features);
+    
+    // 计算SSIM（如果可能）
+    let ssim = calculate_ssim_if_possible(input_path, output_path).unwrap_or(0.95);
+    
+    // 创建转换结果
+    let result = ConversionResult {
+        original_size,
+        output_size: converted_size,
+        ssim,
+        processing_time: 0.0, // 暂时不记录时间
+    };
+    
+    // 创建在线学习器（每100次转换更新一次模型）
+    let learner = OnlineLearner::new(
+        PathBuf::from("models/ppo/actor_online.pth"),
+        100
+    );
+    
+    // 记录经验
+    if let Err(e) = learner.record_conversion(features, quality as u32, effort as u32, result) {
+        log::warn!("⚠️  Failed to record conversion experience: {}", e);
+    } else {
+        log::info!("📝 Conversion experience recorded (buffer: {})", learner.buffer_size());
+    }
+}
+
+/// 计算SSIM（如果可能）
+fn calculate_ssim_if_possible(input_path: &str, output_path: &Path) -> Option<f64> {
+    use std::process::Command;
+    
+    // 使用Python脚本计算SSIM
+    let output = Command::new("python3")
+        .arg("scripts/calculate_ssim.py")
+        .arg(input_path)
+        .arg(output_path)
+        .output()
+        .ok()?;
+    
+    if !output.status.success() {
+        return None;
+    }
+    
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    stdout.trim().parse::<f64>().ok()
 }
 
 #[cfg(test)]

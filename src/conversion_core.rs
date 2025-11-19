@@ -319,6 +319,11 @@ pub fn execute_conversion(
     println!("   Compression ratio: {:.2}%", (output_size as f64 / input_size as f64) * 100.0);
     println!("   Time elapsed: {:.2}s", elapsed.as_secs_f64());
     
+    // ═══════════════════════════════════════════════════
+    // 🎓 在线学习：记录转换经验
+    // ═══════════════════════════════════════════════════
+    record_conversion_for_learning(input, output, config, input_size, output_size);
+    
     Ok(ConversionResult {
         input_size,
         output_size,
@@ -326,6 +331,85 @@ pub fn execute_conversion(
         duration: elapsed,
         strategy_used,
     })
+}
+
+/// 🎓 记录转换经验用于在线学习
+fn record_conversion_for_learning(
+    input: &Path,
+    output: &Path,
+    config: &ConversionConfig,
+    input_size: u64,
+    output_size: u64,
+) {
+    use crate::online_learning::OnlineLearner;
+    use crate::feature_extractor_128d::extract_128d_features;
+    use crate::reward_calculator::ConversionResult as RewardResult;
+    use std::path::PathBuf;
+    
+    // 加载图像并提取特征
+    let img = match image::open(input) {
+        Ok(i) => i,
+        Err(e) => {
+            log::warn!("⚠️  Failed to open image for feature extraction: {}", e);
+            return;
+        }
+    };
+    
+    // 获取基础特征
+    let basic_features = crate::ImageFeatures {
+        width: img.width(),
+        height: img.height(),
+        format: String::from("unknown"),
+        has_alpha: img.color().has_alpha(),
+        is_animated: false,
+        complexity: 0.5,
+        file_size: input_size,
+    };
+    
+    let features = extract_128d_features(&img, input, &basic_features);
+    
+    // 计算SSIM（如果可能）
+    let ssim = calculate_ssim_simple(input, output).unwrap_or(0.95);
+    
+    // 创建转换结果
+    let result = RewardResult {
+        original_size: input_size,
+        output_size,
+        ssim,
+        processing_time: 0.0,
+    };
+    
+    // 创建在线学习器
+    let learner = OnlineLearner::new(
+        PathBuf::from("models/ppo/actor_online.pth"),
+        100
+    );
+    
+    // 记录经验
+    if let Err(e) = learner.record_conversion(features, config.quality as u32, config.speed as u32, result) {
+        log::warn!("⚠️  Failed to record conversion experience: {}", e);
+    } else {
+        println!("📝 Conversion experience recorded (buffer: {})", learner.buffer_size());
+    }
+}
+
+/// 简单的SSIM计算
+fn calculate_ssim_simple(input: &Path, output: &Path) -> Option<f64> {
+    use std::process::Command;
+    
+    let output_result = Command::new("python3")
+        .arg("scripts/calculate_ssim.py")
+        .arg(input)
+        .arg(output)
+        .output()
+        .ok()?;
+    
+    if !output_result.status.success() {
+        return None;
+    }
+    
+    let stdout = String::from_utf8_lossy(&output_result.stdout);
+    stdout.trim().parse::<f64>().ok()
 }
 
 /// 🔒 使用Magika AI验证文件类型
