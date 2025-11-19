@@ -1,0 +1,32 @@
+{
+  "timestamp": "2025-11-19 13:43:43",
+  "models": {
+    "lightgbm": {
+      "mae_quality": 10.18,
+      "mae_effort": 1.68,
+      "accuracy_quality": 0.24,
+      "accuracy_effort": 0.66,
+      "avg_confidence": 0.8499999999999995,
+      "inference_time_ms": 9.664838314056396,
+      "total_samples": 100
+    },
+    "ppo": {
+      "mae_quality": 9.98,
+      "mae_effort": 1.68,
+      "accuracy_quality": 0.34,
+      "accuracy_effort": 0.66,
+      "avg_confidence": 0.6500000000000001,
+      "inference_time_ms": 8.557994365692139,
+      "total_samples": 100
+    },
+    "ensemble": {
+      "mae_quality": 10.06,
+      "mae_effort": 1.68,
+      "accuracy_quality": 0.25,
+      "accuracy_effort": 0.66,
+      "avg_confidence": 0.75,
+      "inference_time_ms": 0.6378793716430664,
+      "total_samples": 100
+    }
+  }
+}
