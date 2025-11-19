@@ -812,22 +812,29 @@ fn run(cli: Cli) -> Result<()> {
                     _ => QualityMode::Balanced,
                 };
                 
-                // 1. 分析媒体文件
-                let analyzer = MediaAnalyzer::new();
+                // 1. 分析媒体文件（启用AI检测以提取完整特征）
+                let analyzer = MediaAnalyzer::new(); // 默认启用AI检测
                 match analyzer.analyze(&input) {
                     Ok(media_info) => {
+                        // 🔥 检查是否有真实特征
+                        if media_info.features_128d.is_some() {
+                            println!("   ✅ Extracted REAL 128D features (Color/Texture/Quality from image)");
+                        } else {
+                            println!("   ⚠️  Using simplified features (no image data)");
+                        }
+                        
                         // 2. 转换为ImageFeatures
                         let image_features = ImageFeatures {
                             width: media_info.resolution.0,
                             height: media_info.resolution.1,
                             file_size: media_info.size,
                             format: media_info.format.clone(),
-                            has_alpha: false,  // Phase 7: MediaInfo暂无此字段，使用默认值
-                            is_animated: false,  // Phase 7: MediaInfo暂无此字段，使用默认值
-                            complexity: 0.75,  // Phase 7: 默认值，未来可通过图像分析计算
+                            has_alpha: false,  // TODO: 从media_info获取
+                            is_animated: false,  // TODO: 从media_info获取
+                            complexity: 0.75,  // 将被真实特征覆盖
                         };
                         
-                        // 3. 使用AI推荐器
+                        // 3. 使用AI推荐器（传递完整特征）
                         let recommender = AIFormatRecommender::new();
                         let user_prefs = UserPreferences::default();
                         
