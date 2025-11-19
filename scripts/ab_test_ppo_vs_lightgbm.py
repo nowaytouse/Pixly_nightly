@@ -332,19 +332,19 @@ class ABTestRunner:
             compression_improvement = (np.mean(ppo_compression) - np.mean(lgb_compression)) / np.mean(lgb_compression) * 100
             ssim_diff = np.mean(ppo_ssim) - np.mean(lgb_ssim)
             
-            print(f"   奖励改进: {reward_improvement:+.2f}%")
-            print(f"   压缩率改进: {compression_improvement:+.2f}%")
-            print(f"   SSIM差异: {ssim_diff:+.4f}")
+            print(f"   Reward improvement: {reward_improvement:+.2f}%")
+            print(f"   Compression improvement: {compression_improvement:+.2f}%")
+            print(f"   SSIM difference: {ssim_diff:+.4f}")
             
-            # 判断胜负
+            # Determine winner
             if reward_improvement > 5:
-                print("\n🎉 结论: PPO模型显著优于LightGBM！")
+                print("\n🎉 Conclusion: PPO model significantly better than LightGBM!")
             elif reward_improvement > 0:
-                print("\n✅ 结论: PPO模型略优于LightGBM")
+                print("\n✅ Conclusion: PPO model slightly better than LightGBM")
             elif reward_improvement > -5:
-                print("\n⚖️  结论: 两个模型表现相当")
+                print("\n⚖️  Conclusion: Both models perform similarly")
             else:
-                print("\n⚠️  结论: LightGBM模型仍然更好")
+                print("\n⚠️  Conclusion: LightGBM model still better")
         
         # 保存详细结果（转换numpy类型为Python原生类型）
         def convert_to_native(obj):
@@ -379,7 +379,7 @@ class ABTestRunner:
             }
             json.dump(report_data, f, indent=2)
         
-        print(f"\n💾 详细报告已保存: {report_file}")
+        print(f"\n💾 Detailed report saved: {report_file}")
 
 def main():
     import argparse

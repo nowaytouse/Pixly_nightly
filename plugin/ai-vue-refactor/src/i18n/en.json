@@ -42,18 +42,61 @@
     "pixelFormat": "Pixel Format"
   },
   "fileList": {
+    "title": "File List",
     "selected": "{count} files selected",
     "selectAll": "Select All",
-    "deselectAll": "Deselect All",
+    "selectNone": "Deselect",
+    "selectInvert": "Invert",
+    "selectImages": "Images",
+    "selectVideos": "Videos",
     "convertButton": "Start Conversion"
+  },
+  "button": {
+    "processing": "Processing...",
+    "startConvert": "Start AI Processing"
   },
   "progress": {
     "processing": "Processing...",
     "complete": "Conversion Complete!",
-    "failed": "Conversion Failed"
+    "failed": "Conversion Failed",
+    "processingImages": "Processing images ({count} files)...",
+    "processingVideos": "Processing videos ({count} files)...",
+    "imageProgress": "[Image {current}/{total}] {filename}",
+    "videoProgress": "[Video {current}/{total}] {filename}",
+    "success": "Complete! Success: {success}/{total}"
+  },
+  "mode": {
+    "video": "Video Mode",
+    "image": "Image Mode",
+    "mixed": "Mixed Mode"
   },
   "help": {
     "title": "Help",
-    "close": "Close"
+    "close": "Close",
+    "vision": "Plugin Vision",
+    "visionDesc": "Let AI be your conversion expert - Say goodbye to tedious parameter tuning. Just choose your goal (extreme compression/visual lossless/balanced), and AI will automatically optimize all parameters based on each image's characteristics (texture complexity, color distribution, transparency, etc.).",
+    "modernFormats": "Embrace Modern Formats - Default recommendation of next-generation formats like AVIF, JXL, WebP, reducing file size by 30-50% at the same quality, making your resource library lighter. Also supports advanced features like HDR, animation, and transparency.",
+    "smartUpgrade": "Smart Format Upgrade - When detecting traditional formats like JPEG/PNG, AI evaluates upgrade benefits (compression improvement, feature enhancement) and recommends modern formats at the right time, making every conversion worthwhile.",
+    "metadataTitle": "Complete Metadata Preservation",
+    "metadataDesc": "All metadata is automatically preserved without any configuration:",
+    "metadataExif": "EXIF Camera Info - Shooting parameters, GPS location, device model",
+    "metadataXmp": "XMP Edit History - Photoshop/Lightroom edit records",
+    "metadataIcc": "ICC Color Profile - Color space and profile",
+    "metadataXmpMerge": "XMP Sidecar Merge - Automatically merge external XMP files using exiftool",
+    "metadataEagle": "Eagle Resource Info - Tags, ratings, notes synced",
+    "metadataTimestamp": "File Timestamps - Creation/modification/access times fully preserved",
+    "metadataExtended": "Extended Attributes - macOS xattr, Windows ADS automatically preserved",
+    "imageFeaturesTitle": "Image AI Features",
+    "imageFeature1": "Smart Parameter Prediction - AI analyzes image features and automatically selects optimal parameters",
+    "imageFeature2": "AI File Validation - Uses Google Magika to detect file types and prevent disguised files",
+    "imageFeature3": "SSIM Quality Validation - Automatically validates quality loss after conversion",
+    "imageFeature4": "GPU Hardware Acceleration - Automatically detects and uses GPU acceleration (5-20x speed boost)",
+    "imageFeature5": "Smart Preprocessing - Automatically optimizes images (denoising, sharpening, color correction)",
+    "imageFeature6": "Format Auto-Correction - Detects if file extension matches actual format, automatically identifies disguised files (e.g., .jpg is actually .png)",
+    "videoFeaturesTitle": "Video AI Features",
+    "videoFeature1": "Animation to Video Recommendation - Detects large animations (GIF/APNG/WebP), intelligently recommends converting to video format (MP4/WebM), reducing size by 60-80%",
+    "videoFeature2": "Scene Detection - Intelligently detects scene changes and optimizes keyframe distribution",
+    "videoFeature3": "VMAF Quality Validation - Uses Netflix VMAF algorithm to validate video quality",
+    "videoFeature4": "Two-Pass Encoding - Two-pass encoding optimizes bitrate allocation, reducing size by 10-20% at the same quality"
   }
 }

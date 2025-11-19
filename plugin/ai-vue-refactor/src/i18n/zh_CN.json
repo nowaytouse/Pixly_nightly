@@ -42,18 +42,61 @@
     "pixelFormat": "像素格式"
   },
   "fileList": {
+    "title": "文件列表",
     "selected": "已选择 {count} 个文件",
     "selectAll": "全选",
-    "deselectAll": "取消全选",
+    "selectNone": "取消",
+    "selectInvert": "反选",
+    "selectImages": "图像",
+    "selectVideos": "视频",
     "convertButton": "开始转换"
+  },
+  "button": {
+    "processing": "处理中...",
+    "startConvert": "开始 AI 处理"
   },
   "progress": {
     "processing": "处理中...",
     "complete": "转换完成！",
-    "failed": "转换失败"
+    "failed": "转换失败",
+    "processingImages": "处理图像 ({count} 个)...",
+    "processingVideos": "处理视频 ({count} 个)...",
+    "imageProgress": "[图像 {current}/{total}] {filename}",
+    "videoProgress": "[视频 {current}/{total}] {filename}",
+    "success": "完成！成功: {success}/{total}"
+  },
+  "mode": {
+    "video": "视频模式",
+    "image": "图像模式",
+    "mixed": "混合模式"
   },
   "help": {
     "title": "使用帮助",
-    "close": "关闭"
+    "close": "关闭",
+    "vision": "插件愿景",
+    "visionDesc": "让 AI 成为你的转换专家 - 告别繁琐的参数调试，只需选择你的目标（极致压缩/视觉无损/平衡），AI 会根据每张图片的特征（纹理复杂度、色彩分布、透明度等）自动优化所有参数。",
+    "modernFormats": "拥抱现代格式 - 默认推荐 AVIF、JXL、WebP 等新一代格式，相同质量下体积减少 30-50%，让你的资源库更轻盈。同时支持 HDR、动画、透明度等高级特性。",
+    "smartUpgrade": "智能格式升级 - 检测到 JPEG/PNG 等传统格式时，AI 会评估升级收益（压缩率提升、特性增强），在合适的时机推荐现代格式，让每一次转换都物有所值。",
+    "metadataTitle": "元数据完整保留",
+    "metadataDesc": "所有元数据自动保留，无需任何配置：",
+    "metadataExif": "EXIF 相机信息 - 拍摄参数、GPS 位置、设备型号",
+    "metadataXmp": "XMP 编辑历史 - Photoshop/Lightroom 编辑记录",
+    "metadataIcc": "ICC 色彩配置 - 色彩空间和配置文件",
+    "metadataXmpMerge": "XMP Sidecar 合并 - 使用 exiftool 自动合并外部 XMP 文件",
+    "metadataEagle": "Eagle 资源信息 - 标签、评分、备注同步更新",
+    "metadataTimestamp": "文件时间戳 - 创建/修改/访问时间完整保留",
+    "metadataExtended": "扩展属性 - macOS xattr、Windows ADS 自动保留",
+    "imageFeaturesTitle": "图像 AI 功能",
+    "imageFeature1": "智能参数预测 - AI 分析图像特征，自动选择最优参数",
+    "imageFeature2": "AI 文件验证 - 使用 Google Magika 检测文件类型，防止伪装文件",
+    "imageFeature3": "SSIM 质量验证 - 转换后自动验证画质损失",
+    "imageFeature4": "GPU 硬件加速 - 自动检测并使用 GPU 加速（速度提升 5-20 倍）",
+    "imageFeature5": "智能预处理 - 自动优化图像（去噪、锐化、色彩校正）",
+    "imageFeature6": "格式自动修正 - 检测文件扩展名与实际格式是否匹配，自动识别伪装文件（如 .jpg 实际是 .png）",
+    "videoFeaturesTitle": "视频 AI 功能",
+    "videoFeature1": "动图转视频推荐 - 检测大型动图（GIF/APNG/WebP），智能推荐转为视频格式（MP4/WebM），体积减少 60-80%",
+    "videoFeature2": "场景检测 - 智能检测场景变化，优化关键帧分布",
+    "videoFeature3": "VMAF 质量验证 - 使用 Netflix VMAF 算法验证视频质量",
+    "videoFeature4": "Two-Pass 编码 - 两次编码优化码率分配，相同质量下体积减少 10-20%"
   }
 }

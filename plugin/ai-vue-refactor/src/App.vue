@@ -60,19 +60,19 @@
 
           <!-- 🎬 视频输出格式 (仅视频模式) -->
           <div v-if="isVideoMode" class="form-group">
-            <label>视频编码器</label>
+            <label>{{ t('video.codec') }}</label>
             <select v-model="videoCodec" class="select">
-              <option value="h265">H.265/HEVC (推荐)</option>
+              <option value="h265">H.265/HEVC (Recommended)</option>
               <option value="h264">H.264/AVC</option>
-              <option value="av1">AV1 (最高效)</option>
+              <option value="av1">AV1 (Most Efficient)</option>
               <option value="vp9">VP9</option>
             </select>
           </div>
 
           <div v-if="isVideoMode" class="form-group">
-            <label>容器格式</label>
+            <label>{{ t('video.container') }}</label>
             <select v-model="videoContainer" class="select">
-              <option value="mp4">MP4 (推荐)</option>
+              <option value="mp4">MP4 (Recommended)</option>
               <option value="mov">MOV</option>
               <option value="webm">WebM</option>
               <option value="mkv">MKV</option>
@@ -81,35 +81,35 @@
 
           <!-- 🖼️ 图像 AI 功能 (仅图像模式) -->
           <details v-if="isImageMode" class="details" open>
-            <summary>🧠 图像 AI 功能</summary>
+            <summary>{{ t('image.title') }}</summary>
             <div class="checkbox-group">
               <label class="checkbox">
                 <input type="checkbox" v-model="enableAIPrediction">
-                <span>🎯 智能参数预测</span>
+                <span>{{ t('image.aiPrediction') }}</span>
               </label>
               <label class="checkbox">
                 <input type="checkbox" v-model="enableFileValidation">
-                <span>🔒 AI 文件验证 <span class="badge">实验性</span></span>
+                <span>{{ t('image.fileValidation') }} <span class="badge">Experimental</span></span>
               </label>
               <label class="checkbox">
                 <input type="checkbox" v-model="enableSSIM">
-                <span>📊 SSIM 质量验证</span>
+                <span>{{ t('image.ssimValidation') }}</span>
               </label>
               <label class="checkbox">
                 <input type="checkbox" v-model="enableGPU">
-                <span>⚡ GPU 硬件加速</span>
+                <span>{{ t('image.gpuAccel') }}</span>
               </label>
               <label class="checkbox">
                 <input type="checkbox" v-model="enablePreprocess">
-                <span>🔗 智能预处理</span>
+                <span>{{ t('image.preprocess') }}</span>
               </label>
               <label class="checkbox">
                 <input type="checkbox" v-model="enableFormatCorrection">
-                <span>🔧 格式自动修正 <span class="badge">实验性</span></span>
+                <span>{{ t('image.formatCorrection') }} <span class="badge">Experimental</span></span>
               </label>
               <label class="checkbox">
                 <input type="checkbox" v-model="enableVideoForAnimation">
-                <span>🎬 动图转视频推荐</span>
+                <span>🎬 Animation to Video</span>
               </label>
             </div>
           </details>
@@ -118,63 +118,63 @@
           <div v-if="isMixedMode" class="mixed-mode-notice">
             <div class="notice-header">
               <span class="notice-icon">📦</span>
-              <strong>混合模式</strong>
+              <strong>Mixed Mode</strong>
             </div>
             <div class="notice-body">
-              <p>检测到图像和视频混合选择，将自动分组处理：</p>
+              <p>Detected mixed selection, will auto-group:</p>
               <div class="file-groups">
                 <div class="group-item">
                   <span class="group-icon">🖼️</span>
-                  <span>图像: {{ selectedFiles.filter(f => /\.(jpg|jpeg|png|gif|webp|avif|jxl|heic|heif|bmp|tiff|tif)$/i.test(f.name)).length }} 个</span>
+                  <span>Images: {{ selectedFiles.filter(f => /\.(jpg|jpeg|png|gif|webp|avif|jxl|heic|heif|bmp|tiff|tif)$/i.test(f.name)).length }}</span>
                 </div>
                 <div class="group-item">
                   <span class="group-icon">🎬</span>
-                  <span>视频: {{ selectedFiles.filter(f => /\.(mp4|mov|avi|mkv|webm|flv|wmv|m4v|mpg|mpeg)$/i.test(f.name)).length }} 个</span>
+                  <span>Videos: {{ selectedFiles.filter(f => /\.(mp4|mov|avi|mkv|webm|flv|wmv|m4v|mpg|mpeg)$/i.test(f.name)).length }}</span>
                 </div>
               </div>
-              <p class="notice-tip">💡 图像和视频将使用各自的AI功能和参数</p>
+              <p class="notice-tip">💡 Images and videos will use their respective AI features</p>
             </div>
           </div>
 
           <!-- 🎬 视频 AI 功能 (仅视频模式) -->
           <details v-if="isVideoMode" class="details" open>
-            <summary>🎬 视频 AI 功能</summary>
+            <summary>🎬 Video AI Features</summary>
             <div class="checkbox-group">
               <label class="checkbox">
                 <input type="checkbox" v-model="enableVideoForAnimation">
-                <span>🎬 动图转视频推荐</span>
+                <span>🎬 Animation to Video</span>
               </label>
               <label class="checkbox">
                 <input type="checkbox" v-model="enableSceneDetection">
-                <span>🎞️ 场景检测</span>
+                <span>🎞️ Scene Detection</span>
               </label>
               <label class="checkbox">
                 <input type="checkbox" v-model="enableVMAF">
-                <span>📊 VMAF 质量验证</span>
+                <span>📊 VMAF Quality Validation</span>
               </label>
               <label class="checkbox">
                 <input type="checkbox" v-model="enableTwoPass">
-                <span>🔄 Two-Pass 编码</span>
+                <span>🔄 Two-Pass Encoding</span>
               </label>
             </div>
           </details>
 
           <!-- 自动处理提示 -->
           <div class="auto-hints">
-            <div class="hint-item">🔒 8层验证机制</div>
-            <div class="hint-item">💡 XMP自动合并</div>
-            <div class="hint-item">📝 文件名自动规范化</div>
+            <div class="hint-item">🔒 8-Layer Validation</div>
+            <div class="hint-item">💡 Auto XMP Merge</div>
+            <div class="hint-item">📝 Auto Filename Normalization</div>
           </div>
 
           <!-- 元数据保留提示 -->
           <div class="metadata-notice">
-            <strong>📦 元数据完整保留</strong>
+            <strong>📦 Complete Metadata Preservation</strong>
             <div class="metadata-items">
               <span>✓ EXIF</span>
               <span>✓ XMP</span>
               <span>✓ ICC</span>
-              <span>✓ 时间戳</span>
-              <span>✓ 扩展属性</span>
+              <span>✓ Timestamps</span>
+              <span>✓ Extended Attributes</span>
             </div>
           </div>
 
@@ -184,7 +184,7 @@
             @click="startConvert"
             :disabled="selectedCount === 0 || processing"
           >
-            {{ processing ? '⚙️ 处理中...' : '✨ 开始 AI 处理' }}
+            {{ processing ? '⚙️ ' + t('button.processing') : '✨ ' + t('button.startConvert') }}
           </button>
 
           <!-- 进度 -->
@@ -199,32 +199,32 @@
         <!-- Right: File List -->
         <div class="panel files-panel">
           <div class="panel-header">
-            <h3 class="panel-title">📁 文件列表</h3>
+            <h3 class="panel-title">📁 {{ t('fileList.title') }}</h3>
             <div class="header-right-badges">
               <!-- 🔥 文件类型指示器 -->
-              <span v-if="isVideoMode" class="type-badge video">🎬 视频模式</span>
-              <span v-else-if="isImageMode" class="type-badge image">🖼️ 图像模式</span>
-              <span v-else-if="isMixedMode" class="type-badge mixed">📦 混合模式</span>
+              <span v-if="isVideoMode" class="type-badge video">🎬 {{ t('mode.video') }}</span>
+              <span v-else-if="isImageMode" class="type-badge image">🖼️ {{ t('mode.image') }}</span>
+              <span v-else-if="isMixedMode" class="type-badge mixed">📦 {{ t('mode.mixed') }}</span>
               <span class="file-count">{{ selectedCount }}/{{ files.length }}</span>
             </div>
           </div>
 
           <!-- 🔥 批量操作栏 -->
           <div class="batch-actions">
-            <button class="batch-btn" @click="selectAll" title="全选">
-              ✓ 全选
+            <button class="batch-btn" @click="selectAll" :title="t('fileList.selectAll')">
+              ✓ {{ t('fileList.selectAll') }}
             </button>
-            <button class="batch-btn" @click="selectNone" title="取消全选">
-              ✗ 取消
+            <button class="batch-btn" @click="selectNone" :title="t('fileList.selectNone')">
+              ✗ {{ t('fileList.selectNone') }}
             </button>
-            <button class="batch-btn" @click="selectInvert" title="反选">
-              ⇄ 反选
+            <button class="batch-btn" @click="selectInvert" :title="t('fileList.selectInvert')">
+              ⇄ {{ t('fileList.selectInvert') }}
             </button>
-            <button class="batch-btn" @click="selectImages" title="选择所有图像">
-              🖼️ 图像
+            <button class="batch-btn" @click="selectImages" :title="t('fileList.selectImages')">
+              🖼️ {{ t('fileList.selectImages') }}
             </button>
-            <button class="batch-btn" @click="selectVideos" title="选择所有视频">
-              🎬 视频
+            <button class="batch-btn" @click="selectVideos" :title="t('fileList.selectVideos')">
+              🎬 {{ t('fileList.selectVideos') }}
             </button>
           </div>
 
@@ -253,50 +253,50 @@
     <div v-if="showHelp" class="modal-overlay" @click="showHelp = false">
       <div class="modal" @click.stop>
         <div class="modal-header">
-          <h2>💡 使用帮助</h2>
+          <h2>💡 {{ t('help.title') }}</h2>
           <button class="modal-close" @click="showHelp = false">✕</button>
         </div>
         <div class="modal-body">
           <section>
-            <h3>🎯 插件愿景</h3>
-            <p><strong>让 AI 成为你的转换专家</strong> - 告别繁琐的参数调试，只需选择你的目标（极致压缩/视觉无损/平衡），AI 会根据每张图片的特征（纹理复杂度、色彩分布、透明度等）自动优化所有参数。</p>
-            <p><strong>拥抱现代格式</strong> - 默认推荐 AVIF、JXL、WebP 等新一代格式，相同质量下体积减少 30-50%，让你的资源库更轻盈。同时支持 HDR、动画、透明度等高级特性。</p>
-            <p><strong>智能格式升级</strong> - 检测到 JPEG/PNG 等传统格式时，AI 会评估升级收益（压缩率提升、特性增强），在合适的时机推荐现代格式，让每一次转换都物有所值。</p>
+            <h3>🎯 {{ t('help.vision') }}</h3>
+            <p><strong>{{ t('help.visionDesc') }}</strong></p>
+            <p><strong>{{ t('help.modernFormats') }}</strong></p>
+            <p><strong>{{ t('help.smartUpgrade') }}</strong></p>
           </section>
           
           <section>
-            <h3>📦 元数据完整保留</h3>
-            <p>所有元数据自动保留，无需任何配置：</p>
+            <h3>📦 {{ t('help.metadataTitle') }}</h3>
+            <p>{{ t('help.metadataDesc') }}</p>
             <ul>
-              <li><strong>EXIF 相机信息</strong> - 拍摄参数、GPS 位置、设备型号</li>
-              <li><strong>XMP 编辑历史</strong> - Photoshop/Lightroom 编辑记录</li>
-              <li><strong>ICC 色彩配置</strong> - 色彩空间和配置文件</li>
-              <li><strong>XMP Sidecar 合并</strong> - 使用 exiftool 自动合并外部 XMP 文件</li>
-              <li><strong>Eagle 资源信息</strong> - 标签、评分、备注同步更新</li>
-              <li><strong>文件时间戳</strong> - 创建/修改/访问时间完整保留</li>
-              <li><strong>扩展属性</strong> - macOS xattr、Windows ADS 自动保留</li>
+              <li><strong>{{ t('help.metadataExif') }}</strong></li>
+              <li><strong>{{ t('help.metadataXmp') }}</strong></li>
+              <li><strong>{{ t('help.metadataIcc') }}</strong></li>
+              <li><strong>{{ t('help.metadataXmpMerge') }}</strong></li>
+              <li><strong>{{ t('help.metadataEagle') }}</strong></li>
+              <li><strong>{{ t('help.metadataTimestamp') }}</strong></li>
+              <li><strong>{{ t('help.metadataExtended') }}</strong></li>
             </ul>
           </section>
 
           <section>
-            <h3>🧠 图像 AI 功能</h3>
+            <h3>{{ t('help.imageFeaturesTitle') }}</h3>
             <ul>
-              <li><strong>智能参数预测</strong> - AI 分析图像特征，自动选择最优参数</li>
-              <li><strong>AI 文件验证</strong> - 使用 Google Magika 检测文件类型，防止伪装文件</li>
-              <li><strong>SSIM 质量验证</strong> - 转换后自动验证画质损失</li>
-              <li><strong>GPU 硬件加速</strong> - 自动检测并使用 GPU 加速（速度提升 5-20 倍）</li>
-              <li><strong>智能预处理</strong> - 自动优化图像（去噪、锐化、色彩校正）</li>
-              <li><strong>格式自动修正</strong> - 检测文件扩展名与实际格式是否匹配，自动识别伪装文件（如 .jpg 实际是 .png）</li>
+              <li><strong>{{ t('help.imageFeature1') }}</strong></li>
+              <li><strong>{{ t('help.imageFeature2') }}</strong></li>
+              <li><strong>{{ t('help.imageFeature3') }}</strong></li>
+              <li><strong>{{ t('help.imageFeature4') }}</strong></li>
+              <li><strong>{{ t('help.imageFeature5') }}</strong></li>
+              <li><strong>{{ t('help.imageFeature6') }}</strong></li>
             </ul>
           </section>
 
           <section>
-            <h3>🎬 视频 AI 功能</h3>
+            <h3>{{ t('help.videoFeaturesTitle') }}</h3>
             <ul>
-              <li><strong>动图转视频推荐</strong> - 检测大型动图（GIF/APNG/WebP），智能推荐转为视频格式（MP4/WebM），体积减少 60-80%</li>
-              <li><strong>场景检测</strong> - 智能检测场景变化，优化关键帧分布</li>
-              <li><strong>VMAF 质量验证</strong> - 使用 Netflix VMAF 算法验证视频质量</li>
-              <li><strong>Two-Pass 编码</strong> - 两次编码优化码率分配，相同质量下体积减少 10-20%</li>
+              <li><strong>{{ t('help.videoFeature1') }}</strong></li>
+              <li><strong>{{ t('help.videoFeature2') }}</strong></li>
+              <li><strong>{{ t('help.videoFeature3') }}</strong></li>
+              <li><strong>{{ t('help.videoFeature4') }}</strong></li>
             </ul>
           </section>
         </div>
@@ -440,14 +440,14 @@ const startConvert = async () => {
       
       // 先处理图像
       if (images.length > 0) {
-        progressText.value = `处理图像 (${images.length} 个)...`
+        progressText.value = t('progress.processingImages', { count: images.length })
         
         for (let i = 0; i < images.length; i++) {
           const file = images[i]
           try {
             processed++
             progress.value = Math.round((processed / total) * 100)
-            progressText.value = `[图像 ${i + 1}/${images.length}] ${file.name}`
+            progressText.value = t('progress.imageProgress', { current: i + 1, total: images.length, filename: file.name })
             
             const result = await rustCLI.convert({
               inputPath: file.path,
@@ -473,14 +473,14 @@ const startConvert = async () => {
       
       // 再处理视频
       if (videos.length > 0) {
-        progressText.value = `处理视频 (${videos.length} 个)...`
+        progressText.value = t('progress.processingVideos', { count: videos.length })
         
         for (let i = 0; i < videos.length; i++) {
           const file = videos[i]
           try {
             processed++
             progress.value = Math.round((processed / total) * 100)
-            progressText.value = `[视频 ${i + 1}/${videos.length}] ${file.name}`
+            progressText.value = t('progress.videoProgress', { current: i + 1, total: videos.length, filename: file.name })
             
             const result = await rustCLI.convertVideo({
               inputPath: file.path,
@@ -512,7 +512,7 @@ const startConvert = async () => {
         
         try {
           progress.value = Math.round(((i + 1) / selected.length) * 100)
-          progressText.value = `处理视频 (${i + 1}/${selected.length}): ${file.name}`
+          progressText.value = t('progress.videoProgress', { current: i + 1, total: selected.length, filename: file.name })
           
           const result = await rustCLI.convertVideo({
             inputPath: file.path,
@@ -553,13 +553,13 @@ const startConvert = async () => {
         },
         (info) => {
           progress.value = info.percentage
-          progressText.value = `处理图像 (${info.current}/${info.total}): ${info.file}`
+          progressText.value = t('progress.imageProgress', { current: info.current, total: info.total, filename: info.file })
         }
       )
     }
 
     const successCount = results.filter(r => r.success).length
-    progressText.value = `完成！成功: ${successCount}/${results.length}`
+    progressText.value = t('progress.success', { success: successCount, total: results.length })
     
     setTimeout(() => {
       processing.value = false

@@ -32,7 +32,7 @@ def check_dependencies():
             missing.append(name)
     
     if missing:
-        print(f"❌ 缺少依赖: {', '.join(missing)}")
+        print(f"❌ Missing dependencies: {', '.join(missing)}")
         return False
     
     return True
@@ -246,17 +246,17 @@ def generate_training_data(media_files, sample_size=None, media_types=['image', 
             continue
         
         if not files:
-            print(f"\n⚠️  没有找到{type_name}文件，跳过")
+            print(f"\n⚠️  No {type_name} files found, skipping")
             continue
         
-        # 如果指定sample_size，随机采样
+        # Random sampling if sample_size specified
         if sample_size:
             sampled_files = random.sample(files, min(sample_size, len(files)))
         else:
             sampled_files = files
         
         print(f"\n{'='*60}")
-        print(f"🎯 处理 {len(sampled_files)} 个{type_name}文件...")
+        print(f"🎯 Processing {len(sampled_files)} {type_name} files...")
         print(f"{'='*60}")
         
         target_formats = get_target_formats(media_type)
@@ -324,7 +324,7 @@ def save_training_data(training_data, output_file):
             'data': training_data
         }, f, indent=2)
     
-    print(f"\n💾 训练数据已保存: {output_path}")
+    print(f"\n💾 Training data saved: {output_path}")
     print(f"   总样本数: {len(training_data)}")
     print(f"   图像样本: {stats['image']}")
     print(f"   视频样本: {stats['video']}")

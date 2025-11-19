@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import './styles/variables.css'
 
-// 默认暗色模式（官方插件风格）
+// Default dark theme (official plugin style)
 document.documentElement.setAttribute('data-theme', 'dark')
 
 createApp(App).mount('#app')
