@@ -9,7 +9,7 @@
   "main": {
     "frame": false,
     "vibrancy": true,
-    "url": "index.html",
+    "url": "dist/index.html",
     "width": 1280,
     "minWidth": 800,
     "height": 720,
