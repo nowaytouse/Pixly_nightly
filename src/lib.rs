@@ -86,6 +86,16 @@ pub mod bayesian_optimizer;       // 贝叶斯参数优化
 pub mod animation_strategy;       // 动画编码策略
 pub mod external_tools;           // 外部工具管理
 
+// 🔥 Phase 4.2: 中等价值模块集成
+pub mod automl;                   // 自动机器学习
+pub mod visual_quality_scorer;    // 视觉质量评分
+pub mod simd_sharpener;           // SIMD锐化算法
+pub mod ml_time_estimator;        // ML时间估算
+pub mod same_format_optimizer;    // 同格式优化
+pub mod quality_checker_advanced; // 高级质量检查
+pub mod custom_presets;           // 自定义预设管理
+pub mod file_type_detector;       // 文件类型检测
+
 pub use types::*;
 pub use ppo_model_enhanced::{EnhancedPPOPredictor, MediaType, TrainingSample};
 pub use modern_formats::{ModernFormatConverter, AVIFParams, JXLParams, FormatSupport};
@@ -107,6 +117,16 @@ pub use animation_strategy::{
     AnimationToVideoConverter, AnimationPreservation
 };
 pub use external_tools::{ExternalTool, ToolStatus, ExternalToolChecker};
+
+// 🔥 Phase 4.2: 导出中等价值模块
+pub use automl::{AutoML, AutoMLConfig, ModelType, FeatureImportance, ModelMetrics};
+pub use visual_quality_scorer::{VisualQualityScorer, ImageFeatures as VQSImageFeatures, QualityRecommendation};
+pub use simd_sharpener::{SIMDSharpener, SharpenConfig, SharpenPerformanceInfo};
+pub use ml_time_estimator::{TimeEstimator, TimeEstimate, FileFeatures as MLFileFeatures, ConversionRecord};
+pub use same_format_optimizer::{SameFormatOptimizer, OptimizationResult as SFOptimizationResult};
+pub use quality_checker_advanced::{QualityChecker as AdvancedQualityChecker, QualityMetrics as AdvancedQualityMetrics, QualityAssessment};
+pub use custom_presets::{CustomPreset, PresetManager};
+pub use file_type_detector::{FileTypeDetector, FileTypeDetection, SecurityValidation};
 pub use sharpen::*;
 pub use ai::*;
 pub use video::*;
