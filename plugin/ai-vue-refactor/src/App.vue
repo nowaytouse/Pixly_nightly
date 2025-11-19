@@ -578,22 +578,89 @@ const startConvert = async () => {
   }
 }
 
-// Window control methods (Eagle API)
+// 🔥 Window control methods (Eagle API - FIXED)
+// Ref: format-vue working implementation
+const isMaximized = ref(false)
+
 const minimizeWindow = () => {
-  if (window.eagle && window.eagle.app) {
-    window.eagle.app.minimize()
+  try {
+    console.log('[PIXLY AI] Minimizing window...')
+    if (window.eagle && window.eagle.window && typeof window.eagle.window.minimize === 'function') {
+      window.eagle.window.minimize()
+      console.log('[PIXLY AI] ✅ Window minimized')
+    } else if (window.eagle && window.eagle.app && typeof window.eagle.app.minimize === 'function') {
+      window.eagle.app.minimize()
+      console.log('[PIXLY AI] ✅ Window minimized (via app)')
+    } else {
+      console.error('[PIXLY AI] ❌ Minimize method not found')
+    }
+  } catch (error) {
+    console.error('[PIXLY AI] ❌ Failed to minimize:', error)
   }
 }
 
 const maximizeWindow = () => {
-  if (window.eagle && window.eagle.app) {
-    window.eagle.app.maximize()
+  try {
+    console.log('[PIXLY AI] Toggling maximize...', { currentState: isMaximized.value })
+    
+    if (!window.eagle || !window.eagle.window) {
+      console.error('[PIXLY AI] ❌ Eagle window API not available')
+      return
+    }
+    
+    // Toggle between maximize and restore
+    if (isMaximized.value) {
+      // Currently maximized, restore to normal
+      if (typeof window.eagle.window.unmaximize === 'function') {
+        window.eagle.window.unmaximize()
+        isMaximized.value = false
+        console.log('[PIXLY AI] ✅ Window unmaximized')
+      } else if (typeof window.eagle.window.restore === 'function') {
+        window.eagle.window.restore()
+        isMaximized.value = false
+        console.log('[PIXLY AI] ✅ Window restored')
+      } else {
+        console.error('[PIXLY AI] ❌ Unmaximize method not found')
+      }
+    } else {
+      // Currently normal, maximize
+      if (typeof window.eagle.window.maximize === 'function') {
+        window.eagle.window.maximize()
+        isMaximized.value = true
+        console.log('[PIXLY AI] ✅ Window maximized')
+      } else {
+        console.error('[PIXLY AI] ❌ Maximize method not found')
+      }
+    }
+  } catch (error) {
+    console.error('[PIXLY AI] ❌ Failed to toggle maximize:', error)
   }
 }
 
 const closeWindow = () => {
-  if (window.eagle && window.eagle.app) {
-    window.eagle.app.close()
+  try {
+    console.log('[PIXLY AI] Closing window...')
+    
+    if (!window.eagle) {
+      console.error('[PIXLY AI] ❌ Eagle API not available')
+      return
+    }
+    
+    // Try different API methods
+    if (window.eagle.window && typeof window.eagle.window.close === 'function') {
+      window.eagle.window.close()
+      console.log('[PIXLY AI] ✅ Window closed')
+    } else if (window.eagle.app && typeof window.eagle.app.close === 'function') {
+      window.eagle.app.close()
+      console.log('[PIXLY AI] ✅ Window closed (via app)')
+    } else if (window.close && typeof window.close === 'function') {
+      window.close()
+      console.log('[PIXLY AI] ✅ Window closed (via window.close)')
+    } else {
+      console.error('[PIXLY AI] ❌ Close method not found')
+    }
+  } catch (error) {
+    console.error('[PIXLY AI] ❌ Failed to close:', error)
   }
 }
 
