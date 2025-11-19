@@ -39,6 +39,15 @@ pub struct MediaInfo {
     pub audio_codec: Option<String>,
     pub color_space: Option<String>,
     pub bit_depth: Option<u8>,
+    
+    /// 🔬 完整的128维特征向量（可选）
+    /// 
+    /// **新增字段** (2025-11-19): 支持真实特征提取
+    /// - 使用`extract_full_features()`方法填充
+    /// - 包含真实的Color/Texture/Quality特征
+    /// - 用于高精度AI预测
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub features_128d: Option<Vec<f64>>,
 }
 
 /// 媒体分析器
@@ -108,12 +117,20 @@ impl MediaAnalyzer {
             audio_codec: Some("aac".to_string()),
             color_space: Some("yuv420p".to_string()),
             bit_depth: Some(8),
+            features_128d: None, // 视频不使用图像特征
         })
     }
     
     fn analyze_animation(&self, file_path: &Path, size: u64) -> Result<MediaInfo> {
         let img = image::open(file_path)?;
         let (width, height) = img.dimensions();
+        
+        // 🔥 提取完整特征（如果启用AI检测）
+        let features_128d = if self.enable_ai_detection {
+            self.extract_full_features(file_path).ok()
+        } else {
+            None
+        };
         
         Ok(MediaInfo {
             path: file_path.to_path_buf(),
@@ -129,6 +146,7 @@ impl MediaAnalyzer {
             audio_codec: None,
             color_space: Some("rgb".to_string()),
             bit_depth: Some(8),
+            features_128d,
         })
     }
     
@@ -140,6 +158,13 @@ impl MediaAnalyzer {
             .and_then(|e| e.to_str())
             .map(|e| e.to_lowercase())
             .unwrap_or_else(|| "unknown".to_string());
+        
+        // 🔥 提取完整特征（如果启用AI检测）
+        let features_128d = if self.enable_ai_detection {
+            self.extract_full_features(file_path).ok()
+        } else {
+            None
+        };
         
         Ok(MediaInfo {
             path: file_path.to_path_buf(),
@@ -155,7 +180,52 @@ impl MediaAnalyzer {
             audio_codec: None,
             color_space: Some("rgb".to_string()),
             bit_depth: Some(8),
+            features_128d,
         })
+    }
+    
+    /// 🔬 提取完整的128维特征向量
+    /// 
+    /// **新增方法** (2025-11-19): 正面解决特征提取架构限制
+    /// - 使用真实的图像数据进行特征提取
+    /// - 调用feature_extractor_128d模块的完整实现
+    /// - 不再使用简化估算
+    pub fn extract_full_features(&self, file_path: &Path) -> Result<Vec<f64>> {
+        use crate::feature_extractor_128d;
+        use crate::ImageFeatures;
+        
+        // 1. 加载图像
+        let img = image::open(file_path)?;
+        let (width, height) = img.dimensions();
+        
+        // 2. 获取文件元数据
+        let metadata = std::fs::metadata(file_path)?;
+        let size = metadata.len();
+        
+        let extension = file_path.extension()
+            .and_then(|e| e.to_str())
+            .map(|e| e.to_lowercase())
+            .unwrap_or_else(|| "unknown".to_string());
+        
+        // 3. 创建基础特征（用于feature_extractor_128d）
+        let basic_features = ImageFeatures {
+            width,
+            height,
+            file_size: size,
+            format: extension,
+            has_alpha: img.color().has_alpha(),
+            is_animated: false, // 静态图像
+            complexity: 0.5, // 将被真实计算覆盖
+        };
+        
+        // 4. 🔥 使用真实的128维特征提取器
+        let features = feature_extractor_128d::extract_128d_features(
+            &img,
+            file_path,
+            &basic_features
+        );
+        
+        Ok(features)
     }
     
     pub fn detect_format(&self, file_path: &Path) -> Result<String> {

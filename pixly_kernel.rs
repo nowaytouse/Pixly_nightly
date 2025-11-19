@@ -447,29 +447,33 @@ impl UnifiedAIPredictor {
     }
 
     /// 统一参数预测算法
-    /// 🤖 AI参数预测 - 遵循PROJECT_QUALITY_MANIFESTO.md
+    /// 🤖 AI参数预测（使用完整特征）- 遵循PROJECT_QUALITY_MANIFESTO.md
     /// 
-    /// **核心原则**：
-    /// - ✅ 优先使用Python ML多模型路由（LightGBM/PPO/Ensemble）
-    /// - ✅ Python不可用时使用Rust智能规则引擎（基于特征的自适应算法）
-    /// - ❌ 绝不使用硬编码默认值
-    /// - ❌ 绝不静默降级
-    /// 
-    /// **注意**：Rust智能规则引擎不是"fallback"，而是备用AI实现
-    /// - 基于128维特征的自适应决策
-    /// - 比硬编码规则更智能
-    /// - 与Python ML同等地位的预测方案
-    pub fn predict_parameters(
+    /// **新增方法** (2025-11-19): 支持真实特征提取
+    /// - 优先使用传入的完整128维特征向量
+    /// - 真实的Color/Texture/Quality特征
+    /// - 显著提升预测准确性
+    pub fn predict_parameters_with_full_features(
         &self,
         features: &ImageFeatures,
         target_format: &str,
         quality_mode: QualityMode,
+        full_features: Option<&Vec<f64>>,
     ) -> (u32, u32, bool, HashMap<String, String>) {
         let target_format = target_format.to_lowercase();
 
-        // 🔥 Step 1: 尝试Python ML预测（首选）
-        if let Ok(ml_result) = self.try_python_ml_predict(features, &target_format, quality_mode) {
-            info!("✅ Using Python ML prediction (LightGBM/PPO/Ensemble)");
+        // 🔥 Step 1: 尝试Python ML预测（使用完整特征）
+        if let Ok(ml_result) = self.try_python_ml_predict_with_full_features(
+            features, 
+            &target_format, 
+            quality_mode,
+            full_features
+        ) {
+            if full_features.is_some() {
+                info!("✅ Using Python ML prediction with REAL features");
+            } else {
+                info!("✅ Using Python ML prediction with simplified features");
+            }
             return ml_result;
         }
 
@@ -488,20 +492,60 @@ impl UnifiedAIPredictor {
         }
     }
 
-    /// 🐍 尝试调用Python ML Bridge进行预测
-    fn try_python_ml_predict(
+    /// 🤖 AI参数预测（兼容旧接口）- 遵循PROJECT_QUALITY_MANIFESTO.md
+    /// 
+    /// **核心原则**：
+    /// - ✅ 优先使用Python ML多模型路由（LightGBM/PPO/Ensemble）
+    /// - ✅ Python不可用时使用Rust智能规则引擎（基于特征的自适应算法）
+    /// - ❌ 绝不使用硬编码默认值
+    /// - ❌ 绝不静默降级
+    /// 
+    /// **注意**：Rust智能规则引擎不是"fallback"，而是备用AI实现
+    /// - 基于128维特征的自适应决策
+    /// - 比硬编码规则更智能
+    /// - 与Python ML同等地位的预测方案
+    pub fn predict_parameters(
         &self,
         features: &ImageFeatures,
         target_format: &str,
         quality_mode: QualityMode,
+    ) -> (u32, u32, bool, HashMap<String, String>) {
+        // 调用新方法，不传递完整特征（使用简化特征）
+        self.predict_parameters_with_full_features(
+            features,
+            target_format,
+            quality_mode,
+            None
+        )
+    }
+
+    /// 🐍 尝试调用Python ML Bridge进行预测（使用完整特征）
+    /// 
+    /// **新增方法** (2025-11-19): 支持真实特征提取
+    /// - 优先使用传入的完整128维特征向量
+    /// - 如果没有提供，fallback到简化特征提取
+    fn try_python_ml_predict_with_full_features(
+        &self,
+        features: &ImageFeatures,
+        target_format: &str,
+        quality_mode: QualityMode,
+        full_features: Option<&Vec<f64>>,
     ) -> Result<(u32, u32, bool, HashMap<String, String>)> {
         // 1. 检查Python ML是否可用
         if !is_python_ml_available() {
             anyhow::bail!("Python ML Bridge not available");
         }
 
-        // 2. 提取128维特征向量
-        let feature_vector = self.extract_128d_features(features);
+        // 2. 获取特征向量
+        let feature_vector = if let Some(features_128d) = full_features {
+            // 🔥 使用真实的完整特征
+            info!("✅ Using REAL 128D features (Color/Texture/Quality extracted from image)");
+            features_128d.clone()
+        } else {
+            // ⚠️ Fallback到简化特征
+            warn!("⚠️ Using simplified features (no image data available)");
+            self.extract_128d_features(features)
+        };
 
         // 3. 构建ML请求
         let request = MLPredictRequest {
@@ -536,16 +580,33 @@ impl UnifiedAIPredictor {
         ))
     }
 
-    /// 🔬 提取128维标准化特征向量
+    /// 🐍 尝试调用Python ML Bridge进行预测（兼容旧接口）
+    fn try_python_ml_predict(
+        &self,
+        features: &ImageFeatures,
+        target_format: &str,
+        quality_mode: QualityMode,
+    ) -> Result<(u32, u32, bool, HashMap<String, String>)> {
+        // 调用新方法，不传递完整特征（使用简化特征）
+        self.try_python_ml_predict_with_full_features(
+            features,
+            target_format,
+            quality_mode,
+            None
+        )
+    }
+
+    /// 🔬 提取128维标准化特征向量（简化版）
     /// 
     /// ⚠️ **当前限制**：此方法使用基于ImageFeatures的简化特征提取
     /// - 原因：架构设计上此处没有原始图像数据访问
     /// - 完整实现：见`feature_extractor_128d::extract_128d_features`（需要DynamicImage）
     /// - 影响：Color/Texture特征使用复杂度估算，不是真实提取
     /// 
-    /// **改进计划**：
-    /// - Phase 2: 重构架构，传递图像数据到此层
-    /// - Phase 3: 使用完整的特征提取器
+    /// **✅ 已解决** (2025-11-19):
+    /// - 新增`try_python_ml_predict_with_full_features`方法
+    /// - 优先使用MediaInfo中的完整特征向量
+    /// - 此方法仅作为fallback使用
     /// 
     /// 特征分组：
     /// - Basic (16维): ✅ 真实数据
