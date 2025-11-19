@@ -124,27 +124,27 @@
           <div v-if="isMixedMode" class="mixed-mode-notice">
             <div class="notice-header">
               <span class="notice-icon">📦</span>
-              <strong>Mixed Mode</strong>
+              <strong>{{ t('mixedMode.title') }}</strong>
             </div>
             <div class="notice-body">
-              <p>Detected mixed selection, will auto-group:</p>
+              <p>{{ t('mixedMode.description') }}</p>
               <div class="file-groups">
                 <div class="group-item">
                   <span class="group-icon">🖼️</span>
-                  <span>Images: {{ selectedFiles.filter(f => /\.(jpg|jpeg|png|gif|webp|avif|jxl|heic|heif|bmp|tiff|tif)$/i.test(f.name)).length }}</span>
+                  <span>{{ t('mixedMode.images', { count: selectedFiles.filter(f => /\.(jpg|jpeg|png|gif|webp|avif|jxl|heic|heif|bmp|tiff|tif)$/i.test(f.name)).length }) }}</span>
                 </div>
                 <div class="group-item">
                   <span class="group-icon">🎬</span>
-                  <span>Videos: {{ selectedFiles.filter(f => /\.(mp4|mov|avi|mkv|webm|flv|wmv|m4v|mpg|mpeg)$/i.test(f.name)).length }}</span>
+                  <span>{{ t('mixedMode.videos', { count: selectedFiles.filter(f => /\.(mp4|mov|avi|mkv|webm|flv|wmv|m4v|mpg|mpeg)$/i.test(f.name)).length }) }}</span>
                 </div>
               </div>
-              <p class="notice-tip">💡 Images and videos will use their respective AI features</p>
+              <p class="notice-tip">{{ t('mixedMode.hint') }}</p>
             </div>
           </div>
 
           <!-- 🎬 视频 AI 功能 (仅视频模式) -->
           <details v-if="isVideoMode" class="details" open>
-            <summary>🎬 Video AI Features</summary>
+            <summary>{{ t('video.title') }}</summary>
             <div class="checkbox-group">
               <label class="checkbox">
                 <input type="checkbox" v-model="enableVideoForAnimation">
@@ -167,20 +167,20 @@
 
           <!-- 自动处理提示 -->
           <div class="auto-hints">
-            <div class="hint-item">🔒 8-Layer Validation</div>
-            <div class="hint-item">💡 Auto XMP Merge</div>
-            <div class="hint-item">📝 Auto Filename Normalization</div>
+            <div class="hint-item">{{ t('features.validation') }}</div>
+            <div class="hint-item">{{ t('features.xmpMerge') }}</div>
+            <div class="hint-item">{{ t('features.filenameNorm') }}</div>
           </div>
 
           <!-- 元数据保留提示 -->
           <div class="metadata-notice">
-            <strong>📦 Complete Metadata Preservation</strong>
+            <strong>{{ t('features.metadataTitle') }}</strong>
             <div class="metadata-items">
-              <span>✓ EXIF</span>
-              <span>✓ XMP</span>
-              <span>✓ ICC</span>
-              <span>✓ Timestamps</span>
-              <span>✓ Extended Attributes</span>
+              <span>✓ {{ t('features.exif') }}</span>
+              <span>✓ {{ t('features.xmp') }}</span>
+              <span>✓ {{ t('features.icc') }}</span>
+              <span>✓ {{ t('features.timestamps') }}</span>
+              <span>✓ {{ t('features.extendedAttr') }}</span>
             </div>
           </div>
 

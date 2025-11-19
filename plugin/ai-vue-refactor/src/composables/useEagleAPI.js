@@ -99,16 +99,36 @@ export function useEagleAPI() {
 
     try {
       const selected = await window.eagle.item.getSelected()
-      items.value = selected.map(item => ({
-        id: item.id,
-        name: item.name,
-        ext: item.ext,
-        filePath: item.filePath,
-        thumbnail: item.thumbnail,
-        width: item.width || 0,
-        height: item.height || 0,
-        size: item.size || 0
-      }))
+      items.value = selected.map(item => {
+        // 🔥 处理缩略图路径 (使用thumbnailURL而不是thumbnail)
+        let thumbnail = null
+        if (item.thumbnailURL) {
+          // 如果不是http或file://开头，添加file://前缀
+          if (!item.thumbnailURL.startsWith('http') && !item.thumbnailURL.startsWith('file://')) {
+            thumbnail = `file://${item.thumbnailURL}`
+          } else {
+            thumbnail = item.thumbnailURL
+          }
+        }
+        
+        return {
+          id: item.id,
+          name: item.name,
+          ext: item.ext,
+          filePath: item.filePath,
+          path: item.filePath, // 添加path别名
+          thumbnail: thumbnail, // 使用处理后的缩略图路径
+          width: item.width || 0,
+          height: item.height || 0,
+          size: item.size || 0
+        }
+      })
+      
+      logger.info(LOG_KEYS.EAGLE_API_CALL, 'Loaded Eagle files', { 
+        count: items.value.length,
+        hasThumbnails: items.value.filter(i => i.thumbnail).length
+      })
+      
       return items.value
     } catch (err) {
       logger.error(LOG_KEYS.EAGLE_API_ERROR, 'Failed to get Eagle files', { error: err.message })

@@ -70,6 +70,24 @@
     "image": "图像模式",
     "mixed": "混合模式"
   },
+  "mixedMode": {
+    "title": "混合模式",
+    "description": "检测到混合选择，将自动分组处理：",
+    "images": "图像：{count} 个",
+    "videos": "视频：{count} 个",
+    "hint": "💡 图像和视频将使用各自的 AI 功能"
+  },
+  "features": {
+    "validation": "🔒 8层文件验证",
+    "xmpMerge": "💡 自动合并 XMP",
+    "filenameNorm": "📝 自动规范化文件名",
+    "metadataTitle": "📦 完整元数据保留",
+    "exif": "EXIF",
+    "xmp": "XMP",
+    "icc": "ICC",
+    "timestamps": "时间戳",
+    "extendedAttr": "扩展属性"
+  },
   "help": {
     "title": "使用帮助",
     "close": "关闭",

@@ -70,6 +70,24 @@
     "image": "Image Mode",
     "mixed": "Mixed Mode"
   },
+  "mixedMode": {
+    "title": "Mixed Mode",
+    "description": "Detected mixed selection, will auto-group:",
+    "images": "Images: {count}",
+    "videos": "Videos: {count}",
+    "hint": "💡 Images and videos will use their respective AI features"
+  },
+  "features": {
+    "validation": "🔒 8-Layer Validation",
+    "xmpMerge": "💡 Auto XMP Merge",
+    "filenameNorm": "📝 Auto Filename Normalization",
+    "metadataTitle": "📦 Complete Metadata Preservation",
+    "exif": "EXIF",
+    "xmp": "XMP",
+    "icc": "ICC",
+    "timestamps": "Timestamps",
+    "extendedAttr": "Extended Attributes"
+  },
   "help": {
     "title": "Help",
     "close": "Close",
