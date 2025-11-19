@@ -5,6 +5,7 @@
 
 use anyhow::Result;
 use std::path::Path;
+use crate::format_knowledge::FormatKnowledgeBase;
 
 /// Format selection recommendation
 #[derive(Debug, Clone)]
@@ -26,11 +27,16 @@ pub struct FormatSelector {
     /// Enable aggressive mode (try more formats)
     #[allow(dead_code)]  // Phase 4: Reserved for future expansion
     aggressive: bool,
+    /// 🔥 Phase 3.3: 格式知识库
+    format_knowledge: FormatKnowledgeBase,
 }
 
 impl FormatSelector {
     pub fn new(aggressive: bool) -> Self {
-        Self { aggressive }
+        Self { 
+            aggressive,
+            format_knowledge: FormatKnowledgeBase::new(),
+        }
     }
     
     /// 选择最佳目标格式
