@@ -107,18 +107,35 @@ impl ProgressTracker {
     
     pub fn increment(&self) {
         let completed = self.completed.fetch_add(1, Ordering::Relaxed) + 1;
-        let mut info = self.info.lock().unwrap();
-        info.update(completed, self.start_time);
+        if let Ok(mut info) = self.info.lock() {
+            info.update(completed, self.start_time);
+        }
     }
     
     pub fn set_completed(&self, completed: u64) {
         self.completed.store(completed, Ordering::Relaxed);
-        let mut info = self.info.lock().unwrap();
-        info.update(completed, self.start_time);
+        if let Ok(mut info) = self.info.lock() {
+            info.update(completed, self.start_time);
+        }
     }
     
     pub fn get_info(&self) -> ProgressInfo {
-        self.info.lock().unwrap().clone()
+        self.info.lock()
+            .map(|info| info.clone())
+            .unwrap_or_else(|_| {
+                let completed = self.completed.load(Ordering::Relaxed);
+                ProgressInfo {
+                    level: ProgressLevel::Task,
+                    state: ProgressState::Running,
+                    progress: if self.total > 0 { completed as f64 / self.total as f64 } else { 0.0 },
+                    completed,
+                    total: self.total,
+                    current_operation: String::from("Unknown"),
+                    estimated_remaining_ms: None,
+                    throughput: None,
+                    metadata: HashMap::new(),
+                }
+            })
     }
     
     pub fn get_progress(&self) -> f64 {

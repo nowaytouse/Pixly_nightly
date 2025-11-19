@@ -34,16 +34,16 @@ class StandardFeatures:
     context: List[float]    # 16维 - 处理历史和环境
     
     def to_vector(self) -> np.ndarray:
-        """转换为128维向量"""
-        return np.concatenate([
-            self.basic,
-            self.color,
-            self.texture,
-            self.shape,
-            self.quality,
-            self.metadata,
-            self.context
-        ])
+        """转换为128维向量 - 🚀 性能优化：预分配数组"""
+        result = np.empty(128, dtype=np.float64)
+        result[0:16] = self.basic
+        result[16:32] = self.color
+        result[32:48] = self.texture
+        result[48:64] = self.shape
+        result[64:80] = self.quality
+        result[80:112] = self.metadata
+        result[112:128] = self.context
+        return result
     
     @classmethod
     def from_vector(cls, vec: np.ndarray) -> 'StandardFeatures':
@@ -410,10 +410,14 @@ class ModelRouter:
         if len(predictions) == 0:
             return self._predict_rule_based(features, target_format, quality_mode)
         
-        # 加权平均
-        avg_quality = int(np.mean([p.quality for p in predictions]))
-        avg_effort = int(np.mean([p.effort for p in predictions]))
-        avg_confidence = np.mean([p.confidence for p in predictions])
+        # 🚀 性能优化：向量化计算
+        qualities = np.array([p.quality for p in predictions], dtype=np.int32)
+        efforts = np.array([p.effort for p in predictions], dtype=np.int32)
+        confidences = np.array([p.confidence for p in predictions], dtype=np.float64)
+        
+        avg_quality = int(qualities.mean())
+        avg_effort = int(efforts.mean())
+        avg_confidence = float(confidences.mean())
         
         return StandardPrediction(
             quality=avg_quality,
@@ -561,18 +565,14 @@ def main():
             features_vec = request['features']
             quality_mode = request['quality_mode']
             
-            # 提取视频特征（前16维）
-            width = features_vec[0]
-            height = features_vec[1]
-            pixels = features_vec[2]
-            size_mb = features_vec[3]
-            frame_count = features_vec[5]
-            fps = features_vec[6]
-            duration = features_vec[7]
-            has_audio = features_vec[8] > 0.5
-            scene_complexity = features_vec[9]
-            is_high_res = features_vec[10] > 0.5
-            is_long = features_vec[11] > 0.5
+            # 🚀 性能优化：向量化特征提取
+            features_arr = np.array(features_vec, dtype=np.float64)
+            width, height, pixels, size_mb = features_arr[0:4]
+            frame_count, fps, duration = features_arr[5:8]
+            has_audio = features_arr[8] > 0.5
+            scene_complexity = features_arr[9]
+            is_high_res = features_arr[10] > 0.5
+            is_long = features_arr[11] > 0.5
             
             print(f"🎬 Video prediction: {width}x{height}, {duration:.1f}s, complexity={scene_complexity:.2f}", file=sys.stderr)
             

@@ -181,8 +181,7 @@ impl PerformanceCore {
         let start = Instant::now();
 
         // 更新统计
-        {
-            let mut stats = self.stats.lock().unwrap();
+        if let Ok(mut stats) = self.stats.lock() {
             stats.total_tasks += 1;
         }
 
@@ -191,8 +190,7 @@ impl PerformanceCore {
 
         // 更新性能统计
         let duration = start.elapsed();
-        {
-            let mut stats = self.stats.lock().unwrap();
+        if let Ok(mut stats) = self.stats.lock() {
             stats.total_processing_time_ns += duration.as_nanos() as u64;
             if stats.total_tasks > 0 {
                 stats.avg_latency_ns = stats.total_processing_time_ns / stats.total_tasks;
@@ -218,8 +216,7 @@ impl PerformanceCore {
         if data_size > 100_000 && self.config.enable_simd {
             tracing::debug!("Selecting SIMD optimization path: {} KB", data_size / 1024);
 
-            {
-                let mut stats = self.stats.lock().unwrap();
+            if let Ok(mut stats) = self.stats.lock() {
                 stats.simd_usage_count += 1;
             }
 
@@ -372,7 +369,9 @@ impl PerformanceCore {
 
     /// 获取性能统计
     pub fn get_stats(&self) -> PerformanceStats {
-        self.stats.lock().unwrap().clone()
+        self.stats.lock()
+            .map(|s| s.clone())
+            .unwrap_or_default()
     }
 
     /// 获取CPU信息

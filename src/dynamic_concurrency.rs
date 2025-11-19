@@ -52,7 +52,8 @@ impl DynamicWorkerPool {
         let final_slots = slots_needed.min(max_slots_per_file.max(1));
         
         // 占用slots
-        let mut available = self.available_slots.lock().unwrap();
+        let mut available = self.available_slots.lock()
+            .expect("Dynamic concurrency lock poisoned");
         if *available >= final_slots {
             *available -= final_slots;
             self.active_workers.fetch_add(final_slots, Ordering::SeqCst);

@@ -35,7 +35,8 @@ impl SameFormatOptimizer {
     pub fn check_tools_for_format(format: &str) -> Result<String> {
         // 检查缓存
         {
-            let cache = TOOL_CACHE.lock().unwrap();
+            let cache = TOOL_CACHE.lock()
+                .map_err(|e| anyhow::anyhow!("Tool cache lock poisoned: {}", e))?;
             if let Some(cached) = cache.get(format) {
                 return cached.clone()
                     .ok_or_else(|| anyhow::anyhow!("No optimizer found for {}", format));
@@ -74,7 +75,8 @@ impl SameFormatOptimizer {
         
         // 缓存结果
         {
-            let mut cache = TOOL_CACHE.lock().unwrap();
+            let mut cache = TOOL_CACHE.lock()
+                .map_err(|e| anyhow::anyhow!("Tool cache lock poisoned: {}", e))?;
             cache.insert(format.to_string(), tool.clone());
         }
         

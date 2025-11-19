@@ -185,7 +185,7 @@ impl BayesianOptimizer {
                 quality, effort, lossless,
                 obs.quality, obs.effort, obs.lossless
             ))
-            .min_by(|a, b| a.partial_cmp(b).unwrap())
+            .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
             .unwrap_or(100.0);
 
         // 距离越远，探索奖励越高
@@ -257,7 +257,7 @@ impl BayesianOptimizer {
             let recent = &self.observations[self.observations.len() - 5..];
             let best_recent_score = recent.iter()
                 .map(|obs| obs.score)
-                .max_by(|a, b| a.partial_cmp(b).unwrap())
+                .max_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
                 .unwrap_or(0.0);
             
             if let Some(best) = &self.best_observation

@@ -697,11 +697,11 @@ fn perform_conversion(
     
     let (actual_input, temp_file) = if matches!(input_ext.as_str(), "avif" | "jxl" | "jpegxl") {
         // 创建临时PNG文件
-        let temp_path = std::env::temp_dir().join(format!("pixly_temp_{}.png", 
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_millis()));
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or(std::time::Duration::from_secs(0))
+            .as_millis();
+        let temp_path = std::env::temp_dir().join(format!("pixly_temp_{}.png", timestamp));
         
         // 使用外部工具转换为PNG
         decode_external_format(input, &temp_path)?;
