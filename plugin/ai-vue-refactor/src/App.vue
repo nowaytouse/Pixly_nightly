@@ -309,6 +309,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRustCLI } from './composables/useRustCLI'
 import { useEagleAPI } from './composables/useEagleAPI'
+import { logger, LOG_KEYS } from './utils/logger'
 
 const rustCLI = useRustCLI()
 const eagleAPI = useEagleAPI()
@@ -372,7 +373,7 @@ const refreshFiles = async () => {
     const items = await eagleAPI.getSelectedItems()
     files.value = items.map(item => ({ ...item, selected: false }))
   } catch (err) {
-    console.error('加载文件失败:', err)
+    logger.error(LOG_KEYS.FILE_LOAD_ERROR, 'Failed to load files', { error: err.message })
   }
 }
 
@@ -421,7 +422,7 @@ const startConvert = async () => {
     
     // 🔥 混合模式 - 自动分组处理
     if (isMixedMode.value) {
-      console.log('📦 混合模式 - 自动分组处理')
+      logger.info(LOG_KEYS.CONVERT_START, 'Mixed mode - auto grouping', {})
       
       const imageExts = /\.(jpg|jpeg|png|gif|webp|avif|jxl|heic|heif|bmp|tiff|tif)$/i
       const videoExts = /\.(mp4|mov|avi|mkv|webm|flv|wmv|m4v|mpg|mpeg)$/i
@@ -429,8 +430,7 @@ const startConvert = async () => {
       const images = selected.filter(f => imageExts.test(f.name))
       const videos = selected.filter(f => videoExts.test(f.name))
       
-      console.log(`  🖼️ 图像: ${images.length} 个`)
-      console.log(`  🎬 视频: ${videos.length} 个`)
+      logger.info(LOG_KEYS.CONVERT_START, 'File grouping', { images: images.length, videos: videos.length })
       
       let processed = 0
       const total = selected.length
@@ -502,7 +502,7 @@ const startConvert = async () => {
     }
     // 🎬 纯视频模式
     else if (isVideoMode.value) {
-      console.log('🎬 视频转换模式')
+      logger.info(LOG_KEYS.CONVERT_START, 'Video conversion mode', {})
       
       for (let i = 0; i < selected.length; i++) {
         const file = selected[i]
@@ -533,7 +533,7 @@ const startConvert = async () => {
     }
     // 🖼️ 纯图像模式
     else if (isImageMode.value) {
-      console.log('🖼️ 图像转换模式')
+      logger.info(LOG_KEYS.CONVERT_START, 'Image conversion mode', {})
       results = await rustCLI.batchConvert(
         selected,
         {
@@ -563,8 +563,8 @@ const startConvert = async () => {
       refreshFiles()
     }, 2000)
   } catch (err) {
-    console.error('转换失败:', err)
-    progressText.value = '转换失败: ' + err.message
+    logger.error(LOG_KEYS.CONVERT_ERROR, 'Conversion failed', { error: err.message })
+    progressText.value = 'Conversion failed: ' + err.message
     processing.value = false
   }
 }

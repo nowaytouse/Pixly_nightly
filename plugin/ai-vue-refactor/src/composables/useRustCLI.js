@@ -9,6 +9,7 @@
  */
 
 import { ref } from 'vue'
+import { logger, LOG_KEYS } from '../utils/logger'
 
 export function useRustCLI() {
   const isAvailable = ref(false)
@@ -36,11 +37,11 @@ export function useRustCLI() {
       version.value = output.replace(/^pixly-rust\s+/, '')
       isAvailable.value = true
       
-      console.log('✅ Rust CLI 可用:', version.value)
+      logger.info(LOG_KEYS.RUST_CLI_EXEC, 'Rust CLI available', { version: version.value })
     } catch (err) {
       error.value = err.message
       isAvailable.value = false
-      console.error('❌ Rust CLI 不可用:', err.message)
+      logger.error(LOG_KEYS.RUST_CLI_ERROR, 'Rust CLI not available', { error: err.message })
     }
   }
 
@@ -113,7 +114,7 @@ export function useRustCLI() {
       if (enableVMAF) args.push('--vmaf-validation')
       if (enableTwoPass) args.push('--two-pass')
 
-      console.log('[Rust CLI] 执行:', args.join(' '))
+      logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Executing Rust CLI', { args: args.join(' ') })
 
       return new Promise((resolve, reject) => {
         const proc = spawn(rustPath, args, {
@@ -231,7 +232,7 @@ export function useRustCLI() {
       if (meMethod) args.push('--me-method', meMethod)
       if (pixFmt) args.push('--pix-fmt', pixFmt)
 
-      console.log('[Rust CLI] 视频转换:', args.join(' '))
+      logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Video conversion', { args: args.join(' ') })
 
       return new Promise((resolve, reject) => {
         const proc = spawn(rustPath, args, {

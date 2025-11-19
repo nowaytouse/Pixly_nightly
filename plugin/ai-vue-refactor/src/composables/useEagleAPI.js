@@ -3,6 +3,7 @@
  */
 
 import { ref } from 'vue'
+import { logger, LOG_KEYS } from '../utils/logger'
 
 export function useEagleAPI() {
   const isAvailable = ref(false)
@@ -13,7 +14,10 @@ export function useEagleAPI() {
    */
   const detect = () => {
     isAvailable.value = typeof window.eagle !== 'undefined'
-    console.log(isAvailable.value ? '✅ Eagle API 可用' : '⚠️ Eagle API 不可用（开发模式）')
+    logger.info(LOG_KEYS.EAGLE_API_CALL, 'Eagle API detection', { 
+      available: isAvailable.value,
+      mode: isAvailable.value ? 'production' : 'development'
+    })
     return isAvailable.value
   }
 
@@ -107,7 +111,7 @@ export function useEagleAPI() {
       }))
       return items.value
     } catch (err) {
-      console.error('获取 Eagle 文件失败:', err)
+      logger.error(LOG_KEYS.EAGLE_API_ERROR, 'Failed to get Eagle files', { error: err.message })
       throw err
     }
   }
