@@ -217,3 +217,90 @@ mod tests {
         assert_eq!(QualityGrade::from_ssim(0.85), QualityGrade::Poor);
     }
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Phase 5.2: 合并 quality_checker_advanced.rs 的PSNR/MSE功能
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/// 完整质量指标（包含SSIM、PSNR、MSE）
+#[derive(Debug, Clone)]
+pub struct AdvancedQualityMetrics {
+    /// 结构相似性指数 (0.0-1.0, 越高越好)
+    pub ssim: f64,
+    /// 峰值信噪比 (dB, 越高越好)
+    pub psnr: f64,
+    /// 均方误差 (越低越好)
+    pub mse: f64,
+    /// 质量评估
+    pub assessment: QualityGrade,
+}
+
+impl QualityChecker {
+    /// 计算完整质量指标（SSIM + PSNR + MSE）
+    pub fn compare_advanced<P: AsRef<Path>>(
+        &self,
+        original_path: P,
+        converted_path: P,
+    ) -> Result<AdvancedQualityMetrics> {
+        use image::GenericImageView;
+        
+        let original = image::open(original_path.as_ref())
+            .with_context(|| format!("Failed to open original: {:?}", original_path.as_ref()))?;
+        let converted = image::open(converted_path.as_ref())
+            .with_context(|| format!("Failed to open converted: {:?}", converted_path.as_ref()))?;
+        
+        // 确保尺寸相同
+        if original.dimensions() != converted.dimensions() {
+            anyhow::bail!("Image dimensions don't match");
+        }
+        
+        // 计算SSIM
+        let ssim = self.calculate_ssim(&original, &converted)?;
+        
+        // 计算MSE和PSNR
+        let (mse, psnr) = self.calculate_mse_psnr(&original, &converted)?;
+        
+        Ok(AdvancedQualityMetrics {
+            ssim,
+            psnr,
+            mse,
+            assessment: QualityGrade::from_ssim(ssim),
+        })
+    }
+    
+    /// 计算均方误差(MSE)和峰值信噪比(PSNR)
+    fn calculate_mse_psnr(&self, img1: &DynamicImage, img2: &DynamicImage) -> Result<(f64, f64)> {
+        let rgba1 = img1.to_rgba8();
+        let rgba2 = img2.to_rgba8();
+        
+        let (width, height) = rgba1.dimensions();
+        let mut sum_squared_diff = 0.0f64;
+        let pixel_count = (width * height) as f64;
+        
+        for y in 0..height {
+            for x in 0..width {
+                let p1 = rgba1.get_pixel(x, y);
+                let p2 = rgba2.get_pixel(x, y);
+                
+                // 只计算RGB通道（忽略alpha）
+                for i in 0..3 {
+                    let diff = p1[i] as f64 - p2[i] as f64;
+                    sum_squared_diff += diff * diff;
+                }
+            }
+        }
+        
+        // MSE = sum(squared_diff) / (width * height * channels)
+        let mse = sum_squared_diff / (pixel_count * 3.0);
+        
+        // PSNR = 10 * log10(MAX^2 / MSE)
+        // MAX = 255 for 8-bit images
+        let psnr = if mse > 0.0 {
+            10.0 * ((255.0 * 255.0) / mse).log10()
+        } else {
+            f64::INFINITY // 完全相同
+        };
+        
+        Ok((mse, psnr))
+    }
+}

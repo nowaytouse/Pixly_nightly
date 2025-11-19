@@ -92,7 +92,7 @@ pub mod visual_quality_scorer;    // 视觉质量评分
 // Phase 5: simd_sharpener已合并到simd_processor
 pub mod ml_time_estimator;        // ML时间估算
 pub mod same_format_optimizer;    // 同格式优化
-pub mod quality_checker_advanced; // 高级质量检查
+// Phase 5.2: quality_checker_advanced已合并到quality_checker
 pub mod custom_presets;           // 自定义预设管理
 pub mod file_type_detector;       // 文件类型检测
 
@@ -130,7 +130,8 @@ pub use visual_quality_scorer::{VisualQualityScorer, ImageFeatures as VQSImageFe
 // Phase 5: simd_sharpener已合并到simd_processor
 pub use ml_time_estimator::{TimeEstimator, TimeEstimate, FileFeatures as MLFileFeatures, ConversionRecord};
 pub use same_format_optimizer::{SameFormatOptimizer, OptimizationResult as SFOptimizationResult};
-pub use quality_checker_advanced::{QualityChecker as AdvancedQualityChecker, QualityMetrics as AdvancedQualityMetrics, QualityAssessment};
+// Phase 5.2: 增强版quality_checker (包含PSNR/MSE功能)
+pub use quality_checker::{QualityChecker, AdvancedQualityMetrics, QualityGrade};
 pub use custom_presets::{CustomPreset, PresetManager};
 pub use file_type_detector::{FileTypeDetector, FileTypeDetection, SecurityValidation};
 
@@ -157,8 +158,7 @@ pub use progress::*;
 pub use media_analyzer::*;
 pub use image_params::*;
 
-// quality_checker和quality_analyzer都导出QualityMetrics，使用模块导入避免冲突
-pub use quality_checker::QualityChecker;
+// Phase 5.2: quality_checker已在上面导出，这里删除重复
 
 // 核心处理器和批处理器（避免名称冲突）
 pub use core_processor::{ImageProcessor as CoreImageProcessor, ProcessingConfig as CoreProcessingConfig, ProcessingResult as CoreProcessingResult, ImageInfo as CoreImageInfo};
