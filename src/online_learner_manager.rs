@@ -66,7 +66,30 @@ impl OnlineLearnerManager {
         let buffer_size = learner.buffer_size();
         log::info!("📝 Experience recorded (global buffer: {})", buffer_size);
         
+        // 🎯 ML-505: 自动触发机制
+        // 当缓冲区达到阈值时，自动触发模型更新
+        if learner.should_update() {
+            log::info!("🎓 Auto-triggering model update ({} experiences)", buffer_size);
+            
+            // 释放锁后执行更新（避免死锁）
+            drop(learner);
+            
+            match Self::auto_update() {
+                Ok(_) => log::info!("✅ Auto-update completed successfully"),
+                Err(e) => {
+                    log::error!("❌ Auto-update failed: {}", e);
+                    // 不返回错误，避免阻塞转换流程
+                }
+            }
+        }
+        
         Ok(())
+    }
+    
+    /// 🎯 ML-505: 自动更新模型
+    fn auto_update() -> anyhow::Result<()> {
+        let learner = GLOBAL_LEARNER.lock().unwrap();
+        learner.trigger_update()
     }
     
     /// 获取当前缓冲区大小

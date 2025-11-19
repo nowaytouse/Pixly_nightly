@@ -123,14 +123,27 @@ impl OnlineLearner {
         let buffer_size = self.buffer_size();
         if buffer_size >= self.update_interval {
             log::info!("🎓 Triggering model update ({} experiences)", buffer_size);
-            self.trigger_update()?;
+            self.internal_trigger_update()?;
         }
         
         Ok(())
     }
     
+    /// 🎯 ML-505: 检查是否应该更新模型
+    pub fn should_update(&self) -> bool {
+        if !self.enabled {
+            return false;
+        }
+        self.buffer_size() >= self.update_interval
+    }
+    
+    /// 🎯 ML-505: 公开的触发更新接口
+    pub fn trigger_update(&self) -> Result<()> {
+        self.internal_trigger_update()
+    }
+    
     /// 触发模型更新（使用批量PPO训练器）
-    fn trigger_update(&self) -> Result<()> {
+    fn internal_trigger_update(&self) -> Result<()> {
         println!("🚀 Starting batch PPO model update...");
         log::info!("🚀 Starting batch PPO model update...");
         

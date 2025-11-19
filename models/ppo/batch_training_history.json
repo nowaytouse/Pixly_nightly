@@ -55,7 +55,217 @@
       "num_batches": 2,
       "avg_loss": 237.9879150390625,
       "avg_reward": 0.3947190414491566
+    },
+    {
+      "timestamp": "2025-11-19T22:47:33.645641",
+      "num_experiences": 52,
+      "num_batches": 2,
+      "avg_loss": 292.3096466064453,
+      "avg_reward": 0.3947190414491566
+    },
+    {
+      "timestamp": "2025-11-19T22:47:34.932496",
+      "num_experiences": 53,
+      "num_batches": 2,
+      "avg_loss": 234.2149887084961,
+      "avg_reward": 0.40356961204736347
+    },
+    {
+      "timestamp": "2025-11-19T22:47:36.090307",
+      "num_experiences": 53,
+      "num_batches": 2,
+      "avg_loss": 248.34706115722656,
+      "avg_reward": 0.40356961204736347
+    },
+    {
+      "timestamp": "2025-11-19T22:47:37.742136",
+      "num_experiences": 53,
+      "num_batches": 2,
+      "avg_loss": 265.2345199584961,
+      "avg_reward": 0.40356961204736347
+    },
+    {
+      "timestamp": "2025-11-19T22:47:39.033140",
+      "num_experiences": 54,
+      "num_batches": 2,
+      "avg_loss": 259.4585876464844,
+      "avg_reward": 0.41209238373452567
+    },
+    {
+      "timestamp": "2025-11-19T22:47:40.194204",
+      "num_experiences": 54,
+      "num_batches": 2,
+      "avg_loss": 204.29480743408203,
+      "avg_reward": 0.41209238373452567
+    },
+    {
+      "timestamp": "2025-11-19T22:47:41.913652",
+      "num_experiences": 54,
+      "num_batches": 2,
+      "avg_loss": 245.7637939453125,
+      "avg_reward": 0.41209238373452567
+    },
+    {
+      "timestamp": "2025-11-19T22:47:43.123965",
+      "num_experiences": 55,
+      "num_batches": 2,
+      "avg_loss": 247.66556549072266,
+      "avg_reward": 0.4203052364512456
+    },
+    {
+      "timestamp": "2025-11-19T22:47:44.293769",
+      "num_experiences": 55,
+      "num_batches": 2,
+      "avg_loss": 239.00043487548828,
+      "avg_reward": 0.4203052364512456
+    },
+    {
+      "timestamp": "2025-11-19T22:47:46.088783",
+      "num_experiences": 55,
+      "num_batches": 2,
+      "avg_loss": 266.2594223022461,
+      "avg_reward": 0.4203052364512456
+    },
+    {
+      "timestamp": "2025-11-19T22:47:47.287780",
+      "num_experiences": 56,
+      "num_batches": 2,
+      "avg_loss": 220.6536636352539,
+      "avg_reward": 0.4282247729995113
+    },
+    {
+      "timestamp": "2025-11-19T22:47:48.462741",
+      "num_experiences": 56,
+      "num_batches": 2,
+      "avg_loss": 234.5844497680664,
+      "avg_reward": 0.4282247729995113
+    },
+    {
+      "timestamp": "2025-11-19T22:47:50.096172",
+      "num_experiences": 56,
+      "num_batches": 2,
+      "avg_loss": 255.22200775146484,
+      "avg_reward": 0.4282247729995113
+    },
+    {
+      "timestamp": "2025-11-19T22:47:51.299221",
+      "num_experiences": 57,
+      "num_batches": 2,
+      "avg_loss": 208.46249389648438,
+      "avg_reward": 0.4358664310723992
+    },
+    {
+      "timestamp": "2025-11-19T22:47:52.467086",
+      "num_experiences": 57,
+      "num_batches": 2,
+      "avg_loss": 265.25936126708984,
+      "avg_reward": 0.4358664310723992
+    },
+    {
+      "timestamp": "2025-11-19T22:47:54.126133",
+      "num_experiences": 57,
+      "num_batches": 2,
+      "avg_loss": 232.8594512939453,
+      "avg_reward": 0.4358664310723992
+    },
+    {
+      "timestamp": "2025-11-19T22:47:55.323046",
+      "num_experiences": 58,
+      "num_batches": 2,
+      "avg_loss": 261.18883514404297,
+      "avg_reward": 0.4432445836944978
+    },
+    {
+      "timestamp": "2025-11-19T22:47:56.489292",
+      "num_experiences": 58,
+      "num_batches": 2,
+      "avg_loss": 262.5477828979492,
+      "avg_reward": 0.4432445836944978
+    },
+    {
+      "timestamp": "2025-11-19T22:47:58.256614",
+      "num_experiences": 58,
+      "num_batches": 2,
+      "avg_loss": 255.89000701904297,
+      "avg_reward": 0.4432445836944978
+    },
+    {
+      "timestamp": "2025-11-19T22:47:59.450930",
+      "num_experiences": 59,
+      "num_batches": 2,
+      "avg_loss": 244.65753936767578,
+      "avg_reward": 0.4503726294480508
+    },
+    {
+      "timestamp": "2025-11-19T22:48:00.613958",
+      "num_experiences": 59,
+      "num_batches": 2,
+      "avg_loss": 242.99205780029297,
+      "avg_reward": 0.4503726294480508
+    },
+    {
+      "timestamp": "2025-11-19T22:48:02.348968",
+      "num_experiences": 59,
+      "num_batches": 2,
+      "avg_loss": 223.7864761352539,
+      "avg_reward": 0.4503726294480508
+    },
+    {
+      "timestamp": "2025-11-19T22:48:03.567026",
+      "num_experiences": 60,
+      "num_batches": 2,
+      "avg_loss": 252.5494155883789,
+      "avg_reward": 0.45726307367648533
+    },
+    {
+      "timestamp": "2025-11-19T22:48:04.722491",
+      "num_experiences": 60,
+      "num_batches": 2,
+      "avg_loss": 260.78411865234375,
+      "avg_reward": 0.45726307367648533
+    },
+    {
+      "timestamp": "2025-11-19T22:48:06.496509",
+      "num_experiences": 60,
+      "num_batches": 2,
+      "avg_loss": 236.76815032958984,
+      "avg_reward": 0.45726307367648533
+    },
+    {
+      "timestamp": "2025-11-19T22:48:07.700578",
+      "num_experiences": 61,
+      "num_batches": 2,
+      "avg_loss": 240.37020111083984,
+      "avg_reward": 0.4639276017007089
+    },
+    {
+      "timestamp": "2025-11-19T22:48:08.862287",
+      "num_experiences": 61,
+      "num_batches": 2,
+      "avg_loss": 254.19112396240234,
+      "avg_reward": 0.4639276017007089
+    },
+    {
+      "timestamp": "2025-11-19T22:48:10.508023",
+      "num_experiences": 61,
+      "num_batches": 2,
+      "avg_loss": 277.39600372314453,
+      "avg_reward": 0.4639276017007089
+    },
+    {
+      "timestamp": "2025-11-19T22:48:11.726208",
+      "num_experiences": 62,
+      "num_batches": 2,
+      "avg_loss": 229.64474487304688,
+      "avg_reward": 0.47037714494995747
+    },
+    {
+      "timestamp": "2025-11-19T22:48:12.897210",
+      "num_experiences": 62,
+      "num_batches": 2,
+      "avg_loss": 247.88030242919922,
+      "avg_reward": 0.47037714494995747
     }
   ],
-  "total_updates": 386
+  "total_updates": 2101
 }
