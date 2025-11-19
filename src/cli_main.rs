@@ -769,5 +769,6 @@ fn create_batch_config(
         error_strategy,
         overwrite,
         show_progress: progress,
+        progress_callback: None,
     }
 }

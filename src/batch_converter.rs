@@ -96,8 +96,11 @@ pub enum ErrorStrategy {
     RetryOnError { max_retries: usize },
 }
 
+/// 进度回调函数类型
+pub type ProgressCallback = Arc<dyn Fn(usize, usize, &str) + Send + Sync>;
+
 /// 批量转换器配置
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct BatchConverterConfig {
     /// 转换配置
     pub conversion_config: ConversionConfig,
@@ -109,6 +112,21 @@ pub struct BatchConverterConfig {
     pub overwrite: bool,
     /// 是否显示进度
     pub show_progress: bool,
+    /// 进度回调函数 (completed, total, current_file)
+    pub progress_callback: Option<ProgressCallback>,
+}
+
+impl std::fmt::Debug for BatchConverterConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("BatchConverterConfig")
+            .field("conversion_config", &self.conversion_config)
+            .field("max_parallel", &self.max_parallel)
+            .field("error_strategy", &self.error_strategy)
+            .field("overwrite", &self.overwrite)
+            .field("show_progress", &self.show_progress)
+            .field("progress_callback", &self.progress_callback.is_some())
+            .finish()
+    }
 }
 
 impl Default for BatchConverterConfig {
@@ -119,7 +137,19 @@ impl Default for BatchConverterConfig {
             error_strategy: ErrorStrategy::ContinueOnError,
             overwrite: false,
             show_progress: true,
+            progress_callback: None,
         }
+    }
+}
+
+impl BatchConverterConfig {
+    /// 设置进度回调
+    pub fn with_progress_callback<F>(mut self, callback: F) -> Self
+    where
+        F: Fn(usize, usize, &str) + Send + Sync + 'static,
+    {
+        self.progress_callback = Some(Arc::new(callback));
+        self
     }
 }
 
@@ -241,7 +271,15 @@ impl BatchConverter {
                     );
                     
                     // 更新进度
-                    self.update_progress(&completed, total, &progress);
+                    let current_completed = self.update_progress(&completed, total, &progress);
+                    
+                    // 调用进度回调
+                    if let Some(ref callback) = self.config.progress_callback {
+                        let filename = input.file_name()
+                            .and_then(|n| n.to_str())
+                            .unwrap_or("unknown");
+                        callback(current_completed, total, filename);
+                    }
                     
                     // 处理结果
                     match result {
@@ -394,13 +432,13 @@ impl BatchConverter {
         output_dir.join(format!("{}.{}", filename.to_string_lossy(), format))
     }
     
-    /// 更新进度
+    /// 更新进度，返回当前完成数
     fn update_progress(
         &self,
         completed: &Arc<Mutex<usize>>,
         total: usize,
         progress: &Option<Arc<ProgressTracker>>,
-    ) {
+    ) -> usize {
         let mut count = completed.lock().unwrap();
         *count += 1;
         let current = *count;
@@ -418,6 +456,8 @@ impl BatchConverter {
                 );
             }
         }
+        
+        current
     }
 }
 
