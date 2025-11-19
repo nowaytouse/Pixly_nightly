@@ -47,29 +47,31 @@ echo ""
 echo "🔄 测试同格式优化..."
 echo "--------------------------------"
 
-# JPEG → JPEG优化
-echo -n "  JPEG优化: "
-if $CLI convert "$INPUT" "$OUTPUT_DIR/test_optimized.jpg" --quality 80 2>&1 | grep -q "Conversion completed"; then
-    original_size=$(stat -f%z "$INPUT")
-    optimized_size=$(stat -f%z "$OUTPUT_DIR/test_optimized.jpg")
-    ratio=$(echo "scale=1; $optimized_size * 100 / $original_size" | bc)
-    echo "✅ (${ratio}% of original)"
-else
-    echo "❌ 失败"
-fi
-
-# PNG → PNG优化
-echo -n "  PNG优化: "
-png_input="$OUTPUT_DIR/test.png"
-if [ -f "$png_input" ]; then
-    if $CLI convert "$png_input" "$OUTPUT_DIR/test_optimized.png" --quality 90 2>&1 | grep -q "Conversion completed"; then
-        echo "✅"
-    else
-        echo "❌ 失败"
+# 测试所有格式的同格式优化
+for fmt in "${formats[@]}"; do
+    input_file="$OUTPUT_DIR/test.$fmt"
+    output_file="$OUTPUT_DIR/test_optimized.$fmt"
+    
+    if [ ! -f "$input_file" ]; then
+        echo "  $fmt→$fmt: ⏭️  跳过(无输入)"
+        continue
     fi
-else
-    echo "⏭️  跳过(无PNG输入)"
-fi
+    
+    echo -n "  $fmt→$fmt: "
+    
+    if $CLI convert "$input_file" "$output_file" --quality 85 2>&1 | grep -q "Conversion completed"; then
+        if [ -f "$output_file" ] && [ -s "$output_file" ]; then
+            original_size=$(stat -f%z "$input_file")
+            optimized_size=$(stat -f%z "$output_file")
+            ratio=$(echo "scale=1; $optimized_size * 100 / $original_size" | bc)
+            echo "✅ (${ratio}% of original)"
+        else
+            echo "❌ 文件为空"
+        fi
+    else
+        echo "❌ 转换失败"
+    fi
+done
 
 # 测试视频格式(如果有视频文件)
 echo ""

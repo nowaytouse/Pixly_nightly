@@ -633,8 +633,29 @@ fn perform_conversion(
 ) -> Result<String> {
     use image::ImageFormat;
     
+    // 检查输入格式，如果是外部格式(AVIF/JXL)，先转换为PNG
+    let input_ext = input.extension()
+        .and_then(|s| s.to_str())
+        .unwrap_or("")
+        .to_lowercase();
+    
+    let (actual_input, temp_file) = if matches!(input_ext.as_str(), "avif" | "jxl" | "jpegxl") {
+        // 创建临时PNG文件
+        let temp_path = std::env::temp_dir().join(format!("pixly_temp_{}.png", 
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_millis()));
+        
+        // 使用外部工具转换为PNG
+        decode_external_format(input, &temp_path)?;
+        (temp_path.clone(), Some(temp_path))
+    } else {
+        (input.to_path_buf(), None)
+    };
+    
     // 读取输入图像
-    let img = image::open(input)?;
+    let img = image::open(&actual_input)?;
     
     // 根据格式选择编码器
     let strategy = match format.to_lowercase().as_str() {
@@ -672,12 +693,12 @@ fn perform_conversion(
         }
         "avif" => {
             // AVIF编码 - 使用外部工具
-            convert_to_avif(input, output, config)?;
+            convert_to_avif(&actual_input, output, config)?;
             "avif_external"
         }
         "jxl" | "jpegxl" => {
             // JPEG XL编码 - 使用外部工具
-            convert_to_jxl(input, output, config)?;
+            convert_to_jxl(&actual_input, output, config)?;
             "jxl_external"
         }
         _ => {
@@ -685,7 +706,52 @@ fn perform_conversion(
         }
     };
     
+    // 清理临时文件
+    if let Some(temp) = temp_file {
+        let _ = std::fs::remove_file(temp);
+    }
+    
     Ok(strategy.to_string())
+}
+
+/// 解码外部格式(AVIF/JXL)为PNG
+fn decode_external_format(input: &Path, output: &Path) -> Result<()> {
+    use std::process::Command;
+    
+    let input_ext = input.extension()
+        .and_then(|s| s.to_str())
+        .unwrap_or("")
+        .to_lowercase();
+    
+    match input_ext.as_str() {
+        "avif" => {
+            // 使用avifenc的解码功能或ImageMagick
+            let output = Command::new("magick")
+                .arg("convert")
+                .arg(input)
+                .arg(output)
+                .output()?;
+            
+            if !output.status.success() {
+                anyhow::bail!("AVIF decode failed: {}", String::from_utf8_lossy(&output.stderr));
+            }
+        }
+        "jxl" | "jpegxl" => {
+            // 使用djxl或ImageMagick
+            let output = Command::new("magick")
+                .arg("convert")
+                .arg(input)
+                .arg(output)
+                .output()?;
+            
+            if !output.status.success() {
+                anyhow::bail!("JXL decode failed: {}", String::from_utf8_lossy(&output.stderr));
+            }
+        }
+        _ => anyhow::bail!("Unsupported external format: {}", input_ext),
+    }
+    
+    Ok(())
 }
 
 /// Convert to AVIF using external tools
