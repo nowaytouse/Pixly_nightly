@@ -228,18 +228,18 @@ pub fn execute_conversion(
     // ═══════════════════════════════════════════════════
     if toggles.map(|t| t.enable_video_for_animation).unwrap_or(false) {
         if should_convert_animation_to_video(input)? {
-            println!("🎬 检测到大型动图，自动转换为视频格式");
-            println!("   文件: {:?}", input);
-            println!("   预期体积减少: 60-80%");
-            println!("   使用编码: H.265/HEVC");
+            println!("🎬 Large animated image detected, auto-converting to video format");
+            println!("   File: {:?}", input);
+            println!("   Expected size reduction: 60-80%");
+            println!("   Using codec: H.265/HEVC");
             
-            // 🔥 自动转换为视频
+            // 🔥 Auto-convert to video
             let video_output = output.with_extension("mp4");
-            println!("   转换目标: {:?}", video_output);
+            println!("   Conversion target: {:?}", video_output);
             
             convert_animation_to_video(input, &video_output)?;
             
-            println!("   ✅ 动图已转换为视频");
+            println!("   ✅ Animation converted to video");
             println!("");
             
             // 🔥 返回视频转换结果，不再继续图像转换
