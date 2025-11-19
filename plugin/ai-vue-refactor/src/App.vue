@@ -15,6 +15,12 @@
         <button class="icon-btn" @click="toggleTheme" :title="t('header.theme')">
           {{ isDark ? '☀️' : '🌙' }}
         </button>
+        <!-- Window Controls -->
+        <div class="window-controls">
+          <button class="window-btn minimize" @click="minimizeWindow" title="Minimize">−</button>
+          <button class="window-btn maximize" @click="maximizeWindow" title="Maximize">□</button>
+          <button class="window-btn close" @click="closeWindow" title="Close">✕</button>
+        </div>
       </div>
     </header>
 
@@ -572,6 +578,25 @@ const startConvert = async () => {
   }
 }
 
+// Window control methods
+const minimizeWindow = () => {
+  if (window.eagle && window.eagle.window) {
+    window.eagle.window.minimize()
+  }
+}
+
+const maximizeWindow = () => {
+  if (window.eagle && window.eagle.window) {
+    window.eagle.window.maximize()
+  }
+}
+
+const closeWindow = () => {
+  if (window.eagle && window.eagle.window) {
+    window.eagle.window.close()
+  }
+}
+
 onMounted(() => {
   eagleAPI.detect()
   rustCLI.init()
@@ -642,6 +667,38 @@ onMounted(() => {
 
 .icon-btn:hover {
   background: var(--color-bg-active);
+}
+
+/* Window Controls */
+.window-controls {
+  display: flex;
+  gap: 0;
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid var(--color-border-primary);
+}
+
+.window-btn {
+  width: 46px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.window-btn:hover {
+  background: var(--color-bg-hover);
+}
+
+.window-btn.close:hover {
+  background: #e81123;
+  color: white;
 }
 
 .main {
