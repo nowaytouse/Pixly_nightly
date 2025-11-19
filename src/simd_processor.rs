@@ -293,3 +293,115 @@ impl SimdProcessor {
         self.enhance_scalar(image_data, strength)
     }
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Phase 5: 合并 simd_sharpener.rs 的锐化功能
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/// 锐化配置
+#[derive(Debug, Clone)]
+pub struct SharpenConfig {
+    /// 锐化强度 (0.0-10.0)
+    pub strength: f32,
+    /// 锐化半径
+    pub radius: u32,
+    /// 阈值
+    pub threshold: f32,
+}
+
+impl Default for SharpenConfig {
+    fn default() -> Self {
+        Self {
+            strength: 1.0,
+            radius: 1,
+            threshold: 0.0,
+        }
+    }
+}
+
+/// 锐化性能信息
+#[derive(Debug, Clone)]
+pub struct SharpenPerformanceInfo {
+    pub used_simd: bool,
+    pub processing_time_ms: u64,
+}
+
+impl SIMDProcessor {
+    /// 锐化图像 - 使用Unsharp Mask算法
+    pub fn sharpen(&self, image: &DynamicImage, config: &SharpenConfig) -> Result<DynamicImage> {
+        use image::{ImageBuffer, Rgba};
+        use rayon::prelude::*;
+        
+        let rgba = image.to_rgba8();
+        let (width, height) = rgba.dimensions();
+        
+        // 创建输出图像
+        let mut output = ImageBuffer::new(width, height);
+        
+        // 使用Rayon并行处理每一行
+        let rows: Vec<Vec<Rgba<u8>>> = (0..height)
+            .into_par_iter()
+            .map(|y| {
+                let mut row = Vec::with_capacity(width as usize);
+                for x in 0..width {
+                    let sharpened = self.sharpen_pixel(&rgba, x, y, width, height, config);
+                    row.push(sharpened);
+                }
+                row
+            })
+            .collect();
+        
+        // 将结果写入输出图像
+        for (y, row) in rows.iter().enumerate() {
+            for (x, pixel) in row.iter().enumerate() {
+                output.put_pixel(x as u32, y as u32, *pixel);
+            }
+        }
+        
+        Ok(DynamicImage::ImageRgba8(output))
+    }
+    
+    /// 锐化单个像素
+    fn sharpen_pixel(
+        &self,
+        image: &image::ImageBuffer<image::Rgba<u8>, Vec<u8>>,
+        x: u32,
+        y: u32,
+        width: u32,
+        height: u32,
+        config: &SharpenConfig,
+    ) -> image::Rgba<u8> {
+        let center = image.get_pixel(x, y);
+        let radius = config.radius as i32;
+        
+        // 计算周围像素的平均值（模糊）
+        let mut sum_r = 0.0f32;
+        let mut sum_g = 0.0f32;
+        let mut sum_b = 0.0f32;
+        let mut count = 0.0f32;
+        
+        for dy in -radius..=radius {
+            for dx in -radius..=radius {
+                let nx = (x as i32 + dx).clamp(0, width as i32 - 1) as u32;
+                let ny = (y as i32 + dy).clamp(0, height as i32 - 1) as u32;
+                let pixel = image.get_pixel(nx, ny);
+                
+                sum_r += pixel[0] as f32;
+                sum_g += pixel[1] as f32;
+                sum_b += pixel[2] as f32;
+                count += 1.0;
+            }
+        }
+        
+        let blur_r = sum_r / count;
+        let blur_g = sum_g / count;
+        let blur_b = sum_b / count;
+        
+        // Unsharp Mask: sharpened = original + strength * (original - blurred)
+        let sharp_r = (center[0] as f32 + config.strength * (center[0] as f32 - blur_r)).clamp(0.0, 255.0) as u8;
+        let sharp_g = (center[1] as f32 + config.strength * (center[1] as f32 - blur_g)).clamp(0.0, 255.0) as u8;
+        let sharp_b = (center[2] as f32 + config.strength * (center[2] as f32 - blur_b)).clamp(0.0, 255.0) as u8;
+        
+        image::Rgba([sharp_r, sharp_g, sharp_b, center[3]])
+    }
+}

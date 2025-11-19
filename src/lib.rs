@@ -89,7 +89,7 @@ pub mod external_tools;           // 外部工具管理
 // 🔥 Phase 4.2: 中等价值模块集成
 pub mod automl;                   // 自动机器学习
 pub mod visual_quality_scorer;    // 视觉质量评分
-pub mod simd_sharpener;           // SIMD锐化算法
+// Phase 5: simd_sharpener已合并到simd_processor
 pub mod ml_time_estimator;        // ML时间估算
 pub mod same_format_optimizer;    // 同格式优化
 pub mod quality_checker_advanced; // 高级质量检查
@@ -110,7 +110,8 @@ pub use file_collector::FileCollector;
 pub use config_manager::{ConfigManager, Config};
 
 // 🔥 Phase 4.1: 导出高价值模块
-pub use simd_processor::{SIMDProcessor, SimdProcessor};
+// Phase 5: 增强版simd_processor (包含锐化功能)
+pub use simd_processor::{SIMDProcessor, SimdProcessor, SharpenConfig, SharpenPerformanceInfo};
 pub use smart_cache::{SmartCache, CacheEntry, CacheStats};
 pub use metadata_comprehensive::{
     ComprehensiveMetadata, TechnicalMetadata, DescriptiveMetadata,
@@ -126,7 +127,7 @@ pub use external_tools::{ExternalTool, ToolStatus, ExternalToolChecker};
 // 🔥 Phase 4.2: 导出中等价值模块
 pub use automl::{AutoML, AutoMLConfig, ModelType, FeatureImportance, ModelMetrics};
 pub use visual_quality_scorer::{VisualQualityScorer, ImageFeatures as VQSImageFeatures, QualityRecommendation};
-pub use simd_sharpener::{SIMDSharpener, SharpenConfig, SharpenPerformanceInfo};
+// Phase 5: simd_sharpener已合并到simd_processor
 pub use ml_time_estimator::{TimeEstimator, TimeEstimate, FileFeatures as MLFileFeatures, ConversionRecord};
 pub use same_format_optimizer::{SameFormatOptimizer, OptimizationResult as SFOptimizationResult};
 pub use quality_checker_advanced::{QualityChecker as AdvancedQualityChecker, QualityMetrics as AdvancedQualityMetrics, QualityAssessment};
