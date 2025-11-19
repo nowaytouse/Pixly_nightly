@@ -7,10 +7,10 @@
         <span>{{ t('video.container') }}</span>
       </div>
       <select v-model="localParams.container" class="param-select">
-        <option value="mp4">MP4</option>
-        <option value="mov">MOV</option>
-        <option value="webm">WebM</option>
-        <option value="mkv">MKV</option>
+        <option value="mp4">{{ t('video.container.mp4') }}</option>
+        <option value="mov">{{ t('video.container.mov') }}</option>
+        <option value="webm">{{ t('video.container.webm') }}</option>
+        <option value="mkv">{{ t('video.container.mkv') }}</option>
       </select>
     </div>
 
@@ -134,10 +134,10 @@
       <div class="param-group">
         <label class="param-label">{{ t('video.pixelFormat') }}</label>
         <select v-model="localParams.pixelFormat" class="param-select">
-          <option value="auto">Auto</option>
-          <option value="yuv420p">YUV 4:2:0 8-bit</option>
-          <option value="yuv422p">YUV 4:2:2 8-bit</option>
-          <option value="yuv444p">YUV 4:4:4 8-bit</option>
+          <option value="auto">{{ t('video.pixelFormat.auto') }}</option>
+          <option value="yuv420p">{{ t('video.pixelFormat.yuv420p') }}</option>
+          <option value="yuv422p">{{ t('video.pixelFormat.yuv422p') }}</option>
+          <option value="yuv444p">{{ t('video.pixelFormat.yuv444p') }}</option>
         </select>
       </div>
 
@@ -145,11 +145,11 @@
       <div class="param-group">
         <label class="param-label">{{ t('video.hwAccel') }}</label>
         <select v-model="localParams.hwAccel" class="param-select">
-          <option value="auto">Auto</option>
-          <option value="none">None</option>
-          <option value="nvenc">NVIDIA (NVENC)</option>
-          <option value="qsv">Intel (QSV)</option>
-          <option value="videotoolbox">Apple (VideoToolbox)</option>
+          <option value="auto">{{ t('video.hwAccel.auto') }}</option>
+          <option value="none">{{ t('video.hwAccel.none') }}</option>
+          <option value="nvenc">{{ t('video.hwAccel.nvenc') }}</option>
+          <option value="qsv">{{ t('video.hwAccel.qsv') }}</option>
+          <option value="videotoolbox">{{ t('video.hwAccel.videotoolbox') }}</option>
         </select>
       </div>
 
