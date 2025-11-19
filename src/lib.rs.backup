@@ -48,7 +48,6 @@ pub mod cli_batch;
 pub mod cli_audio;
 pub mod cli_analyze;  // ✅ AI-powered media analysis
 pub mod conversion_core;
-pub mod audio_processor;  // 🎵 Phase 1: 音频处理核心（从僵尸代码中恢复）
 
 // Phase 3.1: PPO强化学习
 pub mod reward_calculator;
@@ -88,12 +87,6 @@ pub mod image_transform;
 pub mod animation_detector;
 pub mod file_type_detector;
 pub mod video_processor;
-pub mod video_strategy;  // 🎬 Phase 1: 视频编码策略（从僵尸代码恢复）
-pub mod gpu_accelerator;  // 🎮 Phase 1: GPU加速器（未来功能，仅框架）
-// TODO Phase 2: unified_cache/parallel/progress 需要重构依赖后集成
-// pub mod unified_cache;
-// pub mod unified_parallel;
-// pub mod unified_progress;
 pub mod ml_time_estimator;
 pub mod gif_optimizer_advanced;
 pub mod gif_animation_strategy;
@@ -221,6 +214,4 @@ pub mod format_params;
 pub use feature_toggles::FeatureToggles;
 pub use unified_ai_interface::{UnifiedAIManager, UnifiedAIRequest, UnifiedAIResponse, AIPreferences};
 pub use format_params::{FormatSpecificParams, JxlParams, WebPParams, AvifParams, HeicParams};
-pub use audio_processor::{AudioProcessor, AudioInfo, AudioConversionConfig, AudioConversionResult};
-pub use video_strategy::{VideoCodec, QualityTarget, VideoConversionStrategy, AudioStrategy};
 

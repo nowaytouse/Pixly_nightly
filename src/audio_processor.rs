@@ -257,7 +257,7 @@ impl AudioProcessor {
     }
     
     /// 获取推荐的音频配置（基于格式知识库）
-    pub fn get_recommended_config(&self, source_codec: &str, target_codec: &str) -> AudioConversionConfig {
+    pub fn get_recommended_config(&self, _source_codec: &str, target_codec: &str) -> AudioConversionConfig {
         // 基于格式知识库的推荐
         match target_codec {
             "opus" => AudioConversionConfig {

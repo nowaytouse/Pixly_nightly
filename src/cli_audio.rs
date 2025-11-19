@@ -1,10 +1,9 @@
 // 🎵 CLI Audio命令 - 音频转换
-// 从 @archive/rust_broken/src/cli/commands/audio.rs 提取
+// 🔥 Phase 1: 重构使用AudioProcessor核心模块（消除重复代码）
 
 use std::path::Path;
-use std::process::Command;
-use std::time::Instant;
 use anyhow::Result;
+use crate::audio_processor::{AudioProcessor, AudioConversionConfig};
 
 #[derive(Debug, Clone)]
 pub struct AudioOptions {
@@ -27,25 +26,8 @@ impl Default for AudioOptions {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct AudioParams {
-    pub encoder: String,
-    pub bitrate: u32,
-    pub sample_rate: u32,
-    pub channels: u32,
-}
-
-impl AudioParams {
-    pub fn default_for_format(codec: &str) -> Self {
-        match codec {
-            "aac" => Self { encoder: "aac".to_string(), bitrate: 160, sample_rate: 44100, channels: 2 },
-            "opus" => Self { encoder: "opus".to_string(), bitrate: 112, sample_rate: 48000, channels: 2 },
-            "flac" => Self { encoder: "flac".to_string(), bitrate: 1000, sample_rate: 44100, channels: 2 },
-            "mp3" => Self { encoder: "mp3".to_string(), bitrate: 192, sample_rate: 44100, channels: 2 },
-            _ => Self { encoder: "aac".to_string(), bitrate: 160, sample_rate: 44100, channels: 2 },
-        }
-    }
-}
+// 🔥 Phase 1: 删除重复的AudioParams结构
+// 功能已由AudioConversionConfig提供
 
 pub fn handle_audio(input: &str, output: &str, options: &AudioOptions) -> Result<()> {
     let input_path = Path::new(input);
@@ -57,17 +39,35 @@ pub fn handle_audio(input: &str, output: &str, options: &AudioOptions) -> Result
     println!("   Input: {}", input);
     println!("   Output: {}", output);
     
+    // 🔥 使用AudioProcessor核心模块（消除重复代码）
+    let processor = AudioProcessor::new();
+    
+    // 构建转换配置
     let output_codec = determine_output_codec(output, options.codec.as_deref());
-    let params = AudioParams::default_for_format(&output_codec);
+    let mut config = AudioConversionConfig::default();
+    config.codec = options.codec.clone().unwrap_or(output_codec);
+    config.bitrate = options.bitrate.unwrap_or(config.bitrate);
+    config.sample_rate = options.sample_rate;
     
-    let final_params = AudioParams {
-        encoder: options.codec.clone().unwrap_or(params.encoder),
-        bitrate: options.bitrate.unwrap_or(params.bitrate),
-        sample_rate: options.sample_rate.unwrap_or(params.sample_rate),
-        channels: params.channels,
-    };
+    // 执行转换（使用进度回调）
+    let result = processor.convert_audio(
+        input_path, 
+        Path::new(output), 
+        &config,
+        Some(|progress: f32| {
+            if progress > 0.0 && progress < 1.0 {
+                print!("\r   Progress: {:.1}%", progress * 100.0);
+                std::io::Write::flush(&mut std::io::stdout()).ok();
+            }
+        })
+    )?;
     
-    execute_audio_conversion(input_path, Path::new(output), &final_params)?;
+    // 显示结果
+    println!("\n✅ Audio conversion completed!");
+    println!("   Original: {:.2} MB", result.original_size as f64 / 1_048_576.0);
+    println!("   Converted: {:.2} MB", result.converted_size as f64 / 1_048_576.0);
+    println!("   Compression: {:.1}%", (1.0 - result.compression_ratio) * 100.0);
+    println!("   Duration: {:.2}s", result.duration);
     
     Ok(())
 }
@@ -87,62 +87,8 @@ fn determine_output_codec(output_path: &str, user_codec: Option<&str>) -> String
     }
 }
 
-fn execute_audio_conversion(input: &Path, output: &Path, params: &AudioParams) -> Result<()> {
-    let start_time = Instant::now();
-    let original_size = std::fs::metadata(input)?.len();
-    
-    let mut cmd = Command::new("ffmpeg");
-    cmd.arg("-i").arg(input)
-        .arg("-y")
-        .arg("-hide_banner")
-        .arg("-loglevel").arg("error");
-    
-    match params.encoder.as_str() {
-        "aac" => {
-            cmd.arg("-c:a").arg("aac")
-               .arg("-b:a").arg(format!("{}k", params.bitrate));
-        }
-        "opus" => {
-            cmd.arg("-c:a").arg("libopus")
-               .arg("-b:a").arg(format!("{}k", params.bitrate));
-        }
-        "flac" => {
-            cmd.arg("-c:a").arg("flac");
-        }
-        "mp3" => {
-            cmd.arg("-c:a").arg("libmp3lame")
-               .arg("-b:a").arg(format!("{}k", params.bitrate));
-        }
-        _ => anyhow::bail!("Unsupported encoder: {}", params.encoder),
-    }
-    
-    if params.sample_rate > 0 {
-        cmd.arg("-ar").arg(params.sample_rate.to_string());
-    }
-    
-    if params.channels > 0 {
-        cmd.arg("-ac").arg(params.channels.to_string());
-    }
-    
-    cmd.arg(output);
-    
-    let cmd_output = cmd.output()?;
-    
-    if !cmd_output.status.success() {
-        let stderr = String::from_utf8_lossy(&cmd_output.stderr);
-        anyhow::bail!("FFmpeg failed: {}", stderr);
-    }
-    
-    let converted_size = std::fs::metadata(output)?.len();
-    let duration = start_time.elapsed();
-    
-    println!("\n✅ Audio conversion completed!");
-    println!("   Original: {:.2} MB", original_size as f64 / 1_048_576.0);
-    println!("   Converted: {:.2} MB", converted_size as f64 / 1_048_576.0);
-    println!("   Duration: {:.2}s", duration.as_secs_f64());
-    
-    Ok(())
-}
+// 🔥 Phase 1: 删除重复的execute_audio_conversion函数
+// 功能已由AudioProcessor::convert()提供
 
 #[cfg(test)]
 mod tests {

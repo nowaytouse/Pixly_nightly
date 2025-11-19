@@ -38,6 +38,9 @@ pub struct CacheEntry {
     pub size_bytes: u64,
     pub priority: CachePriority,
     pub checksum: String,
+    // 🔥 Phase 3: 从unified_cache提取的压缩功能
+    #[serde(default)]
+    pub is_compressed: bool,
 }
 
 /// 缓存统计信息
@@ -97,6 +100,15 @@ pub struct CacheConfig {
     pub max_entries: u64,
     pub ttl: Duration,
     pub cleanup_interval: Duration,
+    // 🔥 Phase 3: 从unified_cache提取的压缩功能
+    #[serde(default)]
+    pub enable_compression: bool,
+    #[serde(default = "default_compression_threshold")]
+    pub compression_threshold_bytes: u64,
+}
+
+fn default_compression_threshold() -> u64 {
+    1024 * 1024 // 1MB
 }
 
 impl Default for CacheConfig {
@@ -107,6 +119,9 @@ impl Default for CacheConfig {
             max_entries: 10000,
             ttl: Duration::from_secs(7 * 24 * 3600), // 7天
             cleanup_interval: Duration::from_secs(3600), // 1小时
+            // 🔥 Phase 3: 默认启用压缩
+            enable_compression: true,
+            compression_threshold_bytes: 1024 * 1024, // 1MB
         }
     }
 }
@@ -188,13 +203,25 @@ impl SmartCache {
             entry.last_accessed = SystemTime::now();
             entry.access_count += 1;
             let cache_path = entry.cache_path.clone();
+            let is_compressed = entry.is_compressed;
             
             stats.hits += 1;
             drop(entries);
             let entries_for_stats = self.entries.read().unwrap();
             stats.update(&entries_for_stats);
 
-            Some(cache_path)
+            // 🔥 Task 2.2: 自动解压缩
+            if is_compressed {
+                match self.decompress_if_needed(&cache_path) {
+                    Ok(decompressed_path) => Some(decompressed_path),
+                    Err(e) => {
+                        eprintln!("⚠️  Failed to decompress cache file: {}", e);
+                        Some(cache_path) // Fallback到压缩文件
+                    }
+                }
+            } else {
+                Some(cache_path)
+            }
         } else {
             stats.misses += 1;
             None
@@ -203,13 +230,27 @@ impl SmartCache {
 
     /// 设置缓存
     pub fn set(&self, key: String, source_path: PathBuf, cache_path: PathBuf, params_hash: String, priority: CachePriority) -> Result<()> {
-        let size_bytes = fs::metadata(&cache_path)?.len();
-        let checksum = self.generate_file_checksum(&cache_path)?;
+        // 🔥 Task 2.2: 尝试压缩大文件
+        let (final_cache_path, is_compressed) = match self.compress_if_needed(&cache_path) {
+            Ok((compressed_path, compressed)) => {
+                if compressed {
+                    // 删除原始未压缩文件
+                    let _ = fs::remove_file(&cache_path);
+                    (compressed_path, true)
+                } else {
+                    (cache_path, false)
+                }
+            }
+            Err(_) => (cache_path, false), // 压缩失败，使用原文件
+        };
+
+        let size_bytes = fs::metadata(&final_cache_path)?.len();
+        let checksum = self.generate_file_checksum(&final_cache_path)?;
 
         let entry = CacheEntry {
             key: key.clone(),
             source_path,
-            cache_path,
+            cache_path: final_cache_path,
             params_hash,
             created_at: SystemTime::now(),
             last_accessed: SystemTime::now(),
@@ -217,6 +258,7 @@ impl SmartCache {
             size_bytes,
             priority,
             checksum,
+            is_compressed,
         };
 
         let mut entries = self.entries.write().unwrap();
@@ -351,6 +393,68 @@ impl SmartCache {
         stats.update(&entries);
         
         Ok(count)
+    }
+    
+    // 🔥 Phase 3: 从unified_cache提取的压缩功能
+    
+    /// 压缩缓存文件（如果启用且超过阈值）
+    fn compress_if_needed(&self, path: &Path) -> Result<(PathBuf, bool)> {
+        if !self.config.enable_compression {
+            return Ok((path.to_path_buf(), false));
+        }
+        
+        let size = fs::metadata(path)?.len();
+        if size < self.config.compression_threshold_bytes {
+            return Ok((path.to_path_buf(), false));
+        }
+        
+        use std::io::{Read, Write};
+        use flate2::Compression;
+        use flate2::write::GzEncoder;
+        
+        let compressed_path = path.with_extension("cache.gz");
+        
+        let mut file = fs::File::open(path)?;
+        let mut buffer = Vec::new();
+        file.read_to_end(&mut buffer)?;
+        
+        let compressed_file = fs::File::create(&compressed_path)?;
+        let mut encoder = GzEncoder::new(compressed_file, Compression::default());
+        encoder.write_all(&buffer)?;
+        encoder.finish()?;
+        
+        let compressed_size = fs::metadata(&compressed_path)?.len();
+        
+        // 只有压缩效果好才使用
+        if compressed_size < size * 8 / 10 {
+            fs::remove_file(path)?;
+            Ok((compressed_path, true))
+        } else {
+            fs::remove_file(&compressed_path)?;
+            Ok((path.to_path_buf(), false))
+        }
+    }
+    
+    /// 解压缩缓存文件
+    fn decompress_if_needed(&self, path: &Path) -> Result<PathBuf> {
+        if !path.extension().map_or(false, |e| e == "gz") {
+            return Ok(path.to_path_buf());
+        }
+        
+        use std::io::{Read, Write};
+        use flate2::read::GzDecoder;
+        
+        let decompressed_path = path.with_extension("");
+        
+        let compressed_file = fs::File::open(path)?;
+        let mut decoder = GzDecoder::new(compressed_file);
+        let mut buffer = Vec::new();
+        decoder.read_to_end(&mut buffer)?;
+        
+        let mut decompressed_file = fs::File::create(&decompressed_path)?;
+        decompressed_file.write_all(&buffer)?;
+        
+        Ok(decompressed_path)
     }
 }
 

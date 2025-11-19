@@ -72,6 +72,35 @@ enum Commands {
         format: Option<String>,
     },
     
+    /// 🎵 Convert audio files with AI optimization
+    Audio {
+        /// Input audio file path
+        input: PathBuf,
+        
+        /// Output audio file path
+        output: PathBuf,
+        
+        /// Audio codec (opus, aac, flac, mp3)
+        #[arg(short, long)]
+        codec: Option<String>,
+        
+        /// Bitrate in kbps (for lossy codecs)
+        #[arg(short, long)]
+        bitrate: Option<u32>,
+        
+        /// Sample rate in Hz
+        #[arg(long)]
+        sample_rate: Option<u32>,
+        
+        /// 🤖 Use AI to predict optimal parameters
+        #[arg(long, default_value = "false")]
+        ai: bool,
+        
+        /// 🎯 Optimize mode (balanced, quality, size)
+        #[arg(long, default_value = "balanced")]
+        mode: String,
+    },
+    
     /// 🎬 Convert video files with AI optimization
     Video {
         /// Input video file path
@@ -415,6 +444,34 @@ fn main() {
 
 fn run(cli: Cli) -> Result<()> {
     match cli.command {
+        Commands::Audio {
+            input,
+            output,
+            codec,
+            bitrate,
+            sample_rate,
+            ai,
+            mode,
+        } => {
+            use pixly_kernel::cli_audio::{handle_audio, AudioOptions};
+            
+            let options = AudioOptions {
+                codec,
+                bitrate,
+                sample_rate,
+                use_ai: ai,
+                mode,
+            };
+            
+            handle_audio(
+                input.to_str().unwrap(),
+                output.to_str().unwrap(),
+                &options
+            )?;
+            
+            Ok(())
+        }
+        
         Commands::Video {
             input,
             output,

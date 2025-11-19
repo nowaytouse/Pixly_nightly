@@ -35,6 +35,7 @@ clap = { version = "4.5", features = ["derive"] }
 toml = "0.8"
 dirs = "5.0"
 filetime = "0.2"  # 文件时间戳保留
+flate2 = "1.0"    # 🔥 Phase 3: 缓存压缩功能
 
 # 平台特定的扩展属性支持
 [target.'cfg(target_os = "macos")'.dependencies]

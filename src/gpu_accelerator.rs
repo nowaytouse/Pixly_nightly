@@ -1,7 +1,7 @@
 //! GPU加速器
 //! 使用WGPU提供跨平台GPU计算加速
 
-use anyhow::{Result, Context};
+use anyhow::Result;
 
 /// GPU加速器
 pub struct GpuAccelerator {
@@ -16,8 +16,13 @@ impl GpuAccelerator {
         })
     }
     
-    /// 检查GPU是否可用
-    pub fn is_available() -> bool {
+    /// 检查GPU是否可用（实例方法）
+    pub fn is_available(&self) -> bool {
+        self.available
+    }
+    
+    /// 检查GPU是否可用（静态方法）
+    pub fn check_available() -> bool {
         false
     }
     

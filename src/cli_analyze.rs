@@ -145,11 +145,23 @@ pub fn handle_analyze(input: &str, options: &AnalyzeOptions) -> Result<()> {
 /// ✅ 使用真实的ML系统进行预测
 /// - 格式推荐: src/format_recommender.rs
 /// - 统一AI接口: src/ai_interface.rs
-fn get_ai_recommendation(_media_info: &crate::media_analyzer::MediaInfo, basic_info: &BasicInfo, _features: &Vec<f64>) -> Result<Recommendation> {
+fn get_ai_recommendation(media_info: &crate::media_analyzer::MediaInfo, basic_info: &BasicInfo, _features: &Vec<f64>) -> Result<Recommendation> {
     use crate::format_recommender::{AIFormatRecommender, UserPreferences};
+    use crate::format_selector::FormatSelector; // 🔥 Phase 4: 集成智能格式选择
     
     // 🤖 使用真实的AI格式推荐器
     eprintln!("🤖 Using AI-powered format recommendation...");
+    
+    // 🔥 Phase 4: 先使用FormatSelector验证格式选择
+    let selector = FormatSelector::new(false);
+    let input_path = Path::new(&media_info.path);
+    let format_recommendation = selector.select_best_format(input_path, None)
+        .context("Format selection failed")?;
+    
+    eprintln!("🎯 Smart format selection: {} (confidence: {:.0}%)", 
+              format_recommendation.recommended_format.to_uppercase(),
+              format_recommendation.confidence * 100.0);
+    eprintln!("   Reason: {}", format_recommendation.reason);
     
     // 转换为ImageFeatures (使用标准结构)
     use crate::{ImageFeatures, QualityMode};
@@ -168,19 +180,26 @@ fn get_ai_recommendation(_media_info: &crate::media_analyzer::MediaInfo, basic_i
     let recommender = AIFormatRecommender::new();
     let user_prefs = UserPreferences::default();
     
-    // 获取最佳推荐
+    // 获取最佳推荐（使用FormatSelector的建议）
     let best_recommendation = recommender.get_best_recommendation(
         &image_features,
         QualityMode::Balanced,
         &user_prefs
     ).context("AI recommendation failed")?;
     
-    eprintln!("✅ AI recommendation: {} (confidence: {:.0}%)", 
-              best_recommendation.format.to_uppercase(), 
+    // 🔥 Phase 4: 优先使用FormatSelector的建议（如果置信度高）
+    let final_format = if format_recommendation.confidence > 0.7 {
+        format_recommendation.recommended_format.clone()
+    } else {
+        best_recommendation.format.clone()
+    };
+    
+    eprintln!("✅ Final recommendation: {} (AI confidence: {:.0}%)", 
+              final_format.to_uppercase(), 
               best_recommendation.confidence * 100.0);
     
-    // 使用AI预测的参数
-    let params = match best_recommendation.format.as_str() {
+    // 🔥 Phase 4: 使用final_format而不是best_recommendation.format
+    let params = match final_format.as_str() {
         "avif" => serde_json::json!({
             "quality": best_recommendation.quality_score,
             "effort": 6,
@@ -216,7 +235,7 @@ fn get_ai_recommendation(_media_info: &crate::media_analyzer::MediaInfo, basic_i
     };
     
     Ok(Recommendation {
-        format: best_recommendation.format,
+        format: final_format, // 🔥 Phase 4: 使用智能选择的格式
         params,
         estimated_size,
         size_reduction: best_recommendation.space_saving,
