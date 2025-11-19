@@ -153,7 +153,7 @@ fn get_ai_recommendation(media_info: &crate::media_analyzer::MediaInfo, basic_in
     eprintln!("🤖 Using AI-powered format recommendation...");
     
     // 🔥 Phase 4: 先使用FormatSelector验证格式选择
-    let selector = FormatSelector::new(false);
+    let selector = FormatSelector::new();
     let input_path = Path::new(&media_info.path);
     let format_recommendation = selector.select_best_format(input_path, None)
         .context("Format selection failed")?;

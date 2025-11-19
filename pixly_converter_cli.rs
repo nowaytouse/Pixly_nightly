@@ -732,7 +732,7 @@ fn run(cli: Cli) -> Result<()> {
             let target_format = if let Some(user_format) = format {
                 // 用户指定格式，使用格式选择器验证
                 use pixly_kernel::format_selector::FormatSelector;
-                let selector = FormatSelector::new(false);
+                let selector = FormatSelector::new();
                 match selector.select_best_format(&input, Some(&user_format)) {
                     Ok(recommendation) => {
                         if recommendation.confidence < 0.7 {
@@ -745,7 +745,7 @@ fn run(cli: Cli) -> Result<()> {
             } else {
                 // 自动选择最佳格式
                 use pixly_kernel::format_selector::FormatSelector;
-                let selector = FormatSelector::new(false);
+                let selector = FormatSelector::new();
                 match selector.select_best_format(&input, None) {
                     Ok(recommendation) => {
                         println!("🎯 Smart format selection: {}", recommendation.recommended_format.to_uppercase());

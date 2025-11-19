@@ -136,7 +136,7 @@ pub use file_type_detector::{FileTypeDetector, FileTypeDetection, SecurityValida
 
 // 🔥 Phase 4.3: 导出最终集成模块
 pub use color_quantizer::{ColorQuantizer, QuantizationConfig};
-pub use gif_optimizer_advanced::{GifOptimizer, GifOptimizationConfig, OptimizationResult as GifOptResult};
+pub use gif_optimizer_advanced::{GifOptimizationConfig, OptimizationResult as GifOptResult};
 pub use ml_data_flow::MLDataFlow;
 pub use sharpen::*;
 pub use ai::*;

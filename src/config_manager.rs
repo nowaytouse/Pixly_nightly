@@ -7,7 +7,7 @@
 /// - 环境变量次之
 /// - 配置文件最后
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
@@ -155,8 +155,7 @@ fn default_max_retries() -> usize { 3 }
 /// 配置管理器
 pub struct ConfigManager {
     config: Config,
-    #[allow(dead_code)]
-    config_path: Option<PathBuf>,
+    // 🔥 config_path已删除 - 完全未使用（save_to_file接受路径参数）
 }
 
 impl ConfigManager {
@@ -164,7 +163,6 @@ impl ConfigManager {
     pub fn new() -> Self {
         Self {
             config: Config::default(),
-            config_path: None,
         }
     }
     
@@ -179,7 +177,6 @@ impl ConfigManager {
         
         Ok(Self {
             config,
-            config_path: Some(path.to_path_buf()),
         })
     }
     
