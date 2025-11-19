@@ -11,7 +11,7 @@ type FeatureExtractorFn = Box<dyn Fn(&image::DynamicImage) -> StandardFeatures +
 
 /// 标准化特征向量 (128维)
 /// 与Python训练保持完全一致
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct StandardFeatures {
     /// 基础特征 (16维) - 图像基本属性
     pub basic: [f64; 16],
@@ -133,38 +133,42 @@ pub struct TrainingSample {
 
 impl TrainingSample {
     /// 转换为Python训练格式
+    /// 
+    /// 🔥 使用安全的序列化，不会panic
     pub fn to_training_format(&self) -> HashMap<String, serde_json::Value> {
         let mut data = HashMap::new();
         
-        // 特征
-        data.insert("features".to_string(), 
-            serde_json::to_value(self.features.to_vector()).unwrap());
-        
-        // 标签
-        data.insert("quality".to_string(), 
-            serde_json::to_value(self.actual_quality).unwrap());
-        data.insert("effort".to_string(), 
-            serde_json::to_value(self.actual_effort).unwrap());
-        data.insert("lossless".to_string(), 
-            serde_json::to_value(self.actual_lossless).unwrap());
-        data.insert("format".to_string(), 
-            serde_json::to_value(&self.actual_format).unwrap());
-        
-        // 结果
-        data.insert("result_size".to_string(), 
-            serde_json::to_value(self.result_size).unwrap());
-        data.insert("result_quality".to_string(), 
-            serde_json::to_value(self.result_quality).unwrap());
-        data.insert("processing_time".to_string(), 
-            serde_json::to_value(self.processing_time).unwrap());
-        
-        if let Some(rating) = self.user_rating {
-            data.insert("user_rating".to_string(), 
-                serde_json::to_value(rating).unwrap());
+        // 🔥 安全的序列化宏 - 失败时记录警告并跳过
+        macro_rules! safe_insert {
+            ($key:expr, $value:expr) => {
+                match serde_json::to_value($value) {
+                    Ok(v) => { data.insert($key.to_string(), v); },
+                    Err(e) => {
+                        log::warn!("⚠️  Failed to serialize {}: {}", $key, e);
+                    }
+                }
+            };
         }
         
-        data.insert("timestamp".to_string(), 
-            serde_json::to_value(self.timestamp).unwrap());
+        // 特征
+        safe_insert!("features", self.features.to_vector());
+        
+        // 标签
+        safe_insert!("quality", self.actual_quality);
+        safe_insert!("effort", self.actual_effort);
+        safe_insert!("lossless", self.actual_lossless);
+        safe_insert!("format", &self.actual_format);
+        
+        // 结果
+        safe_insert!("result_size", self.result_size);
+        safe_insert!("result_quality", self.result_quality);
+        safe_insert!("processing_time", self.processing_time);
+        
+        if let Some(rating) = self.user_rating {
+            safe_insert!("user_rating", rating);
+        }
+        
+        safe_insert!("timestamp", self.timestamp);
         
         data
     }
@@ -226,7 +230,13 @@ impl MLBridge {
         
         let features_vec = extract_128d_features(img, std::path::Path::new(""), &basic_features);
         
-        StandardFeatures::from_vector(&features_vec).unwrap()
+        // 🔥 安全的特征转换 - 失败时返回默认值
+        StandardFeatures::from_vector(&features_vec)
+            .unwrap_or_else(|e| {
+                log::error!("❌ Failed to create StandardFeatures from vector: {}", e);
+                log::warn!("⚠️  Using default StandardFeatures as fallback");
+                StandardFeatures::default()
+            })
     }
     
     /// 保存训练样本到JSON (供Python训练使用)

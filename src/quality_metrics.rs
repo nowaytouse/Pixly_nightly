@@ -5,6 +5,7 @@ use anyhow::{Context, Result, bail};
 use std::path::Path;
 use std::process::Command;
 use serde::{Deserialize, Serialize};
+use crate::errors::path_to_str;
 
 /// 质量评估结果
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -137,8 +138,8 @@ impl QualityAssessor {
         
         let output = Command::new(&self.ffmpeg_path)
             .args(&[
-                "-i", original.to_str().unwrap(),
-                "-i", compressed.to_str().unwrap(),
+                "-i", path_to_str(original)?,
+                "-i", path_to_str(compressed)?,
                 "-lavfi", "ssim",
                 "-f", "null",
                 "-",
@@ -171,8 +172,8 @@ impl QualityAssessor {
         
         let output = Command::new(&self.ffmpeg_path)
             .args(&[
-                "-i", original.to_str().unwrap(),
-                "-i", compressed.to_str().unwrap(),
+                "-i", path_to_str(original)?,
+                "-i", path_to_str(compressed)?,
                 "-lavfi", "psnr",
                 "-f", "null",
                 "-",
@@ -205,8 +206,8 @@ impl QualityAssessor {
         
         let output = Command::new(&self.ffmpeg_path)
             .args(&[
-                "-i", compressed.to_str().unwrap(),
-                "-i", original.to_str().unwrap(),
+                "-i", path_to_str(compressed)?,
+                "-i", path_to_str(original)?,
                 "-lavfi", "libvmaf",
                 "-f", "null",
                 "-",
@@ -240,8 +241,8 @@ impl QualityAssessor {
         // 使用FFmpeg的astats过滤器
         let output = Command::new(&self.ffmpeg_path)
             .args(&[
-                "-i", original.to_str().unwrap(),
-                "-i", compressed.to_str().unwrap(),
+                "-i", path_to_str(original)?,
+                "-i", path_to_str(compressed)?,
                 "-filter_complex", "[0:a][1:a]astats",
                 "-f", "null",
                 "-",

@@ -1,3 +1,6 @@
+// 🚨 错误处理模块 - 必须首先声明
+pub mod errors;
+
 pub mod types;
 pub mod sharpen;
 pub mod ai;

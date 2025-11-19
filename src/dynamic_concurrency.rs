@@ -63,9 +63,12 @@ impl DynamicWorkerPool {
     
     /// 释放worker slots
     pub fn release(&self, slots: usize) {
-        let mut available = self.available_slots.lock().unwrap();
-        *available += slots;
-        self.active_workers.fetch_sub(slots, Ordering::SeqCst);
+        if let Ok(mut available) = self.available_slots.lock() {
+            *available += slots;
+            self.active_workers.fetch_sub(slots, Ordering::SeqCst);
+        } else {
+            log::error!("❌ Failed to acquire lock for releasing slots");
+        }
     }
     
     /// 获取当前活跃worker数

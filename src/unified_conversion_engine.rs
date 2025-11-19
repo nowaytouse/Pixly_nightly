@@ -9,6 +9,7 @@ use crate::ppo_model_enhanced::{EnhancedPPOPredictor, MediaType};
 use crate::modern_formats::{ModernFormatConverter, AVIFParams, JXLParams, FormatSupport};
 use crate::quality_metrics::{QualityAssessor, QualityMetrics};
 use crate::transparent_logger::{TransparentLogger, OperationTracker, LogLevel};
+use crate::errors::path_to_str;
 
 /// 统一转换配置
 #[derive(Debug, Clone)]
@@ -346,11 +347,11 @@ impl UnifiedConversionEngine {
         
         let output = Command::new("ffmpeg")
             .args(&[
-                "-i", request.input_path.to_str().unwrap(),
+                "-i", path_to_str(&request.input_path)?,
                 "-c:v", "libwebp",
                 "-quality", &quality.to_string(),
                 "-y",
-                request.output_path.to_str().unwrap(),
+                path_to_str(&request.output_path)?,
             ])
             .output()
             .context("Failed to execute FFmpeg")?;
@@ -381,13 +382,13 @@ impl UnifiedConversionEngine {
         
         let output = Command::new("ffmpeg")
             .args(&[
-                "-i", request.input_path.to_str().unwrap(),
+                "-i", path_to_str(&request.input_path)?,
                 "-c:v", video_codec,
                 "-b:v", &format!("{}k", params.bitrate),
                 "-c:a", audio_codec,
                 "-b:a", "128k",
                 "-y",
-                request.output_path.to_str().unwrap(),
+                path_to_str(&request.output_path)?,
             ])
             .output()
             .context("Failed to execute FFmpeg")?;
@@ -419,11 +420,11 @@ impl UnifiedConversionEngine {
         
         let output = Command::new("ffmpeg")
             .args(&[
-                "-i", request.input_path.to_str().unwrap(),
+                "-i", path_to_str(&request.input_path)?,
                 "-c:a", codec,
                 "-b:a", &format!("{}k", params.bitrate),
                 "-y",
-                request.output_path.to_str().unwrap(),
+                path_to_str(&request.output_path)?,
             ])
             .output()
             .context("Failed to execute FFmpeg")?;

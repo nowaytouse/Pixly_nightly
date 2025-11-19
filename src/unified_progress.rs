@@ -185,12 +185,20 @@ impl EnhancedConsoleProgressCallback {
     }
 
     fn should_update(&self) -> bool {
-        let mut last = self.last_update.lock().unwrap();
-        if last.elapsed() >= self.update_interval {
-            *last = Instant::now();
-            true
-        } else {
-            false
+        // 🔥 安全的Mutex访问 - 失败时保守地返回true以确保更新
+        match self.last_update.lock() {
+            Ok(mut last) => {
+                if last.elapsed() >= self.update_interval {
+                    *last = Instant::now();
+                    true
+                } else {
+                    false
+                }
+            }
+            Err(e) => {
+                log::warn!("⚠️  Failed to acquire last_update lock: {}, forcing update", e);
+                true // 保守策略：失败时允许更新
+            }
         }
     }
 
@@ -292,8 +300,18 @@ impl UnifiedProgressTracker {
     }
 
     /// 添加回调
+    /// 
+    /// 🔥 安全的回调添加 - 失败时记录警告但不panic
     pub fn add_callback(self, callback: Box<dyn UnifiedProgressCallback>) -> Self {
-        self.callbacks.lock().unwrap().push(callback);
+        match self.callbacks.lock() {
+            Ok(mut callbacks) => {
+                callbacks.push(callback);
+            }
+            Err(e) => {
+                log::error!("❌ Failed to acquire callbacks lock: {}", e);
+                log::warn!("⚠️  Callback will not be registered");
+            }
+        }
         self
     }
 
@@ -308,7 +326,17 @@ impl UnifiedProgressTracker {
         }
 
         let old_state = {
-            let mut info = self.info.lock().unwrap();
+            // 🔥 安全的Mutex访问
+            let mut info = self.info.lock()
+                .map_err(|e| {
+                    log::error!("❌ Failed to acquire progress info lock: {}", e);
+                    ErrorBuilder::new()
+                        .code("PROGRESS-002")
+                        .message("Failed to update progress: lock poisoned")
+                        .severity(ErrorSeverity::Error)
+                        .build()
+                })?;
+            
             let old_state = info.state.clone();
             
             if let Some(op) = operation {

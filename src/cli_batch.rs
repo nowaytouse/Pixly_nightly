@@ -228,7 +228,15 @@ pub fn perform_batch_conversion(
     
     let successful = successful.load(Ordering::SeqCst);
     let failed = failed.load(Ordering::SeqCst);
-    let failures = failures.lock().unwrap().clone();
+    
+    // 🔥 安全的Mutex访问
+    let failures = failures.lock()
+        .map(|guard| guard.clone())
+        .unwrap_or_else(|e| {
+            log::error!("❌ Failed to acquire failures lock: {}", e);
+            Vec::new() // 返回空列表作为fallback
+        });
+    
     let elapsed = start_time.elapsed();
     
     Ok(BatchResult {

@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
+use crate::errors::path_to_str;
 
 /// 音频信息
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -100,7 +101,7 @@ impl AudioProcessor {
                 "-print_format", "json",
                 "-show_format",
                 "-show_streams",
-                audio_path.to_str().unwrap(),
+                path_to_str(audio_path)?,
             ])
             .output()
             .context("Failed to run ffprobe")?;

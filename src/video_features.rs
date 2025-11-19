@@ -6,6 +6,7 @@ use std::path::Path;
 use std::process::Command;
 use serde::{Deserialize, Serialize};
 use anyhow::{Result, Context};
+use crate::errors::path_to_str;
 
 /// 视频特征结构
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -81,7 +82,7 @@ pub fn extract_video_features(path: &Path) -> Result<VideoFeatures> {
             "-print_format", "json",
             "-show_format",
             "-show_streams",
-            path.to_str().unwrap()
+            path_to_str(path)?
         ])
         .output()
         .context("Failed to execute ffprobe")?;

@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::process::Command;
 use std::time::Instant;
+use crate::errors::path_to_str;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FFProbeStream {
@@ -132,7 +133,7 @@ impl ImageAnalyzer {
                 "-v", "quiet",
                 "-print_format", "json",
                 "-show_streams",
-                file_path.as_ref().to_str().unwrap(),
+                path_to_str(file_path.as_ref())?,
             ])
             .output()?;
 

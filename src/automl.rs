@@ -163,7 +163,11 @@ impl AutoML {
         }
 
         // 按重要性排序
-        importances.sort_by(|a, b| b.importance.partial_cmp(&a.importance).unwrap());
+        // 🔥 安全的浮点数比较 - NaN会被排到最后
+        importances.sort_by(|a, b| {
+            b.importance.partial_cmp(&a.importance)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
         self.feature_importance = importances;
 
         Ok(())

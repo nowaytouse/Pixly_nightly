@@ -321,9 +321,17 @@ impl FeatureExtractor {
             *feature = ((idx - 24) as f64 * 0.3) % 1.0;
         }
 
-        self.context_features.processing_history = features[0..16].try_into().unwrap();
-        self.context_features.device_info = features[16..24].try_into().unwrap();
-        self.context_features.environment_params = features[24..32].try_into().unwrap();
+        // 🔥 安全的数组转换 - 使用expect因为这是内部逻辑错误
+        // 如果切片长度不匹配，说明代码有bug，应该在开发阶段发现
+        self.context_features.processing_history = features[0..16]
+            .try_into()
+            .expect("BUG: processing_history slice must be exactly 16 elements");
+        self.context_features.device_info = features[16..24]
+            .try_into()
+            .expect("BUG: device_info slice must be exactly 8 elements");
+        self.context_features.environment_params = features[24..32]
+            .try_into()
+            .expect("BUG: environment_params slice must be exactly 8 elements");
 
         features
     }

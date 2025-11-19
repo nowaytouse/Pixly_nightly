@@ -6,6 +6,19 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 use serde::{Deserialize, Serialize};
 
+/// 🔥 安全的路径转换辅助函数
+/// 
+/// 将Path转换为&str，如果失败则返回清晰的错误信息
+fn path_to_str(path: &Path) -> Result<&str> {
+    path.to_str()
+        .ok_or_else(|| {
+            anyhow::anyhow!(
+                "Path contains invalid UTF-8 characters: {}",
+                path.display()
+            )
+        })
+}
+
 /// 现代格式转换器
 pub struct ModernFormatConverter {
     ffmpeg_path: String,
@@ -78,7 +91,7 @@ impl ModernFormatConverter {
         // 构建FFmpeg命令
         let mut cmd = Command::new(&self.ffmpeg_path);
         cmd.args(&[
-            "-i", input.to_str().unwrap(),
+            "-i", path_to_str(input)?,
             "-c:v", &params.encoder,
         ]);
         
@@ -139,7 +152,7 @@ impl ModernFormatConverter {
         
         cmd.args(&[
             "-y",
-            output.to_str().unwrap(),
+            path_to_str(output)?,
         ]);
         
         // 执行转换
@@ -182,7 +195,7 @@ impl ModernFormatConverter {
         
         let mut cmd = Command::new(&self.ffmpeg_path);
         cmd.args(&[
-            "-i", input.to_str().unwrap(),
+            "-i", path_to_str(input)?,
             "-c:v", "libjxl",
             "-q:v", &params.quality.to_string(),
             "-effort", &params.effort.to_string(),
@@ -194,7 +207,7 @@ impl ModernFormatConverter {
         
         cmd.args(&[
             "-y",
-            output.to_str().unwrap(),
+            path_to_str(output)?,
         ]);
         
         let result = cmd
@@ -234,8 +247,8 @@ impl ModernFormatConverter {
         let input_size = std::fs::metadata(input)?.len();
         
         let mut cmd = Command::new(cjxl_path);
-        cmd.arg(input.to_str().unwrap());
-        cmd.arg(output.to_str().unwrap());
+        cmd.arg(path_to_str(input)?);
+        cmd.arg(path_to_str(output)?);
         
         // 质量参数
         if params.lossless {
@@ -376,8 +389,8 @@ impl ModernFormatConverter {
         let input_size = std::fs::metadata(input)?.len();
         
         let mut cmd = Command::new(cwebp_path);
-        cmd.arg(input.to_str().unwrap());
-        cmd.arg("-o").arg(output.to_str().unwrap());
+        cmd.arg(path_to_str(input)?);
+        cmd.arg("-o").arg(path_to_str(output)?);
         
         // 🔥 Complete WebP parameters - REAL implementation!
         if params.lossless {
@@ -430,7 +443,7 @@ impl ModernFormatConverter {
         let input_size = std::fs::metadata(input)?.len();
         
         let mut cmd = Command::new(&self.ffmpeg_path);
-        cmd.args(&["-i", input.to_str().unwrap()]);
+        cmd.args(&["-i", path_to_str(input)?]);
         
         // 🔥 Complete HEIC parameters - REAL implementation!
         match params.encoder.as_str() {
@@ -469,7 +482,7 @@ impl ModernFormatConverter {
         }
         // 如果不指定，FFmpeg会自动选择损失最小的格式
         
-        cmd.args(&["-y", output.to_str().unwrap()]);
+        cmd.args(&["-y", path_to_str(output)?]);
         
         // 执行转换
         let result = cmd
