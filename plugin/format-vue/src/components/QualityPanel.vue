@@ -13,21 +13,7 @@
       </label>
     </div>
     
-    <!-- 🤖 AI智能模式开关 -->
-    <div class="ai-mode-toggle">
-      <label class="ai-toggle-label">
-        <input 
-          type="checkbox" 
-          :checked="aiMode"
-          @change="$emit('update:aiMode', $event.target.checked)"
-        />
-        <span class="ai-icon">🤖</span>
-        <span>{{ t('quality.aiMode') }}</span>
-      </label>
-      <span v-if="aiMode" class="ai-hint">{{ t('quality.aiHint') }}</span>
-    </div>
-    
-    <div class="quality-control" :class="{ 'ai-disabled': aiMode }">
+    <div class="quality-control">
       <div class="quality-header">
         <span>{{ t('quality.label') }}</span>
         <span class="quality-value">{{ modelValue }}</span>
@@ -39,10 +25,10 @@
         min="1" 
         max="100" 
         class="slider"
-        :disabled="lossless || aiMode"
+        :disabled="lossless"
       />
       <div class="quality-hint">
-        {{ aiMode ? t('quality.aiControlled') : qualityHint }}
+        {{ qualityHint }}
       </div>
     </div>
   </div>
@@ -56,11 +42,10 @@ const { t } = useI18n()
 
 const props = defineProps({
   modelValue: Number,
-  lossless: Boolean,
-  aiMode: Boolean
+  lossless: Boolean
 })
 
-defineEmits(['update:modelValue', 'update:lossless', 'update:aiMode'])
+defineEmits(['update:modelValue', 'update:lossless'])
 
 const qualityHint = computed(() => {
   const q = props.modelValue

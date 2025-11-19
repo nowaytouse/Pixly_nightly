@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "PIXLY Format",
+    "title": "PIXLY 格式转换",
     "subtitle": "专业格式转换"
   },
   "tabs": {
@@ -10,17 +10,17 @@
   "format": {
     "title": "输出格式",
     "jxl": "JXL - 次世代格式",
-    "avif": "AVIF - AV1编码",
-    "webp": "WebP - Web优化",
-    "heic": "HEIC - Apple生态"
+    "avif": "AVIF - AV1 编码",
+    "webp": "WebP - 网页优化",
+    "heic": "HEIC - 苹果生态"
   },
   "quality": {
     "title": "质量设置",
     "label": "质量",
     "lossless": "💎 数学无损",
-    "aiMode": "🤖 AI智能模式",
-    "aiHint": "AI将自动分析并优化所有参数",
-    "aiControlled": "由AI智能控制",
+    "aiMode": "🤖 智能模式",
+    "aiHint": "系统将自动分析并优化所有参数",
+    "aiControlled": "由智能算法控制",
     "extreme": "🔥 极致质量",
     "high": "✨ 高质量",
     "balanced": "⚖️ 平衡",
@@ -35,10 +35,10 @@
       "distance": "失真度",
       "distanceHint": "0.0: 无损 | 1.0-3.0: 高质量 | 3.0+: 压缩",
       "jpegLossless": "JPEG 无损转码",
-      "jpegLosslessHint": "仅对JPEG输入有效，100%可逆转码为JXL",
-      "jpegLosslessDisabled": "⚠️ 已启用数学无损，JPEG无损转码已禁用",
+      "jpegLosslessHint": "仅对 JPEG 输入有效，100% 可逆转码为 JXL",
+      "jpegLosslessDisabled": "⚠️ 已启用数学无损，JPEG 无损转码已禁用",
       "lossless": "数学无损",
-      "losslessHint": "完全无损压缩（非JPEG）"
+      "losslessHint": "完全无损压缩（非 JPEG）"
     },
     "avif": {
       "speed": "编码速度",
@@ -72,7 +72,7 @@
   },
   "notification": {
     "selectFiles": "请先选择文件",
-    "convertSuccess": "✅ 转换完成！成功转换 {count} 个文件\n\n💡 提示：在 Eagle 中选择新文件后，点击刷新按钮开始下一轮转换",
+    "convertSuccess": "✅ 转换完成！成功转换 {count} 个文件\n\n💡 提示：在老鹰图库中选择新文件后，点击刷新按钮开始下一轮转换",
     "convertFailed": "转换失败：{error}",
     "convertError": "转换出错：{error}",
     "loadFailed": "加载文件失败"
@@ -80,21 +80,21 @@
   "video": {
     "title": "视频参数",
     "codec": "视频编码器",
-    "codec.h266": "H.266/VVC (最新)",
-    "codec.h265": "H.265/HEVC",
-    "codec.av1": "AV1",
+    "codec.h266": "H.266/VVC（最新）",
+    "codec.h265": "H.265/HEVC（推荐）",
+    "codec.av1": "AV1（最高效）",
     "codec.h264": "H.264/AVC",
     "codec.vp9": "VP9",
     "container": "容器格式",
-    "container.mp4": "MP4",
+    "container.mp4": "MP4（推荐）",
     "container.mov": "MOV",
     "container.webm": "WebM",
     "container.mkv": "MKV",
-    "crf": "质量控制 (CRF)",
-    "crfLabel": "CRF",
+    "crf": "质量控制（CRF）",
+    "crfLabel": "CRF 值",
     "speed": "编码速度",
-    "gopSize": "关键帧间隔 (GOP)",
-    "gopLabel": "GOP",
+    "gopSize": "关键帧间隔（GOP）",
+    "gopLabel": "GOP 大小",
     "bframes": "B帧数量",
     "refs": "参考帧数",
     "pixelFormat": "像素格式",
@@ -105,9 +105,9 @@
     "hwAccel": "硬件加速",
     "hwAccel.auto": "自动",
     "hwAccel.none": "无",
-    "hwAccel.nvenc": "NVIDIA (NVENC)",
-    "hwAccel.qsv": "Intel (QSV)",
-    "hwAccel.videotoolbox": "Apple (VideoToolbox)",
+    "hwAccel.nvenc": "英伟达（NVENC）",
+    "hwAccel.qsv": "英特尔（QSV）",
+    "hwAccel.videotoolbox": "苹果（VideoToolbox）",
     "twoPass": "两遍编码"
   },
   "params": {
@@ -118,12 +118,12 @@
     "chromaAuto": "自动",
     "chroma420": "4:2:0（标准）",
     "chroma422": "4:2:2（平衡）",
-    "chroma444": "4:4:4（最佳）",
+    "chroma444": "4:4:4（最佳质量）",
     "lossless": "无损模式",
     "embedThumbnail": "嵌入缩略图",
     "embedThumbnailHint": "在文件中嵌入预览缩略图",
-    "tiles": "Tiles (行×列)",
-    "tilesHint": "分块并行编码，提升大图速度",
+    "tiles": "分块编码（行×列）",
+    "tilesHint": "分块并行编码，提升大图处理速度",
     "filterStrength": "滤镜强度",
     "sharpness": "锐度"
   },
@@ -132,28 +132,57 @@
     "fileList": "文件列表",
     "outputFormat": "输出格式",
     "converting": "转换中...",
-    "selectInEagle": "在 Eagle 中选择文件",
+    "selectInEagle": "在老鹰图库中选择文件",
     "clickRefresh": "点击下方刷新按钮加载文件",
     "expandIcon": "▶",
     "collapseIcon": "▼",
     "refresh": "刷新",
-    "refreshFiles": "重新加载 Eagle 中选中的文件",
+    "refreshFiles": "重新加载老鹰图库中选中的文件",
+    "language": "切换语言",
     "minimize": "最小化",
     "maximize": "最大化/还原",
     "close": "关闭"
   },
   "tools": {
     "title": "快捷工具",
-    "autoMergeXmp": "自动合并 XMP",
-    "autoMergeXmpHint": "自动检测并合并 XMP sidecar 文件到输出文件",
+    "autoMergeXmp": "自动合并元数据",
+    "autoMergeXmpHint": "自动检测并合并外部 XMP 元数据文件到输出文件",
     "normalizeFilenames": "规范化文件名",
-    "normalizeFilenamesHint": "处理特殊字符和空格，避免编码器兼容性问题"
+    "normalizeFilenamesHint": "处理特殊字符和空格，避免编码器兼容性问题",
+    "fileValidation": "AI 文件验证",
+    "fileValidationDesc": "Magika AI 深度检测",
+    "fileValidationHint": "使用 Google Magika AI 模型进行深度文件类型检测，防止扩展名伪装和损坏文件",
+    "formatCorrection": "格式修正",
+    "formatCorrectionDesc": "AI 检测并修正",
+    "formatCorrectionHint": "当检测到文件扩展名与实际内容不符时，自动修正文件扩展名"
+  },
+  "common": {
+    "experimental": "实验性"
+  },
+  "ai": {
+    "title": "AI 智能选项",
+    "smartQuality": "智能质量预测",
+    "smartQualityDesc": "AI 分析并预测最佳质量参数",
+    "smartQualityHint": "AI 会分析图像的纹理、边缘、色彩复杂度等特征，自动预测最适合的质量参数",
+    "autoOptimize": "自动参数优化",
+    "autoOptimizeDesc": "AI 自动调整编码器参数",
+    "autoOptimizeHint": "AI 会根据输入格式、目标格式、图像尺寸等信息，自动调整编码器的内部参数（如 effort、speed 等），在压缩率和质量之间找到最佳平衡点",
+    "ssimValidation": "SSIM 质量验证",
+    "ssimValidationDesc": "结构相似性算法验证",
+    "ssimValidationHint": "转换完成后，使用结构相似性指数（SSIM）算法对比原始图像和转换后的图像，确保画质损失在可接受范围内",
+    "videoForAnimation": "动图转视频",
+    "videoForAnimationDesc": "巨大动图推荐转视频格式",
+    "videoForAnimationHint": "当检测到大型动图（如高分辨率 GIF 或超长 WebP 动画）时，AI 会智能推荐转换为视频格式（如 MP4/WebM），可大幅减小文件体积",
+    "smartFormat": "格式智能推荐",
+    "smartFormatDesc": "AI 智能推荐最优格式",
+    "smartPreprocess": "智能预处理",
+    "smartPreprocessDesc": "AI 优化图像预处理"
   },
   "errors": {
-    "jxlNotInstalled": "JXL编码器未安装！请安装：brew install jpeg-xl",
-    "avifNotInstalled": "AVIF编码器未安装！请安装：brew install libavif",
+    "jxlNotInstalled": "JXL 编码器未安装！请安装：brew install jpeg-xl",
+    "avifNotInstalled": "AVIF 编码器未安装！请安装：brew install libavif",
     "fileNotFound": "输入文件不存在或路径错误",
-    "rustCliNotFound": "pixly-converter 未找到",
+    "rustCliNotFound": "转换器未找到",
     "conversionFailed": "转换失败"
   }
 }

@@ -227,11 +227,14 @@ export function useRustCLI() {
           if (options.chroma) args.push('--chroma', options.chroma)
         }
 
-        // 🔥 XMP合并（默认启用）
-        if (options.mergeXmp !== false) {
+        // 🔥 快捷工具选项
+        const tools = options.quickTools || {}
+        
+        // XMP合并
+        if (tools.autoMergeXmp !== false) {
           args.push('--merge-xmp')
           
-          // 🔥 如果文件有 XMP 路径，直接传递给 Rust CLI（避免扫描）
+          // 如果文件有 XMP 路径，直接传递给 Rust CLI（避免扫描）
           if (file.xmpPath) {
             args.push('--xmp-path', file.xmpPath)
             logger.info(LOG_KEYS.RUST_CLI_EXEC, 'Passing XMP path to Rust CLI', {
@@ -240,9 +243,47 @@ export function useRustCLI() {
           }
         }
 
-        // 🔥 文件名规范化
-        if (options.normalizeFilenames) {
+        // 文件名规范化
+        if (tools.normalizeFilenames) {
           args.push('--normalize-filenames')
+        }
+
+        // AI 文件验证
+        if (tools.fileValidation) {
+          args.push('--validate-file-type')
+        }
+
+        // 格式修正
+        if (tools.formatCorrection) {
+          args.push('--auto-correct-format')
+        }
+
+        // 🔥 AI 智能选项
+        const ai = options.aiOptions || {}
+        
+        // 智能质量预测
+        if (ai.smartQuality) {
+          args.push('--smart-quality')
+        }
+
+        // 自动参数优化
+        if (ai.autoOptimize) {
+          args.push('--auto-optimize')
+        }
+
+        // SSIM 质量验证
+        if (ai.ssimValidation) {
+          args.push('--ssim-validation')
+        }
+
+        // 动图转视频推荐
+        if (ai.videoForAnimation) {
+          args.push('--video-for-animation')
+        }
+
+        // 智能预处理
+        if (ai.smartPreprocess) {
+          args.push('--smart-preprocess')
         }
 
         logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Executing command', {

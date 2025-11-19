@@ -1,11 +1,12 @@
 {
   "app": {
-    "title": "PIXLY AI",
+    "title": "PIXLY",
     "subtitle": "智能多媒体处理"
   },
   "header": {
     "refresh": "刷新",
     "help": "使用帮助",
+    "language": "切换语言",
     "theme": "切换主题"
   },
   "empty": {
@@ -14,29 +15,29 @@
     "loadButton": "加载文件"
   },
   "controls": {
-    "title": "🤖 AI 智能选项",
+    "title": "🤖 智能选项",
     "optimizeMode": "优化目标",
-    "balanced": "⚖️ 平衡 - 质量与体积兼顾",
-    "quality": "🎯 质量优先 - 最佳画质",
-    "size": "📦 体积优先 - 最小文件"
+    "balanced": "⚖️ 平衡模式",
+    "quality": "🎯 质量优先",
+    "size": "📦 体积优先"
   },
   "image": {
     "title": "🖼️ 图像选项",
     "format": "输出格式",
-    "formatAuto": "🤖 自动 - AI 智能选择",
-    "aiPrediction": "AI 参数预测",
-    "fileValidation": "文件类型验证",
-    "ssimValidation": "SSIM 质量验证",
-    "gpuAccel": "GPU 硬件加速",
+    "formatAuto": "🤖 自动选择",
+    "aiPrediction": "参数预测",
+    "fileValidation": "文件验证",
+    "ssimValidation": "质量验证",
+    "gpuAccel": "硬件加速",
     "preprocess": "智能预处理",
     "formatCorrection": "格式纠正"
   },
   "video": {
     "title": "🎬 视频选项",
     "codec": "视频编码器",
-    "codecAuto": "🤖 自动 - AI 智能选择",
+    "codecAuto": "🤖 自动选择",
     "container": "容器格式",
-    "crf": "质量控制 (CRF)",
+    "crf": "质量控制",
     "speed": "编码速度",
     "twoPass": "两遍编码",
     "pixelFormat": "像素格式"
@@ -53,7 +54,7 @@
   },
   "button": {
     "processing": "处理中...",
-    "startConvert": "开始 AI 处理"
+    "startConvert": "开始处理"
   },
   "progress": {
     "processing": "处理中...",
@@ -75,16 +76,16 @@
     "description": "检测到混合选择，将自动分组处理：",
     "images": "图像：{count} 个",
     "videos": "视频：{count} 个",
-    "hint": "💡 图像和视频将使用各自的 AI 功能"
+    "hint": "💡 图像和视频将使用各自的智能功能"
   },
   "features": {
     "validation": "🔒 8层文件验证",
-    "xmpMerge": "💡 自动合并 XMP",
-    "filenameNorm": "📝 自动规范化文件名",
+    "xmpMerge": "💡 自动合并元数据",
+    "filenameNorm": "📝 自动规范文件名",
     "metadataTitle": "📦 完整元数据保留",
-    "exif": "EXIF",
-    "xmp": "XMP",
-    "icc": "ICC",
+    "exif": "相机信息",
+    "xmp": "编辑历史",
+    "icc": "色彩配置",
     "timestamps": "时间戳",
     "extendedAttr": "扩展属性"
   },
@@ -92,29 +93,29 @@
     "title": "使用帮助",
     "close": "关闭",
     "vision": "插件愿景",
-    "visionDesc": "让 AI 成为你的转换专家 - 告别繁琐的参数调试，只需选择你的目标（极致压缩/视觉无损/平衡），AI 会根据每张图片的特征（纹理复杂度、色彩分布、透明度等）自动优化所有参数。",
+    "visionDesc": "让智能算法成为你的转换专家 - 告别繁琐的参数调试，只需选择你的目标（极致压缩/视觉无损/平衡），系统会根据每张图片的特征（纹理复杂度、色彩分布、透明度等）自动优化所有参数。",
     "modernFormats": "拥抱现代格式 - 默认推荐 AVIF、JXL、WebP 等新一代格式，相同质量下体积减少 30-50%，让你的资源库更轻盈。同时支持 HDR、动画、透明度等高级特性。",
-    "smartUpgrade": "智能格式升级 - 检测到 JPEG/PNG 等传统格式时，AI 会评估升级收益（压缩率提升、特性增强），在合适的时机推荐现代格式，让每一次转换都物有所值。",
+    "smartUpgrade": "智能格式升级 - 检测到 JPEG/PNG 等传统格式时，系统会评估升级收益（压缩率提升、特性增强），在合适的时机推荐现代格式，让每一次转换都物有所值。",
     "metadataTitle": "元数据完整保留",
     "metadataDesc": "所有元数据自动保留，无需任何配置：",
-    "metadataExif": "EXIF 相机信息 - 拍摄参数、GPS 位置、设备型号",
-    "metadataXmp": "XMP 编辑历史 - Photoshop/Lightroom 编辑记录",
-    "metadataIcc": "ICC 色彩配置 - 色彩空间和配置文件",
-    "metadataXmpMerge": "XMP Sidecar 合并 - 使用 exiftool 自动合并外部 XMP 文件",
-    "metadataEagle": "Eagle 资源信息 - 标签、评分、备注同步更新",
+    "metadataExif": "相机信息 - 拍摄参数、位置、设备型号",
+    "metadataXmp": "编辑历史 - 编辑软件的修改记录",
+    "metadataIcc": "色彩配置 - 色彩空间和配置文件",
+    "metadataXmpMerge": "外部元数据合并 - 自动合并外部元数据文件",
+    "metadataEagle": "资源信息 - 标签、评分、备注同步更新",
     "metadataTimestamp": "文件时间戳 - 创建/修改/访问时间完整保留",
-    "metadataExtended": "扩展属性 - macOS xattr、Windows ADS 自动保留",
-    "imageFeaturesTitle": "图像 AI 功能",
-    "imageFeature1": "智能参数预测 - AI 分析图像特征，自动选择最优参数",
-    "imageFeature2": "AI 文件验证 - 使用 Google Magika 检测文件类型，防止伪装文件",
-    "imageFeature3": "SSIM 质量验证 - 转换后自动验证画质损失",
-    "imageFeature4": "GPU 硬件加速 - 自动检测并使用 GPU 加速（速度提升 5-20 倍）",
+    "metadataExtended": "扩展属性 - 系统扩展属性自动保留",
+    "imageFeaturesTitle": "图像智能功能",
+    "imageFeature1": "智能参数预测 - 分析图像特征，自动选择最优参数",
+    "imageFeature2": "文件验证 - 检测文件类型，防止伪装文件",
+    "imageFeature3": "质量验证 - 转换后自动验证画质损失",
+    "imageFeature4": "硬件加速 - 自动检测并使用硬件加速（速度提升 5-20 倍）",
     "imageFeature5": "智能预处理 - 自动优化图像（去噪、锐化、色彩校正）",
-    "imageFeature6": "格式自动修正 - 检测文件扩展名与实际格式是否匹配，自动识别伪装文件（如 .jpg 实际是 .png）",
-    "videoFeaturesTitle": "视频 AI 功能",
-    "videoFeature1": "动图转视频推荐 - 检测大型动图（GIF/APNG/WebP），智能推荐转为视频格式（MP4/WebM），体积减少 60-80%",
+    "imageFeature6": "格式自动修正 - 检测文件扩展名与实际格式是否匹配，自动识别伪装文件",
+    "videoFeaturesTitle": "视频智能功能",
+    "videoFeature1": "动图转视频推荐 - 检测大型动图，智能推荐转为视频格式，体积减少 60-80%",
     "videoFeature2": "场景检测 - 智能检测场景变化，优化关键帧分布",
-    "videoFeature3": "VMAF 质量验证 - 使用 Netflix VMAF 算法验证视频质量",
-    "videoFeature4": "Two-Pass 编码 - 两次编码优化码率分配，相同质量下体积减少 10-20%"
+    "videoFeature3": "质量验证 - 使用业界标准算法验证视频质量",
+    "videoFeature4": "两遍编码 - 两次编码优化码率分配，相同质量下体积减少 10-20%"
   }
 }

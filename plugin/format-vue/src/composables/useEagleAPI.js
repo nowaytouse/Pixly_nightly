@@ -123,8 +123,20 @@ export function useEagleAPI() {
         // 处理缩略图路径
         let thumbnail = null
         if (item.thumbnailURL) {
+          // 🔥 确保路径是绝对路径
           if (!item.thumbnailURL.startsWith('http') && !item.thumbnailURL.startsWith('file://')) {
-            thumbnail = `file://${item.thumbnailURL}`
+            // 检查是否是绝对路径
+            if (item.thumbnailURL.startsWith('/')) {
+              thumbnail = `file://${item.thumbnailURL}`
+            } else {
+              // 相对路径，需要拼接完整路径
+              logger.warn(LOG_KEYS.EAGLE_API_CALL, 'Thumbnail is relative path', {
+                name: item.name,
+                thumbnailURL: item.thumbnailURL
+              })
+              // 暂时不设置 thumbnail，让 emoji 占位符显示
+              thumbnail = null
+            }
           } else {
             thumbnail = item.thumbnailURL
           }

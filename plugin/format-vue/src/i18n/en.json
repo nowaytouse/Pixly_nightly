@@ -138,6 +138,7 @@
     "collapseIcon": "▼",
     "refresh": "Refresh",
     "refreshFiles": "Reload selected files from Eagle",
+    "language": "Switch Language",
     "minimize": "Minimize",
     "maximize": "Maximize/Restore",
     "close": "Close"
@@ -147,7 +148,35 @@
     "autoMergeXmp": "Auto Merge XMP",
     "autoMergeXmpHint": "Automatically detect and merge XMP sidecar files into output",
     "normalizeFilenames": "Normalize Filenames",
-    "normalizeFilenamesHint": "Handle special characters and spaces to avoid encoder compatibility issues"
+    "normalizeFilenamesHint": "Handle special characters and spaces to avoid encoder compatibility issues",
+    "fileValidation": "AI File Validation",
+    "fileValidationDesc": "Magika AI Deep Detection",
+    "fileValidationHint": "Use Google Magika AI model for deep file type detection, prevent extension forgery and corrupted files",
+    "formatCorrection": "Format Correction",
+    "formatCorrectionDesc": "AI Detect & Fix",
+    "formatCorrectionHint": "Automatically correct file extension when detected file extension doesn't match actual content"
+  },
+  "common": {
+    "experimental": "Experimental"
+  },
+  "ai": {
+    "title": "AI Smart Options",
+    "smartQuality": "Smart Quality Prediction",
+    "smartQualityDesc": "AI analyzes and predicts optimal quality",
+    "smartQualityHint": "AI analyzes texture, edges, color complexity and predicts optimal quality parameters",
+    "autoOptimize": "Auto Parameter Optimization",
+    "autoOptimizeDesc": "AI automatically adjusts encoder parameters",
+    "autoOptimizeHint": "AI automatically adjusts encoder internal parameters (effort, speed, etc.) based on input/target format and image dimensions for best balance",
+    "ssimValidation": "SSIM Quality Validation",
+    "ssimValidationDesc": "Structural Similarity validation",
+    "ssimValidationHint": "After conversion, uses SSIM algorithm to compare original and converted images, ensuring quality loss is acceptable",
+    "videoForAnimation": "Animation to Video",
+    "videoForAnimationDesc": "Recommend large animations to video",
+    "videoForAnimationHint": "When detecting large animated images (high-res GIFs or long WebP), AI recommends converting to video format (MP4/WebM) for smaller file size",
+    "smartFormat": "Smart Format Recommendation",
+    "smartFormatDesc": "AI recommends optimal format",
+    "smartPreprocess": "Smart Preprocessing",
+    "smartPreprocessDesc": "AI optimizes image preprocessing"
   },
   "errors": {
     "jxlNotInstalled": "JXL encoder not installed! Install: brew install jpeg-xl",

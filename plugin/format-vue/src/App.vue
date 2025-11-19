@@ -5,6 +5,11 @@
       <div class="titlebar-drag">
         <span class="titlebar-title">{{ t('app.title') }}</span>
       </div>
+      <div class="titlebar-actions">
+        <button class="titlebar-btn" @click="toggleLanguage" :title="t('ui.language')">
+          {{ locale === 'zh_CN' ? '🇨🇳' : '🇺🇸' }}
+        </button>
+      </div>
       <div class="titlebar-controls">
         <button class="titlebar-btn" @click="minimizeWindow" :title="t('ui.minimize')">
           <svg width="12" height="12" viewBox="0 0 12 12">
@@ -46,18 +51,17 @@
       <div class="left-panel">
         <!-- 图像面板 -->
         <template v-if="conversionType === 'image'">
-          <FormatSelector v-model="selectedFormat" :aiMode="aiMode" />
+          <FormatSelector v-model="selectedFormat" />
           <QualityPanel 
             v-model:modelValue="quality" 
             v-model:lossless="lossless"
-            v-model:aiMode="aiMode"
           />
           <AdvancedParams 
             :format="selectedFormat" 
             v-model="advancedParams" 
             :lossless="lossless"
-            :aiMode="aiMode"
           />
+          <QuickTools v-model="quickTools" />
         </template>
         
         <!-- 视频面板 -->
@@ -115,6 +119,7 @@ import { ref, onMounted } from 'vue'
 import FormatSelector from './components/FormatSelector.vue'
 import QualityPanel from './components/QualityPanel.vue'
 import AdvancedParams from './components/AdvancedParams.vue'
+import QuickTools from './components/QuickTools.vue'
 import VideoPanel from './components/VideoPanel.vue'
 import FileList from './components/FileList.vue'
 import ProgressBar from './components/ProgressBar.vue'
@@ -128,9 +133,14 @@ const conversionType = ref('image') // 'image' or 'video'
 const selectedFormat = ref('jxl')
 const quality = ref(90)
 const lossless = ref(false)
-const aiMode = ref(false) // 🤖 AI智能模式
 const advancedParams = ref({})
 const videoParams = ref({})
+const quickTools = ref({
+  fileValidation: true,
+  formatCorrection: true,
+  autoMergeXmp: true,
+  normalizeFilenames: false
+})
 const files = ref([])
 
 // Toast状态
@@ -141,7 +151,7 @@ const toast = ref({
   message: ''
 })
 
-const { t } = useI18n()
+const { t, setLocale, locale } = useI18n()
 const { loadSelectedFiles, refreshLibrary, showNotification, setEagleReady } = useEagleAPI()
 const { convertImages, convertVideos, isConverting, progress, currentFile } = useRustCLI()
 
@@ -181,7 +191,9 @@ const startConversion = async () => {
         format: selectedFormat.value,
         quality: quality.value,
         lossless: lossless.value,
-        ...advancedParams.value
+        ...advancedParams.value,
+        // 快捷工具
+        quickTools: quickTools.value
       }
       result = await convertImages(files.value, options)
     } else {
@@ -332,6 +344,13 @@ if (window.eagle) {
   logger.error(LOG_KEYS.APP_INIT, 'Eagle API not available!')
 }
 
+// 🌐 语言切换
+const toggleLanguage = () => {
+  const newLocale = locale.value === 'zh_CN' ? 'en' : 'zh_CN'
+  setLocale(newLocale)
+  logger.info(LOG_KEYS.UI_CLICK, 'Language switched', { locale: newLocale })
+}
+
 // 🔥 窗口控制函数
 const minimizeWindow = () => {
   try {
@@ -446,21 +465,29 @@ onMounted(async () => {
   flex-direction: column;
   background: var(--bg-secondary);
   color: var(--text-primary);
+  overflow: hidden;
   /* 性能优化 */
   transform: translateZ(0);
   backface-visibility: hidden;
 }
 
-/* 🔥 无边框窗口标题栏 */
+/* 🔥 无边框窗口标题栏 - 固定在顶部 */
 .titlebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
   height: 32px;
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-shrink: 0;
   user-select: none;
+  /* 确保在滚动时保持在最上层 */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .titlebar-drag {
@@ -477,6 +504,12 @@ onMounted(async () => {
   font-size: 12px;
   font-weight: 500;
   color: var(--text-secondary);
+}
+
+.titlebar-actions {
+  display: flex;
+  height: 100%;
+  -webkit-app-region: no-drag;
 }
 
 .titlebar-controls {
@@ -522,6 +555,8 @@ onMounted(async () => {
   grid-template-columns: 360px 1fr;
   gap: 16px;
   padding: 16px;
+  /* 🔥 为固定的 titlebar (32px) + type-tabs (~56px) 留出空间 */
+  margin-top: 88px;
   overflow: hidden;
   /* 性能优化 */
   will-change: auto;
@@ -532,9 +567,12 @@ onMounted(async () => {
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
+  overflow-x: hidden;
   /* 流畅滚动 */
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  /* 🔥 确保 sticky 元素在滚动容器内工作 */
+  position: relative;
 }
 
 .left-panel > * {
@@ -668,11 +706,18 @@ onMounted(async () => {
 }
 
 .type-tabs {
+  position: fixed;
+  top: 32px;
+  left: 0;
+  right: 0;
+  z-index: 999;
   display: flex;
   gap: 8px;
   padding: 12px 16px 0;
   background: var(--bg-secondary);
-  position: relative;
+  /* 确保在滚动时保持在标题栏下方 */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .type-tab {

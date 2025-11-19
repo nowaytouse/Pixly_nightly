@@ -6,6 +6,7 @@
   "header": {
     "refresh": "Refresh",
     "help": "Help",
+    "language": "Switch Language",
     "theme": "Toggle Theme"
   },
   "empty": {

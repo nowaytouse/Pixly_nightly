@@ -12,6 +12,9 @@
       <div class="header-right">
         <button class="icon-btn" @click="refreshFiles" :title="t('header.refresh')">🔄</button>
         <button class="icon-btn" @click="showHelp = true" :title="t('header.help')">❓</button>
+        <button class="icon-btn" @click="toggleLanguage" :title="t('header.language')">
+          {{ locale === 'zh_CN' ? '🇨🇳' : '🇺🇸' }}
+        </button>
         <button class="icon-btn" @click="toggleTheme" :title="t('header.theme')">
           {{ isDark ? '☀️' : '🌙' }}
         </button>
@@ -131,11 +134,17 @@
               <div class="file-groups">
                 <div class="group-item">
                   <span class="group-icon">🖼️</span>
-                  <span>{{ t('mixedMode.images', { count: selectedFiles.filter(f => /\.(jpg|jpeg|png|gif|webp|avif|jxl|heic|heif|bmp|tiff|tif)$/i.test(f.name)).length }) }}</span>
+                  <span>{{ t('mixedMode.images', { count: selectedFiles.filter(f => {
+                    const ext = (f.ext || '').toLowerCase()
+                    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'jxl', 'heic', 'heif', 'bmp', 'tiff', 'tif', 'apng'].includes(ext)
+                  }).length }) }}</span>
                 </div>
                 <div class="group-item">
                   <span class="group-icon">🎬</span>
-                  <span>{{ t('mixedMode.videos', { count: selectedFiles.filter(f => /\.(mp4|mov|avi|mkv|webm|flv|wmv|m4v|mpg|mpeg)$/i.test(f.name)).length }) }}</span>
+                  <span>{{ t('mixedMode.videos', { count: selectedFiles.filter(f => {
+                    const ext = (f.ext || '').toLowerCase()
+                    return ['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv', 'm4v', 'mpg', 'mpeg'].includes(ext)
+                  }).length }) }}</span>
                 </div>
               </div>
               <p class="notice-tip">{{ t('mixedMode.hint') }}</p>
@@ -242,7 +251,21 @@
               :class="{ selected: file.selected }"
             >
               <input type="checkbox" v-model="file.selected">
-              <img :src="file.thumbnail" class="file-thumb" alt="">
+              <!-- 🔥 缩略图容器：emoji背景 + 图片覆盖 -->
+              <div class="file-thumb-container">
+                <!-- Emoji占位符 - 始终显示 -->
+                <div class="file-thumb-placeholder">
+                  <span class="file-emoji">{{ getFileEmoji(file) }}</span>
+                </div>
+                <!-- 缩略图 - 如果有则覆盖在上面 -->
+                <img 
+                  v-if="file.thumbnail" 
+                  :src="file.thumbnail" 
+                  class="file-thumb file-thumb-overlay" 
+                  alt=""
+                  @error="handleImageError"
+                >
+              </div>
               <div class="file-info">
                 <div class="file-name">{{ file.name }}</div>
                 <div class="file-meta">
@@ -318,7 +341,7 @@ import { useEagleAPI } from './composables/useEagleAPI'
 import { logger, LOG_KEYS } from './utils/logger'
 import { useI18n } from './composables/useI18n'
 
-const { t } = useI18n()
+const { t, setLocale, locale } = useI18n()
 
 const rustCLI = useRustCLI()
 const eagleAPI = useEagleAPI()
@@ -356,14 +379,20 @@ const selectedFiles = computed(() => files.value.filter(f => f.selected))
 
 const isVideoMode = computed(() => {
   if (selectedFiles.value.length === 0) return false
-  const videoExts = /\.(mp4|mov|avi|mkv|webm|flv|wmv|m4v|mpg|mpeg)$/i
-  return selectedFiles.value.every(f => videoExts.test(f.name))
+  const videoExts = ['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv', 'm4v', 'mpg', 'mpeg']
+  return selectedFiles.value.every(f => {
+    const ext = (f.ext || '').toLowerCase()
+    return videoExts.includes(ext)
+  })
 })
 
 const isImageMode = computed(() => {
   if (selectedFiles.value.length === 0) return false
-  const imageExts = /\.(jpg|jpeg|png|gif|webp|avif|jxl|heic|heif|bmp|tiff|tif)$/i
-  return selectedFiles.value.every(f => imageExts.test(f.name))
+  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'jxl', 'heic', 'heif', 'bmp', 'tiff', 'tif', 'apng']
+  return selectedFiles.value.every(f => {
+    const ext = (f.ext || '').toLowerCase()
+    return imageExts.includes(ext)
+  })
 })
 
 const isMixedMode = computed(() => {
@@ -375,6 +404,12 @@ const isMixedMode = computed(() => {
 const toggleTheme = () => {
   isDark.value = !isDark.value
   document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light')
+}
+
+const toggleLanguage = () => {
+  const newLocale = locale.value === 'zh_CN' ? 'en' : 'zh_CN'
+  setLocale(newLocale)
+  logger.info(LOG_KEYS.UI_CLICK, 'Language switched', { locale: newLocale })
 }
 
 const refreshFiles = async () => {
@@ -400,16 +435,18 @@ const selectInvert = () => {
 }
 
 const selectImages = () => {
-  const imageExts = /\.(jpg|jpeg|png|gif|webp|avif|jxl|heic|heif|bmp|tiff|tif)$/i
+  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'jxl', 'heic', 'heif', 'bmp', 'tiff', 'tif', 'apng']
   files.value.forEach(f => {
-    f.selected = imageExts.test(f.name)
+    const ext = (f.ext || '').toLowerCase()
+    f.selected = imageExts.includes(ext)
   })
 }
 
 const selectVideos = () => {
-  const videoExts = /\.(mp4|mov|avi|mkv|webm|flv|wmv|m4v|mpg|mpeg)$/i
+  const videoExts = ['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv', 'm4v', 'mpg', 'mpeg']
   files.value.forEach(f => {
-    f.selected = videoExts.test(f.name)
+    const ext = (f.ext || '').toLowerCase()
+    f.selected = videoExts.includes(ext)
   })
 }
 
@@ -417,6 +454,53 @@ const selectVideos = () => {
 
 const formatSize = (bytes) => {
   return (bytes / 1024 / 1024).toFixed(2) + ' MB'
+}
+
+// 🔥 根据文件类型返回emoji
+const getFileEmoji = (file) => {
+  const ext = (file.ext || '').toLowerCase()
+  
+  // 图像格式
+  const imageFormats = {
+    'jxl': '🎨',
+    'avif': '🖼️',
+    'webp': '🌐',
+    'heic': '🍎',
+    'heif': '🍎',
+    'png': '🖼️',
+    'jpg': '📷',
+    'jpeg': '📷',
+    'gif': '🎞️',
+    'bmp': '🖼️',
+    'tiff': '🖼️',
+    'tif': '🖼️',
+    'apng': '🎞️',
+    'svg': '🎨'
+  }
+  
+  // 视频格式
+  const videoFormats = {
+    'mp4': '🎬',
+    'mov': '🎥',
+    'avi': '📹',
+    'mkv': '🎞️',
+    'webm': '🌐',
+    'm4v': '📱',
+    'flv': '📺',
+    'wmv': '🎬',
+    'mpg': '📹',
+    'mpeg': '📹'
+  }
+  
+  if (imageFormats[ext]) return imageFormats[ext]
+  if (videoFormats[ext]) return videoFormats[ext]
+  
+  return '📄'
+}
+
+// 🔥 处理图片加载失败
+const handleImageError = (event) => {
+  event.target.style.display = 'none'
 }
 
 const startConvert = async () => {
@@ -433,11 +517,17 @@ const startConvert = async () => {
     if (isMixedMode.value) {
       logger.info(LOG_KEYS.CONVERT_START, 'Mixed mode - auto grouping', {})
       
-      const imageExts = /\.(jpg|jpeg|png|gif|webp|avif|jxl|heic|heif|bmp|tiff|tif)$/i
-      const videoExts = /\.(mp4|mov|avi|mkv|webm|flv|wmv|m4v|mpg|mpeg)$/i
+      const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'jxl', 'heic', 'heif', 'bmp', 'tiff', 'tif', 'apng']
+      const videoExts = ['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv', 'm4v', 'mpg', 'mpeg']
       
-      const images = selected.filter(f => imageExts.test(f.name))
-      const videos = selected.filter(f => videoExts.test(f.name))
+      const images = selected.filter(f => {
+        const ext = (f.ext || '').toLowerCase()
+        return imageExts.includes(ext)
+      })
+      const videos = selected.filter(f => {
+        const ext = (f.ext || '').toLowerCase()
+        return videoExts.includes(ext)
+      })
       
       logger.info(LOG_KEYS.CONVERT_START, 'File grouping', { images: images.length, videos: videos.length })
       
@@ -679,6 +769,11 @@ onMounted(() => {
 }
 
 .header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -770,6 +865,7 @@ onMounted(() => {
 
 .main {
   padding: 24px;
+  padding-top: 96px; /* 为固定的header留出空间 (header高度约72px + padding) */
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -1119,11 +1215,45 @@ onMounted(() => {
   background: var(--color-ai-gradient-1-20);
 }
 
+/* 🔥 缩略图容器 */
+.file-thumb-container {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+}
+
+/* Emoji占位符 - 始终显示 */
+.file-thumb-placeholder {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-hover) 100%);
+  position: relative;
+  z-index: 1;
+}
+
+.file-emoji {
+  font-size: 28px;
+  line-height: 1;
+}
+
+/* 缩略图覆盖层 */
 .file-thumb {
   width: 50px;
   height: 50px;
   border-radius: 6px;
   object-fit: cover;
+}
+
+.file-thumb-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
 }
 
 .file-info {

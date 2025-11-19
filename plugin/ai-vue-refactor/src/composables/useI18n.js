@@ -11,7 +11,12 @@ const messages = {
   en: en
 }
 
-const currentLocale = ref('zh_CN')
+// 从localStorage读取保存的语言设置，默认中文
+const savedLocale = typeof localStorage !== 'undefined' 
+  ? localStorage.getItem('pixly_locale') || 'zh_CN'
+  : 'zh_CN'
+
+const currentLocale = ref(savedLocale)
 
 export function useI18n() {
   const t = (key, params = {}) => {
@@ -39,6 +44,10 @@ export function useI18n() {
   const setLocale = (locale) => {
     if (messages[locale]) {
       currentLocale.value = locale
+      // 持久化到localStorage
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('pixly_locale', locale)
+      }
     }
   }
 
