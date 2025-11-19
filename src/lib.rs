@@ -96,6 +96,11 @@ pub mod quality_checker_advanced; // 高级质量检查
 pub mod custom_presets;           // 自定义预设管理
 pub mod file_type_detector;       // 文件类型检测
 
+// 🔥 Phase 4.3: 最终集成（经过深度评估）
+pub mod color_quantizer;          // 颜色量化（GIF优化）
+pub mod gif_optimizer_advanced;   // GIF高级优化
+pub mod ml_data_flow;             // ML数据流管理
+
 pub use types::*;
 pub use ppo_model_enhanced::{EnhancedPPOPredictor, MediaType, TrainingSample};
 pub use modern_formats::{ModernFormatConverter, AVIFParams, JXLParams, FormatSupport};
@@ -127,6 +132,11 @@ pub use same_format_optimizer::{SameFormatOptimizer, OptimizationResult as SFOpt
 pub use quality_checker_advanced::{QualityChecker as AdvancedQualityChecker, QualityMetrics as AdvancedQualityMetrics, QualityAssessment};
 pub use custom_presets::{CustomPreset, PresetManager};
 pub use file_type_detector::{FileTypeDetector, FileTypeDetection, SecurityValidation};
+
+// 🔥 Phase 4.3: 导出最终集成模块
+pub use color_quantizer::{ColorQuantizer, QuantizationConfig};
+pub use gif_optimizer_advanced::{GifOptimizer, GifOptimizationConfig, OptimizationResult as GifOptResult};
+pub use ml_data_flow::MLDataFlow;
 pub use sharpen::*;
 pub use ai::*;
 pub use video::*;
