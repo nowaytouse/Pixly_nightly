@@ -50,6 +50,7 @@ pub mod conversion_core;
 pub mod reward_calculator;
 // Phase 3.2: 在线学习
 pub mod online_learning;
+pub mod online_learner_manager;
 pub mod metadata_handler;
 pub mod video_handler;
 pub mod gif_handler;

@@ -41,15 +41,22 @@ pub struct OnlineLearner {
 }
 
 impl OnlineLearner {
-    /// 创建新的在线学习器
+    /// 创建新的在线学习器（自动加载持久化的经验）
     pub fn new(model_path: PathBuf, update_interval: usize) -> Self {
-        Self {
+        let mut learner = Self {
             model_path,
             experience_buffer: Arc::new(Mutex::new(Vec::new())),
             update_interval,
             reward_calculator: RewardCalculator::new(),
             enabled: true,
+        };
+        
+        // 🔥 自动加载持久化的经验
+        if let Err(e) = learner.load_persisted_experiences() {
+            log::warn!("⚠️  Failed to load persisted experiences: {}", e);
         }
+        
+        learner
     }
     
     /// 禁用在线学习
@@ -92,10 +99,16 @@ impl OnlineLearner {
         log::info!("📝 Recorded experience: reward={:.4}, buffer_size={}", 
                    reward, buffer.len());
         
+        // 🔥 持久化经验到磁盘
+        drop(buffer); // 释放锁
+        if let Err(e) = self.persist_experiences() {
+            log::warn!("⚠️  Failed to persist experiences: {}", e);
+        }
+        
         // 检查是否需要更新
-        if buffer.len() >= self.update_interval {
-            log::info!("🎓 Triggering model update ({} experiences)", buffer.len());
-            drop(buffer); // 释放锁
+        let buffer_size = self.buffer_size();
+        if buffer_size >= self.update_interval {
+            log::info!("🎓 Triggering model update ({} experiences)", buffer_size);
             self.trigger_update()?;
         }
         
@@ -169,6 +182,42 @@ impl OnlineLearner {
         
         log::info!("🎓 Manual update triggered ({} experiences)", size);
         self.trigger_update()
+    }
+    
+    /// 🔥 持久化经验到磁盘
+    fn persist_experiences(&self) -> Result<()> {
+        let persist_path = Path::new("models/ppo/experience_buffer.json");
+        
+        // 确保目录存在
+        if let Some(parent) = persist_path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        
+        let buffer = self.experience_buffer.lock().unwrap();
+        let json = serde_json::to_string_pretty(&*buffer)?;
+        std::fs::write(persist_path, json)?;
+        
+        log::debug!("💾 Persisted {} experiences to {:?}", buffer.len(), persist_path);
+        Ok(())
+    }
+    
+    /// 🔥 加载持久化的经验
+    fn load_persisted_experiences(&mut self) -> Result<()> {
+        let persist_path = Path::new("models/ppo/experience_buffer.json");
+        
+        if !persist_path.exists() {
+            log::debug!("No persisted experiences found");
+            return Ok(());
+        }
+        
+        let json = std::fs::read_to_string(persist_path)?;
+        let experiences: Vec<Experience> = serde_json::from_str(&json)?;
+        
+        let mut buffer = self.experience_buffer.lock().unwrap();
+        *buffer = experiences;
+        
+        log::info!("📂 Loaded {} persisted experiences", buffer.len());
+        Ok(())
     }
 }
 

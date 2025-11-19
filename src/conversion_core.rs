@@ -341,10 +341,9 @@ fn record_conversion_for_learning(
     input_size: u64,
     output_size: u64,
 ) {
-    use crate::online_learning::OnlineLearner;
+    use crate::online_learner_manager::OnlineLearnerManager;
     use crate::feature_extractor_128d::extract_128d_features;
     use crate::reward_calculator::ConversionResult as RewardResult;
-    use std::path::PathBuf;
     
     // 加载图像并提取特征
     let img = match image::open(input) {
@@ -379,17 +378,17 @@ fn record_conversion_for_learning(
         processing_time: 0.0,
     };
     
-    // 创建在线学习器
-    let learner = OnlineLearner::new(
-        PathBuf::from("models/ppo/actor_online.pth"),
-        100
-    );
-    
-    // 记录经验
-    if let Err(e) = learner.record_conversion(features, config.quality as u32, config.speed as u32, result) {
+    // 使用全局学习器管理器记录经验
+    if let Err(e) = OnlineLearnerManager::record_conversion(features, config.quality as u32, config.speed as u32, result) {
         log::warn!("⚠️  Failed to record conversion experience: {}", e);
     } else {
-        println!("📝 Conversion experience recorded (buffer: {})", learner.buffer_size());
+        let buffer_size = OnlineLearnerManager::buffer_size();
+        println!("📝 Conversion experience recorded (global buffer: {})", buffer_size);
+        
+        // 如果buffer达到阈值，会自动触发更新
+        if buffer_size >= 10 {
+            println!("🎓 Model update triggered! ({} experiences accumulated)", buffer_size);
+        }
     }
 }
 
