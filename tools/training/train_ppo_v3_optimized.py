@@ -22,14 +22,105 @@ from pathlib import Path
 from datetime import datetime
 import argparse
 
-# 导入V2的基础组件
-sys.path.insert(0, str(Path(__file__).parent))
-from train_ppo_v2 import (
-    extract_features,
-    convert_and_measure,
-    calculate_ssim,
-    calculate_reward
-)
+# 🔥 Phase 修复: 实现v2的基础函数（v2文件丢失）
+# 这些函数仅在训练时需要，batch_ppo_update只需要Actor网络
+
+def extract_features(image_path):
+    """提取图像特征（128维）- 仅训练时使用"""
+    try:
+        from PIL import Image
+        import numpy as np
+        
+        img = Image.open(image_path)
+        width, height = img.size
+        pixels = width * height
+        
+        # 基础特征
+        features = [
+            width, height, pixels,
+            width / height if height > 0 else 1.0,
+            len(img.getbands()),
+        ]
+        
+        # 填充到128维
+        features.extend([0.0] * (128 - len(features)))
+        return np.array(features[:128], dtype=np.float32)
+    except Exception as e:
+        print(f"❌ Feature extraction failed: {e}")
+        return None
+
+def convert_and_measure(image_path, quality, effort, target_format):
+    """执行转换并测量结果- 仅训练时使用"""
+    try:
+        import subprocess
+        
+        output_path = image_path.parent / f"{image_path.stem}_converted.{target_format}"
+        
+        # 调用Rust CLI
+        cmd = [
+            "cargo", "run", "--release", "--bin", "pixly-converter", "--",
+            "convert", str(image_path),
+            "--format", target_format,
+            "--quality", str(int(quality)),
+            "--effort", str(int(effort)),
+            "--output", str(image_path.parent)
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        
+        if result.returncode == 0 and output_path.exists():
+            original_size = image_path.stat().st_size
+            converted_size = output_path.stat().st_size
+            compression_ratio = converted_size / original_size if original_size > 0 else 1.0
+            
+            # 计算SSIM
+            ssim_score = calculate_ssim(image_path, output_path)
+            
+            # 计算奖励
+            reward = calculate_reward(compression_ratio, ssim_score)
+            
+            return reward, {
+                'compression_ratio': compression_ratio,
+                'ssim': ssim_score,
+                'original_size': original_size,
+                'converted_size': converted_size
+            }
+        else:
+            return -1.0, None
+            
+    except Exception as e:
+        print(f"❌ Conversion failed: {e}")
+        return -1.0, None
+
+def calculate_ssim(img1_path, img2_path):
+    """计算SSIM相似度 - 仅训练时使用"""
+    try:
+        from PIL import Image
+        import numpy as np
+        from skimage.metrics import structural_similarity as ssim
+        
+        img1 = np.array(Image.open(img1_path).convert('RGB'))
+        img2 = np.array(Image.open(img2_path).convert('RGB'))
+        
+        # 确保尺寸相同
+        if img1.shape != img2.shape:
+            img2 = np.array(Image.fromarray(img2).resize((img1.shape[1], img1.shape[0])))
+        
+        return ssim(img1, img2, channel_axis=2, data_range=255)
+    except Exception as e:
+        print(f"❌ SSIM calculation failed: {e}")
+        return 0.0
+
+def calculate_reward(compression_ratio, ssim_score):
+    """计算奖励值"""
+    # 压缩率奖励（越小越好）
+    compression_reward = (1.0 - compression_ratio) * 10.0
+    
+    # 质量奖励（SSIM越高越好）
+    quality_reward = ssim_score * 10.0
+    
+    # 综合奖励
+    return compression_reward + quality_reward
 
 class OptimizedActorNetwork(nn.Module):
     """

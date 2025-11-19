@@ -8,11 +8,15 @@
 - 避免重复的Python进程启动开销
 """
 
+import sys
 import torch
 import json
 import argparse
 from pathlib import Path
 from datetime import datetime
+
+# 添加tools/training到Python路径
+sys.path.insert(0, str(Path(__file__).parent.parent / "tools" / "training"))
 from train_ppo_v3_optimized import OptimizedActorNetwork
 
 class BatchPPOUpdater:

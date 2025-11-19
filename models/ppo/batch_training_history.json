@@ -48,7 +48,14 @@
       "num_batches": 2,
       "avg_loss": 214.52415466308594,
       "avg_reward": 0.375955831780958
+    },
+    {
+      "timestamp": "2025-11-19T22:40:48.674847",
+      "num_experiences": 52,
+      "num_batches": 2,
+      "avg_loss": 237.9879150390625,
+      "avg_reward": 0.3947190414491566
     }
   ],
-  "total_updates": 334
+  "total_updates": 386
 }
