@@ -1,19 +1,20 @@
 {
-  "id": "pixly-ai-vue",
+  "id": "com.pixly.ai.vue",
   "version": "3.0.0",
   "platform": "all",
   "arch": "all",
-  "name": "PIXLY AI",
+  "name": "PIXLY AI Vue",
   "logo": "./logo.png",
-  "keywords": ["AI", "converter"],
+  "keywords": ["AI", "converter", "vue"],
+  "devTools": false,
   "main": {
-    "frame": false,
-    "vibrancy": true,
     "url": "dist/index.html",
     "width": 1280,
-    "minWidth": 800,
     "height": 720,
+    "minWidth": 800,
     "minHeight": 600,
-    "opacity": 1
+    "frameless": true,
+    "frame": false,
+    "titleBarStyle": "hidden"
   }
 }
