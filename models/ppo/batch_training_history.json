@@ -286,7 +286,28 @@
       "num_batches": 2,
       "avg_loss": 248.69776916503906,
       "avg_reward": 0.476621940794468
+    },
+    {
+      "timestamp": "2025-11-19T23:52:36.001536",
+      "num_experiences": 10,
+      "num_batches": 1,
+      "avg_loss": 294.73822021484375,
+      "avg_reward": 0.1518324607329843
+    },
+    {
+      "timestamp": "2025-11-19T23:52:37.197865",
+      "num_experiences": 10,
+      "num_batches": 1,
+      "avg_loss": 309.5811462402344,
+      "avg_reward": 0.1518324607329843
+    },
+    {
+      "timestamp": "2025-11-19T23:52:38.399623",
+      "num_experiences": 10,
+      "num_batches": 3,
+      "avg_loss": 279.18849182128906,
+      "avg_reward": 0.1518324607329843
     }
   ],
-  "total_updates": 2289
+  "total_updates": 2319
 }

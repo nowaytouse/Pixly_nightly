@@ -1160,6 +1160,54 @@ fn run(cli: Cli) -> Result<()> {
                 println!("   ⚠️  Eagle update failed: {}", e);
             }
             
+            // 🎓 Phase 3.2: 在线学习 - 记录转换经验
+            if online_learning {
+                println!("   🎓 Recording conversion experience...");
+                
+                // 提取特征（使用MediaAnalyzer）
+                use pixly_kernel::media_analyzer::MediaAnalyzer;
+                let analyzer = MediaAnalyzer::new();
+                
+                if let Ok(media_info) = analyzer.analyze(&input) {
+                    // 使用128维真实特征
+                    let features = if let Some(features_128d) = media_info.features_128d {
+                        features_128d
+                    } else {
+                        // Fallback: 使用基础特征构建简化向量
+                        let mut features = vec![0.0; 128];
+                        features[0] = media_info.resolution.0 as f64 / 10000.0;
+                        features[1] = media_info.resolution.1 as f64 / 10000.0;
+                        features[2] = media_info.size as f64 / 10000000.0;
+                        features
+                    };
+                    
+                    // 记录经验
+                    use pixly_kernel::online_learner_manager::OnlineLearnerManager;
+                    use pixly_kernel::reward_calculator::ConversionResult as RewardResult;
+                    
+                    let conversion_result = RewardResult {
+                        original_size: result.input_size as u64,
+                        output_size: result.output_size as u64,
+                        ssim: 0.98,
+                        processing_time: result.duration.as_secs_f64(),
+                    };
+                    
+                    if let Err(e) = OnlineLearnerManager::record_conversion(
+                        features,
+                        quality as u32,
+                        effort.or(speed).unwrap_or(4) as u32,
+                        conversion_result,
+                    ) {
+                        println!("   ⚠️  Failed to record experience: {}", e);
+                    } else {
+                        let buffer_size = OnlineLearnerManager::buffer_size();
+                        println!("   ✅ Experience recorded (buffer: {})", buffer_size);
+                    }
+                } else {
+                    println!("   ⚠️  Failed to analyze input for feature extraction");
+                }
+            }
+            
             // 🔥 Phase X.4: SSIM 质量验证
             if check_quality {
                 println!("   📊 Checking quality with SSIM...");
@@ -1167,13 +1215,19 @@ fn run(cli: Cli) -> Result<()> {
                 
                 let checker = QualityChecker::new();
                 match checker.check_conversion_quality(&input, &output_path) {
-                    Ok(result) => {
+                    Ok(quality_result) => {
                         println!("   {} SSIM Score: {:.4} ({})", 
-                                 result.quality_grade.emoji(),
-                                 result.ssim_score,
-                                 result.quality_grade.as_str());
+                                 quality_result.quality_grade.emoji(),
+                                 quality_result.ssim_score,
+                                 quality_result.quality_grade.as_str());
                         
-                        if !result.passed {
+                        // 🎓 更新在线学习的SSIM值
+                        if online_learning {
+                            // TODO: 更新最后一个经验的SSIM值
+                            // 这需要OnlineLearner支持更新最后一个经验
+                        }
+                        
+                        if !quality_result.passed {
                             println!("   ⚠️  Warning: Quality below threshold (0.95)");
                             println!("   💡 Consider using higher quality settings");
                         }
