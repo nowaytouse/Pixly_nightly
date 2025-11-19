@@ -578,22 +578,22 @@ const startConvert = async () => {
   }
 }
 
-// Window control methods
+// Window control methods (Eagle API)
 const minimizeWindow = () => {
-  if (window.eagle && window.eagle.window) {
-    window.eagle.window.minimize()
+  if (window.eagle && window.eagle.app) {
+    window.eagle.app.minimize()
   }
 }
 
 const maximizeWindow = () => {
-  if (window.eagle && window.eagle.window) {
-    window.eagle.window.maximize()
+  if (window.eagle && window.eagle.app) {
+    window.eagle.app.maximize()
   }
 }
 
 const closeWindow = () => {
-  if (window.eagle && window.eagle.window) {
-    window.eagle.window.close()
+  if (window.eagle && window.eagle.app) {
+    window.eagle.app.close()
   }
 }
 
