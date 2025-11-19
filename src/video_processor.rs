@@ -44,6 +44,8 @@ pub struct VideoConversionConfig {
     pub pix_fmt: Option<String>,      // Pixel format (None = FFmpeg auto-select best format)
                                        // FFmpeg uses avcodec_find_best_pix_fmt_of_2() to minimize loss
                                        // Loss calculation: resolution > depth > colorspace > alpha > quantization > chroma
+    // 🔥 Phase 3: 视频参数补充 (2025-11-19)
+    pub rate_control: Option<String>, // Rate control mode (cbr/vbr/crf)
 }
 
 /// 音频处理模式
@@ -72,6 +74,7 @@ impl Default for VideoConversionConfig {
             ref_frames: Some(3),      // Default 3 reference frames
             me_method: Some("hex".to_string()), // Hexagon motion estimation
             pix_fmt: None,            // Let FFmpeg auto-select best format
+            rate_control: None,       // 🔥 Phase 3: 默认None，让FFmpeg自动选择
         }
     }
 }

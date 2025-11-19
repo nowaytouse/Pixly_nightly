@@ -553,6 +553,7 @@ fn convert_animation_to_video(input: &Path, output: &Path) -> Result<()> {
         ref_frames: Some(3),
         me_method: Some("hex".to_string()),
         pix_fmt: None,
+        rate_control: None,  // 🔥 Phase 3: 添加rate_control字段
     };
     
     // 执行转换

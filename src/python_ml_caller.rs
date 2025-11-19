@@ -154,3 +154,86 @@ mod tests {
         let _ = is_python_ml_available();
     }
 }
+
+
+/// 🔥 Phase 1: Python ML调用器（面向对象封装）
+pub struct PythonMLCaller {
+    // 可以添加配置字段
+}
+
+impl PythonMLCaller {
+    pub fn new() -> Self {
+        Self {}
+    }
+    
+    /// 🔥 AI智能质量预测
+    pub fn predict_quality(&self, features: &[f64], optimize_mode: &str) -> Result<u8> {
+        let request = MLPredictRequest {
+            features: features.to_vec(),
+            target_format: "auto".to_string(),
+            quality_mode: optimize_mode.to_string(),
+        };
+        
+        let response = call_python_ml(&request)?;
+        Ok(response.quality)
+    }
+    
+    /// 🔥 AI自动参数优化
+    pub fn optimize_params(&self, features: &[f64], optimize_mode: &str) -> Result<OptimizedParams> {
+        let request = MLPredictRequest {
+            features: features.to_vec(),
+            target_format: "auto".to_string(),
+            quality_mode: optimize_mode.to_string(),
+        };
+        
+        let response = call_python_ml(&request)?;
+        
+        Ok(OptimizedParams {
+            quality: response.quality,
+            speed: response.effort,
+            lossless: response.lossless,
+            confidence: response.confidence,
+        })
+    }
+    
+    /// 🔥 AI智能预处理推荐
+    pub fn recommend_preprocess(&self, features: &[f64]) -> Result<PreprocessRecommendations> {
+        // 调用Python脚本获取预处理推荐
+        let features_json = serde_json::to_string(features)?;
+        
+        let output = Command::new("python3")
+            .arg("scripts/ml_bridge.py")
+            .arg("--recommend-preprocess")
+            .arg(&features_json)
+            .output()
+            .context("Failed to execute Python ML bridge for preprocessing")?;
+        
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            anyhow::bail!("Python preprocessing recommendation failed: {}", stderr);
+        }
+        
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let recommendations: PreprocessRecommendations = serde_json::from_str(&stdout)
+            .context(format!("Failed to parse preprocessing recommendations: {}", stdout))?;
+        
+        Ok(recommendations)
+    }
+}
+
+/// 优化后的参数
+#[derive(Debug, Clone)]
+pub struct OptimizedParams {
+    pub quality: u8,
+    pub speed: u8,
+    pub lossless: bool,
+    pub confidence: f64,
+}
+
+/// 预处理推荐
+#[derive(Debug, Clone, Deserialize)]
+pub struct PreprocessRecommendations {
+    pub resize: Option<String>,      // 例如: "1920x1080"
+    pub quantize: Option<u8>,        // 颜色数量
+    pub sharpen: Option<f32>,        // 锐化强度
+}

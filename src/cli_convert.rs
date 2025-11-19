@@ -60,6 +60,16 @@ pub struct ConvertOptions {
     pub heic_encoder: Option<String>,
     pub heic_chroma: Option<String>,
     pub heic_thumbnail: bool,
+    
+    // 🔥 Phase 1: AI智能参数 (2025-11-19)
+    pub smart_quality: bool,        // AI智能质量预测
+    pub auto_optimize: bool,        // AI自动参数优化
+    pub ssim_validation: bool,      // SSIM质量验证
+    pub smart_preprocess: bool,     // AI智能预处理
+    
+    // 🔥 Phase 2: 快捷工具参数 (2025-11-19)
+    pub validate_file_type: bool,   // 文件类型验证
+    pub auto_correct_format: bool,  // 格式自动修正
 }
 
 impl Default for ConvertOptions {
@@ -103,6 +113,16 @@ impl Default for ConvertOptions {
             heic_encoder: None,
             heic_chroma: None,
             heic_thumbnail: false,
+            
+            // 🔥 Phase 1: AI智能参数默认值
+            smart_quality: false,
+            auto_optimize: false,
+            ssim_validation: false,
+            smart_preprocess: false,
+            
+            // 🔥 Phase 2: 快捷工具参数默认值
+            validate_file_type: false,
+            auto_correct_format: false,
         }
     }
 }
@@ -374,7 +394,39 @@ pub fn parse_options(args: &[String]) -> ConvertOptions {
                 i += 1;
             }
             
+            // 🔥 Phase 1: AI智能参数解析 (2025-11-19)
+            "--smart-quality" => {
+                options.smart_quality = true;
+                i += 1;
+            }
+            "--auto-optimize" => {
+                options.auto_optimize = true;
+                i += 1;
+            }
+            "--ssim-validation" => {
+                options.ssim_validation = true;
+                i += 1;
+            }
+            "--smart-preprocess" => {
+                options.smart_preprocess = true;
+                i += 1;
+            }
+            
+            // 🔥 Phase 2: 快捷工具参数解析 (2025-11-19)
+            "--validate-file-type" => {
+                options.validate_file_type = true;
+                i += 1;
+            }
+            "--auto-correct-format" => {
+                options.auto_correct_format = true;
+                i += 1;
+            }
+            
             _ => {
+                // 🔥 响亮的错误：未知参数警告
+                if args[i].starts_with("--") {
+                    eprintln!("⚠️  Warning: Unknown parameter '{}' will be ignored", args[i]);
+                }
                 i += 1;
             }
         }
@@ -405,16 +457,37 @@ pub fn handle_convert(input: &str, output: &str, options: &ConvertOptions) -> Re
 
 /// 确定参数来源
 fn determine_parameters(
-    _input: &str,
-    _output: &str,
+    input: &str,
+    output: &str,
     options: &ConvertOptions,
 ) -> Result<(u8, u8)> {
+    // 🔥 Phase 1: AI智能参数优化
+    // 如果启用了auto_optimize，使用AI预测所有参数
+    if options.auto_optimize {
+        println!("🤖 AI Auto-Optimize enabled");
+        return ai_optimize_parameters(input, output, options);
+    }
+    
     // 场景1: 用户明确指定了quality和speed
     if options.quality_explicit && options.speed_explicit {
         println!("✅ Using user-specified parameters");
         println!("   Quality: {}", options.quality);
         println!("   Speed: {}", options.speed);
         return Ok((options.quality, options.speed));
+    }
+    
+    // 🔥 Phase 1: AI智能质量预测
+    // 如果启用了smart_quality，使用AI预测质量参数
+    if options.smart_quality && !options.quality_explicit {
+        println!("🤖 AI Smart Quality enabled");
+        if let Ok(predicted_quality) = ai_predict_quality(input, output, options) {
+            let speed = if options.speed_explicit { options.speed } else { 4 };
+            println!("   AI predicted quality: {}", predicted_quality);
+            println!("   Speed: {}", speed);
+            return Ok((predicted_quality, speed));
+        } else {
+            eprintln!("⚠️  AI quality prediction failed, using defaults");
+        }
     }
     
     // 场景2: 用户选择使用默认值
@@ -427,14 +500,115 @@ fn determine_parameters(
         return Ok((quality, speed));
     }
     
-    // 场景3: 需要AI推荐
-    println!("🤖 Requesting AI parameter recommendation...");
-    
-    // 使用本地AI预测
-    let quality = options.quality;
-    let speed = options.speed;
+    // 场景3: 使用默认值
+    let quality = if options.quality_explicit { options.quality } else { 85 };
+    let speed = if options.speed_explicit { options.speed } else { 4 };
     
     Ok((quality, speed))
+}
+
+/// 🔥 Phase 1: AI智能质量预测
+fn ai_predict_quality(
+    input: &str,
+    _output: &str,
+    options: &ConvertOptions,
+) -> Result<u8> {
+    use crate::python_ml_caller::PythonMLCaller;
+    use crate::feature_extractor_128d::extract_128d_features;
+    
+    // 1. 提取128维特征
+    let img = image::open(input)?;
+    let input_path = Path::new(input);
+    
+    // 获取基础特征
+    let basic_features = crate::ImageFeatures {
+        width: img.width(),
+        height: img.height(),
+        file_size: std::fs::metadata(input_path)?.len(),
+        format: input_path.extension()
+            .and_then(|s| s.to_str())
+            .unwrap_or("unknown")
+            .to_string(),
+        has_alpha: img.color().has_alpha(),
+        is_animated: false,  // 简化处理
+        complexity: 0.5,  // 默认中等复杂度
+    };
+    let features = extract_128d_features(&img, input_path, &basic_features);
+    
+    // 2. 调用Python ML模型预测质量
+    let ml_caller = PythonMLCaller::new();
+    let optimize_mode = &options.optimize_mode;
+    
+    match ml_caller.predict_quality(&features, optimize_mode) {
+        Ok(quality) => {
+            println!("   🤖 AI predicted quality: {}", quality);
+            Ok(quality.clamp(1, 100))
+        }
+        Err(e) => {
+            eprintln!("   ❌ AI prediction failed: {}", e);
+            Err(e)
+        }
+    }
+}
+
+/// 🔥 Phase 1: AI自动参数优化
+fn ai_optimize_parameters(
+    input: &str,
+    _output: &str,
+    options: &ConvertOptions,
+) -> Result<(u8, u8)> {
+    use crate::python_ml_caller::PythonMLCaller;
+    use crate::feature_extractor_128d::extract_128d_features;
+    
+    // 1. 提取128维特征
+    let img = image::open(input)?;
+    let input_path = Path::new(input);
+    let basic_features = crate::ImageFeatures {
+        width: img.width(),
+        height: img.height(),
+        file_size: std::fs::metadata(input_path)?.len(),
+        format: input_path.extension()
+            .and_then(|s| s.to_str())
+            .unwrap_or("unknown")
+            .to_string(),
+        has_alpha: img.color().has_alpha(),
+        is_animated: false,
+        complexity: 0.5,
+    };
+    let features = extract_128d_features(&img, input_path, &basic_features);
+    
+    // 2. 调用Python ML模型优化所有参数
+    let ml_caller = PythonMLCaller::new();
+    let optimize_mode = &options.optimize_mode;
+    
+    match ml_caller.optimize_params(&features, optimize_mode) {
+        Ok(params) => {
+            // 用户明确指定的参数优先
+            let quality = if options.quality_explicit {
+                options.quality
+            } else {
+                params.quality.clamp(1, 100)
+            };
+            
+            let speed = if options.speed_explicit {
+                options.speed
+            } else {
+                params.speed.clamp(1, 10)
+            };
+            
+            println!("   🤖 AI optimized parameters:");
+            println!("      Quality: {}", quality);
+            println!("      Speed: {}", speed);
+            println!("      Confidence: {:.2}%", params.confidence * 100.0);
+            
+            Ok((quality, speed))
+        }
+        Err(e) => {
+            eprintln!("   ❌ AI optimization failed: {}", e);
+            eprintln!("   Using default parameters");
+            Ok((85, 4))
+        }
+    }
 }
 
 /// 处理文件名规范化
@@ -516,8 +690,18 @@ fn execute_conversion(
     println!("   Merge XMP: {}", options.merge_xmp_sidecar);
     println!("   Keep animated: {}", options.keep_animated);
     
-    // 应用预处理
-    let processed_input = apply_preprocessing_if_needed(input, options)?;
+    // 🔥 Phase 2: 文件类型验证
+    if options.validate_file_type {
+        validate_file_type(input)?;
+    }
+    
+    // 🔥 Phase 1: AI智能预处理
+    let processed_input = if options.smart_preprocess {
+        ai_smart_preprocess(input, options)?
+    } else {
+        apply_preprocessing_if_needed(input, options)?
+    };
+    
     let final_input = processed_input.as_deref().unwrap_or(input);
     
     // 提取输出格式
@@ -545,6 +729,11 @@ fn execute_conversion(
     
     // 执行转换
     core_convert(Path::new(final_input), output_path, format, &config)?;
+    
+    // 🔥 Phase 1: SSIM质量验证
+    if options.ssim_validation {
+        validate_ssim_quality(final_input, output)?;
+    }
     
     // 🎓 在线学习：记录转换经验
     if let Ok(converted_size) = std::fs::metadata(output_path).map(|m| m.len()) {
@@ -801,5 +990,183 @@ mod tests {
         assert_eq!(options.resize, Some("1920x1080".to_string()));
         assert_eq!(options.quantize, Some(128));
         assert_eq!(options.sharpen, Some(1.5));
+    }
+}
+
+
+/// 🔥 Phase 2: 文件类型验证
+fn validate_file_type(input: &str) -> Result<()> {
+    println!("🔍 Validating file type...");
+    
+    // 使用文件魔数检测真实类型
+    let file_data = std::fs::read(input)?;
+    if file_data.len() < 12 {
+        eprintln!("   ⚠️  File too small to validate");
+        return Ok(());
+    }
+    
+    // 检测常见格式的魔数
+    let detected_type = if file_data.starts_with(b"\xFF\xD8\xFF") {
+        "JPEG"
+    } else if file_data.starts_with(b"\x89PNG\r\n\x1a\n") {
+        "PNG"
+    } else if file_data.starts_with(b"GIF87a") || file_data.starts_with(b"GIF89a") {
+        "GIF"
+    } else if file_data.starts_with(b"RIFF") && file_data[8..12] == *b"WEBP" {
+        "WebP"
+    } else if file_data[4..12] == *b"ftypavif" || file_data[4..12] == *b"ftypavis" {
+        "AVIF"
+    } else if file_data[..2] == [0xFF, 0x0A] {
+        "JXL"
+    } else {
+        "Unknown"
+    };
+    
+    // 获取文件扩展名
+    let extension = Path::new(input)
+        .extension()
+        .and_then(|s| s.to_str())
+        .unwrap_or("unknown")
+        .to_uppercase();
+    
+    println!("   Extension: {}", extension);
+    println!("   Detected: {}", detected_type);
+    
+    // 检查是否匹配
+    if detected_type != "Unknown" && detected_type != extension {
+        eprintln!("   ⚠️  File type mismatch!");
+        eprintln!("      Extension says: {}", extension);
+        eprintln!("      Content is: {}", detected_type);
+        eprintln!("      This may cause conversion issues.");
+    } else {
+        println!("   ✅ File type validated");
+    }
+    
+    Ok(())
+}
+
+/// 🔥 Phase 1: AI智能预处理
+fn ai_smart_preprocess(
+    input: &str,
+    options: &ConvertOptions,
+) -> Result<Option<String>> {
+    println!("🤖 AI Smart Preprocessing enabled");
+    
+    use crate::python_ml_caller::PythonMLCaller;
+    use crate::feature_extractor_128d::extract_128d_features;
+    
+    // 1. 提取特征
+    let img = image::open(input)?;
+    let input_path = Path::new(input);
+    let basic_features = crate::ImageFeatures {
+        width: img.width(),
+        height: img.height(),
+        file_size: std::fs::metadata(input_path)?.len(),
+        format: input_path.extension()
+            .and_then(|s| s.to_str())
+            .unwrap_or("unknown")
+            .to_string(),
+        has_alpha: img.color().has_alpha(),
+        is_animated: false,
+        complexity: 0.5,
+    };
+    let features = extract_128d_features(&img, input_path, &basic_features);
+    
+    // 2. 调用AI推荐预处理操作
+    let ml_caller = PythonMLCaller::new();
+    
+    match ml_caller.recommend_preprocess(&features) {
+        Ok(recommendations) => {
+            println!("   🤖 AI preprocessing recommendations:");
+            
+            let mut modified_img = img;
+            let mut modified = false;
+            
+            // 应用AI推荐的预处理
+            if let Some(resize) = recommendations.resize {
+                println!("      📐 Resize: {}", resize);
+                if let Some((width, height)) = parse_resize_recommendation(&resize) {
+                    modified_img = apply_resize(&modified_img, width, height, &options.resize_filter)?;
+                    modified = true;
+                }
+            }
+            
+            if let Some(quantize) = recommendations.quantize {
+                println!("      🎨 Quantize: {} colors", quantize);
+                // 量化实现（如果需要）
+                let _ = quantize;
+            }
+            
+            if let Some(sharpen) = recommendations.sharpen {
+                println!("      ✨ Sharpen: {}", sharpen);
+                modified_img = apply_sharpen(&modified_img, sharpen)?;
+                modified = true;
+            }
+            
+            if !modified {
+                println!("      ℹ️  No preprocessing needed");
+                return Ok(None);
+            }
+            
+            // 保存预处理结果
+            let temp_path = format!("{}.ai_preprocessed.png", input);
+            modified_img.save(&temp_path)?;
+            println!("   💾 AI preprocessing result: {}", temp_path);
+            
+            Ok(Some(temp_path))
+        }
+        Err(e) => {
+            eprintln!("   ❌ AI preprocessing failed: {}", e);
+            eprintln!("   Falling back to manual preprocessing");
+            apply_preprocessing_if_needed(input, options)
+        }
+    }
+}
+
+/// 解析AI推荐的resize参数
+fn parse_resize_recommendation(resize_str: &str) -> Option<(u32, u32)> {
+    let parts: Vec<&str> = resize_str.split('x').collect();
+    if parts.len() == 2 {
+        if let (Ok(w), Ok(h)) = (parts[0].parse::<u32>(), parts[1].parse::<u32>()) {
+            return Some((w, h));
+        }
+    }
+    None
+}
+
+/// 🔥 Phase 1: SSIM质量验证
+fn validate_ssim_quality(input: &str, output: &str) -> Result<()> {
+    println!("📊 SSIM Quality Validation...");
+    
+    use crate::quality_checker::QualityChecker;
+    
+    let checker = QualityChecker::new();
+    let input_path = Path::new(input);
+    let output_path = Path::new(output);
+    
+    match checker.check_conversion_quality(input_path, output_path) {
+        Ok(result) => {
+            println!("   SSIM Score: {:.4}", result.ssim_score);
+            println!("   Quality Grade: {:?}", result.quality_grade);
+            println!("   Passed: {}", result.passed);
+            
+            if result.ssim_score >= 0.99 {
+                println!("   ✅ Excellent quality (SSIM ≥ 0.99)");
+            } else if result.ssim_score >= 0.95 {
+                println!("   ✅ Good quality (SSIM ≥ 0.95)");
+            } else if result.ssim_score >= 0.90 {
+                println!("   ⚠️  Acceptable quality (SSIM ≥ 0.90)");
+            } else {
+                eprintln!("   ❌ Quality degradation detected (SSIM < 0.90)");
+                eprintln!("      Consider using higher quality settings");
+            }
+            
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!("   ❌ SSIM calculation failed: {}", e);
+            eprintln!("      Skipping quality validation");
+            Ok(())
+        }
     }
 }

@@ -555,6 +555,7 @@ fn run(cli: Cli) -> Result<()> {
                 ref_frames: refs,
                 me_method: me_method,
                 pix_fmt: pix_fmt,
+                rate_control: None,  // 🔥 Phase 3: 添加rate_control字段
             };
             
             // 🎞️ 场景检测
