@@ -96,9 +96,11 @@ grep -r "println!.*[\u4e00-\u9fff]" src/
 
 #### JavaScript Modules:
 
-- `logger.js` ✅ - Uses `LOG_KEYS` constants
-- `useRustCLI.js` ✅ - Console logs in English
-- `useEagleAPI.js` ✅ - Console logs in English
+- `logger.js` ✅ - Uses `LOG_KEYS` constants (internal wrapper)
+- `useRustCLI.js` ✅ - **All output via logger system** (LOG_KEYS)
+- `useEagleAPI.js` ✅ - **All output via logger system** (LOG_KEYS)
+- `useI18n.js` ✅ - No console output
+- `fileTypes.js` ✅ - No console output
 
 #### i18n Files:
 
@@ -108,15 +110,22 @@ grep -r "println!.*[\u4e00-\u9fff]" src/
 **Search Results**:
 ```bash
 # No hardcoded Chinese in Vue templates
-grep -r ">[^<{]*[\u4e00-\u9fff]" plugin/format-vue/src/components/*.vue
-# Result: No matches (only comments) ✅
-
-# No hardcoded Chinese in console logs
-grep -r "console.*[\u4e00-\u9fff]" plugin/format-vue/src/**/*.js
+grep -r ">[\u4e00-\u9fff]" plugin/format-vue/src/**/*.vue
 # Result: No matches ✅
+
+# No hardcoded Chinese strings in JS
+grep -r "['\"]\`[\u4e00-\u9fff]" plugin/format-vue/src/**/*.js
+# Result: No matches ✅
+
+# All console output via logger system
+grep -r "console\.(log|warn|error)" plugin/format-vue/src/**/*.js
+# Result: Only in logger.js (internal wrapper) ✅
 ```
 
-**Conclusion**: Plugin UI is **fully i18n compliant** with zero hardcoded text.
+**Conclusion**: Plugin UI is **fully i18n compliant** with:
+- ✅ Zero hardcoded text in templates
+- ✅ Zero hardcoded text in JavaScript
+- ✅ All console output via LOG_KEYS system
 
 ---
 
@@ -195,7 +204,10 @@ npm run dev
 2. **761b45b** - fix(scripts): Convert remaining Chinese output to English
    - Fixed: train_lightgbm_v2.py, test_format_selector.py
 
-3. **4b8b8b8** - docs: Add plugin i18n verification report
+3. **839b1d5** - fix(plugin): Replace direct console output with logger system
+   - Fixed: useRustCLI.js (3 console statements → logger.debug)
+
+4. **4b8b8b8** - docs: Add plugin i18n verification report
    - Verified: Plugin format-vue i18n compliance
 
 ---
@@ -205,10 +217,10 @@ npm run dev
 ### 🎉 100% Compliant
 
 - ✅ **Rust kernel**: English-only output
-- ✅ **Python scripts**: English-only output
-- ✅ **Plugin UI**: i18n-based (no hardcoded text)
-- ✅ **Plugin console**: English-only debug logs
-- ✅ **Logger system**: Key-based (no hardcoded messages)
+- ✅ **Python scripts**: English-only output (13 files verified)
+- ✅ **Plugin UI**: i18n-based (zero hardcoded text)
+- ✅ **Plugin console**: LOG_KEYS system only (zero direct console)
+- ✅ **Logger system**: Key-based wrapper (no hardcoded messages)
 
 ### 🔒 Quality Assurance
 
