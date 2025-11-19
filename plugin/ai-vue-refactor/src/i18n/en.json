@@ -1,0 +1,59 @@
+{
+  "app": {
+    "title": "PIXLY AI",
+    "subtitle": "Intelligent Media Processing"
+  },
+  "header": {
+    "refresh": "Refresh",
+    "help": "Help",
+    "theme": "Toggle Theme"
+  },
+  "empty": {
+    "title": "No Files Selected",
+    "subtitle": "Select images or videos in Eagle",
+    "loadButton": "Load Files"
+  },
+  "controls": {
+    "title": "🤖 AI Smart Options",
+    "optimizeMode": "Optimization Target",
+    "balanced": "⚖️ Balanced - Quality & Size",
+    "quality": "🎯 Quality - Best Quality",
+    "size": "📦 Size - Smallest File"
+  },
+  "image": {
+    "title": "🖼️ Image Options",
+    "format": "Output Format",
+    "formatAuto": "🤖 Auto - AI Smart Selection",
+    "aiPrediction": "AI Parameter Prediction",
+    "fileValidation": "File Type Validation",
+    "ssimValidation": "SSIM Quality Validation",
+    "gpuAccel": "GPU Hardware Acceleration",
+    "preprocess": "Smart Preprocessing",
+    "formatCorrection": "Format Correction"
+  },
+  "video": {
+    "title": "🎬 Video Options",
+    "codec": "Video Codec",
+    "codecAuto": "🤖 Auto - AI Smart Selection",
+    "container": "Container Format",
+    "crf": "Quality Control (CRF)",
+    "speed": "Encoding Speed",
+    "twoPass": "Two-Pass Encoding",
+    "pixelFormat": "Pixel Format"
+  },
+  "fileList": {
+    "selected": "{count} files selected",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "convertButton": "Start Conversion"
+  },
+  "progress": {
+    "processing": "Processing...",
+    "complete": "Conversion Complete!",
+    "failed": "Conversion Failed"
+  },
+  "help": {
+    "title": "Help",
+    "close": "Close"
+  }
+}

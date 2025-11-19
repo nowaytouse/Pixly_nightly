@@ -1,0 +1,59 @@
+{
+  "app": {
+    "title": "PIXLY AI",
+    "subtitle": "智能多媒体处理"
+  },
+  "header": {
+    "refresh": "刷新",
+    "help": "使用帮助",
+    "theme": "切换主题"
+  },
+  "empty": {
+    "title": "未选择文件",
+    "subtitle": "在 Eagle 中选择图片或视频",
+    "loadButton": "加载文件"
+  },
+  "controls": {
+    "title": "🤖 AI 智能选项",
+    "optimizeMode": "优化目标",
+    "balanced": "⚖️ 平衡 - 质量与体积兼顾",
+    "quality": "🎯 质量优先 - 最佳画质",
+    "size": "📦 体积优先 - 最小文件"
+  },
+  "image": {
+    "title": "🖼️ 图像选项",
+    "format": "输出格式",
+    "formatAuto": "🤖 自动 - AI 智能选择",
+    "aiPrediction": "AI 参数预测",
+    "fileValidation": "文件类型验证",
+    "ssimValidation": "SSIM 质量验证",
+    "gpuAccel": "GPU 硬件加速",
+    "preprocess": "智能预处理",
+    "formatCorrection": "格式纠正"
+  },
+  "video": {
+    "title": "🎬 视频选项",
+    "codec": "视频编码器",
+    "codecAuto": "🤖 自动 - AI 智能选择",
+    "container": "容器格式",
+    "crf": "质量控制 (CRF)",
+    "speed": "编码速度",
+    "twoPass": "两遍编码",
+    "pixelFormat": "像素格式"
+  },
+  "fileList": {
+    "selected": "已选择 {count} 个文件",
+    "selectAll": "全选",
+    "deselectAll": "取消全选",
+    "convertButton": "开始转换"
+  },
+  "progress": {
+    "processing": "处理中...",
+    "complete": "转换完成！",
+    "failed": "转换失败"
+  },
+  "help": {
+    "title": "使用帮助",
+    "close": "关闭"
+  }
+}

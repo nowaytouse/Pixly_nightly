@@ -5,14 +5,14 @@
       <div class="header-left">
         <div class="logo">🤖</div>
         <div class="title-group">
-          <h1>PIXLY AI</h1>
-          <p>智能多媒体处理</p>
+          <h1>{{ t('app.title') }}</h1>
+          <p>{{ t('app.subtitle') }}</p>
         </div>
       </div>
       <div class="header-right">
-        <button class="icon-btn" @click="refreshFiles" title="刷新">🔄</button>
-        <button class="icon-btn" @click="showHelp = true" title="使用帮助">❓</button>
-        <button class="icon-btn" @click="toggleTheme" title="切换主题">
+        <button class="icon-btn" @click="refreshFiles" :title="t('header.refresh')">🔄</button>
+        <button class="icon-btn" @click="showHelp = true" :title="t('header.help')">❓</button>
+        <button class="icon-btn" @click="toggleTheme" :title="t('header.theme')">
           {{ isDark ? '☀️' : '🌙' }}
         </button>
       </div>
@@ -23,33 +23,33 @@
       <!-- Empty State -->
       <div v-if="files.length === 0" class="empty">
         <div class="empty-icon">📁</div>
-        <h3>未选择文件</h3>
-        <p>在 Eagle 中选择图片或视频</p>
-        <button class="btn-primary" @click="refreshFiles">加载文件</button>
+        <h3>{{ t('empty.title') }}</h3>
+        <p>{{ t('empty.subtitle') }}</p>
+        <button class="btn-primary" @click="refreshFiles">{{ t('empty.loadButton') }}</button>
       </div>
 
       <!-- Content -->
       <div v-else class="content">
         <!-- Left: Controls -->
         <div class="panel controls-panel">
-          <h3 class="panel-title">🤖 AI 智能选项</h3>
+          <h3 class="panel-title">{{ t('controls.title') }}</h3>
 
           <!-- 优化目标 -->
           <div class="form-group">
-            <label>优化目标</label>
+            <label>{{ t('controls.optimizeMode') }}</label>
             <select v-model="optimizeMode" class="select">
-              <option value="balanced">⚖️ 平衡 - 质量与体积兼顾</option>
-              <option value="quality">💎 质量优先 - 最佳画质</option>
-              <option value="size">📦 体积优先 - 最小文件</option>
+              <option value="balanced">{{ t('controls.balanced') }}</option>
+              <option value="quality">{{ t('controls.quality') }}</option>
+              <option value="size">{{ t('controls.size') }}</option>
             </select>
           </div>
 
           <!-- 🖼️ 图像输出格式 (仅图像模式) -->
           <div v-if="isImageMode" class="form-group">
-            <label>输出格式</label>
+            <label>{{ t('image.format') }}</label>
             <select v-model="outputFormat" class="select">
-              <option value="auto">🔮 自动选择（AI推荐）</option>
-              <option value="disabled">🚫 禁用（原格式优化）</option>
+              <option value="auto">{{ t('image.formatAuto') }}</option>
+              <option value="disabled">🚫 Disabled (Original Format)</option>
               <option value="avif">AVIF</option>
               <option value="jxl">JXL</option>
               <option value="webp">WebP</option>
@@ -310,6 +310,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useRustCLI } from './composables/useRustCLI'
 import { useEagleAPI } from './composables/useEagleAPI'
 import { logger, LOG_KEYS } from './utils/logger'
+import { useI18n } from './composables/useI18n'
+
+const { t } = useI18n()
 
 const rustCLI = useRustCLI()
 const eagleAPI = useEagleAPI()
