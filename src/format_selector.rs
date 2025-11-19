@@ -1,30 +1,30 @@
-// Phase 4: 智能格式选择器
+// Phase 4: Smart Format Selector
 // 
-// 目标：解决JPEG→WebP可能增大文件的问题
-// 原则：基于输入格式特征，智能判断最佳目标格式
+// Goal: Solve the problem of JPEG→WebP potentially increasing file size
+// Principle: Intelligently determine the best target format based on input format characteristics
 
 use anyhow::Result;
 use std::path::Path;
 
-/// 格式选择建议
+/// Format selection recommendation
 #[derive(Debug, Clone)]
 pub struct FormatRecommendation {
-    /// 推荐的目标格式
+    /// Recommended target format
     pub recommended_format: String,
-    /// 置信度 (0.0-1.0)
+    /// Confidence (0.0-1.0)
     pub confidence: f64,
-    /// 推荐原因
+    /// Recommendation reason
     pub reason: String,
-    /// 备选格式
+    /// Alternative formats
     pub alternatives: Vec<String>,
-    /// 预估文件大小变化 (负数表示减小)
+    /// Estimated file size change (negative means reduction)
     pub estimated_size_change: f64,
 }
 
-/// 智能格式选择器
+/// Smart format selector
 pub struct FormatSelector {
-    /// 是否启用激进模式（尝试更多格式）
-    #[allow(dead_code)]  // Phase 4: 保留用于未来扩展
+    /// Enable aggressive mode (try more formats)
+    #[allow(dead_code)]  // Phase 4: Reserved for future expansion
     aggressive: bool,
 }
 
@@ -79,47 +79,47 @@ impl FormatSelector {
             Ok(FormatRecommendation {
                 recommended_format: target.clone(),
                 confidence: 0.9,
-                reason: "用户指定格式，验证通过".to_string(),
+                reason: "User-specified format, validation passed".to_string(),
                 alternatives: vec![],
-                estimated_size_change: -0.3, // 预估减小30%
+                estimated_size_change: -0.3, // Estimated 30% reduction
             })
         }
     }
     
-    /// 检查是否是风险转换
+    /// Check if this is a risky conversion
     fn check_risky_conversion(&self, input: &str, target: &str) -> (bool, String) {
         match (input, target) {
-            // JPEG → WebP: 可能增大
+            // JPEG → WebP: May increase size
             ("jpg" | "jpeg", "webp") => (
                 true,
-                "JPEG已经是有损压缩，转WebP可能增大文件。建议保持JPEG或转JXL".to_string()
+                "JPEG is already lossy compressed, converting to WebP may increase file size. Recommend keeping JPEG or converting to JXL".to_string()
             ),
             
-            // JPEG → AVIF: 通常OK，但需要高质量
+            // JPEG → AVIF: Usually OK, but needs high quality
             ("jpg" | "jpeg", "avif") => (
                 false,
-                "JPEG→AVIF通常有效，但建议使用quality≥80".to_string()
+                "JPEG→AVIF usually works well, but recommend using quality≥80".to_string()
             ),
             
-            // PNG → JPEG: 丢失透明度
+            // PNG → JPEG: Loses transparency
             ("png", "jpg" | "jpeg") if self.has_transparency_risk() => (
                 true,
-                "PNG可能包含透明度，转JPEG会丢失。建议转WebP/AVIF/JXL".to_string()
+                "PNG may contain transparency, converting to JPEG will lose it. Recommend converting to WebP/AVIF/JXL".to_string()
             ),
             
-            // WebP → JPEG: 可能质量损失
+            // WebP → JPEG: May lose quality
             ("webp", "jpg" | "jpeg") => (
                 true,
-                "WebP→JPEG可能损失质量。建议保持WebP或转AVIF/JXL".to_string()
+                "WebP→JPEG may lose quality. Recommend keeping WebP or converting to AVIF/JXL".to_string()
             ),
             
             _ => (false, String::new())
         }
     }
     
-    /// 检查是否有透明度风险（简化版）
+    /// Check if there's transparency risk (simplified version)
     fn has_transparency_risk(&self) -> bool {
-        // 简化：假设PNG可能有透明度
+        // Simplified: assume PNG may have transparency
         true
     }
     
@@ -134,7 +134,7 @@ impl FormatSelector {
             "png" => Ok(FormatRecommendation {
                 recommended_format: "avif".to_string(),
                 confidence: 0.95,
-                reason: "PNG→AVIF: 最佳压缩率（60-80%），保留透明度".to_string(),
+                reason: "PNG→AVIF: Best compression (60-80% reduction), preserves transparency".to_string(),
                 alternatives: vec!["webp".to_string(), "jxl".to_string()],
                 estimated_size_change: -0.7, // 减小70%
             }),
@@ -143,7 +143,7 @@ impl FormatSelector {
             "jpg" | "jpeg" => Ok(FormatRecommendation {
                 recommended_format: "jxl".to_string(),
                 confidence: 0.9,
-                reason: "JPEG→JXL: 无损重新包装（减小20-30%），无质量损失".to_string(),
+                reason: "JPEG→JXL: Lossless repackaging (20-30% reduction), no quality loss".to_string(),
                 alternatives: vec!["avif".to_string()],
                 estimated_size_change: -0.25, // 减小25%
             }),
@@ -152,7 +152,7 @@ impl FormatSelector {
             "webp" => Ok(FormatRecommendation {
                 recommended_format: "avif".to_string(),
                 confidence: 0.85,
-                reason: "WebP→AVIF: 更好的压缩率（20-40%）".to_string(),
+                reason: "WebP→AVIF: Better compression (20-40% reduction)".to_string(),
                 alternatives: vec!["jxl".to_string()],
                 estimated_size_change: -0.3, // 减小30%
             }),
@@ -161,7 +161,7 @@ impl FormatSelector {
             "gif" => Ok(FormatRecommendation {
                 recommended_format: "webp".to_string(),
                 confidence: 0.9,
-                reason: "GIF→WebP: 保留动画，大幅减小文件（70-90%）".to_string(),
+                reason: "GIF→WebP: Preserves animation, significant size reduction (70-90%)".to_string(),
                 alternatives: vec!["avif".to_string(), "mp4".to_string()],
                 estimated_size_change: -0.8, // 减小80%
             }),
@@ -170,7 +170,7 @@ impl FormatSelector {
             "avif" => Ok(FormatRecommendation {
                 recommended_format: "avif".to_string(),
                 confidence: 1.0,
-                reason: "AVIF已经是最佳格式，建议保持或优化参数".to_string(),
+                reason: "AVIF is already the best format, recommend keeping or optimizing parameters".to_string(),
                 alternatives: vec![],
                 estimated_size_change: -0.1, // 优化可能减小10%
             }),
@@ -179,7 +179,7 @@ impl FormatSelector {
             "jxl" => Ok(FormatRecommendation {
                 recommended_format: "jxl".to_string(),
                 confidence: 1.0,
-                reason: "JXL已经是最佳格式，建议保持或优化参数".to_string(),
+                reason: "JXL is already the best format, recommend keeping or optimizing parameters".to_string(),
                 alternatives: vec![],
                 estimated_size_change: -0.1,
             }),
@@ -188,7 +188,7 @@ impl FormatSelector {
             _ => Ok(FormatRecommendation {
                 recommended_format: "avif".to_string(),
                 confidence: 0.7,
-                reason: format!("未知格式'{}'，默认推荐AVIF", input_format),
+                reason: format!("Unknown format '{}', defaulting to AVIF recommendation", input_format),
                 alternatives: vec!["webp".to_string(), "jxl".to_string()],
                 estimated_size_change: -0.5,
             }),

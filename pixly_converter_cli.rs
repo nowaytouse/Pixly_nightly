@@ -664,9 +664,9 @@ fn run(cli: Cli) -> Result<()> {
             format_correction,
             online_learning,
         } => {
-            // 🎓 Phase 11: 在线学习启用
+            // 🎓 Phase 11: Online learning enabled
             if online_learning {
-                println!("🎓 在线学习已启用 - 转换经验将被记录用于模型改进");
+                println!("🎓 Online learning enabled - Conversion experiences will be recorded for model improvement");
             }
             // 🎯 Phase 8: 智能格式选择
             let target_format = if let Some(user_format) = format {
@@ -688,11 +688,11 @@ fn run(cli: Cli) -> Result<()> {
                 let selector = FormatSelector::new(false);
                 match selector.select_best_format(&input, None) {
                     Ok(recommendation) => {
-                        println!("🎯 智能格式选择: {}", recommendation.recommended_format.to_uppercase());
+                        println!("🎯 Smart format selection: {}", recommendation.recommended_format.to_uppercase());
                         println!("   💡 {}", recommendation.reason);
-                        println!("   📊 置信度: {:.0}%", recommendation.confidence * 100.0);
+                        println!("   📊 Confidence: {:.0}%", recommendation.confidence * 100.0);
                         if recommendation.estimated_size_change < 0.0 {
-                            println!("   📉 预估减小: {:.0}%", -recommendation.estimated_size_change * 100.0);
+                            println!("   📉 Estimated size reduction: {:.0}%", -recommendation.estimated_size_change * 100.0);
                         }
                         recommendation.recommended_format
                     }
