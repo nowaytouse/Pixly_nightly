@@ -77,23 +77,23 @@ class ABTestRunner:
                 break
         
         if model_path is None:
-            print(f"⚠️  PPO模型不存在，尝试了: {[str(c) for c in model_candidates]}")
+            print(f"⚠️  PPO model not found, tried: {[str(c) for c in model_candidates]}")
             return None
         
         actor = ActorNetwork()
         
-        # PyTorch 2.6+需要weights_only=False来加载旧模型
+        # PyTorch 2.6+ requires weights_only=False to load old models
         checkpoint = torch.load(model_path, weights_only=False)
         
-        # 检查是否是完整checkpoint还是只有state_dict
+        # Check if it's a complete checkpoint or just state_dict
         if isinstance(checkpoint, dict) and 'actor' in checkpoint:
-            # 完整checkpoint（包含actor+critic）
+            # Complete checkpoint (actor+critic)
             actor.load_state_dict(checkpoint['actor'])
-            print(f"✅ PPO模型加载成功（完整checkpoint）: {model_path}")
+            print(f"✅ PPO model loaded successfully (full checkpoint): {model_path}")
         else:
-            # 只有state_dict
+            # Only state_dict
             actor.load_state_dict(checkpoint)
-            print(f"✅ PPO模型加载成功（state_dict）: {model_path}")
+            print(f"✅ PPO model loaded successfully (state_dict): {model_path}")
         
         actor.eval()
         return actor
@@ -149,8 +149,8 @@ class ABTestRunner:
             
             return quality, effort
         except Exception as e:
-            print(f"⚠️  LightGBM预测失败: {e}")
-            return 80, 6  # 默认值
+            print(f"⚠️  LightGBM prediction failed: {e}")
+            return 80, 6  # Default values
     
     def predict_with_ppo(self, actor, features: np.ndarray) -> Tuple[int, int]:
         """使用PPO预测参数"""
@@ -212,41 +212,41 @@ class ABTestRunner:
             return {'success': False, 'error': str(e)}
     
     def test_single_image(self, image_path: Path, actor) -> Dict:
-        """测试单个图像"""
-        print(f"\n📸 测试: {image_path.name}")
+        """Test single image"""
+        print(f"\n📸 Testing: {image_path.name}")
         
-        # 提取特征
+        # Extract features
         features = self.extract_features(image_path)
         
-        # LightGBM预测
+        # LightGBM prediction
         lgb_quality, lgb_effort = self.predict_with_lightgbm(features)
         print(f"   LightGBM: quality={lgb_quality}, effort={lgb_effort}")
         
-        # PPO预测
+        # PPO prediction
         ppo_quality, ppo_effort = self.predict_with_ppo(actor, features)
         print(f"   PPO:      quality={ppo_quality}, effort={ppo_effort}")
         
-        # 转换（LightGBM）
+        # Convert (LightGBM)
         lgb_output = self.output_dir / f"lgb_{image_path.stem}.webp"
         lgb_result = self.convert_image(image_path, lgb_output, lgb_quality, lgb_effort)
         
         if lgb_result['success']:
-            print(f"   LightGBM结果: 压缩{lgb_result['compression_ratio']*100:.1f}%, "
-                  f"SSIM={lgb_result['ssim']:.4f}, 奖励={lgb_result['reward']:.4f}")
+            print(f"   LightGBM result: compression {lgb_result['compression_ratio']*100:.1f}%, "
+                  f"SSIM={lgb_result['ssim']:.4f}, reward={lgb_result['reward']:.4f}")
             self.lightgbm_results.append(lgb_result)
         else:
-            print(f"   ❌ LightGBM转换失败: {lgb_result.get('error', 'Unknown')}")
+            print(f"   ❌ LightGBM conversion failed: {lgb_result.get('error', 'Unknown')}")
         
-        # 转换（PPO）
+        # Convert (PPO)
         ppo_output = self.output_dir / f"ppo_{image_path.stem}.webp"
         ppo_result = self.convert_image(image_path, ppo_output, ppo_quality, ppo_effort)
         
         if ppo_result['success']:
-            print(f"   PPO结果:      压缩{ppo_result['compression_ratio']*100:.1f}%, "
-                  f"SSIM={ppo_result['ssim']:.4f}, 奖励={ppo_result['reward']:.4f}")
+            print(f"   PPO result:      compression {ppo_result['compression_ratio']*100:.1f}%, "
+                  f"SSIM={ppo_result['ssim']:.4f}, reward={ppo_result['reward']:.4f}")
             self.ppo_results.append(ppo_result)
         else:
-            print(f"   ❌ PPO转换失败: {ppo_result.get('error', 'Unknown')}")
+            print(f"   ❌ PPO conversion failed: {ppo_result.get('error', 'Unknown')}")
         
         return {
             'image': image_path.name,
@@ -255,78 +255,78 @@ class ABTestRunner:
         }
     
     def run_test(self, max_images: int = 50):
-        """运行A/B测试"""
+        """Run A/B test"""
         print("=" * 60)
-        print("🧪 Phase 3.4: A/B测试 - PPO vs LightGBM")
+        print("🧪 Phase 3.4: A/B Test - PPO vs LightGBM")
         print("=" * 60)
         
-        # 加载PPO模型
+        # Load PPO model
         actor = self.load_ppo_model()
         if actor is None:
-            print("❌ 无法加载PPO模型，测试终止")
+            print("❌ Unable to load PPO model, test terminated")
             return
         
-        # 扫描测试图像
+        # Scan test images
         image_files = []
         for ext in ['*.jpg', '*.jpeg', '*.png']:
             image_files.extend(self.test_dir.glob(ext))
         
         if not image_files:
-            print(f"❌ 未找到测试图像: {self.test_dir}")
+            print(f"❌ No test images found: {self.test_dir}")
             return
         
-        print(f"\n📁 找到 {len(image_files)} 个测试图像")
-        print(f"   测试数量: {min(max_images, len(image_files))}")
+        print(f"\n📁 Found {len(image_files)} test images")
+        print(f"   Testing: {min(max_images, len(image_files))} images")
         
-        # 测试每个图像
+        # Test each image
         test_results = []
         for i, image_path in enumerate(image_files[:max_images]):
             result = self.test_single_image(image_path, actor)
             test_results.append(result)
             
             if (i + 1) % 10 == 0:
-                print(f"\n进度: {i+1}/{min(max_images, len(image_files))}")
+                print(f"\nProgress: {i+1}/{min(max_images, len(image_files))}")
         
         # 生成报告
         self.generate_report(test_results)
     
     def generate_report(self, test_results: List[Dict]):
-        """生成测试报告"""
+        """Generate test report"""
         print("\n" + "=" * 60)
-        print("📊 A/B测试结果报告")
+        print("📊 A/B Test Results Report")
         print("=" * 60)
         
-        # 统计LightGBM
+        # LightGBM statistics
         if self.lightgbm_results:
             lgb_rewards = [r['reward'] for r in self.lightgbm_results]
             lgb_compression = [r['compression_ratio'] for r in self.lightgbm_results]
             lgb_ssim = [r['ssim'] for r in self.lightgbm_results]
             
-            print("\n🔵 LightGBM模型:")
-            print(f"   成功转换: {len(self.lightgbm_results)}/{len(test_results)}")
-            print(f"   平均奖励: {np.mean(lgb_rewards):.4f} ± {np.std(lgb_rewards):.4f}")
-            print(f"   平均压缩率: {np.mean(lgb_compression)*100:.2f}%")
-            print(f"   平均SSIM: {np.mean(lgb_ssim):.4f}")
-            print(f"   最佳奖励: {np.max(lgb_rewards):.4f}")
-            print(f"   最差奖励: {np.min(lgb_rewards):.4f}")
+            print("\n🔵 LightGBM Model:")
+            print(f"   Successful conversions: {len(self.lightgbm_results)}/{len(test_results)}")
+            print(f"   Average reward: {np.mean(lgb_rewards):.4f} ± {np.std(lgb_rewards):.4f}")
+            print(f"   Average compression ratio: {np.mean(lgb_compression)*100:.2f}%")
+            print(f"   Average SSIM: {np.mean(lgb_ssim):.4f}")
+            print(f"   Best reward: {np.max(lgb_rewards):.4f}")
+            print(f"   Worst reward: {np.min(lgb_rewards):.4f}")
         
-        # 统计PPO
+        # PPO statistics
         if self.ppo_results:
             ppo_rewards = [r['reward'] for r in self.ppo_results]
             ppo_compression = [r['compression_ratio'] for r in self.ppo_results]
             ppo_ssim = [r['ssim'] for r in self.ppo_results]
             
-            print("\n🟢 PPO模型:")
-            print(f"   成功转换: {len(self.ppo_results)}/{len(test_results)}")
-            print(f"   平均奖励: {np.mean(ppo_rewards):.4f} ± {np.std(ppo_rewards):.4f}")
-            print(f"   平均压缩率: {np.mean(ppo_compression)*100:.2f}%")
-            print(f"   平均SSIM: {np.mean(ppo_ssim):.4f}")
-            print(f"   最佳奖励: {np.max(ppo_rewards):.4f}")
-            print(f"   最差奖励: {np.min(ppo_rewards):.4f}")
+            print("\n🟢 PPO Model:")
+            print(f"   Successful conversions: {len(self.ppo_results)}/{len(test_results)}")
+            print(f"   Average reward: {np.mean(ppo_rewards):.4f} ± {np.std(ppo_rewards):.4f}")
+            print(f"   Average compression ratio: {np.mean(ppo_compression)*100:.2f}%")
+            print(f"   Average SSIM: {np.mean(ppo_ssim):.4f}")
+            print(f"   Best reward: {np.max(ppo_rewards):.4f}")
+            print(f"   Worst reward: {np.min(ppo_rewards):.4f}")
         
-        # 对比分析
+        # Comparative analysis
         if self.lightgbm_results and self.ppo_results:
-            print("\n📈 对比分析:")
+            print("\n📈 Comparative Analysis:")
             
             reward_improvement = (np.mean(ppo_rewards) - np.mean(lgb_rewards)) / abs(np.mean(lgb_rewards)) * 100
             compression_improvement = (np.mean(ppo_compression) - np.mean(lgb_compression)) / np.mean(lgb_compression) * 100
