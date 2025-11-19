@@ -66,10 +66,8 @@ pub mod alpha_predictor;
 pub mod zero_copy_buffer;
 pub mod video_processor;
 pub mod video_strategy;  // 🎬 Phase 1: 视频编码策略（从僵尸代码恢复）
-// TODO Phase 2: unified_cache/parallel/progress 需要重构依赖后集成
-// pub mod unified_cache;
-// pub mod unified_parallel;
-// pub mod unified_progress;
+// ✅ Phase 2: 统一缓存系统已实现
+pub mod unified_cache;
 pub mod feature_extractor_128d;
 pub mod ppo_model_enhanced;
 pub mod modern_formats;
