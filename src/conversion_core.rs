@@ -6,6 +6,8 @@ use anyhow::Result;
 use image::GenericImageView;
 use crate::feature_toggles::FeatureToggles;
 use crate::format_params::FormatSpecificParams;
+use crate::validation_integration::ValidationDisplay;
+use crate::conversion_validator::ConversionValidator;
 
 #[derive(Debug, Clone)]
 pub struct ConversionConfig {
@@ -48,6 +50,12 @@ pub struct ConversionConfig {
     
     /// 规范化文件名
     pub normalize_filenames: bool,
+    
+    /// 🔥 Phase 3.3: 启用验证
+    pub enable_validation: bool,
+    
+    /// 验证级别 (1-5)
+    pub validation_level: u8,
     
     // ═══════════════════════════════════════════════════
     // 📦 JXL专属参数 (修复空壳功能)
@@ -121,6 +129,8 @@ impl Default for ConversionConfig {
             jxl_responsive: false,
             jxl_gaborish: false,
             format_specific_params: None,
+            enable_validation: false,  // 🔥 Phase 3.3: 默认关闭，可选启用
+            validation_level: 2,       // Standard level
         }
     }
 }
@@ -299,6 +309,20 @@ pub fn execute_conversion(
     // ✅ 验证输出质量
     // ═══════════════════════════════════════════════════
     validate_output_quality(output, config)?;
+    
+    // ═══════════════════════════════════════════════════
+    // 🔥 Phase 3.3: 输出验证
+    // ═══════════════════════════════════════════════════
+    if config.enable_validation {
+        println!("🔍 Running output validation...");
+        let result = ConversionValidator::validate_output(output, Some(input_size));
+        ValidationDisplay::display_result(&result);
+        
+        if !result.valid && config.validation_level >= 4 {
+            // 严格模式下验证失败则报错
+            anyhow::bail!("Validation failed: output did not meet quality standards");
+        }
+    }
     
     // ═══════════════════════════════════════════════════
     // 📄 XMP Sidecar合并 (如果启用)
