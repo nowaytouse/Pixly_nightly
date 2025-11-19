@@ -49,6 +49,7 @@ pub mod reward_calculator;
 // Phase 3.2: 在线学习
 pub mod online_learning;
 pub mod online_learner_manager;
+pub mod batch_decision_manager;  // 🎯 智能批量决策管理器
 pub mod python_ml_caller;  // 🔥 Python ML Bridge调用模块
 pub mod video_features;  // 🎬 视频特征提取
 pub mod file_attributes;  // 🔥 文件属性保留（时间戳 + 扩展属性）
