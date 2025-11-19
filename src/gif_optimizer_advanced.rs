@@ -39,8 +39,21 @@ pub enum FrameOptimization {
     Aggressive,
 }
 
-// 🔥 GifOptimizer已删除 - 完全未被使用
-// 保留：GifOptimizationConfig, OptimizationResult (可能被使用)
+/// GIF优化器
+pub struct GifOptimizer {
+    #[allow(dead_code)]
+    config: GifOptimizationConfig,
+}
+
+impl GifOptimizer {
+    pub fn new(config: GifOptimizationConfig) -> Self {
+        Self { config }
+    }
+    
+    pub fn with_defaults() -> Self {
+        Self::new(GifOptimizationConfig::default())
+    }
+}
 
 /// 优化结果
 #[derive(Debug, Clone, Serialize, Deserialize)]

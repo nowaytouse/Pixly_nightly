@@ -536,6 +536,25 @@ fn estimate_unique_colors(rgba: &image::RgbaImage, step: usize) -> usize {
     colors.len()
 }
 
+/// 估算颜色数量（保留旧版本兼容性）
+#[allow(dead_code)]
+fn estimate_color_count(pixels: &[&image::Rgba<u8>], quantize: usize) -> usize {
+    use std::collections::HashSet;
+    
+    let mut colors = HashSet::new();
+    let step = 256 / quantize;
+    
+    for pixel in pixels.iter().step_by(10) {
+        let channels = pixel.channels();
+        let r = (channels[0] / step as u8) * step as u8;
+        let g = (channels[1] / step as u8) * step as u8;
+        let b = (channels[2] / step as u8) * step as u8;
+        colors.insert((r, g, b));
+    }
+    
+    colors.len()
+}
+
 /// 计算局部方差
 fn calculate_local_variance(gray: &image::GrayImage) -> (f64, f64) {
     let (width, height) = gray.dimensions();

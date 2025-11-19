@@ -5,6 +5,7 @@
 
 use anyhow::Result;
 use std::path::Path;
+use crate::format_knowledge::FormatKnowledgeBase;
 
 /// Format selection recommendation
 #[derive(Debug, Clone)]
@@ -23,13 +24,20 @@ pub struct FormatRecommendation {
 
 /// Smart format selector
 pub struct FormatSelector {
-    // 🔥 Phase 3.3: 所有字段已移除，当前实现为无状态
-    // 未来如需扩展可添加：aggressive模式、format_knowledge等
+    /// Enable aggressive mode (try more formats)
+    #[allow(dead_code)]  // Phase 4: Reserved for future expansion
+    aggressive: bool,
+    /// 🔥 Phase 3.3: 格式知识库
+    #[allow(dead_code)]
+    format_knowledge: FormatKnowledgeBase,
 }
 
 impl FormatSelector {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(aggressive: bool) -> Self {
+        Self { 
+            aggressive,
+            format_knowledge: FormatKnowledgeBase::new(),
+        }
     }
     
     /// 选择最佳目标格式
@@ -261,7 +269,7 @@ mod tests {
     
     #[test]
     fn test_png_to_avif() {
-        let selector = FormatSelector::new();
+        let selector = FormatSelector::new(false);
         let path = Path::new("test.png");
         let result = selector.select_best_format(path, None).unwrap();
         
@@ -272,7 +280,7 @@ mod tests {
     
     #[test]
     fn test_jpeg_to_jxl() {
-        let selector = FormatSelector::new();
+        let selector = FormatSelector::new(false);
         let path = Path::new("test.jpg");
         let result = selector.select_best_format(path, None).unwrap();
         
@@ -282,7 +290,7 @@ mod tests {
     
     #[test]
     fn test_risky_jpeg_to_webp() {
-        let selector = FormatSelector::new();
+        let selector = FormatSelector::new(false);
         let path = Path::new("test.jpg");
         let result = selector.select_best_format(path, Some("webp")).unwrap();
         

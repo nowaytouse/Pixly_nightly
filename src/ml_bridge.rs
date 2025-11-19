@@ -6,7 +6,8 @@
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 
-
+/// 特征提取器函数类型
+type FeatureExtractorFn = Box<dyn Fn(&image::DynamicImage) -> StandardFeatures + Send + Sync>;
 
 /// 标准化特征向量 (128维)
 /// 与Python训练保持完全一致
@@ -173,8 +174,124 @@ impl TrainingSample {
     }
 }
 
-// 🔥 MLBridge结构体已删除 - 完全未被使用
-// 保留的类型：StandardFeatures, StandardPrediction, TrainingSample (被大量使用)
+/// ML桥接器 - 统一Python和Rust
+pub struct MLBridge {
+    /// 模型版本
+    #[allow(dead_code)]  // 保留用于未来版本检查
+    model_version: String,
+    
+    /// 特征提取器
+    feature_extractor: Option<FeatureExtractorFn>,
+}
+
+impl MLBridge {
+    /// 创建新的桥接器
+    pub fn new(model_version: String) -> Self {
+        Self {
+            model_version,
+            feature_extractor: None,
+        }
+    }
+    
+    /// 设置特征提取器
+    pub fn with_feature_extractor<F>(mut self, extractor: F) -> Self 
+    where
+        F: Fn(&image::DynamicImage) -> StandardFeatures + Send + Sync + 'static
+    {
+        self.feature_extractor = Some(Box::new(extractor));
+        self
+    }
+    
+    /// 提取标准化特征
+    pub fn extract_features(&self, img: &image::DynamicImage) -> StandardFeatures {
+        if let Some(extractor) = &self.feature_extractor {
+            extractor(img)
+        } else {
+            // 默认特征提取
+            self.default_feature_extraction(img)
+        }
+    }
+    
+    /// 默认特征提取
+    fn default_feature_extraction(&self, img: &image::DynamicImage) -> StandardFeatures {
+        // 使用feature_extractor_128d函数式API
+        use crate::feature_extractor_128d::extract_128d_features;
+        
+        // 创建基础特征
+        let basic_features = crate::ImageFeatures {
+            width: img.width(),
+            height: img.height(),
+            file_size: 0,  // 未知
+            format: "unknown".to_string(),
+            has_alpha: img.color().has_alpha(),
+            is_animated: false,
+            complexity: 0.5,  // 默认值
+        };
+        
+        let features_vec = extract_128d_features(img, std::path::Path::new(""), &basic_features);
+        
+        // 🔥 安全的特征转换 - 失败时返回默认值
+        StandardFeatures::from_vector(&features_vec)
+            .unwrap_or_else(|e| {
+                log::error!("❌ Failed to create StandardFeatures from vector: {}", e);
+                log::warn!("⚠️  Using default StandardFeatures as fallback");
+                StandardFeatures::default()
+            })
+    }
+    
+    /// 保存训练样本到JSON (供Python训练使用)
+    pub fn save_training_sample(&self, sample: &TrainingSample, path: &str) -> Result<(), String> {
+        let json = serde_json::to_string_pretty(&sample.to_training_format())
+            .map_err(|e| e.to_string())?;
+        std::fs::write(path, json).map_err(|e| e.to_string())?;
+        Ok(())
+    }
+    
+    /// 批量保存训练样本
+    pub fn save_training_batch(&self, samples: &[TrainingSample], path: &str) -> Result<(), String> {
+        let batch: Vec<_> = samples.iter()
+            .map(|s| s.to_training_format())
+            .collect();
+        
+        let json = serde_json::to_string_pretty(&batch)
+            .map_err(|e| e.to_string())?;
+        std::fs::write(path, json).map_err(|e| e.to_string())?;
+        Ok(())
+    }
+    
+    /// 加载Python模型预测结果
+    pub fn load_prediction(&self, json: &str) -> Result<StandardPrediction, String> {
+        serde_json::from_str(json).map_err(|e| e.to_string())
+    }
+    
+    /// 验证特征一致性
+    pub fn validate_features(&self, features: &StandardFeatures) -> Result<(), String> {
+        let vec = features.to_vector();
+        
+        // Check dimension
+        if vec.len() != 128 {
+            return Err(format!("Invalid feature dimension: {}", vec.len()));
+        }
+        
+        // Check NaN
+        if vec.iter().any(|&x| x.is_nan()) {
+            return Err("Features contain NaN".to_string());
+        }
+        
+        // Check Inf
+        if vec.iter().any(|&x| x.is_infinite()) {
+            return Err("Features contain Inf".to_string());
+        }
+        
+        Ok(())
+    }
+}
+
+impl Default for MLBridge {
+    fn default() -> Self {
+        Self::new("1.0.0".to_string())
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -249,5 +366,20 @@ mod tests {
         assert!(format.contains_key("result_size"));
     }
 
-
+    #[test]
+    fn test_ml_bridge_validation() {
+        let bridge = MLBridge::default();
+        
+        let features = StandardFeatures {
+            basic: [1.0; 16],
+            color: [2.0; 16],
+            texture: [3.0; 16],
+            shape: [4.0; 16],
+            quality: [5.0; 16],
+            metadata: [6.0; 32],
+            context: [7.0; 16],
+        };
+        
+        assert!(bridge.validate_features(&features).is_ok());
+    }
 }

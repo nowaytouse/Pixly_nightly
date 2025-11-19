@@ -98,7 +98,12 @@ impl FormatCorrector {
         let mut file = fs::File::open(path)?;
         let mut buffer = [0u8; 12];
         use std::io::Read;
-        file.read(&mut buffer)?;
+        let bytes_read = file.read(&mut buffer)?;
+        
+        // 确保读取了足够的字节
+        if bytes_read < 4 {
+            return Err(anyhow::anyhow!("File too small to detect format"));
+        }
         
         // 根据魔数判断格式
         let format = match &buffer[0..4] {

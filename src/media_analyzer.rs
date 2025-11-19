@@ -43,15 +43,22 @@ pub struct MediaInfo {
 
 /// 媒体分析器
 pub struct MediaAnalyzer {
-    // 🔥 enable_ai_detection已删除 - 完全未使用
+    #[allow(dead_code)]
+    enable_ai_detection: bool,
 }
 
 impl MediaAnalyzer {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            enable_ai_detection: true,
+        }
     }
     
-    // 🔥 with_ai_detection已删除 - 完全未使用
+    pub fn with_ai_detection(enable_ai_detection: bool) -> Self {
+        Self {
+            enable_ai_detection,
+        }
+    }
     
     pub fn analyze(&self, file_path: &Path) -> Result<MediaInfo> {
         if !file_path.exists() {
@@ -184,8 +191,11 @@ mod tests {
     
     #[test]
     fn test_media_analyzer_creation() {
-        let _analyzer = MediaAnalyzer::new();
-        // 🔥 enable_ai_detection字段已删除
+        let analyzer = MediaAnalyzer::new();
+        assert!(analyzer.enable_ai_detection);
+        
+        let analyzer = MediaAnalyzer::with_ai_detection(false);
+        assert!(!analyzer.enable_ai_detection);
     }
     
     #[test]

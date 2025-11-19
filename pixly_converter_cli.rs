@@ -608,10 +608,10 @@ fn run(cli: Cli) -> Result<()> {
                 two_pass: if ai { final_two_pass } else { feature_toggles.enable_two_pass },  // 🔥 使用ML预测的two_pass
                 hw_accel: if gpu { "auto".to_string() } else { "none".to_string() },
                 gop_size: gop,
-                bframes: bframes,
+                bframes,
                 ref_frames: refs,
-                me_method: me_method,
-                pix_fmt: pix_fmt,
+                me_method,
+                pix_fmt,
                 rate_control: None,  // 🔥 Phase 3: 添加rate_control字段
             };
             
@@ -732,7 +732,7 @@ fn run(cli: Cli) -> Result<()> {
             let target_format = if let Some(user_format) = format {
                 // 用户指定格式，使用格式选择器验证
                 use pixly_kernel::format_selector::FormatSelector;
-                let selector = FormatSelector::new();
+                let selector = FormatSelector::new(false);
                 match selector.select_best_format(&input, Some(&user_format)) {
                     Ok(recommendation) => {
                         if recommendation.confidence < 0.7 {
@@ -745,7 +745,7 @@ fn run(cli: Cli) -> Result<()> {
             } else {
                 // 自动选择最佳格式
                 use pixly_kernel::format_selector::FormatSelector;
-                let selector = FormatSelector::new();
+                let selector = FormatSelector::new(false);
                 match selector.select_best_format(&input, None) {
                     Ok(recommendation) => {
                         println!("🎯 Smart format selection: {}", recommendation.recommended_format.to_uppercase());

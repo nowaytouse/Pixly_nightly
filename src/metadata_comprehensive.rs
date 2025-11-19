@@ -300,7 +300,22 @@ impl MetadataPreservationConfig {
     }
 }
 
-// 🔥 MetadataProcessor已删除 - 完全未被使用
+/// 元数据处理器
+#[derive(Default)]
+pub struct MetadataProcessor {
+    #[allow(dead_code)]
+    config: MetadataPreservationConfig,
+}
+
+impl MetadataProcessor {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    
+    pub fn with_config(config: MetadataPreservationConfig) -> Self {
+        Self { config }
+    }
+}
 
 /// 最全面的元数据处理器
 pub struct ComprehensiveMetadataProcessor {
