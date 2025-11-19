@@ -67,6 +67,15 @@ impl OnlineLearner {
     /// 启用在线学习
     pub fn enable(&mut self) {
         self.enabled = true;
+        
+        // 🔥 检查是否有积累的经验需要训练
+        let buffer_size = self.buffer_size();
+        if buffer_size >= self.update_interval {
+            println!("🎓 Found {} accumulated experiences, triggering batch training...", buffer_size);
+            if let Err(e) = self.trigger_update() {
+                eprintln!("❌ Failed to trigger batch training: {}", e);
+            }
+        }
     }
 
     
@@ -120,47 +129,51 @@ impl OnlineLearner {
         Ok(())
     }
     
-    /// 触发模型更新（使用在线PPO训练器）
+    /// 触发模型更新（使用批量PPO训练器）
     fn trigger_update(&self) -> Result<()> {
-        log::info!("🚀 Starting online PPO model update...");
+        println!("🚀 Starting batch PPO model update...");
+        log::info!("🚀 Starting batch PPO model update...");
         
-        // 获取所有经验
-        let buffer = self.experience_buffer.lock().unwrap();
+        let buffer_size = self.buffer_size();
         
-        // 逐个更新模型
-        for (idx, exp) in buffer.iter().enumerate() {
-            // 构建转换结果JSON
-            let conversion_result = serde_json::json!({
-                "features": exp.features,
-                "action": {
-                    "quality": exp.quality,
-                    "effort": exp.effort
-                },
-                "original_size": 1000000, // 从reward反推（简化）
-                "converted_size": ((1.0 - exp.reward) * 1000000.0) as u64,
-                "ssim": 0.95 // 默认值
-            });
+        // 🔥 使用批量训练器（一次性处理所有经验）
+        let model_dir = self.model_path.parent()
+            .unwrap_or_else(|| std::path::Path::new("models/ppo"));
+        
+        let experience_file = model_dir.join("experience_buffer.json");
+        
+        println!("   Experience file: {:?}", experience_file);
+        println!("   Model dir: {:?}", model_dir);
+        println!("   Buffer size: {}", buffer_size);
+        
+        let output = std::process::Command::new("python3")
+            .arg("scripts/batch_ppo_update.py")
+            .arg("--experience-file")
+            .arg(&experience_file)
+            .arg("--model-dir")
+            .arg(model_dir)
+            .arg("--batch-size")
+            .arg("32")
+            .output()
+            .context("Failed to run batch PPO updater")?;
+        
+        if output.status.success() {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            log::info!("✅ Batch model update complete ({} experiences)", buffer_size);
             
-            // 调用在线训练器，使用配置的模型路径
-            let model_dir = self.model_path.parent()
-                .unwrap_or_else(|| std::path::Path::new("models/ppo"));
-            
-            let output = std::process::Command::new("python3")
-                .arg("scripts/online_ppo_trainer.py")
-                .arg("--conversion-result")
-                .arg(conversion_result.to_string())
-                .arg("--model-dir")
-                .arg(model_dir)
-                .output()
-                .context("Failed to run online PPO trainer")?;
-            
-            if !output.status.success() {
-                let stderr = String::from_utf8_lossy(&output.stderr);
-                log::error!("❌ Update failed for experience {}: {}", idx, stderr);
+            // 解析结果（最后一行是JSON）
+            if let Some(last_line) = stdout.lines().last() {
+                if let Ok(result) = serde_json::from_str::<serde_json::Value>(last_line) {
+                    if let Some(avg_loss) = result.get("avg_loss").and_then(|v| v.as_f64()) {
+                        log::info!("   Average loss: {:.4}", avg_loss);
+                    }
+                }
             }
+        } else {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            log::error!("❌ Batch update failed: {}", stderr);
+            return Err(anyhow::anyhow!("Batch PPO update failed"));
         }
-        
-        log::info!("✅ Online model update complete ({} experiences)", buffer.len());
         
         Ok(())
     }

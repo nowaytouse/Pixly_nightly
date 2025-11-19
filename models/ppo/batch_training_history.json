@@ -1,0 +1,54 @@
+{
+  "batches": [
+    {
+      "timestamp": "2025-11-19T15:10:53.264823",
+      "num_experiences": 45,
+      "num_batches": 2,
+      "avg_loss": 247.66860961914062,
+      "avg_reward": 0.3516302882832887
+    },
+    {
+      "timestamp": "2025-11-19T15:11:58.649437",
+      "num_experiences": 46,
+      "num_batches": 2,
+      "avg_loss": 263.32975006103516,
+      "avg_reward": 0.35691844991321675
+    },
+    {
+      "timestamp": "2025-11-19T15:12:09.690925",
+      "num_experiences": 47,
+      "num_batches": 2,
+      "avg_loss": 233.01397705078125,
+      "avg_reward": 0.36198158338867986
+    },
+    {
+      "timestamp": "2025-11-19T15:13:31.565780",
+      "num_experiences": 48,
+      "num_batches": 2,
+      "avg_loss": 237.52661895751953,
+      "avg_reward": 0.366833752969332
+    },
+    {
+      "timestamp": "2025-11-19T15:14:46.998453",
+      "num_experiences": 49,
+      "num_batches": 2,
+      "avg_loss": 241.9786834716797,
+      "avg_reward": 0.37148787481199835
+    },
+    {
+      "timestamp": "2025-11-19T15:16:47.269755",
+      "num_experiences": 49,
+      "num_batches": 2,
+      "avg_loss": 236.11437225341797,
+      "avg_reward": 0.37148787481199835
+    },
+    {
+      "timestamp": "2025-11-19T15:16:48.590152",
+      "num_experiences": 50,
+      "num_batches": 2,
+      "avg_loss": 214.52415466308594,
+      "avg_reward": 0.375955831780958
+    }
+  ],
+  "total_updates": 334
+}

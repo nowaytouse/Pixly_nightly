@@ -384,15 +384,21 @@ fn record_conversion_for_learning(
     };
     
     // 使用全局学习器管理器记录经验
-    if let Err(e) = OnlineLearnerManager::record_conversion(features, config.quality as u32, config.speed as u32, result) {
-        log::warn!("⚠️  Failed to record conversion experience: {}", e);
-    } else {
-        let buffer_size = OnlineLearnerManager::buffer_size();
-        println!("📝 Conversion experience recorded (global buffer: {})", buffer_size);
-        
-        // 如果buffer达到阈值，会自动触发更新
-        if buffer_size >= 10 {
-            println!("🎓 Model update triggered! ({} experiences accumulated)", buffer_size);
+    match OnlineLearnerManager::record_conversion(features, config.quality as u32, config.speed as u32, result) {
+        Ok(_) => {
+            let buffer_size = OnlineLearnerManager::buffer_size();
+            println!("📝 Conversion experience recorded (global buffer: {})", buffer_size);
+            
+            // 如果buffer达到阈值，会自动触发更新
+            if buffer_size >= 10 {
+                println!("🎓 Model update triggered! ({} experiences accumulated)", buffer_size);
+            }
+        }
+        Err(e) => {
+            // 🔥 响亮失败：显示详细错误信息
+            eprintln!("❌ Failed to record conversion experience: {}", e);
+            eprintln!("   This may affect online learning quality");
+            log::error!("Online learning error: {}", e);
         }
     }
 }
