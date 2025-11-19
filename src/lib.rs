@@ -36,6 +36,7 @@ pub mod format_selector;  // Phase 4: 智能格式选择
 pub mod media_analyzer;
 pub mod image_params;
 pub mod quality_checker;
+pub mod quality_presets;  // 🎯 CLI-001: 质量预设系统
 pub mod magika_detector;
 pub mod eagle_adapter;
 pub mod dependency_checker;

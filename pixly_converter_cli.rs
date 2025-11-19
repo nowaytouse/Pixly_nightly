@@ -187,6 +187,11 @@ enum Commands {
         #[arg(short, long, default_value = "90")]
         quality: u8,
         
+        /// 🎯 CLI-001: Quality preset (draft, standard, high, maximum)
+        /// Overrides quality and effort parameters
+        #[arg(long)]
+        preset: Option<String>,
+        
         /// Output directory
         #[arg(short, long)]
         output: Option<PathBuf>,
@@ -674,6 +679,7 @@ fn run(cli: Cli) -> Result<()> {
             input,
             format,
             quality,
+            preset,  // 🎯 CLI-001: 质量预设
             output,
             // JXL
             jpeg_lossless,
@@ -763,10 +769,32 @@ fn run(cli: Cli) -> Result<()> {
                 }
             };
             
-            // 创建可变的参数变量（用于AI覆盖）
-            let mut final_quality = quality;
+            // 🎯 CLI-001: 应用质量预设
+            let (mut final_quality, preset_effort) = if let Some(preset_str) = preset {
+                use pixly_kernel::quality_presets::QualityPreset;
+                
+                match QualityPreset::from_str(&preset_str) {
+                    Some(preset) => {
+                        let config = preset.config_for_format(&target_format);
+                        println!("🎯 Using quality preset: {}", preset.as_str());
+                        println!("   {}", config.description);
+                        println!("   Quality: {}, Effort: {}", config.quality, config.effort);
+                        (config.quality as u8, Some(config.effort as u8))
+                    }
+                    None => {
+                        eprintln!("⚠️  Unknown preset '{}', using default quality", preset_str);
+                        (quality, effort)
+                    }
+                }
+            } else {
+                // 创建可变的参数变量（用于AI覆盖）
+                (quality, effort)
+            };
+            
+            // 合并预设effort和用户指定的effort（用户指定优先）
+            let final_effort = effort.or(preset_effort);
+            
             let final_speed = speed;  // 目前AI不推荐speed参数
-            let final_effort = effort;  // 目前AI不推荐effort参数
             
             // 🤖 AI参数预测
             if ai {
@@ -910,9 +938,8 @@ fn run(cli: Cli) -> Result<()> {
                     if jpeg_lossless {
                         config.lossless = true;
                     }
-                    if let Some(e) = final_effort.or(effort) {
-                        config.effort = Some(e);
-                    }
+                    // 使用合并后的effort
+                    config.effort = final_effort;
                     // 🔥 Phase: JXL高级参数（修复空壳功能）
                     config.jxl_modular = modular;
                     config.jxl_progressive = progressive;
