@@ -4,7 +4,6 @@
 /// 1. SSIM（结构相似性）质量验证
 /// 2. 转换前后对比
 /// 3. 质量报告生成
-
 use anyhow::{Context, Result};
 use image::{DynamicImage, GenericImageView, Rgba};
 use std::path::Path;
