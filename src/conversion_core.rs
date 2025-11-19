@@ -8,6 +8,7 @@ use crate::feature_toggles::FeatureToggles;
 use crate::format_params::FormatSpecificParams;
 use crate::validation_integration::ValidationDisplay;
 use crate::conversion_validator::ConversionValidator;
+use crate::quality_analyzer::QualityAnalyzer;
 
 #[derive(Debug, Clone)]
 pub struct ConversionConfig {
@@ -56,6 +57,9 @@ pub struct ConversionConfig {
     
     /// 验证级别 (1-5)
     pub validation_level: u8,
+    
+    /// 启用质量分析
+    pub enable_quality_analysis: bool,
     
     // ═══════════════════════════════════════════════════
     // 📦 JXL专属参数 (修复空壳功能)
@@ -131,6 +135,7 @@ impl Default for ConversionConfig {
             format_specific_params: None,
             enable_validation: false,  // 🔥 Phase 3.3: 默认关闭，可选启用
             validation_level: 2,       // Standard level
+            enable_quality_analysis: false,
         }
     }
 }
@@ -321,6 +326,26 @@ pub fn execute_conversion(
         if !result.valid && config.validation_level >= 4 {
             // 严格模式下验证失败则报错
             anyhow::bail!("Validation failed: output did not meet quality standards");
+        }
+    }
+    
+    // ═══════════════════════════════════════════════════
+    // 📊 Phase 3.3: 质量分析
+    // ═══════════════════════════════════════════════════
+    if config.enable_quality_analysis {
+        println!("📊 Running quality analysis...");
+        let analyzer = QualityAnalyzer::new();
+        
+        match analyzer.analyze(output) {
+            Ok(metrics) => {
+                println!("   Estimated quality: {}", metrics.estimated_quality);
+                println!("   Complexity score: {:.2}", metrics.complexity_score);
+                println!("   Bytes per pixel: {:.2}", metrics.bytes_per_pixel);
+                println!("   Content type: {}", metrics.content_type);
+            }
+            Err(e) => {
+                println!("   ⚠️  Quality analysis failed: {}", e);
+            }
         }
     }
     
