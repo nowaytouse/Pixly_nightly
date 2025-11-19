@@ -1,10 +1,13 @@
 <template>
   <header class="header">
-    <h1 class="title">PIXLY Format</h1>
+    <h1 class="title">{{ t('app.title') }}</h1>
   </header>
 </template>
 
 <script setup>
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
 </script>
 
 <style scoped>
