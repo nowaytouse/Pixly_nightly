@@ -1,6 +1,21 @@
 // 🚨 错误处理模块 - 必须首先声明
 pub mod errors;
 
+// 📋 Phase 4 模块复活化 (2025-11-19)
+// ================================
+// 纠正草率处理错误，负责任地集成高价值模块
+// 
+// Phase 4.1: 立即集成6个最高价值模块
+// - simd_processor: SIMD加速处理 (性能提升2-4x)
+// - smart_cache: 智能LRU缓存系统
+// - metadata_comprehensive: 最全面的元数据保留
+// - bayesian_optimizer: 贝叶斯参数优化
+// - animation_strategy: 动画编码策略选择
+// - external_tools: 外部工具检测和管理
+// 
+// 详细计划: docs/MODULE_RESURRECTION_PLAN_PHASE4.md
+// ================================
+
 pub mod types;
 pub mod sharpen;
 pub mod ai;
@@ -63,6 +78,14 @@ pub mod log_manager;
 pub mod file_collector;
 pub mod config_manager;
 
+// 🔥 Phase 4.1: 高价值模块集成
+pub mod simd_processor;           // SIMD加速处理
+pub mod smart_cache;              // 智能LRU缓存
+pub mod metadata_comprehensive;   // 最全面的元数据保留
+pub mod bayesian_optimizer;       // 贝叶斯参数优化
+pub mod animation_strategy;       // 动画编码策略
+pub mod external_tools;           // 外部工具管理
+
 pub use types::*;
 pub use ppo_model_enhanced::{EnhancedPPOPredictor, MediaType, TrainingSample};
 pub use modern_formats::{ModernFormatConverter, AVIFParams, JXLParams, FormatSupport};
@@ -70,6 +93,20 @@ pub use unified_conversion_engine::{UnifiedConversionEngine, UnifiedConversionCo
 pub use log_manager::{LogManager, LogLevel as LogManagerLevel, LogConfig};
 pub use file_collector::FileCollector;
 pub use config_manager::{ConfigManager, Config};
+
+// 🔥 Phase 4.1: 导出高价值模块
+pub use simd_processor::{SIMDProcessor, SimdProcessor};
+pub use smart_cache::{SmartCache, CacheEntry, CacheStats};
+pub use metadata_comprehensive::{
+    ComprehensiveMetadata, TechnicalMetadata, DescriptiveMetadata,
+    AdministrativeMetadata, StructuralMetadata, UsageMetadata, BusinessMetadata
+};
+pub use bayesian_optimizer::{BayesianOptimizer, OptimizationObjective, ParameterSpace, Observation};
+pub use animation_strategy::{
+    AnimationStrategy, AnimationInfo, AnimationStrategySelector, 
+    AnimationToVideoConverter, AnimationPreservation
+};
+pub use external_tools::{ExternalTool, ToolStatus, ExternalToolChecker};
 pub use sharpen::*;
 pub use ai::*;
 pub use video::*;
