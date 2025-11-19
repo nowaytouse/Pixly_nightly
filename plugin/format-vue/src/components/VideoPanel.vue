@@ -21,11 +21,11 @@
         <span>{{ t('video.codec') }}</span>
       </div>
       <select v-model="localParams.codec" class="param-select">
-        <option value="h266">H.266/VVC (最新)</option>
-        <option value="h265">H.265/HEVC</option>
-        <option value="av1">AV1</option>
-        <option value="h264">H.264/AVC</option>
-        <option value="vp9">VP9</option>
+        <option value="h266">{{ t('video.codec.h266') }}</option>
+        <option value="h265">{{ t('video.codec.h265') }}</option>
+        <option value="av1">{{ t('video.codec.av1') }}</option>
+        <option value="h264">{{ t('video.codec.h264') }}</option>
+        <option value="vp9">{{ t('video.codec.vp9') }}</option>
       </select>
     </div>
 

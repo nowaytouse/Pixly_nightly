@@ -80,6 +80,11 @@
   "video": {
     "title": "Video Parameters",
     "codec": "Video Codec",
+    "codec.h266": "H.266/VVC (Latest)",
+    "codec.h265": "H.265/HEVC",
+    "codec.av1": "AV1",
+    "codec.h264": "H.264/AVC",
+    "codec.vp9": "VP9",
     "container": "Container Format",
     "crf": "Quality Control (CRF)",
     "crfLabel": "CRF",

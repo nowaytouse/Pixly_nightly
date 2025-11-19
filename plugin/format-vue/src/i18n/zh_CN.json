@@ -80,6 +80,11 @@
   "video": {
     "title": "视频参数",
     "codec": "视频编码器",
+    "codec.h266": "H.266/VVC (最新)",
+    "codec.h265": "H.265/HEVC",
+    "codec.av1": "AV1",
+    "codec.h264": "H.264/AVC",
+    "codec.vp9": "VP9",
     "container": "容器格式",
     "crf": "质量控制 (CRF)",
     "crfLabel": "CRF",
