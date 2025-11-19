@@ -1,7 +1,15 @@
 [package]
 name = "pixly_kernel"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+authors = ["Pixly Team"]
+description = "AI-driven media format converter with intelligent optimization"
+readme = "README.md"
+homepage = "https://github.com/yourusername/pixly"
+repository = "https://github.com/yourusername/pixly"
+license = "MIT"
+keywords = ["image", "video", "converter", "ai", "optimization"]
+categories = ["multimedia", "command-line-utilities"]
 
 [dependencies]
 anyhow = "1.0"

@@ -66,3 +66,17 @@ yarn-error.log
 
 # Environment
 .env
+
+# Test outputs
+test_output/
+!test_output/.gitkeep
+
+# ML model outputs
+models/ppo/*.pth
+models/ppo/experience_buffer.json
+models/ppo/batch_training_history.json
+models/ppo/online_training_history.json
+models/evaluation_results_*.json
+
+# Backup files
+*.backup.json
