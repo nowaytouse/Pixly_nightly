@@ -306,11 +306,6 @@ export function useRustCLI() {
     } catch (error) {
       logger.error(LOG_KEYS.CONVERT_ERROR, 'Batch conversion failed', {
         error: error.message,
-        stack: error.stack
-      })
-      
-      console.error('[PIXLY] Conversion error details:', {
-        message: error.message,
         stack: error.stack,
         rustBinaryPath: rustBinaryPath.value
       })
@@ -438,7 +433,7 @@ export function useRustCLI() {
         const lines = text.split('\n')
         for (const line of lines) {
           if (line.trim()) {
-            console.log('[pixly-converter]', line)
+            logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Rust CLI output', { line })
             
             // 检测转换完成
             if (line.includes('✅ Conversion complete')) {
@@ -451,7 +446,7 @@ export function useRustCLI() {
       proc.stderr.on('data', (data) => {
         const text = data.toString()
         stderr += text
-        console.error('[pixly-converter stderr]', text)
+        logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Rust CLI stderr', { text })
       })
       
       proc.on('close', (code) => {
