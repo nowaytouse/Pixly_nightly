@@ -538,14 +538,23 @@ impl UnifiedAIPredictor {
 
     /// 🔬 提取128维标准化特征向量
     /// 
+    /// ⚠️ **当前限制**：此方法使用基于ImageFeatures的简化特征提取
+    /// - 原因：架构设计上此处没有原始图像数据访问
+    /// - 完整实现：见`feature_extractor_128d::extract_128d_features`（需要DynamicImage）
+    /// - 影响：Color/Texture特征使用复杂度估算，不是真实提取
+    /// 
+    /// **改进计划**：
+    /// - Phase 2: 重构架构，传递图像数据到此层
+    /// - Phase 3: 使用完整的特征提取器
+    /// 
     /// 特征分组：
-    /// - Basic (16维): 基本属性
-    /// - Color (16维): 颜色分布
-    /// - Texture (16维): 纹理信息
-    /// - Shape (16维): 几何结构
-    /// - Quality (16维): 质量指标
-    /// - Metadata (32维): 元数据
-    /// - Context (16维): 上下文
+    /// - Basic (16维): ✅ 真实数据
+    /// - Color (16维): ⚠️ 基于复杂度估算
+    /// - Texture (16维): ⚠️ 基于复杂度估算
+    /// - Shape (16维): ✅ 基于几何属性
+    /// - Quality (16维): ⚠️ 基于文件大小估算
+    /// - Metadata (32维): ⚠️ 占位符（待实现）
+    /// - Context (16维): ⚠️ 占位符（待实现）
     fn extract_128d_features(&self, features: &ImageFeatures) -> Vec<f64> {
         let mut vec = Vec::with_capacity(128);
 
