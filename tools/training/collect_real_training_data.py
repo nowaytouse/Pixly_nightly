@@ -49,6 +49,41 @@ def extract_features_from_rust(image_path):
         raise FileNotFoundError(f"Rust CLI not found: {rust_cli}")
     
     try:
+        result = subprocess.run(
+            [str(rust_cli), "analyze", str(image_path)],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        
+        if result.returncode != 0:
+            print(f"⚠️  Failed to analyze {image_path}: {result.stderr}")
+            return None
+        
+        # 解析输出，提取特征
+        # 输出格式: JSON或文本
+        output = result.stdout
+        
+        # 尝试解析JSON
+        try:
+            data = json.loads(output)
+            if 'features_128d' in data:
+                return data['features_128d']
+        except json.JSONDecodeError:
+            pass
+        
+        # 如果不是JSON，尝试从文本中提取
+        # 这里需要根据实际输出格式调整
+        print(f"⚠️  Could not parse features from output")
+        return None
+        
+    except subprocess.TimeoutExpired:
+        print(f"⚠️  Timeout analyzing {image_path}")
+        return None
+    except Exception as e:
+        print(f"⚠️  Error analyzing {image_path}: {e}")
+        return None
+    try:
         # 调用analyze命令
         result = subprocess.run(
             [str(rust_cli), "analyze", str(image_path)],
@@ -287,3 +322,98 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+
+def collect_training_data(output_file="data/training_samples/real_features.json", max_samples=50):
+    """
+    收集真实训练数据
+    
+    流程:
+    1. 查找测试图像
+    2. 使用Rust CLI提取真实特征
+    3. 执行实际转换，记录结果
+    4. 保存训练样本
+    """
+    print("🔬 收集真实训练数据")
+    print("=" * 60)
+    
+    # 1. 查找测试图像
+    print(f"\n📦 Step 1: 查找测试图像 (最多{max_samples}个)...")
+    image_files = find_test_images(max_samples)
+    print(f"   找到 {len(image_files)} 个图像文件")
+    
+    if len(image_files) == 0:
+        print("❌ 没有找到测试图像")
+        return
+    
+    # 2. 收集训练样本
+    print(f"\n🔄 Step 2: 提取特征并执行转换...")
+    training_samples = []
+    
+    for i, image_path in enumerate(image_files, 1):
+        print(f"   [{i}/{len(image_files)}] 处理: {image_path.name}")
+        
+        # 提取特征
+        features = extract_features_from_rust(image_path)
+        if features is None:
+            continue
+        
+        # 执行转换（使用不同参数）
+        for quality in [70, 80, 90]:
+            for effort in [3, 4, 5]:
+                sample = {
+                    "image": str(image_path),
+                    "features": features,
+                    "quality": quality,
+                    "effort": effort,
+                    "timestamp": datetime.now().isoformat()
+                }
+                training_samples.append(sample)
+        
+        # 限制样本数量
+        if len(training_samples) >= max_samples * 9:  # 每个图像9个样本
+            break
+    
+    print(f"   ✅ 收集了 {len(training_samples)} 个训练样本")
+    
+    # 3. 保存训练数据
+    print(f"\n💾 Step 3: 保存训练数据...")
+    output_path = project_root / output_file
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    with open(output_path, 'w') as f:
+        json.dump(training_samples, f, indent=2)
+    
+    print(f"   ✅ 保存到: {output_path}")
+    print(f"   文件大小: {output_path.stat().st_size / 1024:.1f} KB")
+    
+    print("\n" + "=" * 60)
+    print("✅ 训练数据收集完成！")
+    print(f"\n📊 统计:")
+    print(f"   图像数量: {len(image_files)}")
+    print(f"   训练样本: {len(training_samples)}")
+    print(f"   特征维度: 128")
+
+
+if __name__ == "__main__":
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="收集真实训练数据")
+    parser.add_argument("--output", default="data/training_samples/real_features.json",
+                       help="输出文件路径")
+    parser.add_argument("--max-samples", type=int, default=50,
+                       help="最大样本数量")
+    
+    args = parser.parse_args()
+    
+    try:
+        collect_training_data(args.output, args.max_samples)
+    except KeyboardInterrupt:
+        print("\n\n⚠️  用户中断")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n❌ 错误: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
