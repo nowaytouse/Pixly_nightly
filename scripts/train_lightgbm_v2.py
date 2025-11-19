@@ -233,9 +233,9 @@ def main():
     
     print(f"\n💾 Results saved to: {results_file}")
     print(f"\n🎯 Next steps:")
-    print(f"   1. 检查R²分数（应该>0.5才有意义）")
-    print(f"   2. 如果R²太低，收集更多训练数据")
-    print(f"   3. 集成到ml_bridge.py中使用这些模型")
+    print(f"   1. Check R² scores (should be >0.5 to be meaningful)")
+    print(f"   2. If R² is too low, collect more training data")
+    print(f"   3. Integrate these models into ml_bridge.py")
 
 if __name__ == '__main__':
     main()
