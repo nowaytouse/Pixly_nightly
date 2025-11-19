@@ -136,13 +136,16 @@ impl OnlineLearner {
                 "ssim": 0.95 // 默认值
             });
             
-            // 调用在线训练器
+            // 调用在线训练器，使用配置的模型路径
+            let model_dir = self.model_path.parent()
+                .unwrap_or_else(|| std::path::Path::new("models/ppo"));
+            
             let output = std::process::Command::new("python3")
                 .arg("scripts/online_ppo_trainer.py")
                 .arg("--conversion-result")
                 .arg(conversion_result.to_string())
                 .arg("--model-dir")
-                .arg("models/ppo")
+                .arg(model_dir)
                 .output()
                 .context("Failed to run online PPO trainer")?;
             
@@ -157,15 +160,7 @@ impl OnlineLearner {
         Ok(())
     }
 
-    
-    /// 导出经验到文件
-    fn export_experiences(&self, path: &Path) -> Result<()> {
-        let buffer = self.experience_buffer.lock().unwrap();
-        let json = serde_json::to_string_pretty(&*buffer)?;
-        std::fs::write(path, json)?;
-        log::info!("💾 Exported {} experiences to {:?}", buffer.len(), path);
-        Ok(())
-    }
+
     
     /// 获取当前缓冲大小
     pub fn buffer_size(&self) -> usize {
