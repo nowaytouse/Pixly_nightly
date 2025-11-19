@@ -26,6 +26,16 @@ pub struct Experience {
     pub timestamp: u64,
 }
 
+/// 🎯 ML-506: 模型版本信息
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ModelVersion {
+    pub version: u32,
+    pub timestamp: u64,
+    pub num_experiences: usize,
+    pub avg_reward: f64,
+    pub path: PathBuf,
+}
+
 /// 在线学习器
 pub struct OnlineLearner {
     /// PPO模型路径
@@ -38,6 +48,8 @@ pub struct OnlineLearner {
     reward_calculator: RewardCalculator,
     /// 是否启用
     enabled: bool,
+    /// 🎯 ML-506: 当前模型版本（使用内部可变性）
+    current_version: Arc<Mutex<u32>>,
 }
 
 impl OnlineLearner {
@@ -49,6 +61,7 @@ impl OnlineLearner {
             update_interval,
             reward_calculator: RewardCalculator::new(),
             enabled: true,
+            current_version: Arc::new(Mutex::new(0)),  // 🎯 ML-506: 初始版本
         };
         
         // 🔥 自动加载持久化的经验
@@ -174,6 +187,24 @@ impl OnlineLearner {
             let stdout = String::from_utf8_lossy(&output.stdout);
             log::info!("✅ Batch model update complete ({} experiences)", buffer_size);
             
+            // 🎯 ML-506: 版本管理
+            // 1. 备份旧模型
+            if let Err(e) = self.backup_model() {
+                log::warn!("⚠️  Failed to backup model: {}", e);
+            }
+            
+            // 2. 保存版本信息
+            if let Err(e) = self.save_version_info() {
+                log::warn!("⚠️  Failed to save version info: {}", e);
+            }
+            
+            // 3. 增加版本号
+            {
+                let mut ver = self.current_version.lock().unwrap();
+                *ver += 1;
+                log::info!("📈 Model version updated: v{}", *ver);
+            }
+            
             // 解析结果（最后一行是JSON）
             if let Some(last_line) = stdout.lines().last() {
                 if let Ok(result) = serde_json::from_str::<serde_json::Value>(last_line) {
@@ -208,6 +239,88 @@ impl OnlineLearner {
         
         log::info!("🎓 Manual update triggered ({} experiences)", size);
         self.trigger_update()
+    }
+    
+    /// 🎯 ML-506: 备份当前模型
+    fn backup_model(&self) -> Result<()> {
+        if !self.model_path.exists() {
+            return Ok(()); // 没有模型可备份
+        }
+        
+        let current_ver = *self.current_version.lock().unwrap();
+        
+        let backup_dir = self.model_path.parent()
+            .context("Invalid model path")?
+            .join("backups");
+        std::fs::create_dir_all(&backup_dir)?;
+        
+        let backup_path = backup_dir.join(format!(
+            "actor_v{}.pth",
+            current_ver
+        ));
+        
+        std::fs::copy(&self.model_path, &backup_path)?;
+        log::info!("💾 Backed up model v{} to {:?}", current_ver, backup_path);
+        
+        Ok(())
+    }
+    
+    /// 🎯 ML-506: 保存版本信息
+    fn save_version_info(&self) -> Result<()> {
+        let buffer = self.experience_buffer.lock().unwrap();
+        let current_ver = *self.current_version.lock().unwrap();
+        
+        let avg_reward = if buffer.is_empty() {
+            0.0
+        } else {
+            buffer.iter().map(|e| e.reward).sum::<f64>() / buffer.len() as f64
+        };
+        
+        let version_info = ModelVersion {
+            version: current_ver,
+            timestamp: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_secs(),
+            num_experiences: buffer.len(),
+            avg_reward,
+            path: self.model_path.clone(),
+        };
+        
+        let version_path = self.model_path.parent()
+            .context("Invalid model path")?
+            .join(format!("version_v{}.json", current_ver));
+        
+        let json = serde_json::to_string_pretty(&version_info)?;
+        std::fs::write(&version_path, json)?;
+        
+        log::info!("📝 Saved version info v{} (avg_reward: {:.4})", 
+                   current_ver, avg_reward);
+        
+        Ok(())
+    }
+    
+    /// 🎯 ML-506: 获取当前版本
+    pub fn current_version(&self) -> u32 {
+        *self.current_version.lock().unwrap()
+    }
+    
+    /// 🎯 ML-506: 回滚到指定版本
+    pub fn rollback_to_version(&self, version: u32) -> Result<()> {
+        let backup_path = self.model_path.parent()
+            .context("Invalid model path")?
+            .join("backups")
+            .join(format!("actor_v{}.pth", version));
+        
+        if !backup_path.exists() {
+            anyhow::bail!("Version {} backup not found", version);
+        }
+        
+        std::fs::copy(&backup_path, &self.model_path)?;
+        *self.current_version.lock().unwrap() = version;
+        
+        log::info!("⏮️  Rolled back to model v{}", version);
+        Ok(())
     }
     
     /// 🔥 持久化经验到磁盘
