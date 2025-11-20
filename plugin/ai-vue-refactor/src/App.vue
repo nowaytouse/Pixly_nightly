@@ -404,12 +404,22 @@ const alphaQuality = ref(90)
 const premultiplyAlpha = ref(false)
 const separateAlpha = ref(false)
 
-// 检测是否有Alpha通道（基于文件格式）
+// 检测是否有Alpha通道（基于文件格式 - 图像/动图/视频）
 const hasAlphaChannel = computed(() => {
   return selectedFiles.value.some(file => {
     const ext = (file.ext || '').toLowerCase().replace('.', '')
-    // PNG, WebP, AVIF, JXL, HEIC, GIF, APNG 可能包含Alpha通道
-    return ['png', 'webp', 'avif', 'jxl', 'heic', 'gif', 'apng'].includes(ext)
+    // 图像: PNG, WebP, AVIF, JXL, HEIC
+    // 动图: GIF (binary alpha), APNG (full alpha), WebP (animated)
+    // 视频: VP8, VP9, ProRes (with alpha), WebM (with VP8/VP9)
+    const alphaFormats = [
+      // 图像格式
+      'png', 'webp', 'avif', 'jxl', 'heic',
+      // 动图格式
+      'gif', 'apng',
+      // 视频格式（可能包含alpha）
+      'webm', 'mov', 'mkv'
+    ]
+    return alphaFormats.includes(ext)
   })
 })
 

@@ -74,6 +74,12 @@
       "classification": "类型分类",
       "optimization": "格式优化",
       "encoding": "Alpha编码"
+    },
+    "mediaTypes": {
+      "all": "全部格式",
+      "image": "图像格式",
+      "animation": "动图格式",
+      "video": "视频格式"
     }
   },
   "common": {

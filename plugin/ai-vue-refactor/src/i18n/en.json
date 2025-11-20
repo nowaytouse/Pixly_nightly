@@ -74,6 +74,12 @@
       "classification": "Type Classification",
       "optimization": "Format Optimization",
       "encoding": "Alpha Encoding"
+    },
+    "mediaTypes": {
+      "all": "All Formats",
+      "image": "Image Formats",
+      "animation": "Animation Formats",
+      "video": "Video Formats"
     }
   },
   "common": {

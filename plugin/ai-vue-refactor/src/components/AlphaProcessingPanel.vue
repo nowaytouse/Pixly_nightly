@@ -64,9 +64,23 @@
     <!-- 格式兼容性 -->
     <div class="compatibility-section">
       <h4>🎯 {{ $t('alphaPanel.formatCompatibility') }}</h4>
+      
+      <!-- 媒体类型过滤 -->
+      <div class="format-filter">
+        <button 
+          v-for="type in ['all', 'image', 'animation', 'video']" 
+          :key="type"
+          class="filter-btn"
+          :class="{ active: mediaTypeFilter === type }"
+          @click="mediaTypeFilter = type"
+        >
+          {{ $t(`alphaPanel.mediaTypes.${type}`) }}
+        </button>
+      </div>
+      
       <div class="format-grid">
         <div 
-          v-for="format in formatCompatibility" 
+          v-for="format in filteredFormats" 
           :key="format.name"
           class="format-item"
           :class="{ 
@@ -215,6 +229,8 @@ export default {
   
   data() {
     return {
+      mediaTypeFilter: 'all', // all, image, animation, video
+      
       alphaStatus: {
         detected: false,
         alphaPixelCount: 0,
@@ -256,38 +272,102 @@ export default {
       ],
       
       formatCompatibility: [
+        // 图像格式
         {
           name: 'webp',
+          type: 'image',
           alphaSupport: 'full',
           quality: 'Excellent',
           compression: 'Lossy/Lossless'
         },
         {
           name: 'avif',
+          type: 'image',
           alphaSupport: 'full',
           quality: 'Excellent',
           compression: 'Lossy/Lossless'
         },
         {
           name: 'png',
+          type: 'image',
           alphaSupport: 'full',
           quality: 'Perfect',
           compression: 'Lossless'
         },
         {
           name: 'jxl',
+          type: 'image',
           alphaSupport: 'full',
           quality: 'Excellent',
           compression: 'Lossy/Lossless'
         },
         {
+          name: 'gif',
+          type: 'animation',
+          alphaSupport: 'partial',
+          quality: 'Binary Only',
+          compression: 'Lossless'
+        },
+        {
+          name: 'apng',
+          type: 'animation',
+          alphaSupport: 'full',
+          quality: 'Perfect',
+          compression: 'Lossless'
+        },
+        {
           name: 'heic',
+          type: 'image',
           alphaSupport: 'partial',
           quality: 'Limited',
           compression: 'Lossy'
         },
         {
           name: 'jpeg',
+          type: 'image',
+          alphaSupport: 'none',
+          quality: 'N/A',
+          compression: 'N/A'
+        },
+        // 视频格式
+        {
+          name: 'vp9',
+          type: 'video',
+          alphaSupport: 'full',
+          quality: 'Excellent',
+          compression: 'Lossy'
+        },
+        {
+          name: 'vp8',
+          type: 'video',
+          alphaSupport: 'full',
+          quality: 'Good',
+          compression: 'Lossy'
+        },
+        {
+          name: 'prores',
+          type: 'video',
+          alphaSupport: 'full',
+          quality: 'Perfect',
+          compression: 'Lossy/Lossless'
+        },
+        {
+          name: 'h264',
+          type: 'video',
+          alphaSupport: 'none',
+          quality: 'N/A',
+          compression: 'N/A'
+        },
+        {
+          name: 'h265',
+          type: 'video',
+          alphaSupport: 'none',
+          quality: 'N/A',
+          compression: 'N/A'
+        },
+        {
+          name: 'av1',
+          type: 'video',
           alphaSupport: 'none',
           quality: 'N/A',
           compression: 'N/A'
@@ -343,6 +423,15 @@ export default {
   })
   
   return SUCCESS`
+    }
+  },
+  
+  computed: {
+    filteredFormats() {
+      if (this.mediaTypeFilter === 'all') {
+        return this.formatCompatibility
+      }
+      return this.formatCompatibility.filter(f => f.type === this.mediaTypeFilter)
     }
   },
   
@@ -544,6 +633,37 @@ export default {
 .step-status {
   font-size: 20px;
   flex-shrink: 0;
+}
+
+/* Format Filter */
+.format-filter {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border: 2px solid var(--color-border, #ddd);
+  background: white;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary, #666);
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  border-color: var(--color-primary, #2196f3);
+  color: var(--color-primary, #2196f3);
+}
+
+.filter-btn.active {
+  background: var(--color-primary, #2196f3);
+  border-color: var(--color-primary, #2196f3);
+  color: white;
 }
 
 /* Format Grid */
