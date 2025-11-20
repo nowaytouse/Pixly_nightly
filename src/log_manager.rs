@@ -140,13 +140,19 @@ impl LogManager {
     }
     
     /// 获取配置
+    /// 🔥 Performance: Explicit scope for lock
     pub fn get_config(&self) -> LogConfig {
-        self.config.lock().expect("Mutex poisoned").clone()
+        let guard = self.config.lock().expect("Mutex poisoned");
+        guard.clone()
     }
     
     /// 记录日志
+    /// 🔥 Performance: Clone outside of lock
     pub fn log(&self, level: LogLevel, message: &str) {
-        let config = self.config.lock().expect("Mutex poisoned").clone();
+        let config = {
+            let guard = self.config.lock().expect("Mutex poisoned");
+            guard.clone()
+        };
         
         // 检查日志级别
         if level < config.min_level {
@@ -185,10 +191,14 @@ impl LogManager {
     }
     
     /// 记录带详细信息的日志
+    /// 🔥 Performance: Clone outside of lock
     pub fn log_with_details(&self, level: LogLevel, message: &str, details: &[(&str, &str)]) {
         self.log(level, message);
         
-        let config = self.config.lock().expect("Mutex poisoned").clone();
+        let config = {
+            let guard = self.config.lock().expect("Mutex poisoned");
+            guard.clone()
+        };
         if level >= config.min_level && !details.is_empty() {
             for (key, value) in details {
                 println!("  → {}: {}", key, value);
@@ -197,16 +207,24 @@ impl LogManager {
     }
     
     /// 记录分隔线
+    /// 🔥 Performance: Clone outside of lock
     pub fn separator(&self) {
-        let config = self.config.lock().expect("Mutex poisoned").clone();
+        let config = {
+            let guard = self.config.lock().expect("Mutex poisoned");
+            guard.clone()
+        };
         if config.min_level <= LogLevel::Verbose {
             println!("{}", "─".repeat(60));
         }
     }
     
     /// 记录标题
+    /// 🔥 Performance: Clone outside of lock
     pub fn header(&self, title: &str) {
-        let config = self.config.lock().expect("Mutex poisoned").clone();
+        let config = {
+            let guard = self.config.lock().expect("Mutex poisoned");
+            guard.clone()
+        };
         if config.min_level <= LogLevel::Info {
             println!("\n╔═══════════════════════════════════════════════════════════╗");
             println!("║ {:^57} ║", title);

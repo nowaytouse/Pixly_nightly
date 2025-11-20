@@ -246,7 +246,12 @@ impl ProgressTracker {
             old_state
         };
 
-        let info = self.info.lock().expect("Mutex poisoned").clone();
+        // 🔥 Performance: Clone outside of lock to minimize lock duration
+        let info = {
+            let guard = self.info.lock().expect("Mutex poisoned");
+            guard.clone()
+        }; // Lock released here
+        
         let callbacks = self.callbacks.lock().expect("Mutex poisoned");
         
         for callback in callbacks.iter() {
@@ -272,7 +277,9 @@ impl ProgressTracker {
     }
 
     pub fn get_info(&self) -> ProgressInfo {
-        self.info.lock().expect("Mutex poisoned").clone()
+        // 🔥 Performance: Explicit scope for lock
+        let guard = self.info.lock().expect("Mutex poisoned");
+        guard.clone()
     }
 
     pub fn add_metadata(&self, key: String, value: String) {
