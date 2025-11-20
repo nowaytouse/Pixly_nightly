@@ -205,21 +205,21 @@ impl AIFormatRecommender {
         }
         
         if quality >= 90 {
-            reasons.push("高质量保证".to_string());
+            reasons.push("High quality guarantee".to_string());
         } else if quality >= 80 {
-            reasons.push("良好质量".to_string());
+            reasons.push("Good quality".to_string());
         }
         
         if confidence >= 0.85 {
-            reasons.push("高置信度".to_string());
+            reasons.push("High confidence".to_string());
         }
         
         match format {
-            "avif" => reasons.push("现代格式，最高压缩率".to_string()),
-            "webp" => reasons.push("广泛支持，平衡选择".to_string()),
-            "jxl" => reasons.push("次世代格式，优秀性能".to_string()),
-            "jpeg" => reasons.push("兼容性最好".to_string()),
-            "png" => reasons.push("无损压缩".to_string()),
+            "avif" => reasons.push("Modern format, highest compression".to_string()),
+            "webp" => reasons.push("Wide support, balanced choice".to_string()),
+            "jxl" => reasons.push("Next-gen format, excellent performance".to_string()),
+            "jpeg" => reasons.push("Best compatibility".to_string()),
+            "png" => reasons.push("Lossless compression".to_string()),
             _ => {}
         }
         

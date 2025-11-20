@@ -50,11 +50,11 @@ impl MultipleLinearRegression {
     /// * `y` - 目标值 \[n_samples\] (如quality)
     pub fn train(&mut self, x: &[Vec<f64>], y: &[f64]) -> Result<(), String> {
         if x.is_empty() || y.is_empty() {
-            return Err("训练数据为空".to_string());
+            return Err("Training data is empty".to_string());
         }
         
         if x.len() != y.len() {
-            return Err("特征矩阵和目标值长度不匹配".to_string());
+            return Err("Feature matrix and target value length mismatch".to_string());
         }
         
         let n = x.len();        // 样本数
@@ -127,12 +127,12 @@ impl MultipleLinearRegression {
     /// 预测 (从Go代码提取)
     pub fn predict(&self, features: &[f64]) -> Result<f64, String> {
         if !self.trained {
-            return Err("模型未训练".to_string());
+            return Err("Model not trained".to_string());
         }
         
         if features.len() + 1 != self.coefficients.len() {
             return Err(format!(
-                "特征维度不匹配: 期望{},实际{}",
+                "Feature dimension mismatch: expected {}, got {}",
                 self.coefficients.len() - 1,
                 features.len()
             ));
@@ -286,7 +286,7 @@ fn matrix_inverse(matrix: &[Vec<f64>]) -> Result<Vec<Vec<f64>>, String> {
         
         // 检查奇异矩阵
         if augmented[i][i].abs() < 1e-10 {
-            return Err("矩阵奇异,无法求逆".to_string());
+            return Err("Matrix is singular, cannot invert".to_string());
         }
         
         // 归一化当前行

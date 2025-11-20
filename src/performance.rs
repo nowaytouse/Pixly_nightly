@@ -107,7 +107,7 @@ impl PerformanceCore {
         // 检测CPU能力
         let cpu_info = Self::detect_cpu_info();
         tracing::info!(
-            "💻 CPU检测: {} cores, AVX2: {}, AVX512: {}, NEON: {}",
+            "💻 CPU detected: {} cores, AVX2: {}, AVX512: {}, NEON: {}",
             cpu_info.logical_cores,
             cpu_info.supports_avx2,
             cpu_info.supports_avx512,
@@ -292,7 +292,7 @@ impl PerformanceCore {
                     .context("Failed to encode output image")?;
 
                 tracing::debug!(
-                    "✅ SIMD缩放完成: {}x{} → {}x{}",
+                    "✅ SIMD resize complete: {}x{} → {}x{}",
                     src_width,
                     src_height,
                     width,
@@ -314,7 +314,7 @@ impl PerformanceCore {
                     .context("Failed to compress image")?;
 
                 tracing::debug!(
-                    "✅ SIMD压缩完成: {} → {} bytes (质量: {})",
+                    "✅ SIMD compression complete: {} → {} bytes (quality: {})",
                     image_data.len(),
                     output.len(),
                     quality
@@ -338,7 +338,7 @@ impl PerformanceCore {
                     .context("Failed to encode enhanced image")?;
 
                 tracing::debug!(
-                    "✅ SIMD增强完成: {} → {} bytes",
+                    "✅ SIMD enhancement complete: {} → {} bytes",
                     image_data.len(),
                     output.len()
                 );
@@ -447,7 +447,7 @@ mod tests {
             Err(e) => {
                 // 如果是线程池已初始化的错误，也算测试通过
                 let err_msg = e.to_string();
-                assert!(err_msg.contains("线程池") || err_msg.contains("thread pool"));
+                assert!(err_msg.contains("thread pool"));
             }
         }
     }

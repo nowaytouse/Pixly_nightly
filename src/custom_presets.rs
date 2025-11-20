@@ -254,7 +254,7 @@ mod tests {
             speed_preference: 5,
             lossless_threshold: 0.2,
             format_preferences: vec!["webp".to_string()],
-            description: "测试预设".to_string(),
+            description: "Test preset".to_string(),
         };
         
         assert!(manager.add_preset(custom).is_ok());

@@ -73,11 +73,11 @@ pub struct AIPreferences {
 /// 统一AI错误类型
 #[derive(Debug, thiserror::Error)]
 pub enum UnifiedAIError {
-    #[error("AI服务不可用: {message}")]
+    #[error("AI service unavailable: {message}")]
     ServiceUnavailable { message: String },
-    #[error("AI预测超时 (超过 {timeout_ms}ms)")]
+    #[error("AI prediction timeout (exceeded {timeout_ms}ms)")]
     PredictionTimeout { timeout_ms: u64 },
-    #[error("无效的图像特征数据: {details}")]
+    #[error("Invalid image feature data: {details}")]
     InvalidImageData { details: String },
     #[error("Unsupported target format: {format}")]
     UnsupportedFormat { format: String },
@@ -143,7 +143,7 @@ impl UnifiedAIManager {
     pub fn get_best_prediction(&self, request: UnifiedAIRequest) -> Result<UnifiedAIResponse, UnifiedAIError> {
         if self.predictors.is_empty() {
             return Err(UnifiedAIError::ServiceUnavailable { 
-                message: "没有可用的AI预测器".to_string() 
+                message: "No available AI predictors".to_string() 
             });
         }
         

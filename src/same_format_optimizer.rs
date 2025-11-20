@@ -181,7 +181,7 @@ impl SameFormatOptimizer {
         
         if !output_result.status.success() {
             anyhow::bail!(
-                "cwebp 失败: {}",
+                "cwebp failed: {}",
                 String::from_utf8_lossy(&output_result.stderr)
             );
         }

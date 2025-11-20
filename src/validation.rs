@@ -95,9 +95,9 @@ impl FileValidator {
             ..Default::default()
         };
 
-        // 检查文件是否存在
+        // Check if file exists
         if !path.exists() {
-            result.errors.push("文件不存在".to_string());
+            result.errors.push("File does not exist".to_string());
             return Ok(result);
         }
 
@@ -106,7 +106,7 @@ impl FileValidator {
         result.file_size = metadata.len();
 
         if result.file_size == 0 {
-            result.errors.push("文件大小为0".to_string());
+            result.errors.push("File size is 0".to_string());
             return Ok(result);
         }
 
@@ -129,7 +129,7 @@ impl FileValidator {
         if let Some(ext) = path.extension() {
             result.detected_format = Some(ext.to_string_lossy().to_lowercase());
         } else {
-            result.warnings.push("无法检测文件格式".to_string());
+            result.warnings.push("Unable to detect file format".to_string());
         }
 
         result.passed = result.detected_format.is_some();

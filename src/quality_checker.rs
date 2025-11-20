@@ -52,10 +52,10 @@ impl QualityGrade {
     
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::Excellent => "优秀",
-            Self::Good => "良好",
-            Self::Acceptable => "可接受",
-            Self::Poor => "较差",
+            Self::Excellent => "Excellent",
+            Self::Good => "Good",
+            Self::Acceptable => "Acceptable",
+            Self::Poor => "Poor",
         }
     }
     

@@ -143,12 +143,12 @@ impl PPOPredictor {
     /// 获取训练信息
     pub fn get_training_info(&self) -> String {
         format!(
-            "PPO训练: {} 步, 平均奖励: {:.3}, Actor损失: {:.6}, Critic损失: {:.6}, 收敛: {}",
+            "PPO training: {} steps, avg reward: {:.3}, actor loss: {:.6}, critic loss: {:.6}, converged: {}",
             self.stats.training_steps(),
             self.stats.average_reward(),
             self.stats.final_actor_loss().unwrap_or(0.0),
             self.stats.final_critic_loss().unwrap_or(0.0),
-            if self.stats.is_converged() { "是" } else { "否" }
+            if self.stats.is_converged() { "yes" } else { "no" }
         )
     }
     

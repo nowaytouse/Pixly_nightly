@@ -285,7 +285,7 @@ impl ImageTransformer {
         }
 
         tracing::debug!(
-            "智能裁剪：找到最佳区域 ({}, {}), 能量值: {:.2}",
+            "Smart crop: found best region ({}, {}), energy: {:.2}",
             best_x,
             best_y,
             max_energy

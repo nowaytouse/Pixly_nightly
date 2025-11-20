@@ -264,7 +264,7 @@ impl VisualQualityScorer {
                 effort: 9,
                 lossless: true,
                 confidence: 0.95,
-                reasoning: "检测到高质量源，推荐数学无损以保障质量".to_string(),
+                reasoning: "High quality source detected, recommend mathematical lossless to preserve quality".to_string(),
             };
         }
         
@@ -275,7 +275,7 @@ impl VisualQualityScorer {
                 effort: 9,
                 lossless: true,
                 confidence: 0.9,
-                reasoning: "检测到设计稿/图形，推荐无损以保留细节".to_string(),
+                reasoning: "Design/graphics detected, recommend lossless to preserve details".to_string(),
             };
         }
         
@@ -286,7 +286,7 @@ impl VisualQualityScorer {
                 effort: 8,
                 lossless: true,
                 confidence: 0.85,
-                reasoning: "检测到透明图像，推荐无损以保留透明度细节".to_string(),
+                reasoning: "Transparent image detected, recommend lossless to preserve alpha channel details".to_string(),
             };
         }
         
@@ -297,7 +297,7 @@ impl VisualQualityScorer {
                 effort: 9,
                 lossless: true,
                 confidence: 0.88,
-                reasoning: "检测到可能的渲染图/高质量设计，推荐无损".to_string(),
+                reasoning: "Possible render/high-quality design detected, recommend lossless".to_string(),
             };
         }
         
@@ -319,7 +319,7 @@ impl VisualQualityScorer {
                 effort: 7,
                 lossless: false,
                 confidence: 0.85,
-                reasoning: "检测到截图，推荐质量90以保持清晰度".to_string(),
+                reasoning: "Screenshot detected, recommend quality 90 to maintain clarity".to_string(),
             };
         }
         

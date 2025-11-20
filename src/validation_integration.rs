@@ -228,7 +228,7 @@ impl FormatSpecificChecks {
         for file in files {
             if file.size > 16 * 1024 * 1024 { // 16MB
                 warnings.push(format!(
-                    "⚠️ 文件 {} 较大 ({:.2} MB)，WebP编码可能较慢",
+                    "⚠️ File {} is large ({:.2} MB), WebP encoding may be slow",
                     file.name,
                     file.size as f64 / (1024.0 * 1024.0)
                 ));
@@ -239,7 +239,7 @@ impl FormatSpecificChecks {
         if let Some(quality) = config.quality
             && quality < 70 {
                 warnings.push(format!(
-                    "⚠️ WebP质量设置较低 ({}), 可能出现明显压缩痕迹",
+                    "⚠️ WebP quality setting is low ({}), may show visible compression artifacts",
                     quality
                 ));
             }
@@ -254,14 +254,14 @@ impl FormatSpecificChecks {
         // 检查动画
         let has_animation = files.iter().any(|f| f.is_animated);
         if has_animation {
-            warnings.push("⚠️ AVIF动画支持有限，建议使用WebP或GIF".to_string());
+            warnings.push("⚠️ AVIF animation support is limited, recommend using WebP or GIF".to_string());
         }
         
         // 检查速度设置
         if let Some(speed) = config.speed
             && speed > 6 {
                 warnings.push(format!(
-                    "⚠️ AVIF速度设置较高 ({}), 可能影响压缩效率",
+                    "⚠️ AVIF speed setting is high ({}), may affect compression efficiency",
                     speed
                 ));
             }
@@ -271,7 +271,7 @@ impl FormatSpecificChecks {
             let pixels = file.size / 3; // 粗略估计
             if pixels > 4000 * 4000 {
                 warnings.push(format!(
-                    "⚠️ 文件 {} 分辨率较高，AVIF编码可能需要较长时间",
+                    "⚠️ File {} has high resolution, AVIF encoding may take longer",
                     file.name
                 ));
             }
@@ -291,14 +291,14 @@ impl FormatSpecificChecks {
         });
         
         if has_jpeg && !config.lossless {
-            warnings.push("💡 提示: JPEG → JXL 建议使用无损模式以利用JPEG重新打包".to_string());
+            warnings.push("💡 Tip: JPEG → JXL recommend using lossless mode to utilize JPEG repackaging".to_string());
         }
         
         // 检查质量设置
         if let Some(quality) = config.quality
             && quality < 60 {
                 warnings.push(format!(
-                    "⚠️ JXL质量设置较低 ({}), 可能不如WebP或AVIF",
+                    "⚠️ JXL quality setting is low ({}), may not be better than WebP or AVIF",
                     quality
                 ));
             }
@@ -314,7 +314,7 @@ impl FormatSpecificChecks {
         for file in files {
             if file.size > 10 * 1024 * 1024 { // 10MB
                 warnings.push(format!(
-                    "⚠️ 文件 {} 较大 ({:.2} MB)，PNG压缩可能需要较长时间",
+                    "⚠️ File {} is large ({:.2} MB), PNG compression may take longer",
                     file.name,
                     file.size as f64 / (1024.0 * 1024.0)
                 ));
@@ -383,8 +383,8 @@ mod tests {
         
         let warnings = FormatSpecificChecks::check_webp(&files, &config);
         assert!(!warnings.is_empty());
-        assert!(warnings.iter().any(|w| w.contains("较大")));
-        assert!(warnings.iter().any(|w| w.contains("质量设置较低")));
+        assert!(warnings.iter().any(|w| w.contains("large")));
+        assert!(warnings.iter().any(|w| w.contains("quality setting is low")));
     }
     
     #[test]
@@ -406,8 +406,8 @@ mod tests {
         
         let warnings = FormatSpecificChecks::check_avif(&files, &config);
         assert!(!warnings.is_empty());
-        assert!(warnings.iter().any(|w| w.contains("动画")));
-        assert!(warnings.iter().any(|w| w.contains("速度设置较高")));
+        assert!(warnings.iter().any(|w| w.contains("animation")));
+        assert!(warnings.iter().any(|w| w.contains("speed setting is high")));
     }
     
     #[test]
