@@ -152,16 +152,20 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, inject } from 'vue'
-
-const t = inject('t')
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
   decisionData: {
     type: Object,
     default: null
+  },
+  t: {
+    type: Function,
+    required: true
   }
 })
+
+
 
 const isExpanded = ref(true)
 const fileAnalysis = ref(null)

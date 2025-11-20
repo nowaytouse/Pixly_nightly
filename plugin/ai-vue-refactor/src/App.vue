@@ -284,6 +284,7 @@
         <AITransparencyPanel 
           ref="transparencyPanel"
           :decision-data="aiDecisionData"
+          :t="t"
         />
       </div>
     </main>
