@@ -143,10 +143,17 @@ impl FileAttributes {
 /// 便捷函数：保留文件属性的转换
 /// 
 /// 使用方式：
-/// ```
+/// ```no_run
+/// use pixly_kernel::file_attributes::FileAttributes;
+/// use std::path::Path;
+/// # fn main() -> anyhow::Result<()> {
+/// let input_path = Path::new("input.jpg");
+/// let output_path = Path::new("output.webp");
 /// let attrs = FileAttributes::capture(&input_path)?;
 /// // ... 执行转换 ...
 /// attrs.apply(&output_path)?;
+/// # Ok(())
+/// # }
 /// ```
 pub fn preserve_attributes<F>(input: &Path, output: &Path, convert_fn: F) -> Result<()>
 where

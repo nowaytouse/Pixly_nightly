@@ -41,12 +41,12 @@ fn test_batch_decision_manager_real() {
     manager.add_corrupted_file(corrupted).unwrap();
     
     let stats = manager.get_statistics();
-    println!("Corrupted files: {}", stats.total_corrupted);
+    println!("Skipped files: {}", stats.skipped);  // 损坏文件会被跳过
     
     let elapsed = start.elapsed();
     println!("Elapsed: {:?}", elapsed);
     
-    assert_eq!(stats.total_corrupted, 1);
+    assert_eq!(stats.skipped, 1);  // 损坏文件应该被跳过
     let _ = elapsed.as_nanos(); // 确保elapsed有效
 }
 

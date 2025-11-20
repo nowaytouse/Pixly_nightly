@@ -125,6 +125,7 @@ mod tests {
             ref_frames: Some(3),
             me_method: Some("hex".to_string()),
             pix_fmt: None,  // auto模式
+            rate_control: None,
         };
         
         assert_eq!(config.gop_size, Some(250));

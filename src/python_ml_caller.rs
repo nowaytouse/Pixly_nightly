@@ -36,7 +36,9 @@ pub struct MLPredictResponse {
 /// - `Err`: Python执行失败或响应解析失败
 /// 
 /// # 示例
-/// ```rust
+/// ```no_run
+/// use pixly_kernel::python_ml_caller::{call_python_ml, MLPredictRequest};
+/// # fn main() -> anyhow::Result<()> {
 /// let request = MLPredictRequest {
 ///     features: vec![1.0; 128],
 ///     target_format: "avif".to_string(),
@@ -47,6 +49,8 @@ pub struct MLPredictResponse {
 ///     Ok(response) => println!("Quality: {}", response.quality),
 ///     Err(e) => eprintln!("ML failed: {}", e),
 /// }
+/// # Ok(())
+/// # }
 /// ```
 pub fn call_python_ml(request: &MLPredictRequest) -> Result<MLPredictResponse> {
     info!("🐍 Calling Python ML Bridge...");

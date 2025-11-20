@@ -291,14 +291,19 @@
   - [ ] 配置文件向导
 
 ### ⏳ **Phase 2.4: 测试与质量保证** (P0 - 计划中)
-- [x] **TEST-001** Rust单元测试完善 ✅ **2025-11-20完成** (实际2h)
+- [x] **TEST-001** Rust单元测试完善 ✅ **2025-11-20完成** (实际4h)
   - [x] 修复所有失败测试 (9个 → 0个)
-  - [x] 测试通过率: 100% (211/211)
+  - [x] 测试通过率: 100% (225/225)
   - [x] 核心问题修复:
     - regex缺少unicode-perl特性
     - batch_decision_manager重试逻辑错误
     - online_learning测试环境污染
-  - [ ] 集成测试覆盖 (待完善)
+  - [x] 测试文件清理:
+    - 废弃real_functionality_test.rs (引用已删除模块)
+    - 废弃integration_test.rs (API不匹配)
+    - 修复VideoConversionConfig初始化
+    - 修复doctest导入问题
+  - [x] 集成测试覆盖: 10个测试全部通过
   - [ ] 性能基准测试 (待完善)
 
 - [ ] **TEST-002** Python API测试 (2天)

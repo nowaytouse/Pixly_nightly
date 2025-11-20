@@ -137,6 +137,8 @@ fn test_video_advanced_parameters() {
         bframes: Some(3),
         ref_frames: Some(3),
         me_method: Some("hex".to_string()),
+        pix_fmt: None,
+        rate_control: None,
     };
     
     assert_eq!(config.gop_size, Some(250));
