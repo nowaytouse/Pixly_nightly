@@ -7,14 +7,12 @@
  * - 格式特定检查增强
  * - 异步验证支持
  */
-
 use crate::conversion_validator::*;
 use std::path::{Path, PathBuf};
 use anyhow::{Result, Context};
 
 /// CLI验证结果显示器
 pub struct ValidationDisplay;
-
 impl ValidationDisplay {
     /// 显示验证结果
     pub fn display_result(result: &ValidationResult) {
@@ -104,7 +102,6 @@ impl ValidationDisplay {
 
 /// 转换流程验证器
 pub struct ConversionFlowValidator;
-
 impl ConversionFlowValidator {
     /// 🔥 真实的动画检测（使用ffprobe）
     /// 
@@ -122,16 +119,12 @@ impl ConversionFlowValidator {
             .arg("-of").arg("default=noprint_wrappers=1:nokey=1")
             .arg(path)
             .output()
-        {
-            if output.status.success() {
-                if let Ok(frames_str) = String::from_utf8(output.stdout) {
-                    if let Ok(frames) = frames_str.trim().parse::<u32>() {
+            && output.status.success()
+                && let Ok(frames_str) = String::from_utf8(output.stdout)
+                    && let Ok(frames) = frames_str.trim().parse::<u32>() {
                         // 超过1帧就是动画
                         return frames > 1;
                     }
-                }
-            }
-        }
         
         // Fallback: 基于扩展名判断（ffprobe不可用时）
         let ext_lower = ext.to_lowercase();
@@ -164,7 +157,7 @@ impl ConversionFlowValidator {
                 .unwrap_or_default();
             
             // 🔥 修复TODO: 使用启发式方法检测动画
-            let is_animated = Self::detect_animation_heuristic(&path, &ext);
+            let is_animated = Self::detect_animation_heuristic(path, &ext);
             
             files.push(InputFile {
                 file_path: path.clone(),
@@ -210,7 +203,7 @@ impl ConversionFlowValidator {
         
         for path in input_paths {
             let result = Self::validate_pre_conversion(
-                &[path.clone()],
+                std::slice::from_ref(path),
                 target_format,
                 quality,
                 speed,
@@ -226,7 +219,6 @@ impl ConversionFlowValidator {
 
 /// 格式特定检查增强
 pub struct FormatSpecificChecks;
-
 impl FormatSpecificChecks {
     /// WebP特定检查
     pub fn check_webp(files: &[InputFile], config: &ConversionConfig) -> Vec<String> {
@@ -244,14 +236,13 @@ impl FormatSpecificChecks {
         }
         
         // 检查质量设置
-        if let Some(quality) = config.quality {
-            if quality < 70 {
+        if let Some(quality) = config.quality
+            && quality < 70 {
                 warnings.push(format!(
                     "⚠️ WebP质量设置较低 ({}), 可能出现明显压缩痕迹",
                     quality
                 ));
             }
-        }
         
         warnings
     }
@@ -267,14 +258,13 @@ impl FormatSpecificChecks {
         }
         
         // 检查速度设置
-        if let Some(speed) = config.speed {
-            if speed > 6 {
+        if let Some(speed) = config.speed
+            && speed > 6 {
                 warnings.push(format!(
                     "⚠️ AVIF速度设置较高 ({}), 可能影响压缩效率",
                     speed
                 ));
             }
-        }
         
         // 检查大图
         for file in files {
@@ -305,14 +295,13 @@ impl FormatSpecificChecks {
         }
         
         // 检查质量设置
-        if let Some(quality) = config.quality {
-            if quality < 60 {
+        if let Some(quality) = config.quality
+            && quality < 60 {
                 warnings.push(format!(
                     "⚠️ JXL质量设置较低 ({}), 可能不如WebP或AVIF",
                     quality
                 ));
             }
-        }
         
         warnings
     }

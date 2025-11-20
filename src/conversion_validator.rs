@@ -10,7 +10,6 @@
  * - Level 3: 模式一致性验证 (手动/智能模式参数匹配)
  * - Level 4: 输出验证 (文件生成、大小、格式正确性)
  */
-
 use std::path::{Path, PathBuf};
 use std::fs;
 use serde::{Serialize, Deserialize};
@@ -126,11 +125,10 @@ impl ConversionValidator {
             }
             
             // 验证文件是否可读
-            if file.file_path.exists() {
-                if let Err(e) = fs::metadata(&file.file_path) {
+            if file.file_path.exists()
+                && let Err(e) = fs::metadata(&file.file_path) {
                     errors.push(format!("❌ File #{} ({}): Cannot read file metadata: {}", file_num, file.name, e));
                 }
-            }
         }
         
         if errors.is_empty() {
@@ -153,18 +151,16 @@ impl ConversionValidator {
         }
         
         // 验证质量参数
-        if let Some(quality) = config.quality {
-            if quality < 1 || quality > 100 {
+        if let Some(quality) = config.quality
+            && (!(1..=100).contains(&quality)) {
                 errors.push(format!("❌ Invalid quality parameter: {} (should be 1-100)", quality));
             }
-        }
         
         // 验证速度参数
-        if let Some(speed) = config.speed {
-            if speed > 10 {
+        if let Some(speed) = config.speed
+            && speed > 10 {
                 errors.push(format!("❌ Invalid speed parameter: {} (should be 0-10)", speed));
             }
-        }
         
         // 验证格式兼容性
         if format_lower == "heic" {
@@ -185,11 +181,10 @@ impl ConversionValidator {
         }
         
         // 验证无损模式兼容性
-        if config.lossless {
-            if format_lower == "jpg" || format_lower == "jpeg" {
+        if config.lossless
+            && (format_lower == "jpg" || format_lower == "jpeg") {
                 errors.push("❌ JPEG format does not support lossless mode".to_string());
             }
-        }
         
         // 验证 AVIF 动画支持
         if format_lower == "avif" {
@@ -200,13 +195,11 @@ impl ConversionValidator {
         }
         
         // 验证 JXL 参数
-        if format_lower == "jxl" || format_lower == "jpegxl" {
-            if let Some(quality) = config.quality {
-                if quality < 60 {
+        if (format_lower == "jxl" || format_lower == "jpegxl")
+            && let Some(quality) = config.quality
+                && quality < 60 {
                     warnings.push(format!("⚠️ JXL quality parameter is low ({}), may affect visual quality", quality));
                 }
-            }
-        }
         
         if errors.is_empty() {
             ValidationResult::success(2).with_warnings(warnings)
@@ -266,8 +259,8 @@ impl ConversionValidator {
                 }
                 
                 // 验证文件大小合理性
-                if let Some(expected) = expected_size {
-                    if expected > 0 {
+                if let Some(expected) = expected_size
+                    && expected > 0 {
                         let ratio = actual_size as f64 / expected as f64;
                         if ratio < 0.01 {
                             warnings.push(format!("⚠️ Output file abnormally small ({:.2}% of original)", ratio * 100.0));
@@ -275,7 +268,6 @@ impl ConversionValidator {
                             warnings.push(format!("⚠️ Output file abnormally large ({:.2}x of original)", ratio));
                         }
                     }
-                }
             }
             Err(e) => {
                 errors.push(format!("❌ Output validation failed: {}", e));

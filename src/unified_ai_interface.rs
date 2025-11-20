@@ -58,6 +58,7 @@ pub struct UnifiedAIResponse {
 
 /// AI用户偏好设置
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct AIPreferences {
     /// 偏好质量还是速度
     pub prefer_quality: bool,
@@ -207,16 +208,6 @@ impl Default for UnifiedAIManager {
     }
 }
 
-impl Default for AIPreferences {
-    fn default() -> Self {
-        Self {
-            prefer_quality: false,
-            target_compression_ratio: None,
-            max_output_size: None,
-            custom_overrides: std::collections::HashMap::new(),
-        }
-    }
-}
 
 /// 生成唯一请求ID
 pub fn generate_request_id() -> String {

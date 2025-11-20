@@ -37,7 +37,7 @@ impl QualityAssessor {
     /// 检查VMAF支持
     fn check_vmaf_support() -> bool {
         let output = Command::new("ffmpeg")
-            .args(&["-filters"])
+            .args(["-filters"])
             .output();
         
         if let Ok(output) = output {
@@ -137,7 +137,7 @@ impl QualityAssessor {
         let compressed = compressed.as_ref();
         
         let output = Command::new(&self.ffmpeg_path)
-            .args(&[
+            .args([
                 "-i", path_to_str(original)?,
                 "-i", path_to_str(compressed)?,
                 "-lavfi", "ssim",
@@ -151,15 +151,12 @@ impl QualityAssessor {
         
         // 解析SSIM值
         for line in _stderr.lines() {
-            if line.contains("SSIM") && line.contains("All:") {
-                if let Some(value_str) = line.split("All:").nth(1) {
-                    if let Some(value) = value_str.split_whitespace().next() {
-                        if let Ok(ssim) = value.parse::<f64>() {
+            if line.contains("SSIM") && line.contains("All:")
+                && let Some(value_str) = line.split("All:").nth(1)
+                    && let Some(value) = value_str.split_whitespace().next()
+                        && let Ok(ssim) = value.parse::<f64>() {
                             return Ok(ssim);
                         }
-                    }
-                }
-            }
         }
         
         bail!("Failed to parse SSIM value")
@@ -171,7 +168,7 @@ impl QualityAssessor {
         let compressed = compressed.as_ref();
         
         let output = Command::new(&self.ffmpeg_path)
-            .args(&[
+            .args([
                 "-i", path_to_str(original)?,
                 "-i", path_to_str(compressed)?,
                 "-lavfi", "psnr",
@@ -185,15 +182,12 @@ impl QualityAssessor {
         
         // 解析PSNR值
         for line in _stderr.lines() {
-            if line.contains("PSNR") && line.contains("average:") {
-                if let Some(value_str) = line.split("average:").nth(1) {
-                    if let Some(value) = value_str.split_whitespace().next() {
-                        if let Ok(psnr) = value.parse::<f64>() {
+            if line.contains("PSNR") && line.contains("average:")
+                && let Some(value_str) = line.split("average:").nth(1)
+                    && let Some(value) = value_str.split_whitespace().next()
+                        && let Ok(psnr) = value.parse::<f64>() {
                             return Ok(psnr);
                         }
-                    }
-                }
-            }
         }
         
         bail!("Failed to parse PSNR value")
@@ -205,7 +199,7 @@ impl QualityAssessor {
         let compressed = compressed.as_ref();
         
         let output = Command::new(&self.ffmpeg_path)
-            .args(&[
+            .args([
                 "-i", path_to_str(compressed)?,
                 "-i", path_to_str(original)?,
                 "-lavfi", "libvmaf",
@@ -219,15 +213,12 @@ impl QualityAssessor {
         
         // 解析VMAF值
         for line in _stderr.lines() {
-            if line.contains("VMAF score:") {
-                if let Some(value_str) = line.split("VMAF score:").nth(1) {
-                    if let Some(value) = value_str.split_whitespace().next() {
-                        if let Ok(vmaf) = value.parse::<f64>() {
+            if line.contains("VMAF score:")
+                && let Some(value_str) = line.split("VMAF score:").nth(1)
+                    && let Some(value) = value_str.split_whitespace().next()
+                        && let Ok(vmaf) = value.parse::<f64>() {
                             return Ok(vmaf);
                         }
-                    }
-                }
-            }
         }
         
         bail!("Failed to parse VMAF value")
@@ -240,7 +231,7 @@ impl QualityAssessor {
         
         // 使用FFmpeg的astats过滤器
         let output = Command::new(&self.ffmpeg_path)
-            .args(&[
+            .args([
                 "-i", path_to_str(original)?,
                 "-i", path_to_str(compressed)?,
                 "-filter_complex", "[0:a][1:a]astats",
@@ -373,8 +364,8 @@ mod tests {
         let pesq_low = assessor.snr_to_pesq(20.0);
         let pesq_high = assessor.snr_to_pesq(50.0);
         
-        assert!(pesq_low >= 1.0 && pesq_low <= 2.0);
-        assert!(pesq_high >= 4.0 && pesq_high <= 5.0);
+        assert!((1.0..=2.0).contains(&pesq_low));
+        assert!((4.0..=5.0).contains(&pesq_high));
     }
     
     #[test]

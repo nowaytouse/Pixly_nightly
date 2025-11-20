@@ -66,9 +66,9 @@ impl RewardCalculator {
         let speed_penalty = self.calculate_speed_penalty(result);
         
         // 总奖励
-        let total_reward = compression_reward + quality_penalty + speed_penalty;
         
-        total_reward
+        
+        compression_reward + quality_penalty + speed_penalty
     }
     
     /// 计算压缩奖励
@@ -82,7 +82,7 @@ impl RewardCalculator {
         let ratio = reduction / result.original_size as f64;
         
         // 压缩比例作为奖励（0-1）
-        ratio.min(1.0).max(0.0)
+        ratio.clamp(0.0, 1.0)
     }
     
     /// 计算质量惩罚
@@ -94,9 +94,9 @@ impl RewardCalculator {
         
         // SSIM低于阈值，线性惩罚
         let quality_loss = self.quality_threshold - result.ssim;
-        let penalty = -quality_loss * self.quality_penalty_weight;
         
-        penalty
+        
+        -quality_loss * self.quality_penalty_weight
     }
 
     /// 计算速度惩罚
@@ -108,9 +108,9 @@ impl RewardCalculator {
         
         // 超过阈值，线性惩罚
         let time_excess = result.processing_time - self.speed_threshold;
-        let penalty = -time_excess * self.speed_penalty_weight;
         
-        penalty
+        
+        -time_excess * self.speed_penalty_weight
     }
     
     /// 计算详细奖励（用于调试和分析）

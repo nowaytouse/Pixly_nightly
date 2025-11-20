@@ -4,7 +4,6 @@
 /// 1. 检测文件扩展名与实际格式是否匹配
 /// 2. 自动修正错误的扩展名
 /// 3. 处理常见的格式伪装问题
-
 use anyhow::{Context, Result};
 use std::path::{Path, PathBuf};
 use std::fs;

@@ -209,13 +209,11 @@ impl OnlineLearner {
             }
             
             // 解析结果（最后一行是JSON）
-            if let Some(last_line) = stdout.lines().last() {
-                if let Ok(result) = serde_json::from_str::<serde_json::Value>(last_line) {
-                    if let Some(avg_loss) = result.get("avg_loss").and_then(|v| v.as_f64()) {
+            if let Some(last_line) = stdout.lines().last()
+                && let Ok(result) = serde_json::from_str::<serde_json::Value>(last_line)
+                    && let Some(avg_loss) = result.get("avg_loss").and_then(|v| v.as_f64()) {
                         log::info!("   Average loss: {:.4}", avg_loss);
                     }
-                }
-            }
         } else {
             let stderr = String::from_utf8_lossy(&output.stderr);
             log::error!("❌ Batch update failed: {}", stderr);

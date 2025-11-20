@@ -198,8 +198,8 @@ impl UnifiedConversionEngine {
             match self.try_convert(&request, retries) {
                 Ok(result) => {
                     // 检查质量
-                    if self.config.use_quality_assessment {
-                        if let Some(ref metrics) = result.quality_metrics {
+                    if self.config.use_quality_assessment
+                        && let Some(ref metrics) = result.quality_metrics {
                             if metrics.overall_score >= self.config.target_quality_threshold {
                                 return Ok(result);
                             } else {
@@ -212,7 +212,6 @@ impl UnifiedConversionEngine {
                                 continue;
                             }
                         }
-                    }
                     return Ok(result);
                 }
                 Err(e) => {
@@ -250,7 +249,7 @@ impl UnifiedConversionEngine {
         };
         
         // 执行转换
-        let _conversion_result = match request.media_type {
+        match request.media_type {
             MediaType::Image => self.convert_image(request, quality)?,
             MediaType::Video => self.convert_video(request, quality)?,
             MediaType::Audio => self.convert_audio(request, quality)?,
@@ -346,7 +345,7 @@ impl UnifiedConversionEngine {
         use std::process::Command;
         
         let output = Command::new("ffmpeg")
-            .args(&[
+            .args([
                 "-i", path_to_str(&request.input_path)?,
                 "-c:v", "libwebp",
                 "-quality", &quality.to_string(),
@@ -381,7 +380,7 @@ impl UnifiedConversionEngine {
         };
         
         let output = Command::new("ffmpeg")
-            .args(&[
+            .args([
                 "-i", path_to_str(&request.input_path)?,
                 "-c:v", video_codec,
                 "-b:v", &format!("{}k", params.bitrate),
@@ -419,7 +418,7 @@ impl UnifiedConversionEngine {
         };
         
         let output = Command::new("ffmpeg")
-            .args(&[
+            .args([
                 "-i", path_to_str(&request.input_path)?,
                 "-c:a", codec,
                 "-b:a", &format!("{}k", params.bitrate),

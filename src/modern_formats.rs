@@ -47,7 +47,7 @@ impl ModernFormatConverter {
     /// 检查AVIF支持
     fn check_avif_support(&self) -> bool {
         let output = Command::new(&self.ffmpeg_path)
-            .args(&["-encoders"])
+            .args(["-encoders"])
             .output();
         
         if let Ok(output) = output {
@@ -61,7 +61,7 @@ impl ModernFormatConverter {
     /// 检查JXL FFmpeg支持
     fn check_jxl_ffmpeg_support(&self) -> bool {
         let output = Command::new(&self.ffmpeg_path)
-            .args(&["-encoders"])
+            .args(["-encoders"])
             .output();
         
         if let Ok(output) = output {
@@ -90,7 +90,7 @@ impl ModernFormatConverter {
         
         // 构建FFmpeg命令
         let mut cmd = Command::new(&self.ffmpeg_path);
-        cmd.args(&[
+        cmd.args([
             "-i", path_to_str(input)?,
             "-c:v", &params.encoder,
         ]);
@@ -98,29 +98,29 @@ impl ModernFormatConverter {
         // 根据编码器添加参数
         match params.encoder.as_str() {
             "libaom-av1" => {
-                cmd.args(&[
+                cmd.args([
                     "-crf", &params.crf.to_string(),
                     "-cpu-used", &params.speed.to_string(),
                 ]);
                 
                 // 🔥 量化器参数
-                cmd.args(&["-qmin", &params.min_quantizer.to_string()]);
-                cmd.args(&["-qmax", &params.max_quantizer.to_string()]);
+                cmd.args(["-qmin", &params.min_quantizer.to_string()]);
+                cmd.args(["-qmax", &params.max_quantizer.to_string()]);
                 
                 // 🔥 Tiles并行编码
                 if params.tiles_rows > 1 || params.tiles_cols > 1 {
-                    cmd.args(&["-tiles", &format!("{}x{}", params.tiles_cols, params.tiles_rows)]);
+                    cmd.args(["-tiles", &format!("{}x{}", params.tiles_cols, params.tiles_rows)]);
                 }
             }
             "libsvtav1" => {
-                cmd.args(&[
+                cmd.args([
                     "-crf", &params.crf.to_string(),
                     "-preset", &params.speed.to_string(),
                 ]);
                 
                 // 🔥 量化器参数
-                cmd.args(&["-qmin", &params.min_quantizer.to_string()]);
-                cmd.args(&["-qmax", &params.max_quantizer.to_string()]);
+                cmd.args(["-qmin", &params.min_quantizer.to_string()]);
+                cmd.args(["-qmax", &params.max_quantizer.to_string()]);
             }
             _ => {}
         }
@@ -145,12 +145,12 @@ impl ModernFormatConverter {
                 }
             };
             if !pix_fmt.is_empty() {
-                cmd.args(&["-pix_fmt", pix_fmt]);
+                cmd.args(["-pix_fmt", pix_fmt]);
             }
         }
         // 如果不指定pix_fmt，FFmpeg会自动选择损失最小的格式
         
-        cmd.args(&[
+        cmd.args([
             "-y",
             path_to_str(output)?,
         ]);
@@ -194,7 +194,7 @@ impl ModernFormatConverter {
         let input_size = std::fs::metadata(input)?.len();
         
         let mut cmd = Command::new(&self.ffmpeg_path);
-        cmd.args(&[
+        cmd.args([
             "-i", path_to_str(input)?,
             "-c:v", "libjxl",
             "-q:v", &params.quality.to_string(),
@@ -202,10 +202,10 @@ impl ModernFormatConverter {
         ]);
         
         if params.lossless {
-            cmd.args(&["-lossless", "1"]);
+            cmd.args(["-lossless", "1"]);
         }
         
-        cmd.args(&[
+        cmd.args([
             "-y",
             path_to_str(output)?,
         ]);
@@ -254,11 +254,11 @@ impl ModernFormatConverter {
         if params.lossless {
             cmd.arg("--lossless");
         } else {
-            cmd.args(&["--quality", &params.quality.to_string()]);
+            cmd.args(["--quality", &params.quality.to_string()]);
         }
         
         // 努力程度
-        cmd.args(&["--effort", &params.effort.to_string()]);
+        cmd.args(["--effort", &params.effort.to_string()]);
         
         // 🔥 Advanced JXL parameters - REAL implementation!
         if params.modular {
@@ -270,7 +270,7 @@ impl ModernFormatConverter {
         }
         
         if params.responsive {
-            cmd.args(&["--responsive", "1"]);
+            cmd.args(["--responsive", "1"]);
         }
         
         if params.gaborish {
@@ -280,11 +280,11 @@ impl ModernFormatConverter {
         }
         
         if params.photon_noise > 0 {
-            cmd.args(&["--photon_noise", &params.photon_noise.to_string()]);
+            cmd.args(["--photon_noise", &params.photon_noise.to_string()]);
         }
         
         if params.decoding_speed > 0 {
-            cmd.args(&["--decoding_speed", &params.decoding_speed.to_string()]);
+            cmd.args(["--decoding_speed", &params.decoding_speed.to_string()]);
         }
         
         // 🔥 Phase 2: Additional critical parameters
@@ -308,17 +308,17 @@ impl ModernFormatConverter {
                 // - 无损重新打包（默认，不传distance）
                 // - 有损转换（传--lossless_jpeg=0 + --distance）
                 eprintln!("   ✅ Adding --lossless_jpeg 0");
-                cmd.args(&["--lossless_jpeg", "0"]);
+                cmd.args(["--lossless_jpeg", "0"]);
             }
             eprintln!("   ✅ Adding --distance {}", params.distance);
-            cmd.args(&["--distance", &params.distance.to_string()]);
+            cmd.args(["--distance", &params.distance.to_string()]);
         } else {
             eprintln!("   ⏭️  Skipping distance (lossless or distance=0)");
         }
         
         // 🔥 位深度 - 只有非默认值且非0时才传递，让cjxl自动处理
         if params.bit_depth != 8 && params.bit_depth != 0 {
-            cmd.args(&["--bits_per_sample", &params.bit_depth.to_string()]);
+            cmd.args(["--bits_per_sample", &params.bit_depth.to_string()]);
         }
         // bit_depth=0或8时不传递，让cjxl根据源文件自动选择
         
@@ -326,12 +326,12 @@ impl ModernFormatConverter {
         if !params.color_space.is_empty() 
             && params.color_space != "sRGB" 
             && params.color_space != "auto" {
-            cmd.args(&["--color_space", &params.color_space]);
+            cmd.args(["--color_space", &params.color_space]);
         }
         // color_space为空、"sRGB"或"auto"时不传递，让cjxl保持源色彩空间
         
         if params.patches > 0 {
-            cmd.args(&["--patches", &params.patches.to_string()]);
+            cmd.args(["--patches", &params.patches.to_string()]);
         }
         
         // 执行转换
@@ -396,17 +396,17 @@ impl ModernFormatConverter {
         if params.lossless {
             cmd.arg("-lossless");
         } else {
-            cmd.args(&["-q", &params.quality.to_string()]);
+            cmd.args(["-q", &params.quality.to_string()]);
         }
         
         // 压缩方法 (0-6)
-        cmd.args(&["-m", &params.method.to_string()]);
+        cmd.args(["-m", &params.method.to_string()]);
         
         // 滤波强度 (0-100)
-        cmd.args(&["-f", &params.filter_strength.to_string()]);
+        cmd.args(["-f", &params.filter_strength.to_string()]);
         
         // 锐化级别 (0-7)
-        cmd.args(&["-sharpness", &params.sharpness.to_string()]);
+        cmd.args(["-sharpness", &params.sharpness.to_string()]);
         
         // 执行转换
         let result = cmd
@@ -443,25 +443,25 @@ impl ModernFormatConverter {
         let input_size = std::fs::metadata(input)?.len();
         
         let mut cmd = Command::new(&self.ffmpeg_path);
-        cmd.args(&["-i", path_to_str(input)?]);
+        cmd.args(["-i", path_to_str(input)?]);
         
         // 🔥 Complete HEIC parameters - REAL implementation!
         match params.encoder.as_str() {
             "x265" => {
-                cmd.args(&["-c:v", "libx265"]);
-                cmd.args(&["-tag:v", "hvc1"]);  // HEIC tag
+                cmd.args(["-c:v", "libx265"]);
+                cmd.args(["-tag:v", "hvc1"]);  // HEIC tag
                 
                 if params.lossless {
-                    cmd.args(&["-x265-params", "lossless=1"]);
+                    cmd.args(["-x265-params", "lossless=1"]);
                 } else {
                     let crf = 100 - params.quality;  // Convert quality to CRF
-                    cmd.args(&["-crf", &crf.to_string()]);
+                    cmd.args(["-crf", &crf.to_string()]);
                 }
             }
             "libheif" => {
                 // libheif encoder (if available)
-                cmd.args(&["-c:v", "libheif"]);
-                cmd.args(&["-q:v", &params.quality.to_string()]);
+                cmd.args(["-c:v", "libheif"]);
+                cmd.args(["-q:v", &params.quality.to_string()]);
             }
             _ => {
                 bail!("Unsupported HEIC encoder: {}", params.encoder);
@@ -477,12 +477,12 @@ impl ModernFormatConverter {
                 _ => "", // 让FFmpeg自动选择
             };
             if !pix_fmt.is_empty() {
-                cmd.args(&["-pix_fmt", pix_fmt]);
+                cmd.args(["-pix_fmt", pix_fmt]);
             }
         }
         // 如果不指定，FFmpeg会自动选择损失最小的格式
         
-        cmd.args(&["-y", path_to_str(output)?]);
+        cmd.args(["-y", path_to_str(output)?]);
         
         // 执行转换
         let result = cmd

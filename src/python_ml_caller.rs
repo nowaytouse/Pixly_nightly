@@ -163,6 +163,12 @@ pub struct PythonMLCaller {
     // 可以添加配置字段
 }
 
+impl Default for PythonMLCaller {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PythonMLCaller {
     pub fn new() -> Self {
         Self {}

@@ -211,7 +211,7 @@ mod tests {
         let _video = VideoConversionConfig::default();
         
         // 如果编译通过，说明所有参数都存在
-        assert!(true);
+        // 测试通过（编译即验证）
     }
 
     #[test]

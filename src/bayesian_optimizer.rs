@@ -291,8 +291,8 @@ mod tests {
         let optimizer = BayesianOptimizer::with_defaults();
         let (quality, effort, lossless) = optimizer.suggest_next_parameters();
         
-        assert!(quality >= 60 && quality <= 100);
-        assert!(effort >= 4 && effort <= 9);
+        assert!((60..=100).contains(&quality));
+        assert!((4..=9).contains(&effort));
         assert!(!lossless); // 初始不尝试无损
     }
 

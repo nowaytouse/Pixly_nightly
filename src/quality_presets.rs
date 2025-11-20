@@ -37,8 +37,8 @@ impl QualityPreset {
         ]
     }
     
-    /// 从字符串解析
-    pub fn from_str(s: &str) -> Option<Self> {
+    /// 从字符串解析（注意：不是std::str::FromStr trait）
+    pub fn parse_preset(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "draft" | "d" => Some(Self::Draft),
             "standard" | "std" | "s" => Some(Self::Standard),
@@ -217,10 +217,10 @@ mod tests {
     
     #[test]
     fn test_preset_parsing() {
-        assert_eq!(QualityPreset::from_str("draft"), Some(QualityPreset::Draft));
-        assert_eq!(QualityPreset::from_str("std"), Some(QualityPreset::Standard));
-        assert_eq!(QualityPreset::from_str("high"), Some(QualityPreset::High));
-        assert_eq!(QualityPreset::from_str("max"), Some(QualityPreset::Maximum));
+        assert_eq!(QualityPreset::parse_preset("draft"), Some(QualityPreset::Draft));
+        assert_eq!(QualityPreset::parse_preset("std"), Some(QualityPreset::Standard));
+        assert_eq!(QualityPreset::parse_preset("high"), Some(QualityPreset::High));
+        assert_eq!(QualityPreset::parse_preset("max"), Some(QualityPreset::Maximum));
     }
     
     #[test]

@@ -180,18 +180,16 @@ impl ConversionConfig {
         }
         
         // 验证alpha质量
-        if let Some(alpha_q) = self.alpha_quality {
-            if alpha_q > 100 {
+        if let Some(alpha_q) = self.alpha_quality
+            && alpha_q > 100 {
                 anyhow::bail!("Alpha quality must be between 0-100");
             }
-        }
         
         // 验证努力程度
-        if let Some(effort) = self.effort {
-            if effort > 10 {
+        if let Some(effort) = self.effort
+            && effort > 10 {
                 anyhow::bail!("Effort must be between 1-10");
             }
-        }
         
         // 验证功能开关
         if let Some(ref toggles) = self.feature_toggles {
@@ -241,8 +239,8 @@ pub fn execute_conversion(
     // ═══════════════════════════════════════════════════
     // 🎬 动图转视频自动转换 (如果启用)
     // ═══════════════════════════════════════════════════
-    if toggles.map(|t| t.enable_video_for_animation).unwrap_or(false) {
-        if should_convert_animation_to_video(input)? {
+    if toggles.map(|t| t.enable_video_for_animation).unwrap_or(false)
+        && should_convert_animation_to_video(input)? {
             println!("🎬 Large animated image detected, auto-converting to video format");
             println!("   File: {:?}", input);
             println!("   Expected size reduction: 60-80%");
@@ -255,7 +253,7 @@ pub fn execute_conversion(
             convert_animation_to_video(input, &video_output)?;
             
             println!("   ✅ Animation converted to video");
-            println!("");
+            println!();
             
             // 🔥 返回视频转换结果，不再继续图像转换
             let output_size = std::fs::metadata(&video_output)?.len();
@@ -267,7 +265,6 @@ pub fn execute_conversion(
                 strategy_used: "animation_to_video".to_string(),
             });
         }
-    }
     
     // ═══════════════════════════════════════════════════
     // 🔒 AI文件验证 (如果启用)
@@ -820,15 +817,12 @@ fn convert_to_avif(input: &Path, output: &Path, config: &ConversionConfig) -> Re
     let mut cmd = Command::new("avifenc");
     
     // 🔥 修复空壳功能：使用format_specific_params中的min/max quantizer
-    let (min_q, max_q) = if let Some(ref params) = config.format_specific_params {
-        if let crate::format_params::FormatSpecificParams::Avif(avif) = params {
-            (
-                avif.min_quantizer.unwrap_or(0),
-                avif.max_quantizer.unwrap_or(63)
-            )
-        } else {
-            (0, 63)  // 默认值
-        }
+    let (min_q, max_q) = if let Some(ref params) = config.format_specific_params
+        && let crate::format_params::FormatSpecificParams::Avif(avif) = params {
+        (
+            avif.min_quantizer.unwrap_or(0),
+            avif.max_quantizer.unwrap_or(63)
+        )
     } else {
         (0, 63)  // 默认值
     };

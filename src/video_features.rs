@@ -77,7 +77,7 @@ pub fn extract_video_features(path: &Path) -> Result<VideoFeatures> {
     
     // 调用ffprobe获取视频信息
     let output = Command::new("ffprobe")
-        .args(&[
+        .args([
             "-v", "quiet",
             "-print_format", "json",
             "-show_format",
@@ -181,13 +181,11 @@ pub fn extract_video_features(path: &Path) -> Result<VideoFeatures> {
 /// 解析帧率字符串（如 "30/1" 或 "30000/1001"）
 fn parse_fps(fps_str: &str) -> f64 {
     let parts: Vec<&str> = fps_str.split('/').collect();
-    if parts.len() == 2 {
-        if let (Ok(num), Ok(den)) = (parts[0].parse::<f64>(), parts[1].parse::<f64>()) {
-            if den > 0.0 {
+    if parts.len() == 2
+        && let (Ok(num), Ok(den)) = (parts[0].parse::<f64>(), parts[1].parse::<f64>())
+            && den > 0.0 {
                 return num / den;
             }
-        }
-    }
     0.0
 }
 
@@ -200,13 +198,13 @@ fn estimate_scene_complexity(bitrate: u64, width: u32, height: u32, duration: f6
     let pixels = (width as u64) * (height as u64);
     let expected_bitrate = pixels * 30 / 10;  // 简单估算
     
-    let complexity = if expected_bitrate > 0 {
+    
+    
+    if expected_bitrate > 0 {
         (bitrate as f64 / expected_bitrate as f64).min(1.0)
     } else {
         0.5
-    };
-    
-    complexity
+    }
 }
 
 /// 将视频特征转换为128维向量（用于ML预测）

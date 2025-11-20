@@ -5,7 +5,6 @@
 /// - 支持开发/生产模式切换
 /// - 日志级别可配置
 /// - 移除所有硬编码println!
-
 use std::sync::{Arc, Mutex, OnceLock};
 use std::fmt;
 
@@ -23,7 +22,6 @@ pub enum LogLevel {
     /// 错误信息 - 总是显示
     Error = 4,
 }
-
 impl LogLevel {
     pub fn emoji(&self) -> &'static str {
         match self {
@@ -72,7 +70,6 @@ pub struct LogConfig {
     /// 开发模式（显示所有日志）
     pub dev_mode: bool,
 }
-
 impl Default for LogConfig {
     fn default() -> Self {
         Self {
@@ -124,7 +121,6 @@ impl LogConfig {
 pub struct LogManager {
     config: Arc<Mutex<LogConfig>>,
 }
-
 impl LogManager {
     fn new() -> Self {
         Self {
@@ -229,7 +225,6 @@ macro_rules! log_mgr_debug {
         )
     };
 }
-
 #[macro_export]
 macro_rules! log_mgr_verbose {
     ($($arg:tt)*) => {

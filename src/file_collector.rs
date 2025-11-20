@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 
 /// File collector with filtering and recursive support
+#[derive(Default)]
 pub struct FileCollector {
     /// File extensions to include (e.g., ["jpg", "png"])
     pub extensions: Vec<String>,
@@ -16,16 +17,6 @@ pub struct FileCollector {
     pub follow_symlinks: bool,
 }
 
-impl Default for FileCollector {
-    fn default() -> Self {
-        Self {
-            extensions: Vec::new(),
-            recursive: false,
-            max_depth: None,
-            follow_symlinks: false,
-        }
-    }
-}
 
 impl FileCollector {
     /// Create new collector with extensions
@@ -88,11 +79,10 @@ impl FileCollector {
     /// Collect files from directory
     fn collect_from_dir(&self, dir: &Path, depth: usize) -> Result<Vec<PathBuf>> {
         // Check max depth
-        if let Some(max) = self.max_depth {
-            if depth >= max {
+        if let Some(max) = self.max_depth
+            && depth >= max {
                 return Ok(Vec::new());
             }
-        }
         
         let mut files = Vec::new();
         

@@ -15,17 +15,16 @@ fn setup_path() {
     let mut paths: Vec<String> = Vec::new();
     
     // 1. Plugin bin directory (highest priority - bundled tools)
-    if let Ok(exe_path) = env::current_exe() {
-        if let Some(bin_dir) = exe_path.parent() {
+    if let Ok(exe_path) = env::current_exe()
+        && let Some(bin_dir) = exe_path.parent() {
             paths.push(bin_dir.to_string_lossy().to_string());
         }
-    }
     
     // 2. Original PATH
     paths.push(current_path);
     
     // 3. Common tool locations across platforms
-    let additional_paths = vec![
+    let additional_paths = [
         "/opt/homebrew/bin",      // macOS Homebrew (Apple Silicon)
         "/usr/local/bin",          // macOS Homebrew (Intel) / Linux
         "/usr/bin",                // Linux
@@ -52,6 +51,9 @@ struct Cli {
     command: Commands,
 }
 
+// 允许大的enum variant：CLI参数解析不在热路径，性能影响可忽略
+// Convert variant (421 bytes) 包含所有转换参数，boxing会增加复杂度
+#[allow(clippy::large_enum_variant)]
 #[derive(Subcommand)]
 enum Commands {
     /// 🔍 Analyze media files with AI recommendations
@@ -401,9 +403,9 @@ fn validate_vmaf(original: &Path, converted: &Path) -> Result<()> {
             let stdout = String::from_utf8_lossy(&result.stdout);
             
             // 解析VMAF分数
-            if let Some(vmaf_line) = stdout.lines().find(|l| l.contains("\"vmaf\"")) {
-                if let Some(score_str) = vmaf_line.split(':').nth(1) {
-                    if let Ok(score) = score_str.trim().trim_end_matches(',').parse::<f64>() {
+            if let Some(vmaf_line) = stdout.lines().find(|l| l.contains("\"vmaf\""))
+                && let Some(score_str) = vmaf_line.split(':').nth(1)
+                    && let Ok(score) = score_str.trim().trim_end_matches(',').parse::<f64>() {
                         println!("   📊 VMAF Score: {:.2}", score);
                         
                         if score >= 95.0 {
@@ -420,8 +422,6 @@ fn validate_vmaf(original: &Path, converted: &Path) -> Result<()> {
                         
                         return Ok(());
                     }
-                }
-            }
             
             println!("   ⚠️  Could not parse VMAF score");
             Ok(())
@@ -773,7 +773,7 @@ fn run(cli: Cli) -> Result<()> {
             let (mut final_quality, preset_effort) = if let Some(preset_str) = preset {
                 use pixly_kernel::quality_presets::QualityPreset;
                 
-                match QualityPreset::from_str(&preset_str) {
+                match QualityPreset::parse_preset(&preset_str) {
                     Some(preset) => {
                         let config = preset.config_for_format(&target_format);
                         println!("🎯 Using quality preset: {}", preset.as_str());
@@ -958,10 +958,12 @@ fn run(cli: Cli) -> Result<()> {
             };
             
             // 构建转换配置
-            let mut config = ConversionConfig::default();
-            config.quality = final_quality;
-            config.feature_toggles = Some(feature_toggles);
-            config.normalize_filenames = normalize_filenames;
+            let mut config = ConversionConfig {
+                quality: final_quality,
+                feature_toggles: Some(feature_toggles),
+                normalize_filenames,
+                ..Default::default()
+            };
             
             // 根据格式设置参数（AI推荐的参数优先）
             match target_format.as_str() {
@@ -1038,8 +1040,8 @@ fn run(cli: Cli) -> Result<()> {
             
             // 🔥 Phase X.1: 动图转视频推荐
             let ext = input.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
-            if matches!(ext.as_str(), "gif" | "apng" | "webp") {
-                if let Ok(metadata) = std::fs::metadata(&input) {
+            if matches!(ext.as_str(), "gif" | "apng" | "webp")
+                && let Ok(metadata) = std::fs::metadata(&input) {
                     let file_size = metadata.len();
                     let size_mb = file_size as f64 / 1_000_000.0;
                     
@@ -1047,15 +1049,14 @@ fn run(cli: Cli) -> Result<()> {
                         println!("💡 Large animated image detected!");
                         println!("   Format: {}", ext.to_uppercase());
                         println!("   Size: {:.2} MB", size_mb);
-                        println!("");
+                        println!();
                         println!("   🎬 Recommendation: Convert to video format");
                         println!("   Expected size reduction: 60-80%");
                         println!("   Suggested command:");
                         println!("   pixly-rust video {} output.mp4 --codec h265", input.display());
-                        println!("");
+                        println!();
                     }
                 }
-            }
             
             // 🔥 Phase X.1: Magika AI 文件验证
             if validate_files {
@@ -1069,12 +1070,11 @@ fn run(cli: Cli) -> Result<()> {
                                  detection.detected_type, detection.confidence * 100.0);
                         
                         // 验证扩展名匹配
-                        if let Some(ext) = actual_input.extension().and_then(|e| e.to_str()) {
-                            if !detector.extension_matches_type(ext, &detection.detected_type) {
+                        if let Some(ext) = actual_input.extension().and_then(|e| e.to_str())
+                            && !detector.extension_matches_type(ext, &detection.detected_type) {
                                 println!("   ⚠️  Warning: Extension '{}' doesn't match detected type '{}'", 
                                          ext, detection.detected_type);
                             }
-                        }
                     }
                     Err(e) => {
                         println!("   ⚠️  File validation failed: {}", e);
@@ -1247,11 +1247,10 @@ fn run(cli: Cli) -> Result<()> {
                                  quality_result.quality_grade.as_str());
                         
                         // 🎓 更新在线学习的SSIM值
-                        if online_learning {
-                            if let Err(e) = OnlineLearnerManager::update_last_experience_ssim(quality_result.ssim_score) {
+                        if online_learning
+                            && let Err(e) = OnlineLearnerManager::update_last_experience_ssim(quality_result.ssim_score) {
                                 println!("   ⚠️  Failed to update SSIM: {}", e);
                             }
-                        }
                         
                         if !quality_result.passed {
                             println!("   ⚠️  Warning: Quality below threshold (0.95)");
@@ -1347,7 +1346,7 @@ fn merge_xmp_sidecar(_input_path: &Path, output_path: &Path, provided_xmp_path: 
         .arg(&xmp_path)
         .arg("-XMP:all")
         .arg("-overwrite_original")
-        .arg(&output_path)
+        .arg(output_path)
         .output();
     
     match merge_result {
@@ -1377,7 +1376,7 @@ fn merge_xmp_sidecar(_input_path: &Path, output_path: &Path, provided_xmp_path: 
             // 5. 验证合并成功（至少2个XMP标签）
             let verify_result = Command::new("exiftool")
                 .arg("-XMP:all")
-                .arg(&output_path)
+                .arg(output_path)
                 .output();
             
             match verify_result {
@@ -1397,7 +1396,7 @@ fn merge_xmp_sidecar(_input_path: &Path, output_path: &Path, provided_xmp_path: 
                         if let Some(parent) = xmp_path.parent() {
                             if parent.file_name()
                                 .and_then(|n| n.to_str())
-                                .map_or(false, |n| n.ends_with(".info")) {
+                                .is_some_and(|n| n.ends_with(".info")) {
                                 // Eagle XMP资源，删除整个.info目录
                                 if let Err(e) = fs::remove_dir_all(parent) {
                                     println!("   ⚠️  Failed to delete Eagle XMP resource directory: {}", e);
@@ -1463,8 +1462,6 @@ fn normalize_filename_if_needed(input: &Path) -> Result<(PathBuf, Option<PathBuf
         .map(|c| {
             if c.is_ascii_alphanumeric() || c == '.' || c == '-' {
                 c
-            } else if c.is_whitespace() {
-                '_'
             } else {
                 '_'
             }
@@ -1600,12 +1597,10 @@ fn handle_eagle_in_place_replacement(input: &Path, output: &Path) -> Result<()> 
         } else {
             println!("   ✅ Original file deleted: {:?}", input.file_name());
         }
-    } else {
-        if input == output {
-            println!("   ⏭️  Input and output are the same file, skipping deletion");
-        } else if !input.exists() {
-            println!("   ⏭️  Input file no longer exists, skipping deletion");
-        }
+    } else if input == output {
+        println!("   ⏭️  Input and output are the same file, skipping deletion");
+    } else if !input.exists() {
+        println!("   ⏭️  Input file no longer exists, skipping deletion");
     }
     
     Ok(())

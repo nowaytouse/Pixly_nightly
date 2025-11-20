@@ -100,13 +100,12 @@ impl TransparentLogger {
         };
         
         println!(
-            "{}{}{} {} {}{}",
+            "{}{}{} {} {}\x1b[0m",
             timestamp,
             indent,
             level.emoji(),
             level.color_code(),
-            message,
-            "\x1b[0m" // Reset color
+            message // Reset color
         );
     }
     
@@ -117,7 +116,7 @@ impl TransparentLogger {
         if self.show_details && !details.is_empty() {
             let indent = "  ".repeat(self.indent_level + 1);
             for (key, value) in details {
-                println!("{}  {} {}: {}", indent, "→", key, value);
+                println!("{}  → {}: {}", indent, key, value);
             }
         }
     }

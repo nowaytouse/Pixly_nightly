@@ -6,13 +6,13 @@
 /// - 命令行参数优先级最高
 /// - 环境变量次之
 /// - 配置文件最后
-
 use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
 /// Configuration file structure
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct Config {
     /// Default settings
     #[serde(default)]
@@ -25,16 +25,6 @@ pub struct Config {
     /// Batch processing settings
     #[serde(default)]
     pub batch: BatchSettings,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            defaults: DefaultSettings::default(),
-            logging: LoggingSettings::default(),
-            batch: BatchSettings::default(),
-        }
-    }
 }
 
 /// 默认设置
@@ -64,7 +54,6 @@ pub struct DefaultSettings {
     #[serde(default)]
     pub merge_xmp: bool,
 }
-
 impl Default for DefaultSettings {
     fn default() -> Self {
         Self {
@@ -95,7 +84,6 @@ pub struct LoggingSettings {
     #[serde(default = "default_true")]
     pub show_color: bool,
 }
-
 impl Default for LoggingSettings {
     fn default() -> Self {
         Self {
@@ -129,7 +117,6 @@ pub struct BatchSettings {
     #[serde(default)]
     pub overwrite: bool,
 }
-
 impl Default for BatchSettings {
     fn default() -> Self {
         Self {
@@ -158,7 +145,6 @@ pub struct ConfigManager {
     #[allow(dead_code)]
     config_path: Option<PathBuf>,
 }
-
 impl ConfigManager {
     /// 创建新的配置管理器
     pub fn new() -> Self {

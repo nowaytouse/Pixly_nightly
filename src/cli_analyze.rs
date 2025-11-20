@@ -7,21 +7,13 @@ use serde::{Serialize, Deserialize};
 use crate::media_analyzer::MediaAnalyzer;
 
 #[derive(Debug, Clone)]
+#[derive(Default)]
 pub struct AnalyzeOptions {
     pub use_ai: bool,        // 是否使用AI推荐
     pub json_output: bool,   // 是否输出JSON格式
     pub target_format: Option<String>,  // 目标格式（可选）
 }
 
-impl Default for AnalyzeOptions {
-    fn default() -> Self {
-        Self {
-            use_ai: false,
-            json_output: false,
-            target_format: None,
-        }
-    }
-}
 
 /// 分析结果（JSON输出）
 #[derive(Debug, Serialize, Deserialize)]

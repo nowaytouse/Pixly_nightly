@@ -8,7 +8,6 @@
  * - 与Eagle插件HTML界面完全对应
  * - 类型安全的参数验证
  */
-
 use serde::{Deserialize, Serialize};
 
 // ═══════════════════════════════════════════════════
@@ -47,29 +46,25 @@ impl Default for JxlParams {
 
 impl JxlParams {
     pub fn validate(&self) -> Result<(), String> {
-        if let Some(effort) = self.effort {
-            if !(1..=9).contains(&effort) {
+        if let Some(effort) = self.effort
+            && !(1..=9).contains(&effort) {
                 return Err(format!("JXL effort must be 1-9, got {}", effort));
             }
-        }
         
-        if let Some(distance) = self.distance {
-            if !(0.0..=15.0).contains(&distance) {
+        if let Some(distance) = self.distance
+            && !(0.0..=15.0).contains(&distance) {
                 return Err(format!("JXL distance must be 0-15, got {}", distance));
             }
-        }
         
-        if let Some(bit_depth) = self.bit_depth {
-            if ![8, 10, 12, 16].contains(&bit_depth) {
+        if let Some(bit_depth) = self.bit_depth
+            && ![8, 10, 12, 16].contains(&bit_depth) {
                 return Err(format!("JXL bit_depth must be 8/10/12/16, got {}", bit_depth));
             }
-        }
         
-        if let Some(patches) = self.patches {
-            if patches > 4 {
+        if let Some(patches) = self.patches
+            && patches > 4 {
                 return Err(format!("JXL patches must be 0-4, got {}", patches));
             }
-        }
         
         Ok(())
     }
@@ -131,41 +126,35 @@ impl Default for WebPParams {
 
 impl WebPParams {
     pub fn validate(&self) -> Result<(), String> {
-        if let Some(method) = self.method {
-            if method > 6 {
+        if let Some(method) = self.method
+            && method > 6 {
                 return Err(format!("WebP method must be 0-6, got {}", method));
             }
-        }
         
-        if let Some(filter_strength) = self.filter_strength {
-            if filter_strength > 100 {
+        if let Some(filter_strength) = self.filter_strength
+            && filter_strength > 100 {
                 return Err(format!("WebP filter_strength must be 0-100, got {}", filter_strength));
             }
-        }
         
-        if let Some(sharpness) = self.sharpness {
-            if sharpness > 7 {
+        if let Some(sharpness) = self.sharpness
+            && sharpness > 7 {
                 return Err(format!("WebP sharpness must be 0-7, got {}", sharpness));
             }
-        }
         
-        if let Some(segments) = self.segments {
-            if !(1..=4).contains(&segments) {
+        if let Some(segments) = self.segments
+            && !(1..=4).contains(&segments) {
                 return Err(format!("WebP segments must be 1-4, got {}", segments));
             }
-        }
         
-        if let Some(sns_strength) = self.sns_strength {
-            if sns_strength > 100 {
+        if let Some(sns_strength) = self.sns_strength
+            && sns_strength > 100 {
                 return Err(format!("WebP sns_strength must be 0-100, got {}", sns_strength));
             }
-        }
         
-        if let Some(pass) = self.pass {
-            if !(1..=10).contains(&pass) {
+        if let Some(pass) = self.pass
+            && !(1..=10).contains(&pass) {
                 return Err(format!("WebP pass must be 1-10, got {}", pass));
             }
-        }
         
         Ok(())
     }
@@ -219,41 +208,35 @@ impl Default for AvifParams {
 
 impl AvifParams {
     pub fn validate(&self) -> Result<(), String> {
-        if let Some(speed) = self.speed {
-            if speed > 10 {
+        if let Some(speed) = self.speed
+            && speed > 10 {
                 return Err(format!("AVIF speed must be 0-10, got {}", speed));
             }
-        }
         
-        if let Some(min_q) = self.min_quantizer {
-            if min_q > 63 {
+        if let Some(min_q) = self.min_quantizer
+            && min_q > 63 {
                 return Err(format!("AVIF min_quantizer must be 0-63, got {}", min_q));
             }
-        }
         
-        if let Some(max_q) = self.max_quantizer {
-            if max_q > 63 {
+        if let Some(max_q) = self.max_quantizer
+            && max_q > 63 {
                 return Err(format!("AVIF max_quantizer must be 0-63, got {}", max_q));
             }
-        }
         
-        if let Some(bit_depth) = self.bit_depth {
-            if ![8, 10, 12].contains(&bit_depth) {
+        if let Some(bit_depth) = self.bit_depth
+            && ![8, 10, 12].contains(&bit_depth) {
                 return Err(format!("AVIF bit_depth must be 8/10/12, got {}", bit_depth));
             }
-        }
         
-        if let Some(rows) = self.tiles_rows {
-            if !(1..=8).contains(&rows) {
+        if let Some(rows) = self.tiles_rows
+            && !(1..=8).contains(&rows) {
                 return Err(format!("AVIF tiles_rows must be 1-8, got {}", rows));
             }
-        }
         
-        if let Some(cols) = self.tiles_cols {
-            if !(1..=8).contains(&cols) {
+        if let Some(cols) = self.tiles_cols
+            && !(1..=8).contains(&cols) {
                 return Err(format!("AVIF tiles_cols must be 1-8, got {}", cols));
             }
-        }
         
         Ok(())
     }
@@ -295,23 +278,20 @@ impl Default for HeicParams {
 
 impl HeicParams {
     pub fn validate(&self) -> Result<(), String> {
-        if let Some(quality) = self.quality {
-            if !(1..=100).contains(&quality) {
+        if let Some(quality) = self.quality
+            && !(1..=100).contains(&quality) {
                 return Err(format!("HEIC quality must be 1-100, got {}", quality));
             }
-        }
         
-        if let Some(ref encoder) = self.encoder {
-            if !["x265", "libheif"].contains(&encoder.as_str()) {
+        if let Some(ref encoder) = self.encoder
+            && !["x265", "libheif"].contains(&encoder.as_str()) {
                 return Err(format!("HEIC encoder must be x265 or libheif, got {}", encoder));
             }
-        }
         
-        if let Some(ref chroma) = self.chroma_subsampling {
-            if !["420", "422", "444"].contains(&chroma.as_str()) {
+        if let Some(ref chroma) = self.chroma_subsampling
+            && !["420", "422", "444"].contains(&chroma.as_str()) {
                 return Err(format!("HEIC chroma_subsampling must be 420/422/444, got {}", chroma));
             }
-        }
         
         Ok(())
     }
@@ -357,12 +337,17 @@ mod tests {
     
     #[test]
     fn test_jxl_params_validation() {
-        let mut params = JxlParams::default();
-        params.effort = Some(10);
+        let params = JxlParams {
+            effort: Some(10),
+            ..Default::default()
+        };
         assert!(params.validate().is_err());
         
-        params.effort = Some(7);
-        params.distance = Some(20.0);
+        let params = JxlParams {
+            effort: Some(7),
+            distance: Some(20.0),
+            ..Default::default()
+        };
         assert!(params.validate().is_err());
     }
     

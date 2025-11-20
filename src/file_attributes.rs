@@ -54,11 +54,10 @@ impl FileAttributes {
         match xattr::list(path) {
             Ok(names) => {
                 for name in names {
-                    if let Some(name_str) = name.to_str() {
-                        if let Ok(Some(value)) = xattr::get(path, &name) {
+                    if let Some(name_str) = name.to_str()
+                        && let Ok(Some(value)) = xattr::get(path, &name) {
                             attrs.push((name_str.to_string(), value));
                         }
-                    }
                 }
             }
             Err(e) => {

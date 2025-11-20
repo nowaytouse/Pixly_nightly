@@ -118,7 +118,7 @@ fn extract_color_features(img: &DynamicImage) -> Vec<f64> {
             sample_count += 1;
             
             // HSV转换（每10个像素采样一次）
-            if sample_count % 10 == 0 {
+            if sample_count.is_multiple_of(10) {
                 let (h, s, v) = rgb_to_hsv(
                     channels[0] as f64 / 255.0,
                     channels[1] as f64 / 255.0,
@@ -227,18 +227,18 @@ fn extract_texture_features(img: &DynamicImage) -> Vec<f64> {
         for x in 1..(width - 1) {
             // Sobel X
             let gx = 
-                -1.0 * gray.get_pixel(x - 1, y - 1)[0] as f64 +
+                -(gray.get_pixel(x - 1, y - 1)[0] as f64) +
                  1.0 * gray.get_pixel(x + 1, y - 1)[0] as f64 +
                 -2.0 * gray.get_pixel(x - 1, y)[0] as f64 +
                  2.0 * gray.get_pixel(x + 1, y)[0] as f64 +
-                -1.0 * gray.get_pixel(x - 1, y + 1)[0] as f64 +
+                -(gray.get_pixel(x - 1, y + 1)[0] as f64) +
                  1.0 * gray.get_pixel(x + 1, y + 1)[0] as f64;
             
             // Sobel Y
             let gy = 
-                -1.0 * gray.get_pixel(x - 1, y - 1)[0] as f64 +
+                -(gray.get_pixel(x - 1, y - 1)[0] as f64) +
                 -2.0 * gray.get_pixel(x, y - 1)[0] as f64 +
-                -1.0 * gray.get_pixel(x + 1, y - 1)[0] as f64 +
+                -(gray.get_pixel(x + 1, y - 1)[0] as f64) +
                  1.0 * gray.get_pixel(x - 1, y + 1)[0] as f64 +
                  2.0 * gray.get_pixel(x, y + 1)[0] as f64 +
                  1.0 * gray.get_pixel(x + 1, y + 1)[0] as f64;
@@ -253,11 +253,11 @@ fn extract_texture_features(img: &DynamicImage) -> Vec<f64> {
                 let normalized_angle = if angle < 0.0 { angle + 180.0 } else { angle };
                 
                 // 分类到4个方向
-                if normalized_angle < 22.5 || normalized_angle >= 157.5 {
+                if !(22.5..157.5).contains(&normalized_angle) {
                     dir_0 += 1;  // 0° (水平)
-                } else if normalized_angle >= 22.5 && normalized_angle < 67.5 {
+                } else if (22.5..67.5).contains(&normalized_angle) {
                     dir_45 += 1;  // 45°
-                } else if normalized_angle >= 67.5 && normalized_angle < 112.5 {
+                } else if (67.5..112.5).contains(&normalized_angle) {
                     dir_90 += 1;  // 90° (垂直)
                 } else {
                     dir_135 += 1;  // 135°
@@ -374,16 +374,15 @@ fn extract_metadata_features(path: &Path) -> Vec<f64> {
         features[1] = (metadata.len() as f64).ln();  // log文件大小
         
         // 修改时间（Unix时间戳归一化）
-        if let Ok(modified) = metadata.modified() {
-            if let Ok(duration) = modified.duration_since(std::time::UNIX_EPOCH) {
+        if let Ok(modified) = metadata.modified()
+            && let Ok(duration) = modified.duration_since(std::time::UNIX_EPOCH) {
                 features[2] = (duration.as_secs() as f64 / 1e9).ln();  // 归一化到合理范围
             }
-        }
     }
     
     // 文件扩展名编码
-    if let Some(ext) = path.extension() {
-        if let Some(ext_str) = ext.to_str() {
+    if let Some(ext) = path.extension()
+        && let Some(ext_str) = ext.to_str() {
             features[3] = match ext_str.to_lowercase().as_str() {
                 "jpg" | "jpeg" => 1.0,
                 "png" => 2.0,
@@ -396,14 +395,12 @@ fn extract_metadata_features(path: &Path) -> Vec<f64> {
                 _ => 0.0,
             };
         }
-    }
     
     // 文件名长度
-    if let Some(filename) = path.file_name() {
-        if let Some(name_str) = filename.to_str() {
+    if let Some(filename) = path.file_name()
+        && let Some(name_str) = filename.to_str() {
             features[4] = (name_str.len() as f64).ln();
         }
-    }
     
     // EXIF解析（如果可用）
     // 注意：这里使用简化实现，完整EXIF需要额外依赖
