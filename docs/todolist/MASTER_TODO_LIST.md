@@ -50,7 +50,12 @@
   - 集成到MediaAnalyzer.extract_full_features()
   - 色彩/纹理/形状/质量特征
   - 被ML模型训练使用 ✅
-- [ ] **ML预测器套件** - 多种ML算法 (P1, 15h)
+- [x] **ML预测器套件** - ✅ **已完成** (P1, 实际3h)
+  - 深度分析ml_predictor.rs和automl.rs
+  - 完整化可行性评估（3种技术方案）
+  - 决策：删除（成本4-6周 vs 收益20ms）
+  - 保持Python ML Bridge方案
+  - 文档：docs/ML_MODULES_COMPLETION_ANALYSIS.md
 
 ### 🚫 已废弃功能
 - [x] ~~HTTP网关~~ - 违反纯本地化原则
