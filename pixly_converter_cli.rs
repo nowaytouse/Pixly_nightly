@@ -1236,6 +1236,7 @@ fn run(cli: Cli) -> Result<()> {
             if check_quality {
                 println!("   📊 Checking quality with SSIM...");
                 use pixly_kernel::quality_checker::QualityChecker;
+                use pixly_kernel::online_learner_manager::OnlineLearnerManager;
                 
                 let checker = QualityChecker::new();
                 match checker.check_conversion_quality(&input, &output_path) {
@@ -1247,8 +1248,9 @@ fn run(cli: Cli) -> Result<()> {
                         
                         // 🎓 更新在线学习的SSIM值
                         if online_learning {
-                            // TODO: 更新最后一个经验的SSIM值
-                            // 这需要OnlineLearner支持更新最后一个经验
+                            if let Err(e) = OnlineLearnerManager::update_last_experience_ssim(quality_result.ssim_score) {
+                                println!("   ⚠️  Failed to update SSIM: {}", e);
+                            }
                         }
                         
                         if !quality_result.passed {

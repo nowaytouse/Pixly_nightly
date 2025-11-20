@@ -24,6 +24,8 @@ pub struct Experience {
     pub effort: u32,
     pub reward: f64,
     pub timestamp: u64,
+    #[serde(default)]
+    pub ssim: Option<f64>, // 🎯 SSIM质量分数（可选，用于后续更新）
 }
 
 /// 🎯 ML-506: 模型版本信息
@@ -117,6 +119,7 @@ impl OnlineLearner {
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap_or_default()
                 .as_secs(),
+            ssim: None, // 初始为None，后续可通过update_last_experience_ssim更新
         };
         
         // 存储经验
@@ -227,6 +230,31 @@ impl OnlineLearner {
     /// 获取当前缓冲大小
     pub fn buffer_size(&self) -> usize {
         self.experience_buffer.lock().unwrap().len()
+    }
+    
+    /// 🎯 更新最后一个经验的SSIM值
+    /// 
+    /// 用于在转换完成后补充SSIM质量评分
+    pub fn update_last_experience_ssim(&self, ssim: f64) -> Result<()> {
+        if !self.enabled {
+            return Ok(());
+        }
+        
+        let mut buffer = self.experience_buffer.lock().unwrap();
+        if let Some(last_exp) = buffer.last_mut() {
+            last_exp.ssim = Some(ssim);
+            log::info!("📊 Updated last experience SSIM: {:.4}", ssim);
+            
+            // 持久化更新
+            drop(buffer);
+            if let Err(e) = self.persist_experiences() {
+                log::warn!("⚠️  Failed to persist SSIM update: {}", e);
+            }
+        } else {
+            log::warn!("⚠️  No experience to update SSIM");
+        }
+        
+        Ok(())
     }
     
     /// 手动触发更新

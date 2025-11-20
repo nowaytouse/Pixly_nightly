@@ -97,6 +97,12 @@ impl OnlineLearnerManager {
         GLOBAL_LEARNER.lock().unwrap().buffer_size()
     }
     
+    /// 🎯 更新最后一个经验的SSIM值
+    pub fn update_last_experience_ssim(ssim: f64) -> anyhow::Result<()> {
+        let learner = GLOBAL_LEARNER.lock().unwrap();
+        learner.update_last_experience_ssim(ssim)
+    }
+    
     /// 手动触发模型更新
     pub fn manual_update() -> anyhow::Result<()> {
         let learner = GLOBAL_LEARNER.lock().unwrap();
