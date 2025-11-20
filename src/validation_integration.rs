@@ -156,7 +156,7 @@ impl ConversionFlowValidator {
                 .map(|e| format!(".{}", e))
                 .unwrap_or_default();
             
-            // 🔥 修复TODO: 使用启发式方法检测动画
+            // 使用启发式方法检测动画
             let is_animated = Self::detect_animation_heuristic(path, &ext);
             
             files.push(InputFile {
