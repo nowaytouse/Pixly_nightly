@@ -281,13 +281,10 @@
         </div>
 
         <!-- 🔍 AI决策透明面板 - 展示处理过程的透明化 -->
-        <div style="margin-top: 20px; padding: 20px; background: #f0f0f0; border: 2px solid red;">
-          <h2 style="color: red;">🔍 测试：AI透明面板应该在这里</h2>
-          <AITransparencyPanel 
-            ref="transparencyPanel"
-            :decision-data="aiDecisionData"
-          />
-        </div>
+        <AITransparencyPanel 
+          ref="transparencyPanel"
+          :decision-data="aiDecisionData"
+        />
       </div>
     </main>
 
@@ -348,17 +345,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, provide } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 import { useRustCLI } from './composables/useRustCLI'
 import { useEagleAPI } from './composables/useEagleAPI'
 import { logger, LOG_KEYS } from './utils/logger'
-import { useI18n } from './composables/useI18n'
 import AITransparencyPanel from './components/AITransparencyPanel.vue'
 
-const { t, setLocale, locale } = useI18n()
-
-// Provide t function to child components
-provide('t', t)
+// Use global i18n instance from main.js
+const i18n = inject('i18n')
+const { t, setLocale, locale } = i18n
 
 const rustCLI = useRustCLI()
 const eagleAPI = useEagleAPI()

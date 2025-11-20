@@ -152,15 +152,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, inject, getCurrentInstance } from 'vue'
+import { ref, computed, watch } from 'vue'
 
-const t = inject('t')
-
-// Expose t as $t for template usage
-const instance = getCurrentInstance()
-if (instance) {
-  instance.appContext.config.globalProperties.$t = t
-}
+// $t is available globally via main.js setup
+// No need to inject or setup - templates can use {{ $t('key') }} directly
 
 const props = defineProps({
   decisionData: {
