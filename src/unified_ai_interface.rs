@@ -96,7 +96,8 @@ pub trait UnifiedAIPredictor: Send + Sync {
     fn is_available(&self) -> bool;
     
     /// 获取AI参数预测
-    fn predict_parameters(&self, request: UnifiedAIRequest) -> Result<UnifiedAIResponse, UnifiedAIError>;
+    /// 🔥 Performance: Takes reference to avoid cloning
+    fn predict_parameters(&self, request: &UnifiedAIRequest) -> Result<UnifiedAIResponse, UnifiedAIError>;
     
     /// 获取支持的格式列表
     fn supported_formats(&self) -> Vec<String>;
@@ -161,8 +162,9 @@ impl UnifiedAIManager {
             }
             
             // 尝试预测，带重试机制
+            // 🔥 Performance: Use reference to avoid cloning request in retry loop
             for attempt in 1..=self.retry_count {
-                match predictor.predict_parameters(request.clone()) {
+                match predictor.predict_parameters(&request) {
                     Ok(response) => {
                         info!("AI prediction succeeded - Predictor: {}, Attempt: {}/{}", 
                               predictor.name(), attempt, self.retry_count);
