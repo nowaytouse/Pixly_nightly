@@ -156,20 +156,24 @@
             <summary>{{ t('video.title') }}</summary>
             <div class="checkbox-group">
               <label class="checkbox">
+                <input type="checkbox" v-model="enableVideoCodecRecommendation" checked>
+                <span>🤖 {{ t('video.codecRecommendation') }}</span>
+              </label>
+              <label class="checkbox">
                 <input type="checkbox" v-model="enableVideoForAnimation">
-                <span>🎬 Animation to Video</span>
+                <span>🎬 {{ t('video.animationToVideo') }}</span>
               </label>
               <label class="checkbox">
                 <input type="checkbox" v-model="enableSceneDetection">
-                <span>🎞️ Scene Detection</span>
+                <span>🎞️ {{ t('video.sceneDetection') }}</span>
               </label>
               <label class="checkbox">
                 <input type="checkbox" v-model="enableVMAF">
-                <span>📊 VMAF Quality Validation</span>
+                <span>📊 {{ t('video.vmafValidation') }}</span>
               </label>
               <label class="checkbox">
                 <input type="checkbox" v-model="enableTwoPass">
-                <span>🔄 Two-Pass Encoding</span>
+                <span>🔄 {{ t('video.twoPass') }}</span>
               </label>
             </div>
           </details>
@@ -363,6 +367,7 @@ const enableFormatCorrection = ref(false)
 // 🎬 视频相关
 const videoCodec = ref('h265')
 const videoContainer = ref('mp4')
+const enableVideoCodecRecommendation = ref(true)
 const enableVideoForAnimation = ref(true)
 const enableSceneDetection = ref(false)
 const enableVMAF = ref(false)

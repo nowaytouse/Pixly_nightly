@@ -36,10 +36,14 @@
     "title": "🎬 视频选项",
     "codec": "视频编码器",
     "codecAuto": "🤖 自动选择",
+    "codecRecommendation": "AI编码器推荐",
+    "animationToVideo": "动画转视频",
+    "sceneDetection": "场景检测",
+    "vmafValidation": "VMAF质量验证",
+    "twoPass": "两遍编码",
     "container": "容器格式",
     "crf": "质量控制",
     "speed": "编码速度",
-    "twoPass": "两遍编码",
     "pixelFormat": "像素格式"
   },
   "fileList": {
