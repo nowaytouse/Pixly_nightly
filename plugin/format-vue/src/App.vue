@@ -61,7 +61,7 @@
             v-model="advancedParams" 
             :lossless="lossless"
           />
-          <QuickTools v-model="quickTools" />
+          <QuickTools v-model="quickTools" :logs="logs" ref="quickToolsRef" />
         </template>
         
         <!-- 视频面板 -->
@@ -143,6 +143,35 @@ const quickTools = ref({
 })
 const files = ref([])
 
+// 🔍 日志系统
+const logs = ref([])
+const quickToolsRef = ref(null)
+
+// 添加日志
+const addLog = (message, type = 'info', icon = '📝') => {
+  const now = new Date()
+  const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
+  
+  logs.value.push({
+    time,
+    icon,
+    message,
+    type // info, success, warning, error
+  })
+  
+  // 自动滚动到底部
+  setTimeout(() => {
+    if (quickToolsRef.value) {
+      quickToolsRef.value.scrollLogToBottom()
+    }
+  }, 10)
+}
+
+// 清空日志
+const clearLogs = () => {
+  logs.value = []
+}
+
 // Toast状态
 const toast = ref({
   show: false,
@@ -177,6 +206,22 @@ const startConversion = async () => {
     return
   }
 
+  // 🔍 清空日志并切换到日志标签
+  clearLogs()
+  if (quickToolsRef.value) {
+    quickToolsRef.value.switchToLog()
+  }
+  
+  // 🔍 添加开始日志
+  if (conversionType.value === 'image') {
+    addLog(`开始处理 ${files.value.length} 个图像文件`, 'info', '🚀')
+    addLog(`输出格式: ${selectedFormat.value.toUpperCase()}`, 'info', '🎯')
+    addLog(`质量设置: ${quality.value}${lossless.value ? ' (无损)' : ''}`, 'info', '⚙️')
+  } else {
+    addLog(`开始处理 ${files.value.length} 个视频文件`, 'info', '🚀')
+    addLog(`视频参数: ${JSON.stringify(videoParams.value)}`, 'info', '🎯')
+  }
+
   logger.info(LOG_KEYS.CONVERT_START, 'Starting conversion', {
     format: selectedFormat.value,
     quality: quality.value,
@@ -195,7 +240,17 @@ const startConversion = async () => {
         // 快捷工具
         quickTools: quickTools.value
       }
-      result = await convertImages(files.value, options)
+      
+      // 🔍 使用进度回调添加日志
+      result = await convertImages(files.value, options, (index, total, fileName, status, error) => {
+        if (status === 'processing') {
+          addLog(`[${index}/${total}] 处理: ${fileName}`, 'info', '⚙️')
+        } else if (status === 'success') {
+          addLog(`  ✓ ${fileName}`, 'success', '')
+        } else if (status === 'error') {
+          addLog(`  ✗ ${fileName}: ${error}`, 'error', '')
+        }
+      })
     } else {
       const options = {
         ...videoParams.value
@@ -209,6 +264,16 @@ const startConversion = async () => {
       const successMsg = `✅ 转换完成！\n成功: ${summary.success || 0}/${summary.total || 0}` +
                         (summary.failed > 0 ? `\n失败: ${summary.failed}` : '') +
                         (summary.xmpMerged > 0 ? `\nXMP已合并: ${summary.xmpMerged}` : '')
+      
+      // 🔍 添加完成总结日志
+      addLog('─────────────────────────', 'info', '')
+      if (summary.failed === 0) {
+        addLog(`✅ 全部完成！成功: ${summary.success}/${summary.total}`, 'success', '✅')
+      } else if (summary.success > 0) {
+        addLog(`⚠️ 部分完成！成功: ${summary.success}, 失败: ${summary.failed}`, 'warning', '⚠️')
+      } else {
+        addLog(`❌ 全部失败！失败: ${summary.failed}/${summary.total}`, 'error', '❌')
+      }
       
       logger.info(LOG_KEYS.CONVERT_SUCCESS, 'Conversion completed', {
         total: summary.total,

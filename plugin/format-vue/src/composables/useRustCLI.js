@@ -121,8 +121,11 @@ export function useRustCLI() {
   /**
    * 执行图像转换
    * 🔥 修复：正确的命令格式 pixly-converter convert <INPUT> --format <FORMAT> [OPTIONS]
+   * @param {Array} files - 文件列表
+   * @param {Object} options - 转换选项
+   * @param {Function} onProgress - 进度回调 (fileIndex, fileName, status)
    */
-  const convertImages = async (files, options) => {
+  const convertImages = async (files, options, onProgress = null) => {
     isConverting.value = true
     progress.value = 0
 
@@ -159,6 +162,11 @@ export function useRustCLI() {
         const file = mediaFiles[i]
         currentFile.value = file.name
         progress.value = Math.round((i / mediaFiles.length) * 100)
+        
+        // 🔍 调用进度回调 - 开始处理
+        if (onProgress) {
+          onProgress(i + 1, mediaFiles.length, file.name, 'processing')
+        }
 
         // 🔥 验证文件路径
         if (!file.path) {
@@ -306,6 +314,11 @@ export function useRustCLI() {
             hasXmp: file.hasXmp,
             xmpId: file.xmpId
           })
+          
+          // 🔍 调用进度回调 - 成功
+          if (onProgress) {
+            onProgress(i + 1, mediaFiles.length, file.name, 'success')
+          }
         } catch (fileError) {
           results.push({
             success: false,
@@ -317,6 +330,11 @@ export function useRustCLI() {
             file: file.name,
             error: fileError.message
           })
+          
+          // 🔍 调用进度回调 - 失败
+          if (onProgress) {
+            onProgress(i + 1, mediaFiles.length, file.name, 'error', fileError.message)
+          }
         }
       }
 
