@@ -367,9 +367,9 @@ fn detect_scenes(input: &Path, config: &mut pixly_kernel::video_processor::Video
             250  // 默认值
         };
         
-        if config.gop_size.is_none() || config.gop_size.unwrap() > recommended_gop {
-            println!("   💡 Adjusting GOP size: {} → {}", 
-                     config.gop_size.unwrap_or(250), recommended_gop);
+        let current_gop = config.gop_size.unwrap_or(250);
+        if config.gop_size.is_none() || current_gop > recommended_gop {
+            println!("   💡 Adjusting GOP size: {} → {}", current_gop, recommended_gop);
             config.gop_size = Some(recommended_gop);
         }
     } else {
@@ -469,8 +469,8 @@ fn run(cli: Cli) -> Result<()> {
             };
             
             handle_audio(
-                input.to_str().unwrap(),
-                output.to_str().unwrap(),
+                input.to_str().ok_or_else(|| anyhow::anyhow!("Invalid input path"))?,
+                output.to_str().ok_or_else(|| anyhow::anyhow!("Invalid output path"))?,
                 &options
             )?;
             
@@ -886,13 +886,15 @@ fn run(cli: Cli) -> Result<()> {
                     out
                 } else {
                     // output无扩展名，视为目录，在其中创建同名文件
-                    let filename = input.file_stem().unwrap();
+                    let filename = input.file_stem()
+                        .ok_or_else(|| anyhow::anyhow!("Invalid input filename"))?;
                     out.join(format!("{}.{}", filename.to_string_lossy(), target_format))
                 }
             } else {
                 // 默认在输入文件同目录创建（原地替换）
                 let parent = input.parent().unwrap_or(Path::new("."));
-                let filename = input.file_stem().unwrap();
+                let filename = input.file_stem()
+                    .ok_or_else(|| anyhow::anyhow!("Invalid input filename"))?;
                 parent.join(format!("{}.{}", filename.to_string_lossy(), target_format))
             };
             

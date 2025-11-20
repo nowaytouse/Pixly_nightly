@@ -678,8 +678,9 @@ fn calculate_dynamic_range(gray: &image::GrayImage) -> f64 {
         return 0.0;
     }
     
-    let min = *pixels.iter().min().unwrap() as f64;
-    let max = *pixels.iter().max().unwrap() as f64;
+    // Safe: pixels is non-empty, min/max will always return Some
+    let min = *pixels.iter().min().expect("pixels is non-empty") as f64;
+    let max = *pixels.iter().max().expect("pixels is non-empty") as f64;
     
     (max - min) / 255.0
 }

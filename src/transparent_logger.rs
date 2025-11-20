@@ -93,7 +93,7 @@ impl TransparentLogger {
             use std::time::SystemTime;
             let now = SystemTime::now()
                 .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap();
+                .unwrap_or_default();
             format!("[{:.3}s] ", now.as_secs_f64() % 1000.0)
         } else {
             String::new()

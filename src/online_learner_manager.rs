@@ -34,10 +34,10 @@ pub struct OnlineLearnerManager;
 impl OnlineLearnerManager {
     /// 启用在线学习
     pub fn enable() {
-        let mut enabled = ENABLED.lock().unwrap();
+        let mut enabled = ENABLED.lock().expect("Mutex poisoned");
         *enabled = true;
         
-        let mut learner = GLOBAL_LEARNER.lock().unwrap();
+        let mut learner = GLOBAL_LEARNER.lock().expect("Mutex poisoned");
         learner.enable();
         
         log::info!("🎓 Online learning ENABLED");
@@ -45,7 +45,7 @@ impl OnlineLearnerManager {
     
     /// 检查是否启用
     pub fn is_enabled() -> bool {
-        *ENABLED.lock().unwrap()
+        *ENABLED.lock().expect("Mutex poisoned")
     }
     
     /// 记录转换经验
@@ -60,7 +60,7 @@ impl OnlineLearnerManager {
             return Ok(());  // 静默跳过
         }
         
-        let learner = GLOBAL_LEARNER.lock().unwrap();
+        let learner = GLOBAL_LEARNER.lock().expect("Mutex poisoned");
         learner.record_conversion(features, quality, effort, result)?;
         
         let buffer_size = learner.buffer_size();
@@ -88,30 +88,30 @@ impl OnlineLearnerManager {
     
     /// 🎯 ML-505: 自动更新模型
     fn auto_update() -> anyhow::Result<()> {
-        let learner = GLOBAL_LEARNER.lock().unwrap();
+        let learner = GLOBAL_LEARNER.lock().expect("Mutex poisoned");
         learner.trigger_update()
     }
     
     /// 获取当前缓冲区大小
     pub fn buffer_size() -> usize {
-        GLOBAL_LEARNER.lock().unwrap().buffer_size()
+        GLOBAL_LEARNER.lock().expect("Mutex poisoned").buffer_size()
     }
     
     /// 🎯 更新最后一个经验的SSIM值
     pub fn update_last_experience_ssim(ssim: f64) -> anyhow::Result<()> {
-        let learner = GLOBAL_LEARNER.lock().unwrap();
+        let learner = GLOBAL_LEARNER.lock().expect("Mutex poisoned");
         learner.update_last_experience_ssim(ssim)
     }
     
     /// 手动触发模型更新
     pub fn manual_update() -> anyhow::Result<()> {
-        let learner = GLOBAL_LEARNER.lock().unwrap();
+        let learner = GLOBAL_LEARNER.lock().expect("Mutex poisoned");
         learner.manual_update()
     }
     
     /// 禁用在线学习
     pub fn disable() {
-        let mut learner = GLOBAL_LEARNER.lock().unwrap();
+        let mut learner = GLOBAL_LEARNER.lock().expect("Mutex poisoned");
         learner.disable();
     }
 }

@@ -136,17 +136,17 @@ impl LogManager {
     
     /// 设置配置
     pub fn set_config(&self, config: LogConfig) {
-        *self.config.lock().unwrap() = config;
+        *self.config.lock().expect("Mutex poisoned") = config;
     }
     
     /// 获取配置
     pub fn get_config(&self) -> LogConfig {
-        self.config.lock().unwrap().clone()
+        self.config.lock().expect("Mutex poisoned").clone()
     }
     
     /// 记录日志
     pub fn log(&self, level: LogLevel, message: &str) {
-        let config = self.config.lock().unwrap().clone();
+        let config = self.config.lock().expect("Mutex poisoned").clone();
         
         // 检查日志级别
         if level < config.min_level {
@@ -161,7 +161,7 @@ impl LogManager {
             use std::time::SystemTime;
             let now = SystemTime::now()
                 .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap();
+                .unwrap_or_default();
             output.push_str(&format!("[{:.3}s] ", now.as_secs_f64() % 1000.0));
         }
         
@@ -188,7 +188,7 @@ impl LogManager {
     pub fn log_with_details(&self, level: LogLevel, message: &str, details: &[(&str, &str)]) {
         self.log(level, message);
         
-        let config = self.config.lock().unwrap().clone();
+        let config = self.config.lock().expect("Mutex poisoned").clone();
         if level >= config.min_level && !details.is_empty() {
             for (key, value) in details {
                 println!("  → {}: {}", key, value);
@@ -198,7 +198,7 @@ impl LogManager {
     
     /// 记录分隔线
     pub fn separator(&self) {
-        let config = self.config.lock().unwrap().clone();
+        let config = self.config.lock().expect("Mutex poisoned").clone();
         if config.min_level <= LogLevel::Verbose {
             println!("{}", "─".repeat(60));
         }
@@ -206,7 +206,7 @@ impl LogManager {
     
     /// 记录标题
     pub fn header(&self, title: &str) {
-        let config = self.config.lock().unwrap().clone();
+        let config = self.config.lock().expect("Mutex poisoned").clone();
         if config.min_level <= LogLevel::Info {
             println!("\n╔═══════════════════════════════════════════════════════════╗");
             println!("║ {:^57} ║", title);

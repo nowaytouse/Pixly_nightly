@@ -732,7 +732,7 @@ impl FormatKnowledgeBase {
             })
             .collect();
         
-        scored_formats.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        scored_formats.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
         scored_formats.into_iter().map(|(name, _)| name).collect()
     }
     
@@ -975,7 +975,7 @@ impl FormatKnowledgeBase {
                          (if a.year_released >= 2015 { 1.2 } else { 1.0 });
             let score_b = b.compression_efficiency * 
                          (if b.year_released >= 2015 { 1.2 } else { 1.0 });
-            score_b.partial_cmp(&score_a).unwrap()
+            score_b.partial_cmp(&score_a).unwrap_or(std::cmp::Ordering::Equal)
         });
         
         formats.into_iter()

@@ -123,7 +123,7 @@ impl OnlineLearner {
         };
         
         // 存储经验
-        let mut buffer = self.experience_buffer.lock().unwrap();
+        let mut buffer = self.experience_buffer.lock().expect("Mutex poisoned");
         buffer.push(experience);
         
         log::info!("📝 Recorded experience: reward={:.4}, buffer_size={}", 
@@ -203,7 +203,7 @@ impl OnlineLearner {
             
             // 3. 增加版本号
             {
-                let mut ver = self.current_version.lock().unwrap();
+                let mut ver = self.current_version.lock().expect("Mutex poisoned");
                 *ver += 1;
                 log::info!("📈 Model version updated: v{}", *ver);
             }
@@ -227,7 +227,7 @@ impl OnlineLearner {
     
     /// 获取当前缓冲大小
     pub fn buffer_size(&self) -> usize {
-        self.experience_buffer.lock().unwrap().len()
+        self.experience_buffer.lock().expect("Mutex poisoned").len()
     }
     
     /// 🎯 更新最后一个经验的SSIM值
@@ -238,7 +238,7 @@ impl OnlineLearner {
             return Ok(());
         }
         
-        let mut buffer = self.experience_buffer.lock().unwrap();
+        let mut buffer = self.experience_buffer.lock().expect("Mutex poisoned");
         if let Some(last_exp) = buffer.last_mut() {
             last_exp.ssim = Some(ssim);
             log::info!("📊 Updated last experience SSIM: {:.4}", ssim);
@@ -273,7 +273,7 @@ impl OnlineLearner {
             return Ok(()); // 没有模型可备份
         }
         
-        let current_ver = *self.current_version.lock().unwrap();
+        let current_ver = *self.current_version.lock().expect("Mutex poisoned");
         
         let backup_dir = self.model_path.parent()
             .context("Invalid model path")?
@@ -293,8 +293,8 @@ impl OnlineLearner {
     
     /// 🎯 ML-506: 保存版本信息
     fn save_version_info(&self) -> Result<()> {
-        let buffer = self.experience_buffer.lock().unwrap();
-        let current_ver = *self.current_version.lock().unwrap();
+        let buffer = self.experience_buffer.lock().expect("Mutex poisoned");
+        let current_ver = *self.current_version.lock().expect("Mutex poisoned");
         
         let avg_reward = if buffer.is_empty() {
             0.0
@@ -328,7 +328,7 @@ impl OnlineLearner {
     
     /// 🎯 ML-506: 获取当前版本
     pub fn current_version(&self) -> u32 {
-        *self.current_version.lock().unwrap()
+        *self.current_version.lock().expect("Mutex poisoned")
     }
     
     /// 🎯 ML-506: 回滚到指定版本
@@ -343,7 +343,7 @@ impl OnlineLearner {
         }
         
         std::fs::copy(&backup_path, &self.model_path)?;
-        *self.current_version.lock().unwrap() = version;
+        *self.current_version.lock().expect("Mutex poisoned") = version;
         
         log::info!("⏮️  Rolled back to model v{}", version);
         Ok(())
@@ -358,7 +358,7 @@ impl OnlineLearner {
             std::fs::create_dir_all(parent)?;
         }
         
-        let buffer = self.experience_buffer.lock().unwrap();
+        let buffer = self.experience_buffer.lock().expect("Mutex poisoned");
         let json = serde_json::to_string_pretty(&*buffer)?;
         std::fs::write(persist_path, json)?;
         
@@ -378,7 +378,7 @@ impl OnlineLearner {
         let json = std::fs::read_to_string(persist_path)?;
         let experiences: Vec<Experience> = serde_json::from_str(&json)?;
         
-        let mut buffer = self.experience_buffer.lock().unwrap();
+        let mut buffer = self.experience_buffer.lock().expect("Mutex poisoned");
         *buffer = experiences;
         
         log::info!("📂 Loaded {} persisted experiences", buffer.len());

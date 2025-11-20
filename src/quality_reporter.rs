@@ -148,8 +148,10 @@ impl Reporter {
     /// 完成报告
     pub fn finalize(&mut self) {
         self.report.end_time = Some(SystemTime::now());
-        if let Ok(duration) = self.report.end_time.unwrap().duration_since(self.report.start_time) {
-            self.report.duration = Some(duration);
+        if let Some(end_time) = self.report.end_time {
+            if let Ok(duration) = end_time.duration_since(self.report.start_time) {
+                self.report.duration = Some(duration);
+            }
         }
 
         // 计算平均BytesPerPixel

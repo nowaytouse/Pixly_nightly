@@ -131,7 +131,8 @@ impl ConsoleProgressCallback {
     }
 
     fn should_update(&self) -> bool {
-        let mut last = self.last_update.lock().unwrap();
+        let mut last = self.last_update.lock()
+            .expect("Progress tracker mutex poisoned");
         if last.elapsed() >= self.update_interval {
             *last = Instant::now();
             true
@@ -224,7 +225,7 @@ impl ProgressTracker {
     }
 
     pub fn add_callback(self, callback: Box<dyn ProgressCallback>) -> Self {
-        self.callbacks.lock().unwrap().push(callback);
+        self.callbacks.lock().expect("Mutex poisoned").push(callback);
         self
     }
 
@@ -234,7 +235,7 @@ impl ProgressTracker {
         }
 
         let old_state = {
-            let mut info = self.info.lock().unwrap();
+            let mut info = self.info.lock().expect("Mutex poisoned");
             let old_state = info.state.clone();
             
             if let Some(op) = operation {
@@ -245,8 +246,8 @@ impl ProgressTracker {
             old_state
         };
 
-        let info = self.info.lock().unwrap().clone();
-        let callbacks = self.callbacks.lock().unwrap();
+        let info = self.info.lock().expect("Mutex poisoned").clone();
+        let callbacks = self.callbacks.lock().expect("Mutex poisoned");
         
         for callback in callbacks.iter() {
             callback.on_progress(&info);
@@ -262,7 +263,7 @@ impl ProgressTracker {
 
     pub fn cancel(&self) {
         self.is_cancelled.store(true, Ordering::Relaxed);
-        let mut info = self.info.lock().unwrap();
+        let mut info = self.info.lock().expect("Mutex poisoned");
         info.cancel(); 
     }
 
@@ -271,11 +272,11 @@ impl ProgressTracker {
     }
 
     pub fn get_info(&self) -> ProgressInfo {
-        self.info.lock().unwrap().clone()
+        self.info.lock().expect("Mutex poisoned").clone()
     }
 
     pub fn add_metadata(&self, key: String, value: String) {
-        self.info.lock().unwrap().add_metadata(key, value);
+        self.info.lock().expect("Mutex poisoned").add_metadata(key, value);
     }
 }
 
@@ -295,27 +296,27 @@ impl ProgressManager {
         let tracker = ProgressTracker::new(level, total, operation)
             .add_callback(Box::new(ConsoleProgressCallback::new(false)));
         
-        self.trackers.lock().unwrap().insert(id, tracker.clone());
+        self.trackers.lock().expect("Mutex poisoned").insert(id, tracker.clone());
         tracker
     }
 
     pub fn get_tracker(&self, id: &str) -> Option<ProgressTracker> {
-        self.trackers.lock().unwrap().get(id).cloned()
+        self.trackers.lock().expect("Mutex poisoned").get(id).cloned()
     }
 
     pub fn remove_tracker(&self, id: &str) {
-        self.trackers.lock().unwrap().remove(id);
+        self.trackers.lock().expect("Mutex poisoned").remove(id);
     }
 
     pub fn cancel_all(&self) {
-        let trackers = self.trackers.lock().unwrap();
+        let trackers = self.trackers.lock().expect("Mutex poisoned");
         for tracker in trackers.values() {
             tracker.cancel();
         }
     }
 
     pub fn get_all_status(&self) -> Vec<(String, ProgressInfo)> {
-        let trackers = self.trackers.lock().unwrap();
+        let trackers = self.trackers.lock().expect("Mutex poisoned");
         trackers.iter()
             .map(|(id, tracker)| (id.clone(), tracker.get_info()))
             .collect()

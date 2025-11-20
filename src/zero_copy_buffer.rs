@@ -156,7 +156,9 @@ impl ZeroCopyBuffer {
 impl Drop for ZeroCopyBuffer {
     fn drop(&mut self) {
         if !self.shared && !self.data.is_null() {
-            let layout = std::alloc::Layout::array::<u8>(self.capacity).unwrap();
+            // Layout::array只在size溢出时失败，capacity已验证，这里安全
+            let layout = std::alloc::Layout::array::<u8>(self.capacity)
+                .expect("Buffer capacity overflow");
             unsafe {
                 std::alloc::dealloc(self.data, layout);
             }

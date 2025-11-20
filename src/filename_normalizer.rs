@@ -108,7 +108,10 @@ impl FilenameNormalizer {
         let (base_name, extension) = if self.preserve_extension {
             if let Some(ext) = path.extension() {
                 let ext_str = ext.to_string_lossy().to_string();
-                let base = path.file_stem().unwrap().to_string_lossy().to_string();
+                let base = path.file_stem()
+                    .ok_or_else(|| anyhow::anyhow!("Invalid filename: no stem"))?
+                    .to_string_lossy()
+                    .to_string();
                 
                 // 使用Magika验证扩展名是否正确
                 let corrected_ext = if self.use_magika {

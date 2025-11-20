@@ -67,7 +67,8 @@ impl PPOTrainingData {
     pub fn get_best_compression(&self, media_type: MediaType, format: &str) -> Option<&TrainingSample> {
         self.data.iter()
             .filter(|s| s.media_type == media_type && s.target_format == format)
-            .min_by(|a, b| a.compression_ratio.partial_cmp(&b.compression_ratio).unwrap())
+            .min_by(|a, b| a.compression_ratio.partial_cmp(&b.compression_ratio)
+                .unwrap_or(std::cmp::Ordering::Equal))
     }
     
     /// 获取平均压缩率
@@ -117,7 +118,7 @@ impl PPOTrainingData {
             .min_by(|a, b| {
                 let diff_a = (a.compression_ratio - target_ratio).abs();
                 let diff_b = (b.compression_ratio - target_ratio).abs();
-                diff_a.partial_cmp(&diff_b).unwrap()
+                diff_a.partial_cmp(&diff_b).unwrap_or(std::cmp::Ordering::Equal)
             })
             .map(|s| s.quality)
             .unwrap_or(85)
@@ -243,7 +244,8 @@ impl EnhancedPPOPredictor {
             .max_by(|a, b| {
                 let reward_a = self.training_data.average_reward(media_type.clone(), a);
                 let reward_b = self.training_data.average_reward(media_type.clone(), b);
-                reward_a.partial_cmp(&reward_b).unwrap()
+                // Handle NaN by treating it as Equal (shouldn't happen with valid rewards)
+                reward_a.partial_cmp(&reward_b).unwrap_or(std::cmp::Ordering::Equal)
             })
             .map(|s| s.to_string())
             .unwrap_or_else(|| match media_type {

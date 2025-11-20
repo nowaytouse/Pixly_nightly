@@ -114,8 +114,8 @@ impl SmartCache {
     
     /// 获取缓存
     pub fn get(&self, key: &str) -> Option<PathBuf> {
-        let mut entries = self.entries.write().unwrap();
-        let mut stats = self.stats.write().unwrap();
+        let mut entries = self.entries.write().expect("RwLock poisoned");
+        let mut stats = self.stats.write().expect("RwLock poisoned");
         
         if let Some(entry) = entries.get_mut(key) {
             // 检查是否过期
@@ -140,7 +140,7 @@ impl SmartCache {
     
     /// 添加缓存
     pub fn put(&self, key: String, source_path: PathBuf, cache_path: PathBuf, size_bytes: u64) -> Result<()> {
-        let mut entries = self.entries.write().unwrap();
+        let mut entries = self.entries.write().expect("RwLock poisoned");
         
         // 检查是否需要清理
         self.cleanup_if_needed(&mut entries)?;
@@ -157,7 +157,7 @@ impl SmartCache {
         
         entries.insert(key, entry);
         
-        let mut stats = self.stats.write().unwrap();
+        let mut stats = self.stats.write().expect("RwLock poisoned");
         stats.update(&entries);
         
         Ok(())
@@ -165,7 +165,7 @@ impl SmartCache {
     
     /// 清理过期缓存
     fn cleanup_if_needed(&self, entries: &mut HashMap<String, CacheEntry>) -> Result<()> {
-        let mut last_cleanup = self.last_cleanup.lock().unwrap();
+        let mut last_cleanup = self.last_cleanup.lock().expect("Mutex poisoned");
         
         // 每小时清理一次
         if last_cleanup.elapsed() < Duration::from_secs(3600) {
@@ -208,15 +208,15 @@ impl SmartCache {
     
     /// 获取统计信息
     pub fn get_stats(&self) -> CacheStats {
-        let entries = self.entries.read().unwrap();
-        let mut stats = self.stats.write().unwrap();
+        let entries = self.entries.read().expect("RwLock poisoned");
+        let mut stats = self.stats.write().expect("RwLock poisoned");
         stats.update(&entries);
         stats.clone()
     }
     
     /// 清空缓存
     pub fn clear(&self) -> Result<()> {
-        let mut entries = self.entries.write().unwrap();
+        let mut entries = self.entries.write().expect("RwLock poisoned");
         
         for entry in entries.values() {
             let _ = fs::remove_file(&entry.cache_path);
@@ -224,7 +224,7 @@ impl SmartCache {
         
         entries.clear();
         
-        let mut stats = self.stats.write().unwrap();
+        let mut stats = self.stats.write().expect("RwLock poisoned");
         *stats = CacheStats::new();
         
         Ok(())
