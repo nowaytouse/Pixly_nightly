@@ -635,6 +635,9 @@ const startConvert = async () => {
             progress.value = Math.round((processed / total) * 100)
             progressText.value = t('progress.imageProgress', { current: i + 1, total: images.length, filename: file.name })
             
+            // 🔍 Log processing start
+            addLog(`[${i + 1}/${images.length}] 处理: ${file.name}`, 'info', '⚙️')
+            
             const result = await rustCLI.convert({
               inputPath: file.path,
               outputPath: file.path.replace(/\.[^.]+$/, `.${outputFormat.value === 'auto' || outputFormat.value === 'disabled' ? 'avif' : outputFormat.value}`),
@@ -745,27 +748,42 @@ const startConvert = async () => {
     }
 
     const successCount = results.filter(r => r.success).length
+    const failedCount = results.length - successCount
     progressText.value = t('progress.success', { success: successCount, total: results.length })
     
-    // 🔍 Add completion logs
+    // 🔍 Add completion logs with real data
     addLog('─────────────────────────', 'info', '')
+    
     if (successCount === results.length) {
       addLog(`✅ 全部完成！成功: ${successCount}/${results.length}`, 'success', '✅')
+    } else if (successCount > 0) {
+      addLog(`⚠️ 部分完成！成功: ${successCount}, 失败: ${failedCount}`, 'warning', '⚠️')
     } else {
-      addLog(`⚠️ 部分完成！成功: ${successCount}/${results.length}`, 'warning', '⚠️')
+      addLog(`❌ 全部失败！失败: ${failedCount}/${results.length}`, 'error', '❌')
     }
+    
+    // 显示每个文件的结果
+    results.forEach(r => {
+      if (r.success) {
+        addLog(`  ✓ ${r.file}`, 'success', '')
+        // 如果result包含实际数据，显示它
+        if (r.result && typeof r.result === 'object') {
+          if (r.result.outputSize) {
+            const ratio = Math.round((1 - r.result.outputSize / r.result.inputSize) * 100)
+            addLog(`    压缩: ${formatSize(r.result.inputSize)} → ${formatSize(r.result.outputSize)} (${ratio}%)`, 'info', '📊')
+          }
+        }
+      } else {
+        addLog(`  ✗ ${r.file}: ${r.error}`, 'error', '')
+      }
+    })
     
     // AI决策信息
+    addLog('─────────────────────────', 'info', '')
     const targetFormat = outputFormat.value === 'auto' ? 'AVIF' : outputFormat.value.toUpperCase()
-    addLog(`推荐格式: ${targetFormat}`, 'info', '🎯')
-    addLog(`AI预测: ${enableAIPrediction.value ? '已启用' : '未启用'}`, 'info', '🤖')
-    
-    // 性能统计（模拟）
-    if (selected.length > 0) {
-      const firstFile = selected[0]
-      const mockCompressed = Math.round(firstFile.size * 0.6)
-      addLog(`压缩率: ~40% (${formatSize(firstFile.size)} → ${formatSize(mockCompressed)})`, 'success', '📊')
-    }
+    addLog(`目标格式: ${targetFormat}`, 'info', '🎯')
+    addLog(`优化模式: ${optimizeMode.value}`, 'info', '⚙️')
+    addLog(`AI预测: ${enableAIPrediction.value ? '✅ 已启用' : '❌ 未启用'}`, 'info', '🤖')
     
     setTimeout(() => {
       processing.value = false
@@ -1431,12 +1449,32 @@ onMounted(() => {
 .log-content {
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 8px;
   font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
   font-size: 11px;
   line-height: 1.6;
   background: #1a1a1a;
   color: #e0e0e0;
+  scroll-behavior: smooth;
+}
+
+/* 自定义滚动条样式 */
+.log-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.log-content::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+.log-content::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+.log-content::-webkit-scrollbar-thumb:hover {
+  background: #444;
 }
 
 .log-entry {

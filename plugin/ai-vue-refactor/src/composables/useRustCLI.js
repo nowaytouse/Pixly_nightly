@@ -25,23 +25,47 @@ export function useRustCLI() {
       const { execSync } = require('child_process')
       const path = require('path')
       
-      // Rust CLI 路径
-      const rustPath = path.join(__dirname, '../../bin/pixly-rust')
+      // 尝试多个可能的 Rust CLI 路径
+      const possiblePaths = [
+        path.join(__dirname, '../../bin/pixly-rust'),
+        path.join(__dirname, '../../../target/release/pixly-rust'),
+        path.join(__dirname, '../../../target/debug/pixly-rust'),
+        'pixly-rust' // 系统PATH中
+      ]
       
-      // 测试可用性
-      const output = execSync(`"${rustPath}" --version`, {
-        encoding: 'utf8',
-        timeout: 5000
-      }).trim()
+      let foundPath = null
+      for (const rustPath of possiblePaths) {
+        try {
+          const output = execSync(`"${rustPath}" --version`, {
+            encoding: 'utf8',
+            timeout: 5000
+          }).trim()
+          
+          version.value = output.replace(/^pixly-rust\s+/, '')
+          isAvailable.value = true
+          foundPath = rustPath
+          
+          logger.info(LOG_KEYS.RUST_CLI_EXEC, 'Rust CLI available', { 
+            version: version.value,
+            path: rustPath
+          })
+          break
+        } catch (e) {
+          // 继续尝试下一个路径
+          continue
+        }
+      }
       
-      version.value = output.replace(/^pixly-rust\s+/, '')
-      isAvailable.value = true
-      
-      logger.info(LOG_KEYS.RUST_CLI_EXEC, 'Rust CLI available', { version: version.value })
+      if (!foundPath) {
+        throw new Error('Rust CLI not found in any expected location. Please compile: cargo build --release')
+      }
     } catch (err) {
       error.value = err.message
       isAvailable.value = false
-      logger.error(LOG_KEYS.RUST_CLI_ERROR, 'Rust CLI not available', { error: err.message })
+      // 降低日志级别 - 这不是致命错误，插件仍可用于查看文件
+      logger.warn(LOG_KEYS.RUST_CLI_ERROR, 'Rust CLI not available (plugin will work in view-only mode)', { 
+        error: err.message 
+      })
     }
   }
 
