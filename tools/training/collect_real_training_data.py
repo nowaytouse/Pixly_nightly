@@ -96,11 +96,26 @@ def extract_features_from_rust(image_path):
             print(f"   ⚠️  Analyze failed: {result.stderr[:100]}")
             return None
         
-        # 解析输出（需要Rust CLI输出JSON格式的特征）
-        # TODO: 当前Rust CLI的analyze命令输出人类可读格式
-        # 需要添加--json选项输出结构化数据
-        
-        return None  # 暂时返回None，等待Rust CLI支持
+        # ✅ 解析JSON输出 (2025-11-20完成)
+        # Rust CLI的analyze命令已支持--json选项
+        try:
+            import json
+            data = json.loads(result.stdout)
+            
+            # 提取128维特征
+            if 'features_128d' in data:
+                features = data['features_128d']
+                if len(features) == 128:
+                    return features
+                else:
+                    print(f"   ⚠️  Invalid feature length: {len(features)}")
+                    return None
+            else:
+                print(f"   ⚠️  No features_128d in output")
+                return None
+        except json.JSONDecodeError as e:
+            print(f"   ⚠️  JSON parse error: {e}")
+            return None
         
     except subprocess.TimeoutExpired:
         print(f"   ⚠️  Timeout analyzing {image_path.name}")

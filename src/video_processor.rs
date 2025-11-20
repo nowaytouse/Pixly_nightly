@@ -159,23 +159,29 @@ impl VideoProcessor {
             // 3. ✅ 用户可以选择安装支持VVC的FFmpeg
             // 4. ✅ 提供清晰的错误信息和解决方案
             "h266" | "vvc" => {
-                // 🔥 响亮报错，不降级！(遵循质量宣言)
+                // 🔥 完整H.266支持 - 使用VVenC独立编码器 (2025-11-20)
                 // 
-                // ❌ 禁止自动降级到H.265 - 这是fallback hell
-                // ✅ 必须响亮地报错，让用户知道真实情况
-                // ✅ 提供完整的解决方案指导
-                if self.check_encoder_available("libvvenc") {
-                    log::info!("✅ Using H.266/VVC encoder (libvvenc)");
-                    "libvvenc".to_string()
+                // **实现策略** (遵循质量宣言):
+                // 1. ✅ 优先使用VVenC独立编码器（vvencapp）
+                // 2. ✅ 备选使用FFmpeg libvvenc（如果可用）
+                // 3. ✅ 响亮报错，不静默降级
+                // 4. ✅ 提供完整的解决方案
+                
+                // 检查vvencapp是否可用
+                if Command::new("vvencapp").arg("--version").output().is_ok() {
+                    log::info!("✅ Using H.266/VVC encoder (vvencapp - standalone)");
+                    "vvencapp".to_string()  // 使用独立编码器
+                } else if self.check_encoder_available("libvvenc") {
+                    log::info!("✅ Using H.266/VVC encoder (libvvenc - FFmpeg)");
+                    "libvvenc".to_string()  // 使用FFmpeg集成
                 } else {
                     // 响亮报错！
-                    log::error!("❌ H.266/VVC ENCODING FAILED: libvvenc encoder not available");
+                    log::error!("❌ H.266/VVC ENCODING FAILED: No VVC encoder available");
                     log::error!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-                    log::error!("   REASON: Your FFmpeg build does not include libvvenc");
+                    log::error!("   REASON: Neither vvencapp nor libvvenc found");
                     log::error!("");
-                    log::error!("   SOLUTION 1 - Install VVC tools:");
+                    log::error!("   SOLUTION 1 - Install VVenC (Recommended):");
                     log::error!("   $ brew install vvenc vvdec");
-                    log::error!("   $ brew reinstall ffmpeg --HEAD --with-libvvenc");
                     log::error!("");
                     log::error!("   SOLUTION 2 - Use alternative codec:");
                     log::error!("   $ pixly-rust video input.mp4 output.mp4 --codec h265");
@@ -184,9 +190,8 @@ impl VideoProcessor {
                     log::error!("   DOCUMENTATION: docs/H266_VVC_SUPPORT.md");
                     log::error!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
                     
-                    // 返回libvvenc，让FFmpeg也响亮报错
-                    // 不要静默降级！
-                    "libvvenc".to_string()
+                    // 返回特殊标记，让convert_video方法检测并报错
+                    "ERROR_H266_NOT_AVAILABLE".to_string()
                 }
             }
             "h265" | "hevc" => "libx265".to_string(),
@@ -383,6 +388,14 @@ impl VideoProcessor {
             .arg("-progress").arg("pipe:2");
         
         let encoder = self.select_encoder(&config.codec, &config.hw_accel);
+        
+        // 🔥 H.266/VVC特殊处理 - 使用VVenC独立编码器 (2025-11-20)
+        if encoder == "vvencapp" {
+            return self.convert_with_vvenc(input, output, config, progress_callback);
+        } else if encoder == "ERROR_H266_NOT_AVAILABLE" {
+            bail!("H.266/VVC encoder not available. Install vvenc (brew install vvenc) or use alternative codec (--codec h265 or --codec av1)");
+        }
+        
         cmd.arg("-c:v").arg(&encoder);
         
         // 🔥 ProRes特殊处理
@@ -494,6 +507,116 @@ impl VideoProcessor {
         
         let converted_size = std::fs::metadata(output)?.len();
         let compression_ratio = original_size as f32 / converted_size as f32;
+        
+        Ok(VideoConversionResult {
+            success: true,
+            output_path: output.to_path_buf(),
+            original_size,
+            converted_size,
+            compression_ratio,
+            duration: start_time.elapsed().as_secs_f32(),
+            error: None,
+        })
+    }
+    
+    /// 🔥 使用VVenC独立编码器进行H.266/VVC转换 (2025-11-20)
+    /// 
+    /// VVenC是Fraunhofer HHI开发的开源VVC编码器，性能优秀
+    /// 
+    /// **实现策略**:
+    /// 1. 使用FFmpeg提取YUV原始视频
+    /// 2. 使用vvencapp编码为VVC
+    /// 3. 使用FFmpeg封装为MP4容器
+    fn convert_with_vvenc<F>(
+        &self,
+        input: &Path,
+        output: &Path,
+        config: &VideoConversionConfig,
+        _progress_callback: Option<F>,
+    ) -> Result<VideoConversionResult>
+    where
+        F: Fn(f32) + Send + 'static,
+    {
+        let start_time = std::time::Instant::now();
+        let original_size = std::fs::metadata(input)?.len();
+        
+        log::info!("🎬 H.266/VVC encoding with VVenC");
+        
+        // 分析输入视频
+        let input_info = self.analyze_video(input)?;
+        let (width, height) = input_info.resolution;
+        let fps = input_info.fps;
+        
+        // 临时文件
+        let yuv_file = output.with_extension("yuv");
+        let vvc_file = output.with_extension("266");
+        
+        // Step 1: FFmpeg提取YUV
+        log::info!("  Step 1/3: Extracting YUV...");
+        let mut cmd = Command::new(&self.ffmpeg_path);
+        cmd.arg("-i").arg(input)
+            .arg("-f").arg("rawvideo")
+            .arg("-pix_fmt").arg("yuv420p")
+            .arg("-y")
+            .arg(&yuv_file);
+        
+        let output_extract = cmd.output()
+            .context("Failed to extract YUV")?;
+        
+        if !output_extract.status.success() {
+            bail!("YUV extraction failed: {}", String::from_utf8_lossy(&output_extract.stderr));
+        }
+        
+        // Step 2: VVenC编码
+        log::info!("  Step 2/3: Encoding with VVenC...");
+        let mut cmd = Command::new("vvencapp");
+        cmd.arg("-i").arg(&yuv_file)
+            .arg("-s").arg(format!("{}x{}", width, height))
+            .arg("--fps").arg(fps.to_string())
+            .arg("--format").arg("yuv420")
+            .arg("--preset").arg(&config.preset)
+            .arg("-q").arg(config.crf.to_string())
+            .arg("-o").arg(&vvc_file);
+        
+        let output_encode = cmd.output()
+            .context("Failed to run vvencapp")?;
+        
+        if !output_encode.status.success() {
+            // 清理临时文件
+            let _ = std::fs::remove_file(&yuv_file);
+            bail!("VVenC encoding failed: {}", String::from_utf8_lossy(&output_encode.stderr));
+        }
+        
+        // Step 3: FFmpeg封装为MP4
+        log::info!("  Step 3/3: Muxing to MP4...");
+        let mut cmd = Command::new(&self.ffmpeg_path);
+        cmd.arg("-i").arg(&vvc_file)
+            .arg("-i").arg(input)  // 音频源
+            .arg("-c:v").arg("copy")
+            .arg("-c:a").arg("copy")
+            .arg("-map").arg("0:v:0")
+            .arg("-map").arg("1:a:0?")  // 可选音频
+            .arg("-y")
+            .arg(output);
+        
+        let output_mux = cmd.output()
+            .context("Failed to mux MP4")?;
+        
+        // 清理临时文件
+        let _ = std::fs::remove_file(&yuv_file);
+        let _ = std::fs::remove_file(&vvc_file);
+        
+        if !output_mux.status.success() {
+            bail!("MP4 muxing failed: {}", String::from_utf8_lossy(&output_mux.stderr));
+        }
+        
+        let converted_size = std::fs::metadata(output)?.len();
+        let compression_ratio = original_size as f32 / converted_size as f32;
+        
+        log::info!("✅ H.266/VVC encoding complete!");
+        log::info!("   Original: {:.2} MB", original_size as f32 / 1_048_576.0);
+        log::info!("   Converted: {:.2} MB", converted_size as f32 / 1_048_576.0);
+        log::info!("   Compression: {:.2}x", compression_ratio);
         
         Ok(VideoConversionResult {
             success: true,
