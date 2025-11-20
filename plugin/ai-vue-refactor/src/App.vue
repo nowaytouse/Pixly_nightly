@@ -281,11 +281,13 @@
         </div>
 
         <!-- 🔍 AI决策透明面板 - 展示处理过程的透明化 -->
-        <AITransparencyPanel 
-          ref="transparencyPanel"
-          :decision-data="aiDecisionData"
-          :t="t"
-        />
+        <div style="margin-top: 20px; padding: 20px; background: #f0f0f0; border: 2px solid red;">
+          <h2 style="color: red;">🔍 测试：AI透明面板应该在这里</h2>
+          <AITransparencyPanel 
+            ref="transparencyPanel"
+            :decision-data="aiDecisionData"
+          />
+        </div>
       </div>
     </main>
 
