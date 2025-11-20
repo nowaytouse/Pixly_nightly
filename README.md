@@ -1,266 +1,268 @@
-# Pixly - AI驱动的媒体格式转换器
+# Pixly - AI-Powered Media Format Converter
 
 [![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Quality](https://img.shields.io/badge/quality-5%2F5-brightgreen.svg)](docs/PROJECT_QUALITY_MANIFESTO.md)
 
-专业的媒体格式转换工具，采用AI智能优化，支持图像、视频和音频转换。
+[简体中文](README_zh_CN.md) | English
 
-## ✨ 特性
+Professional media format conversion tool with AI-powered optimization, supporting image, video, and audio conversion.
 
-### 🎯 核心功能
-- **AI智能优化** - 自动预测最佳转换参数
-- **批量处理** - 高效的并行转换
-- **在线学习** - 持续改进的ML模型
-- **格式丰富** - 支持8种图像格式 + 5种视频编码器
+## ✨ Features
 
-### 🖼️ 图像转换
-- **支持格式**: WebP, AVIF, JXL, PNG, JPEG, GIF, BMP, TIFF
-- **同格式优化**: 所有格式支持重新编码优化
-- **动画支持**: GIF, APNG, WebP动画
-- **元数据保留**: EXIF, XMP, ICC完整保留
+### 🎯 Core Features
+- **AI Smart Optimization** - Automatically predicts optimal conversion parameters
+- **Batch Processing** - Efficient parallel conversion
+- **Online Learning** - Continuously improving ML models
+- **Rich Formats** - Supports 8 image formats + 5 video codecs
 
-### 🎬 视频转换
-- **编码器**: H.265/HEVC, H.264/AVC, AV1, VP9, H.266/VVC
-- **容器**: MP4, MOV, WebM, MKV
-- **高级功能**: Two-Pass编码, GPU加速, 场景检测
-- **动图转视频**: GIF → MP4 (压缩率231%)
+### 🖼️ Image Conversion
+- **Supported Formats**: WebP, AVIF, JXL, PNG, JPEG, GIF, BMP, TIFF
+- **Same-Format Optimization**: All formats support re-encoding optimization
+- **Animation Support**: GIF, APNG, WebP animations
+- **Metadata Preservation**: Complete EXIF, XMP, ICC preservation
 
-### 🤖 AI功能
-- **智能参数预测** - 基于图像特征自动优化
-- **在线学习** - 从每次转换中学习改进
-- **批量训练** - 100x性能优化
-- **实时监控** - 追踪模型改进趋势
+### 🎬 Video Conversion
+- **Codecs**: H.265/HEVC, H.264/AVC, AV1, VP9, H.266/VVC
+- **Containers**: MP4, MOV, WebM, MKV
+- **Advanced Features**: Two-Pass encoding, GPU acceleration, scene detection
+- **Animation to Video**: GIF → MP4 (231% compression ratio)
 
-## 🚀 快速开始
+### 🤖 AI Features
+- **Smart Parameter Prediction** - Auto-optimize based on image features
+- **Online Learning** - Learn and improve from each conversion
+- **Batch Training** - 100x performance optimization
+- **Real-time Monitoring** - Track model improvement trends
 
-### 安装
+## 🚀 Quick Start
+
+### Installation
 
 ```bash
-# 克隆仓库
+# Clone repository
 git clone https://github.com/yourusername/pixly.git
 cd pixly
 
-# 编译
+# Build
 cargo build --release
 
-# 可执行文件位于
+# Executable located at
 ./target/release/pixly-converter
 ```
 
-### 基础使用
+### Basic Usage
 
 ```bash
-# 图像转换
+# Image conversion
 pixly-converter convert input.jpg --format webp --quality 85
 
-# AI智能模式
+# AI smart mode
 pixly-converter convert input.png --format avif --ai
 
-# 视频转换
+# Video conversion
 pixly-converter video input.gif output.mp4 --codec h265
 
-# 分析文件
+# Analyze file
 pixly-converter analyze input.jpg --ai
 ```
 
-## 📖 详细文档
+## 📖 Documentation
 
-### 图像转换
+### Image Conversion
 
 ```bash
-# 基础转换
+# Basic conversion
 pixly-converter convert input.jpg --format webp --quality 90
 
-# 同格式优化
+# Same-format optimization
 pixly-converter convert input.avif --format avif --quality 70
 
-# 批量转换
+# Batch conversion
 for f in *.jpg; do
     pixly-converter convert "$f" --format webp --quality 85
 done
 
-# AI智能模式
+# AI smart mode
 pixly-converter convert input.png --format avif --ai --optimize-mode quality
 
-# 在线学习模式
+# Online learning mode
 pixly-converter convert input.jpg --format webp --online-learning
 ```
 
-### 视频转换
+### Video Conversion
 
 ```bash
-# 基础转换
+# Basic conversion
 pixly-converter video input.mp4 output.mp4 --codec h265 --crf 23
 
-# AI智能模式
+# AI smart mode
 pixly-converter video input.gif output.mp4 --ai --optimize-mode quality
 
-# Two-Pass高质量编码
+# Two-Pass high-quality encoding
 pixly-converter video input.mp4 output.mp4 --two-pass --crf 18
 
-# GPU加速
+# GPU acceleration
 pixly-converter video input.mp4 output.mp4 --gpu --codec h265
 
-# 场景检测优化
+# Scene detection optimization
 pixly-converter video input.mp4 output.mp4 --scene-detection
 ```
 
-### 分析功能
+### Analysis Features
 
 ```bash
-# 基础分析
+# Basic analysis
 pixly-converter analyze input.jpg
 
-# AI推荐
+# AI recommendations
 pixly-converter analyze input.png --ai
 
-# JSON输出
+# JSON output
 pixly-converter analyze input.jpg --ai --json
 ```
 
-## 🎯 性能数据
+## 🎯 Performance Data
 
-### 图像转换
-- **同格式优化**: AVIF 52.9%, JXL 78.2%, JPEG 86.3%
-- **转换速度**: <1秒 (1080p图像)
-- **ML推理**: 0.043ms/预测
+### Image Conversion
+- **Same-format optimization**: AVIF 52.9%, JXL 78.2%, JPEG 86.3%
+- **Conversion speed**: <1s (1080p image)
+- **ML inference**: 0.043ms/prediction
 
-### 视频转换
-- **GIF → H.265**: 231% 压缩率
-- **GIF → VP9**: 200% 压缩率
-- **GPU加速**: 10-20x速度提升
+### Video Conversion
+- **GIF → H.265**: 231% compression ratio
+- **GIF → VP9**: 200% compression ratio
+- **GPU acceleration**: 10-20x speed boost
 
-### ML训练
-- **批量训练**: 100x性能提升
-- **Loss改进**: -13.4% (247 → 214)
-- **Reward改进**: +6.9% (0.35 → 0.38)
+### ML Training
+- **Batch training**: 100x performance improvement
+- **Loss improvement**: -13.4% (247 → 214)
+- **Reward improvement**: +6.9% (0.35 → 0.38)
 
-## 🔧 高级功能
+## 🔧 Advanced Features
 
-### 在线学习
+### Online Learning
 
 ```bash
-# 启用在线学习
+# Enable online learning
 pixly-converter convert input.jpg --format webp --online-learning
 
-# 查看训练历史
+# View training history
 python3 scripts/ml_monitor.py
 
-# 手动触发训练
+# Manually trigger training
 python3 scripts/batch_ppo_update.py
 ```
 
-### 性能监控
+### Performance Monitoring
 
 ```bash
-# 生成性能报告
+# Generate performance report
 python3 scripts/ml_monitor.py --output report.json
 
-# 查看模型健康状态
+# View model health status
 python3 scripts/ml_monitor.py
 ```
 
-### 批量处理
+### Batch Processing
 
 ```bash
-# 批量转换目录
+# Batch convert directory
 for f in images/*.jpg; do
     pixly-converter convert "$f" --format webp --quality 85 --online-learning
 done
 
-# 使用find批量处理
+# Use find for batch processing
 find . -name "*.png" -exec pixly-converter convert {} --format avif --ai \;
 ```
 
-## 📊 测试
+## 📊 Testing
 
 ```bash
-# 运行所有测试
+# Run all tests
 ./scripts/test_video_complete.sh
 ./scripts/test_online_learning.sh
 ./scripts/comprehensive_format_test.sh
 
-# ML评估
+# ML evaluation
 python3 scripts/ml_evaluate.py
 python3 scripts/ml_monitor.py
 ```
 
-## 🏗️ 架构
+## 🏗️ Architecture
 
 ```
 Pixly
-├── Rust Core (转换引擎)
-│   ├── 图像处理
-│   ├── 视频处理
-│   ├── 特征提取
-│   └── 在线学习
-├── Python ML (机器学习)
-│   ├── LightGBM模型
-│   ├── PPO强化学习
-│   └── 批量训练
+├── Rust Core (Conversion Engine)
+│   ├── Image Processing
+│   ├── Video Processing
+│   ├── Feature Extraction
+│   └── Online Learning
+├── Python ML (Machine Learning)
+│   ├── LightGBM Model
+│   ├── PPO Reinforcement Learning
+│   └── Batch Training
 └── Eagle Plugin (UI)
-    ├── Vue3界面
-    └── Rust CLI集成
+    ├── Vue3 Interface
+    └── Rust CLI Integration
 ```
 
-## 📝 开发
+## 📝 Development
 
-### 编译
+### Build
 
 ```bash
-# Debug模式
+# Debug mode
 cargo build
 
-# Release模式
+# Release mode
 cargo build --release
 
-# 运行测试
+# Run tests
 cargo test
 ```
 
-### 代码质量
+### Code Quality
 
 ```bash
-# 检查编译警告
+# Check compilation warnings
 cargo build --release 2>&1 | grep warning
 
-# 运行clippy
+# Run clippy
 cargo clippy
 
-# 格式化代码
+# Format code
 cargo fmt
 ```
 
-## 🤝 贡献
+## 🤝 Contributing
 
-欢迎贡献！请遵循[质量宣言](docs/PROJECT_QUALITY_MANIFESTO.md)。
+Contributions welcome! Please follow the [Quality Manifesto](docs/PROJECT_QUALITY_MANIFESTO.md).
 
-### 质量标准
-- ✅ 零编译警告
-- ✅ 零空壳功能
-- ✅ 100%测试覆盖
-- ✅ 真实性原则
-- ✅ 响亮失败
+### Quality Standards
+- ✅ Zero compilation warnings
+- ✅ Zero shell features
+- ✅ 100% test coverage
+- ✅ Authenticity principle
+- ✅ Loud failure
 
-## 📄 许可证
+## 📄 License
 
-MIT License - 详见 [LICENSE](LICENSE)
+MIT License - See [LICENSE](LICENSE)
 
-## 🔗 相关链接
+## 🔗 Related Links
 
-- [格式支持文档](docs/FORMAT_SUPPORT.md)
-- [质量宣言](docs/PROJECT_QUALITY_MANIFESTO.md)
-- [ML改进计划](docs/ML_MODEL_IMPROVEMENT_PLAN.md)
-- [工作总结](docs/WORK_SUMMARY_20251119.md)
+- [Format Support Documentation](docs/FORMAT_SUPPORT.md)
+- [Quality Manifesto](docs/PROJECT_QUALITY_MANIFESTO.md)
+- [ML Improvement Plan](docs/ML_MODEL_IMPROVEMENT_PLAN.md)
+- [Work Summary](docs/WORK_SUMMARY_20251119.md)
 
-## 📈 项目状态
+## 📈 Project Status
 
-- **功能完整性**: 100%
-- **空壳功能**: 0个
-- **测试通过率**: 100%
-- **代码质量**: ⭐⭐⭐⭐⭐ (5/5)
-- **ML模型**: 健康 ✅
+- **Feature Completeness**: 100%
+- **Shell Features**: 0
+- **Test Pass Rate**: 100%
+- **Code Quality**: ⭐⭐⭐⭐⭐ (5/5)
+- **ML Model**: Healthy ✅
 
 ---
 
