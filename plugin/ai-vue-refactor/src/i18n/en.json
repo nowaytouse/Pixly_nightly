@@ -21,6 +21,65 @@
     "quality": "🎯 Quality - Best Quality",
     "size": "📦 Size - Smallest File"
   },
+  "alphaPanel": {
+    "title": "Alpha Channel Processing Panel",
+    "subtitle": "Deep dive into internal alpha channel processing flow and technical details",
+    "detection": "Transparency Detection",
+    "alphaDetected": "Alpha Channel Detected",
+    "alphaPixels": "Transparent Pixels",
+    "alphaType": "Transparency Type",
+    "types": {
+      "none": "No Transparency",
+      "binary": "Binary (Simple Cutout)",
+      "gradient": "Gradient (Smooth Fade)",
+      "complex": "Complex (Mixed Types)"
+    },
+    "processFlow": "Processing Flow",
+    "formatCompatibility": "Format Compatibility",
+    "support": {
+      "full": "Full Support",
+      "partial": "Partial Support",
+      "none": "Not Supported"
+    },
+    "quality": "Quality",
+    "compression": "Compression",
+    "advancedOptions": "Advanced Processing Options",
+    "alphaQuality": "Alpha Channel Quality",
+    "alphaQualityHint": "Control alpha channel compression quality (0-100), higher values mean better quality but larger files",
+    "premultiplyAlpha": "Premultiply Alpha",
+    "premultiplyHint": "Premultiply RGB values with alpha, can improve compression efficiency for certain formats",
+    "separateAlpha": "Separate Alpha Channel",
+    "separateAlphaHint": "Encode alpha channel separately, may achieve better compression ratio",
+    "statistics": "Processing Statistics",
+    "totalPixels": "Total Pixels",
+    "opaquePixels": "Opaque Pixels",
+    "transparentPixels": "Fully Transparent",
+    "semiTransparent": "Semi-Transparent",
+    "technicalDetails": "Technical Details",
+    "internalProcess": "Internal Processing Flow",
+    "step1Title": "Alpha Channel Detection",
+    "step1Desc": "Check if image color space contains alpha channel",
+    "step2Title": "Pixel-Level Analysis",
+    "step2Desc": "Iterate through all pixels, analyze alpha value distribution",
+    "step3Title": "Type Classification",
+    "step3Desc": "Classify transparency type based on alpha distribution characteristics",
+    "step4Title": "Format Compatibility Check",
+    "step4Desc": "Verify target format's alpha channel support level",
+    "step5Title": "Encoding Parameter Optimization",
+    "step5Desc": "Apply alpha-specific encoding parameters",
+    "algorithmDetails": "Algorithm Pseudocode",
+    "steps": {
+      "detection": "Alpha Channel Detection",
+      "analysis": "Pixel Analysis",
+      "classification": "Type Classification",
+      "optimization": "Format Optimization",
+      "encoding": "Alpha Encoding"
+    }
+  },
+  "common": {
+    "yes": "Yes",
+    "no": "No"
+  },
   "image": {
     "title": "🖼️ Image Options",
     "format": "Output Format",

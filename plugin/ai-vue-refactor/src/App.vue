@@ -279,6 +279,21 @@
             </label>
           </div>
         </div>
+
+        <!-- 🎨 Alpha Processing Panel -->
+        <details v-if="hasAlphaChannel" class="alpha-panel-container" open>
+          <summary class="alpha-panel-toggle">
+            <span class="toggle-icon">🎨</span>
+            <span class="toggle-text">{{ t('alphaPanel.title') }}</span>
+            <span class="toggle-badge">{{ selectedFiles.length }} files</span>
+          </summary>
+          <AlphaProcessingPanel 
+            ref="alphaPanelRef"
+            @alpha-quality-change="handleAlphaQualityChange"
+            @premultiply-change="handlePremultiplyChange"
+            @separate-alpha-change="handleSeparateAlphaChange"
+          />
+        </details>
       </div>
     </main>
 
@@ -344,6 +359,7 @@ import { useRustCLI } from './composables/useRustCLI'
 import { useEagleAPI } from './composables/useEagleAPI'
 import { logger, LOG_KEYS } from './utils/logger'
 import { useI18n } from './composables/useI18n'
+import AlphaProcessingPanel from './components/AlphaProcessingPanel.vue'
 
 const { t, setLocale, locale } = useI18n()
 
@@ -381,6 +397,39 @@ const selectedCount = computed(() => files.value.filter(f => f.selected).length)
 
 // 🔥 检测文件类型
 const selectedFiles = computed(() => files.value.filter(f => f.selected))
+
+// 🎨 Alpha通道相关
+const alphaPanelRef = ref(null)
+const alphaQuality = ref(90)
+const premultiplyAlpha = ref(false)
+const separateAlpha = ref(false)
+
+// 检测是否有Alpha通道（基于文件格式）
+const hasAlphaChannel = computed(() => {
+  return selectedFiles.value.some(file => {
+    const ext = (file.ext || '').toLowerCase().replace('.', '')
+    // PNG, WebP, AVIF, JXL, HEIC, GIF, APNG 可能包含Alpha通道
+    return ['png', 'webp', 'avif', 'jxl', 'heic', 'gif', 'apng'].includes(ext)
+  })
+})
+
+// Alpha质量变化处理
+const handleAlphaQualityChange = (quality) => {
+  alphaQuality.value = quality
+  logger.info(LOG_KEYS.CONVERSION, `Alpha quality changed: ${quality}`)
+}
+
+// 预乘Alpha变化处理
+const handlePremultiplyChange = (enabled) => {
+  premultiplyAlpha.value = enabled
+  logger.info(LOG_KEYS.CONVERSION, `Premultiply alpha: ${enabled}`)
+}
+
+// 分离Alpha通道变化处理
+const handleSeparateAlphaChange = (enabled) => {
+  separateAlpha.value = enabled
+  logger.info(LOG_KEYS.CONVERSION, `Separate alpha: ${enabled}`)
+}
 
 const isVideoMode = computed(() => {
   if (selectedFiles.value.length === 0) return false
@@ -1491,5 +1540,54 @@ onMounted(() => {
 
 .modal-body strong {
   color: var(--color-text-primary);
+}
+
+/* 🎨 Alpha Processing Panel Container */
+.alpha-panel-container {
+  margin-top: 16px;
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
+  border: 2px solid var(--color-border);
+  overflow: hidden;
+}
+
+.alpha-panel-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--color-bg-primary);
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.2s;
+}
+
+.alpha-panel-toggle:hover {
+  background: var(--color-bg-hover);
+}
+
+.toggle-icon {
+  font-size: 24px;
+}
+
+.toggle-text {
+  flex: 1;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--color-text-primary);
+}
+
+.toggle-badge {
+  padding: 4px 12px;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.alpha-panel-container[open] .alpha-panel-toggle {
+  border-bottom: 2px solid var(--color-primary);
 }
 </style>

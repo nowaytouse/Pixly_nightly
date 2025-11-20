@@ -21,6 +21,65 @@
     "quality": "🎯 质量优先",
     "size": "📦 体积优先"
   },
+  "alphaPanel": {
+    "title": "透明度处理面板",
+    "subtitle": "深度展示Alpha通道处理的内部流程和技术细节",
+    "detection": "透明度检测",
+    "alphaDetected": "检测到Alpha通道",
+    "alphaPixels": "透明像素数量",
+    "alphaType": "透明度类型",
+    "types": {
+      "none": "无透明度",
+      "binary": "二值透明（简单抠图）",
+      "gradient": "渐变透明（平滑过渡）",
+      "complex": "复杂透明（混合类型）"
+    },
+    "processFlow": "处理流程",
+    "formatCompatibility": "格式兼容性",
+    "support": {
+      "full": "完全支持",
+      "partial": "部分支持",
+      "none": "不支持"
+    },
+    "quality": "质量",
+    "compression": "压缩方式",
+    "advancedOptions": "高级处理选项",
+    "alphaQuality": "Alpha通道质量",
+    "alphaQualityHint": "控制透明通道的压缩质量（0-100），值越高质量越好但文件越大",
+    "premultiplyAlpha": "预乘Alpha",
+    "premultiplyHint": "将RGB值与Alpha值预先相乘，可提高某些格式的压缩效率",
+    "separateAlpha": "分离Alpha通道",
+    "separateAlphaHint": "将Alpha通道单独编码，可能获得更好的压缩率",
+    "statistics": "处理统计",
+    "totalPixels": "总像素数",
+    "opaquePixels": "不透明像素",
+    "transparentPixels": "完全透明像素",
+    "semiTransparent": "半透明像素",
+    "technicalDetails": "技术细节",
+    "internalProcess": "内部处理流程",
+    "step1Title": "Alpha通道检测",
+    "step1Desc": "检查图像色彩空间是否包含Alpha通道",
+    "step2Title": "像素级分析",
+    "step2Desc": "遍历所有像素，统计Alpha值分布",
+    "step3Title": "类型分类",
+    "step3Desc": "根据Alpha值分布特征，分类透明度类型",
+    "step4Title": "格式兼容性检查",
+    "step4Desc": "验证目标格式对Alpha通道的支持程度",
+    "step5Title": "编码参数优化",
+    "step5Desc": "应用Alpha专用编码参数",
+    "algorithmDetails": "算法伪代码",
+    "steps": {
+      "detection": "Alpha通道检测",
+      "analysis": "像素分析",
+      "classification": "类型分类",
+      "optimization": "格式优化",
+      "encoding": "Alpha编码"
+    }
+  },
+  "common": {
+    "yes": "是",
+    "no": "否"
+  },
   "image": {
     "title": "🖼️ 图像选项",
     "format": "输出格式",
