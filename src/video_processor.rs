@@ -159,18 +159,34 @@ impl VideoProcessor {
             // 3. ✅ 用户可以选择安装支持VVC的FFmpeg
             // 4. ✅ 提供清晰的错误信息和解决方案
             "h266" | "vvc" => {
-                // 先检查libvvenc是否可用
+                // 🔥 响亮报错，不降级！(遵循质量宣言)
+                // 
+                // ❌ 禁止自动降级到H.265 - 这是fallback hell
+                // ✅ 必须响亮地报错，让用户知道真实情况
+                // ✅ 提供完整的解决方案指导
                 if self.check_encoder_available("libvvenc") {
                     log::info!("✅ Using H.266/VVC encoder (libvvenc)");
                     "libvvenc".to_string()
                 } else {
-                    log::warn!("⚠️ H.266/VVC encoder (libvvenc) not available in current FFmpeg build");
-                    log::warn!("   To enable H.266 support:");
-                    log::warn!("   1. Install vvenc: brew install vvenc vvdec");
-                    log::warn!("   2. Compile FFmpeg: brew install ffmpeg --HEAD --with-libvvenc");
-                    log::warn!("   3. Or use pre-built FFmpeg with VVC support");
-                    log::warn!("   Falling back to H.265 (libx265) for now");
-                    "libx265".to_string()  // 自动降级到H.265
+                    // 响亮报错！
+                    log::error!("❌ H.266/VVC ENCODING FAILED: libvvenc encoder not available");
+                    log::error!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+                    log::error!("   REASON: Your FFmpeg build does not include libvvenc");
+                    log::error!("");
+                    log::error!("   SOLUTION 1 - Install VVC tools:");
+                    log::error!("   $ brew install vvenc vvdec");
+                    log::error!("   $ brew reinstall ffmpeg --HEAD --with-libvvenc");
+                    log::error!("");
+                    log::error!("   SOLUTION 2 - Use alternative codec:");
+                    log::error!("   $ pixly-rust video input.mp4 output.mp4 --codec h265");
+                    log::error!("   $ pixly-rust video input.mp4 output.mp4 --codec av1");
+                    log::error!("");
+                    log::error!("   DOCUMENTATION: docs/H266_VVC_SUPPORT.md");
+                    log::error!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+                    
+                    // 返回libvvenc，让FFmpeg也响亮报错
+                    // 不要静默降级！
+                    "libvvenc".to_string()
                 }
             }
             "h265" | "hevc" => "libx265".to_string(),
