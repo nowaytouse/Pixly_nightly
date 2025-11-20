@@ -903,6 +903,28 @@ fn run(cli: Cli) -> Result<()> {
                 (input.clone(), None)
             };
             
+            // 🎨 视觉质量评分（如果未使用AI预测和预设）
+            if !ai && preset_effort.is_none() {
+                use pixly_kernel::visual_quality_scorer::VisualQualityScorer;
+                
+                println!("🎨 Analyzing image quality...");
+                let scorer = VisualQualityScorer::new();
+                
+                if let Ok(features) = scorer.analyze_image(&actual_input) {
+                    println!("   📊 Image analysis:");
+                    println!("      Resolution: {}x{}", features.width, features.height);
+                    println!("      Color complexity: {:.2}", features.color_complexity);
+                    println!("      Edge density: {:.2}", features.edge_density);
+                    println!("      Estimated quality: {}", features.estimated_quality);
+                    
+                    // 如果用户使用默认quality，使用推荐值
+                    if quality == 90 && speed.is_none() {  // 默认值
+                        final_quality = features.recommended_quality;
+                        println!("   ✨ Using recommended quality: {}", final_quality);
+                    }
+                }
+            }
+            
             println!("🔄 Converting: {:?}", actual_input);
             println!("📦 Format: {}", target_format);
             println!("🎯 Quality: {}", final_quality);
