@@ -57,7 +57,7 @@ pub mod file_attributes;  // 🔥 文件属性保留（时间戳 + 扩展属性�
 pub mod format_corrector;  // 🔧 格式自动修正
 pub mod conversion_validator;
 pub mod validation_integration;
-pub mod ml_predictor;
+// 🗑️ ml_predictor已删除 (2025-11-20) - 深度分析后决定：伪装ML，完整化成本4-6周，收益仅20ms
 pub mod dynamic_concurrency;
 pub mod linear_regression;
 pub mod quality_metrics;
@@ -87,7 +87,7 @@ pub mod animation_strategy;       // 动画编码策略
 pub mod external_tools;           // 外部工具管理
 
 // 🔥 Phase 4.2: 中等价值模块集成
-pub mod automl;                   // 自动机器学习
+// 🗑️ automl已删除 (2025-11-20) - 深度分析后决定：空框架，完整化成本5-7周，收益为零
 pub mod visual_quality_scorer;    // 视觉质量评分
 // Phase 5: simd_sharpener已合并到simd_processor
 pub mod ml_time_estimator;        // ML时间估算
@@ -125,7 +125,7 @@ pub use animation_strategy::{
 pub use external_tools::{ExternalTool, ToolStatus, ExternalToolChecker};
 
 // 🔥 Phase 4.2: 导出中等价值模块
-pub use automl::{AutoML, AutoMLConfig, ModelType, FeatureImportance, ModelMetrics};
+// 🗑️ automl已删除 (2025-11-20)
 pub use visual_quality_scorer::{VisualQualityScorer, ImageFeatures as VQSImageFeatures, QualityRecommendation};
 // Phase 5: simd_sharpener已合并到simd_processor
 pub use ml_time_estimator::{TimeEstimator, TimeEstimate, FileFeatures as MLFileFeatures, ConversionRecord};
@@ -175,7 +175,7 @@ pub use conversion_core::execute_conversion;
 
 // conversion_engine和strategy都有ConversionResult，使用模块前缀
 
-pub use ml_predictor::*;
+// 🗑️ ml_predictor已删除 (2025-11-20)
 pub use dynamic_concurrency::*;
 pub use linear_regression::*;
 

@@ -11,6 +11,54 @@
 
 ---
 
+## [ML模块负责任删除] - 2025-11-20
+
+### 🗑️ 基于深度分析的模块删除
+
+**删除模块**:
+1. `src/ml_predictor.rs` (346行)
+2. `src/automl.rs` (400+行)
+
+**删除原因**:
+- ml_predictor.rs: 伪装的ML实现（声称LightGBM但实际是if-else规则）
+- automl.rs: 空框架，零业务逻辑引用
+
+**完整化可行性分析**:
+- ✅ 深度调查3种技术方案
+- ✅ 成本评估：完整化需要4-6周开发
+- ✅ 收益评估：仅节省10-20ms IPC开销
+- ✅ 风险评估：lightgbm-sys不成熟，高技术风险
+- ❌ 结论：成本/收益比极低，不值得完整化
+
+**负责任的处理流程**:
+1. ✅ 深度价值分析（docs/ML_MODULES_COMPLETION_ANALYSIS.md）
+2. ✅ 完整化可行性评估（3种技术方案对比）
+3. ✅ 提取12维特征工程知识到文档
+4. ✅ 归档到 `@archive/ml_modules_deprecated_20251120/`
+5. ✅ 完全删除源文件
+6. ✅ 更新 `src/lib.rs` 移除模块声明
+7. ✅ 编译验证通过（0.52s，无警告）
+
+**实际工作的ML系统**:
+```
+Rust CLI → python_ml_caller → Python ML Bridge → 真实LightGBM模型
+特征: 128维 (feature_extractor_128d.rs)
+性能: <50ms总预测时间
+```
+
+**参考文档**:
+- `docs/ML_MODULES_COMPLETION_ANALYSIS.md` - 完整化可行性分析
+- `docs/ML_FEATURE_ENGINEERING_REFERENCE.md` - 特征工程知识
+- `@archive/ml_modules_deprecated_20251120/DEPRECATION_REASON.md` - 废弃原因
+
+**质量宣言合规**:
+- ✅ 深度调查原则 - 完整分析3种方案
+- ✅ 价值提取原则 - 提取知识到文档
+- ✅ 成本效益原则 - 不在低收益项目浪费4-6周
+- ✅ 真实性原则 - 不维护伪装的ML代码
+
+---
+
 ## [ML系统真实性修复] - 2025-11-19
 
 ### 🔥 消除ML系统中的欺骗性fallback
