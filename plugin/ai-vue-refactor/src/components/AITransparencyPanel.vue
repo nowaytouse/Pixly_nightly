@@ -152,9 +152,15 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, inject } from 'vue'
+import { ref, computed, watch, inject, getCurrentInstance } from 'vue'
 
 const t = inject('t')
+
+// Expose t as $t for template usage
+const instance = getCurrentInstance()
+if (instance) {
+  instance.appContext.config.globalProperties.$t = t
+}
 
 const props = defineProps({
   decisionData: {
