@@ -26,7 +26,7 @@
 //! ```
 
 use anyhow::{Context, Result};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock}; // 🔥 Performance: Use RwLock for read-heavy stats
 use std::time::Instant;
 
 /// 性能配置
@@ -92,7 +92,7 @@ pub enum ImageOperation {
 /// 🚀 高性能处理核心
 pub struct PerformanceCore {
     config: PerformanceConfig,
-    stats: Arc<Mutex<PerformanceStats>>,
+    stats: Arc<RwLock<PerformanceStats>>, // 🔥 Performance: RwLock for read-heavy access
     cpu_info: CpuInfo,
     start_time: Instant,
 }
@@ -133,7 +133,7 @@ impl PerformanceCore {
 
         Ok(Self {
             config,
-            stats: Arc::new(Mutex::new(PerformanceStats::default())),
+            stats: Arc::new(RwLock::new(PerformanceStats::default())), // 🔥 Performance: RwLock
             cpu_info,
             start_time,
         })
@@ -181,7 +181,8 @@ impl PerformanceCore {
         let start = Instant::now();
 
         // 更新统计
-        if let Ok(mut stats) = self.stats.lock() {
+        // 🔥 Performance: Use write lock for mutation
+        if let Ok(mut stats) = self.stats.write() {
             stats.total_tasks += 1;
         }
 
@@ -190,7 +191,8 @@ impl PerformanceCore {
 
         // 更新性能统计
         let duration = start.elapsed();
-        if let Ok(mut stats) = self.stats.lock() {
+        // 🔥 Performance: Use write lock for mutation
+        if let Ok(mut stats) = self.stats.write() {
             stats.total_processing_time_ns += duration.as_nanos() as u64;
             if stats.total_tasks > 0 {
                 stats.avg_latency_ns = stats.total_processing_time_ns / stats.total_tasks;
@@ -216,7 +218,8 @@ impl PerformanceCore {
         if data_size > 100_000 && self.config.enable_simd {
             tracing::debug!("Selecting SIMD optimization path: {} KB", data_size / 1024);
 
-            if let Ok(mut stats) = self.stats.lock() {
+            // 🔥 Performance: Use write lock for mutation
+            if let Ok(mut stats) = self.stats.write() {
                 stats.simd_usage_count += 1;
             }
 
@@ -368,8 +371,9 @@ impl PerformanceCore {
     }
 
     /// 获取性能统计
+    /// 🔥 Performance: Use read lock for read-only access
     pub fn get_stats(&self) -> PerformanceStats {
-        self.stats.lock()
+        self.stats.read()
             .map(|s| s.clone())
             .unwrap_or_default()
     }
