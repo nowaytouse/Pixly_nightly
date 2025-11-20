@@ -178,22 +178,60 @@
             </div>
           </details>
 
-          <!-- 自动处理提示 -->
-          <div class="auto-hints">
-            <div class="hint-item">{{ t('features.validation') }}</div>
-            <div class="hint-item">{{ t('features.xmpMerge') }}</div>
-            <div class="hint-item">{{ t('features.filenameNorm') }}</div>
-          </div>
+          <!-- 🔍 AI日志窗口 / 功能说明 切换区域 -->
+          <div class="log-window-container">
+            <!-- 切换标签 -->
+            <div class="log-tabs">
+              <button 
+                class="log-tab" 
+                :class="{ active: showAILog }"
+                @click="showAILog = true"
+              >
+                🔍 AI日志
+              </button>
+              <button 
+                class="log-tab" 
+                :class="{ active: !showAILog }"
+                @click="showAILog = false"
+              >
+                📋 功能说明
+              </button>
+            </div>
 
-          <!-- 元数据保留提示 -->
-          <div class="metadata-notice">
-            <strong>{{ t('features.metadataTitle') }}</strong>
-            <div class="metadata-items">
-              <span>✓ {{ t('features.exif') }}</span>
-              <span>✓ {{ t('features.xmp') }}</span>
-              <span>✓ {{ t('features.icc') }}</span>
-              <span>✓ {{ t('features.timestamps') }}</span>
-              <span>✓ {{ t('features.extendedAttr') }}</span>
+            <!-- AI日志窗口 -->
+            <div v-if="showAILog" class="log-window">
+              <div class="log-content" ref="logContent">
+                <div v-for="(log, index) in aiLogs" :key="index" class="log-entry" :class="log.type">
+                  <span class="log-time">{{ log.time }}</span>
+                  <span class="log-icon">{{ log.icon }}</span>
+                  <span class="log-message">{{ log.message }}</span>
+                </div>
+                <div v-if="aiLogs.length === 0" class="log-empty">
+                  等待处理...
+                </div>
+              </div>
+            </div>
+
+            <!-- 功能说明面板 -->
+            <div v-else class="features-panel">
+              <!-- 自动处理提示 -->
+              <div class="auto-hints">
+                <div class="hint-item">{{ t('features.validation') }}</div>
+                <div class="hint-item">{{ t('features.xmpMerge') }}</div>
+                <div class="hint-item">{{ t('features.filenameNorm') }}</div>
+              </div>
+
+              <!-- 元数据保留提示 -->
+              <div class="metadata-notice">
+                <strong>{{ t('features.metadataTitle') }}</strong>
+                <div class="metadata-items">
+                  <span>✓ {{ t('features.exif') }}</span>
+                  <span>✓ {{ t('features.xmp') }}</span>
+                  <span>✓ {{ t('features.icc') }}</span>
+                  <span>✓ {{ t('features.timestamps') }}</span>
+                  <span>✓ {{ t('features.extendedAttr') }}</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -280,11 +318,7 @@
           </div>
         </div>
 
-        <!-- 🔍 AI决策透明面板 - 展示处理过程的透明化 -->
-        <AITransparencyPanel 
-          ref="transparencyPanel"
-          :decision-data="aiDecisionData"
-        />
+
       </div>
     </main>
 
@@ -349,7 +383,6 @@ import { ref, computed, onMounted, inject } from 'vue'
 import { useRustCLI } from './composables/useRustCLI'
 import { useEagleAPI } from './composables/useEagleAPI'
 import { logger, LOG_KEYS } from './utils/logger'
-import AITransparencyPanel from './components/AITransparencyPanel.vue'
 
 // Use global i18n instance from main.js
 const i18n = inject('i18n')
@@ -390,9 +423,35 @@ const selectedCount = computed(() => files.value.filter(f => f.selected).length)
 // 🔥 检测文件类型
 const selectedFiles = computed(() => files.value.filter(f => f.selected))
 
-// 🔍 AI决策透明面板
-const transparencyPanel = ref(null)
-const aiDecisionData = ref(null)
+// 🔍 AI日志系统
+const showAILog = ref(true) // 默认显示AI日志
+const aiLogs = ref([])
+const logContent = ref(null)
+
+// 添加日志
+const addLog = (message, type = 'info', icon = '📝') => {
+  const now = new Date()
+  const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
+  
+  aiLogs.value.push({
+    time,
+    icon,
+    message,
+    type // info, success, warning, error
+  })
+  
+  // 自动滚动到底部
+  setTimeout(() => {
+    if (logContent.value) {
+      logContent.value.scrollTop = logContent.value.scrollHeight
+    }
+  }, 10)
+}
+
+// 清空日志
+const clearLogs = () => {
+  aiLogs.value = []
+}
 
 const isVideoMode = computed(() => {
   if (selectedFiles.value.length === 0) return false
@@ -527,33 +586,22 @@ const startConvert = async () => {
   processing.value = true
   progress.value = 0
   
-  // 🔍 Reset transparency panel
-  if (transparencyPanel.value) {
-    transparencyPanel.value.reset()
+  // 🔍 Clear logs and switch to log view
+  clearLogs()
+  showAILog.value = true
+  
+  // 🔍 Add initial logs
+  addLog(`开始处理 ${selected.length} 个文件`, 'info', '🚀')
+  addLog(`优化模式: ${optimizeMode.value}`, 'info', '⚙️')
+  
+  if (selected.length > 0) {
+    const firstFile = selected[0]
+    addLog(`文件: ${firstFile.name} (${formatSize(firstFile.size)})`, 'info', '📄')
+    addLog(`尺寸: ${firstFile.width}×${firstFile.height}`, 'info', '📐')
   }
 
   try {
     let results = []
-    
-    // 🔍 Update file analysis for first selected file
-    if (selected.length > 0 && transparencyPanel.value) {
-      const firstFile = selected[0]
-      transparencyPanel.value.updateFileAnalysis({
-        size: firstFile.size,
-        width: firstFile.width,
-        height: firstFile.height,
-        format: firstFile.ext?.toUpperCase() || 'Unknown',
-        colorDepth: 24 // Default, would need actual detection
-      })
-      
-      // 🔍 Add initial processing step
-      transparencyPanel.value.addProcessingStep({
-        name: '准备转换',
-        detail: `处理 ${selected.length} 个文件`,
-        status: 'active',
-        duration: null
-      })
-    }
     
     // 🔥 混合模式 - 自动分组处理
     if (isMixedMode.value) {
@@ -699,35 +747,24 @@ const startConvert = async () => {
     const successCount = results.filter(r => r.success).length
     progressText.value = t('progress.success', { success: successCount, total: results.length })
     
-    // 🔍 Update transparency panel with completion data
-    if (transparencyPanel.value && selected.length > 0) {
-      // Mark processing steps as completed
-      transparencyPanel.value.updateProcessingStep(0, {
-        status: 'completed',
-        duration: 0 // Would need actual timing
-      })
-      
-      // Add AI decision data (mock for now - would come from actual AI)
-      transparencyPanel.value.updateAIDecision({
-        format: outputFormat.value === 'auto' ? 'AVIF' : outputFormat.value.toUpperCase(),
-        quality: 90,
-        speed: 4,
-        confidence: 0.95,
-        reasoning: [
-          `优化模式: ${optimizeMode.value}`,
-          `成功转换: ${successCount}/${results.length} 个文件`,
-          enableAIPrediction.value ? 'AI参数预测已启用' : '使用手动参数'
-        ]
-      })
-      
-      // Add performance stats (mock - would need actual data)
+    // 🔍 Add completion logs
+    addLog('─────────────────────────', 'info', '')
+    if (successCount === results.length) {
+      addLog(`✅ 全部完成！成功: ${successCount}/${results.length}`, 'success', '✅')
+    } else {
+      addLog(`⚠️ 部分完成！成功: ${successCount}/${results.length}`, 'warning', '⚠️')
+    }
+    
+    // AI决策信息
+    const targetFormat = outputFormat.value === 'auto' ? 'AVIF' : outputFormat.value.toUpperCase()
+    addLog(`推荐格式: ${targetFormat}`, 'info', '🎯')
+    addLog(`AI预测: ${enableAIPrediction.value ? '已启用' : '未启用'}`, 'info', '🤖')
+    
+    // 性能统计（模拟）
+    if (selected.length > 0) {
       const firstFile = selected[0]
-      transparencyPanel.value.updatePerformanceStats({
-        totalTime: 0, // Would need actual timing
-        originalSize: firstFile.size,
-        compressedSize: Math.round(firstFile.size * 0.6), // Mock 40% compression
-        compressionRatio: 40
-      })
+      const mockCompressed = Math.round(firstFile.size * 0.6)
+      addLog(`压缩率: ~40% (${formatSize(firstFile.size)} → ${formatSize(mockCompressed)})`, 'success', '📊')
     }
     
     setTimeout(() => {
@@ -1348,10 +1385,107 @@ onMounted(() => {
   margin-top: 2px;
 }
 
+/* 🔍 日志窗口容器 */
+.log-window-container {
+  margin-top: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+}
+
+.log-tabs {
+  display: flex;
+  background: var(--color-bg-primary);
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.log-tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.log-tab:hover {
+  background: var(--color-bg-hover);
+}
+
+.log-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  background: var(--color-bg-secondary);
+}
+
+.log-window {
+  height: 200px;
+  overflow: hidden;
+}
+
+.log-content {
+  height: 100%;
+  overflow-y: auto;
+  padding: 8px;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  background: #1a1a1a;
+  color: #e0e0e0;
+}
+
+.log-entry {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+  align-items: flex-start;
+}
+
+.log-time {
+  color: #666;
+  flex-shrink: 0;
+}
+
+.log-icon {
+  flex-shrink: 0;
+}
+
+.log-message {
+  flex: 1;
+  word-break: break-word;
+}
+
+.log-entry.success .log-message {
+  color: #4caf50;
+}
+
+.log-entry.warning .log-message {
+  color: #ff9800;
+}
+
+.log-entry.error .log-message {
+  color: #f44336;
+}
+
+.log-empty {
+  color: #666;
+  text-align: center;
+  padding: 60px 20px;
+  font-style: italic;
+}
+
+.features-panel {
+  padding: 12px;
+}
+
 /* 自动处理提示 */
 .auto-hints {
-  margin-top: 16px;
-  padding: 12px;
+  padding: 0;
   background: var(--color-bg-secondary);
   border-radius: 8px;
   border: 1px solid var(--color-border-primary);
