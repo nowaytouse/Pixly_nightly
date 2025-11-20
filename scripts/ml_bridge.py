@@ -401,20 +401,145 @@ class ModelRouter:
             if not actor_path.exists():
                 raise FileNotFoundError(f"❌ PPO model not found: {actor_path}")
             
-            # TODO: 实现完整的PPO推理
-            # 当前PPO模型结构需要从train_ppo_v3_optimized.py导入
-            # 临时方案：使用LightGBM作为备用
-            print("⚠️ PPO inference not fully implemented, using LightGBM", file=sys.stderr)
-            return self._predict_lightgbm(features, target_format, quality_mode)
+            # ✅ 完整PPO推理实现 (2025-11-20)
+            # 使用OptimizedActorNetwork结构（与train_ppo_v3_optimized.py一致）
+            import torch
+            import torch.nn as nn
+            
+            # 定义Actor网络结构（与训练脚本一致）
+            class OptimizedActorNetwork(nn.Module):
+                def __init__(self, state_dim=128, hidden_dim=256):
+                    super().__init__()
+                    self.fc = nn.Sequential(
+                        nn.Linear(state_dim, hidden_dim),
+                        nn.ReLU(),
+                        nn.Dropout(0.2),
+                        nn.Linear(hidden_dim, hidden_dim // 2),
+                        nn.ReLU(),
+                        nn.Dropout(0.2),
+                        nn.Linear(hidden_dim // 2, 2)
+                    )
+                
+                def forward(self, state):
+                    output = self.fc(state)
+                    quality = torch.sigmoid(output[:, 0]) * 35 + 60  # [60, 95]
+                    effort = torch.sigmoid(output[:, 1]) * 5 + 4     # [4, 9]
+                    return quality, effort
+            
+            # 加载模型
+            model = OptimizedActorNetwork(state_dim=128, hidden_dim=256)
+            model.load_state_dict(torch.load(actor_path, map_location='cpu'))
+            model.eval()
+            
+            # 准备输入
+            state = torch.FloatTensor(features.to_vector()).unsqueeze(0)
+            
+            # 推理（确定性模式）
+            with torch.no_grad():
+                quality, effort = model(state)
+                quality = int(quality.item())
+                effort = int(effort.item())
+            
+            print(f"✅ PPO prediction: quality={quality}, effort={effort}", file=sys.stderr)
+            
+            return StandardPrediction(
+                quality=quality,
+                effort=effort,
+                lossless=False,
+                format_options=[],
+                confidence=0.95,  # PPO模型置信度
+                reasoning=f"PPO reinforcement learning model (quality={quality}, effort={effort})"
+            )
             
         except ImportError as e:
             raise ImportError(f"❌ PyTorch not installed, cannot use PPO model: {e}")
     
     def _predict_bayesian(self, features: StandardFeatures, target_format: str, 
                          quality_mode: str) -> StandardPrediction:
-        """贝叶斯优化器预测"""
-        # TODO: 实现贝叶斯优化
-        return self._predict_rule_based(features, target_format, quality_mode)
+        """
+        贝叶斯优化器预测 (2025-11-20完成)
+        
+        使用高斯过程回归进行参数优化，基于历史转换数据
+        """
+        try:
+            from sklearn.gaussian_process import GaussianProcessRegressor
+            from sklearn.gaussian_process.kernels import RBF, ConstantKernel
+            import numpy as np
+            
+            # 检查是否有足够的历史数据
+            history_file = self.models_dir / "bayesian_history.json"
+            if not history_file.exists():
+                print("⚠️ No Bayesian history, using rule-based prediction", file=sys.stderr)
+                return self._predict_rule_based(features, target_format, quality_mode)
+            
+            # 加载历史数据
+            with open(history_file, 'r') as f:
+                history = json.load(f)
+            
+            if len(history) < 5:  # 至少需要5个样本
+                print(f"⚠️ Insufficient Bayesian samples ({len(history)}), using rule-based", file=sys.stderr)
+                return self._predict_rule_based(features, target_format, quality_mode)
+            
+            # 准备训练数据
+            X_train = []
+            y_quality = []
+            y_effort = []
+            
+            for record in history:
+                if record.get('target_format') == target_format:
+                    X_train.append(record['features'])
+                    y_quality.append(record['quality'])
+                    y_effort.append(record['effort'])
+            
+            if len(X_train) < 3:
+                print(f"⚠️ Insufficient format-specific samples ({len(X_train)})", file=sys.stderr)
+                return self._predict_rule_based(features, target_format, quality_mode)
+            
+            X_train = np.array(X_train)
+            y_quality = np.array(y_quality)
+            y_effort = np.array(y_effort)
+            
+            # 定义高斯过程核函数
+            kernel = ConstantKernel(1.0) * RBF(length_scale=1.0)
+            
+            # 训练quality预测器
+            gp_quality = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=3, alpha=1e-6)
+            gp_quality.fit(X_train, y_quality)
+            
+            # 训练effort预测器
+            gp_effort = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=3, alpha=1e-6)
+            gp_effort.fit(X_train, y_effort)
+            
+            # 预测
+            X_test = np.array([features.to_vector()])
+            quality_pred, quality_std = gp_quality.predict(X_test, return_std=True)
+            effort_pred, effort_std = gp_effort.predict(X_test, return_std=True)
+            
+            quality = int(np.clip(quality_pred[0], 60, 95))
+            effort = int(np.clip(effort_pred[0], 4, 9))
+            
+            # 置信度基于预测标准差（越小越好）
+            confidence = 1.0 / (1.0 + quality_std[0] + effort_std[0])
+            confidence = min(0.95, max(0.5, confidence))
+            
+            print(f"✅ Bayesian prediction: quality={quality}±{quality_std[0]:.1f}, effort={effort}±{effort_std[0]:.1f}", 
+                  file=sys.stderr)
+            
+            return StandardPrediction(
+                quality=quality,
+                effort=effort,
+                lossless=False,
+                format_options=[],
+                confidence=confidence,
+                reasoning=f"Bayesian optimization (GP regression, {len(X_train)} samples, σ_q={quality_std[0]:.2f})"
+            )
+            
+        except ImportError as e:
+            print(f"⚠️ scikit-learn not available: {e}, using rule-based", file=sys.stderr)
+            return self._predict_rule_based(features, target_format, quality_mode)
+        except Exception as e:
+            print(f"❌ Bayesian prediction failed: {e}, using rule-based", file=sys.stderr)
+            return self._predict_rule_based(features, target_format, quality_mode)
     
     def _predict_ensemble(self, features: StandardFeatures, target_format: str, 
                          quality_mode: str) -> StandardPrediction:
