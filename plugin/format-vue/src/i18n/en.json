@@ -184,5 +184,10 @@
     "fileNotFound": "Input file not found or path error",
     "rustCliNotFound": "pixly-converter not found",
     "conversionFailed": "Conversion failed"
+  },
+  "log": {
+    "aiLog": "🔍 Processing Log",
+    "features": "🛠️ Quick Tools",
+    "waiting": "Waiting for processing..."
   }
 }

@@ -184,5 +184,10 @@
     "fileNotFound": "输入文件不存在或路径错误",
     "rustCliNotFound": "转换器未找到",
     "conversionFailed": "转换失败"
+  },
+  "log": {
+    "aiLog": "🔍 处理日志",
+    "features": "🛠️ 快捷工具",
+    "waiting": "等待处理..."
   }
 }

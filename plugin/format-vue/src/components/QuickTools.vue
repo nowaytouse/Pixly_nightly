@@ -1,14 +1,25 @@
 <template>
   <div class="panel">
-    <div class="panel-header" @click="expanded = !expanded">
-      <div class="panel-title">
-        <span>🛠️</span>
-        <span>{{ t('tools.title') }}</span>
-      </div>
-      <span class="expand-icon">{{ expanded ? t('ui.collapseIcon') : t('ui.expandIcon') }}</span>
+    <!-- 标签切换 -->
+    <div class="panel-tabs">
+      <button 
+        class="panel-tab" 
+        :class="{ active: activeTab === 'tools' }"
+        @click="activeTab = 'tools'"
+      >
+        {{ t('log.features') }}
+      </button>
+      <button 
+        class="panel-tab" 
+        :class="{ active: activeTab === 'log' }"
+        @click="activeTab = 'log'"
+      >
+        {{ t('log.aiLog') }}
+      </button>
     </div>
     
-    <div v-if="expanded" class="panel-content">
+    <!-- 快捷工具面板 -->
+    <div v-if="activeTab === 'tools'" class="panel-content">
       <!-- AI 文件验证 -->
       <label class="tool-item" :title="t('tools.fileValidationHint')">
         <input type="checkbox" v-model="localTools.fileValidation" />
@@ -51,12 +62,16 @@
         </div>
       </label>
     </div>
+    
+    <!-- 日志窗口 -->
+    <LogWindow v-else-if="activeTab === 'log'" :logs="logs" ref="logWindow" />
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue'
 import { useI18n } from '../composables/useI18n'
+import LogWindow from './LogWindow.vue'
 
 const { t } = useI18n()
 
@@ -69,13 +84,30 @@ const props = defineProps({
       autoMergeXmp: true,
       normalizeFilenames: false
     })
+  },
+  logs: {
+    type: Array,
+    default: () => []
   }
 })
 
 const emit = defineEmits(['update:modelValue'])
 
-const expanded = ref(true)
+const activeTab = ref('tools') // 'tools' or 'log'
 const localTools = ref({ ...props.modelValue })
+const logWindow = ref(null)
+
+// 暴露方法供父组件调用
+defineExpose({
+  switchToLog: () => {
+    activeTab.value = 'log'
+  },
+  scrollLogToBottom: () => {
+    if (logWindow.value) {
+      logWindow.value.scrollToBottom()
+    }
+  }
+})
 
 watch(localTools, (newVal) => {
   emit('update:modelValue', newVal)
@@ -87,25 +119,36 @@ watch(() => props.modelValue, (newVal) => {
 </script>
 
 <style scoped>
-.panel-header {
+/* 标签切换 */
+.panel-tabs {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  user-select: none;
-  padding: 12px;
-  border-radius: 8px;
-  transition: background var(--transition-fast);
+  background: var(--bg-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
 }
 
-.panel-header:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.expand-icon {
-  font-size: 12px;
+.panel-tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
   color: var(--text-secondary);
-  transition: transform var(--transition-fast);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.panel-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.panel-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .panel-content {
