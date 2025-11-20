@@ -366,8 +366,13 @@ mod tests {
     
     #[test]
     fn test_record_experience() {
+        // 使用临时目录避免加载持久化的经验
+        let temp_dir = std::env::temp_dir().join("pixly_test_online_learning");
+        let _ = std::fs::remove_dir_all(&temp_dir); // 清理旧数据
+        std::fs::create_dir_all(&temp_dir).unwrap();
+        
         let learner = OnlineLearner::new(
-            PathBuf::from("models/ppo/test.pth"),
+            temp_dir.join("test.pth"),
             100
         );
         
@@ -379,7 +384,11 @@ mod tests {
             processing_time: 2.0,
         };
         
+        let initial_size = learner.buffer_size();
         learner.record_conversion(features, 80, 6, result).unwrap();
-        assert_eq!(learner.buffer_size(), 1);
+        assert_eq!(learner.buffer_size(), initial_size + 1);
+        
+        // 清理
+        let _ = std::fs::remove_dir_all(&temp_dir);
     }
 }

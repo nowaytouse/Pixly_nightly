@@ -28,6 +28,7 @@ pub enum TaskStatus {
     Completed,
     Failed { reason: String, retry_count: u32 },
     Skipped { reason: String },
+    Retrying { retry_count: u32 }, // 新增：重试状态，保存retry_count
 }
 
 /// 批量任务
@@ -138,39 +139,28 @@ impl BatchDecisionManager {
             .find(|t| t.id == task_id)
             .context("Task not found")?;
 
-        let should_retry = match &task.status {
-            TaskStatus::Failed { retry_count, .. } => {
-                let count = *retry_count;
-                count < self.config.max_retries
-            }
-            _ => true, // 首次失败
+        // 获取当前重试次数
+        let current_retry_count = match &task.status {
+            TaskStatus::Failed { retry_count, .. } => *retry_count,
+            TaskStatus::Retrying { retry_count } => *retry_count,
+            _ => 0, // 首次失败，重试次数为0
         };
 
-        if should_retry {
-            let retry_count = match &task.status {
-                TaskStatus::Failed { retry_count, .. } => retry_count + 1,
-                _ => 1,
-            };
-            
-            if retry_count < self.config.max_retries {
-                task.status = TaskStatus::Pending;
-                log::info!("🔄 Task {} will retry ({}/{})", task_id, retry_count, self.config.max_retries);
-                Ok(true)
-            } else {
-                task.status = TaskStatus::Failed { 
-                    reason: error.clone(), 
-                    retry_count 
-                };
-                self.failed_tasks.insert(task_id, error);
-                log::error!("❌ Task {} failed after {} retries", task_id, retry_count);
-                Ok(self.config.continue_on_error)
-            }
+        // 检查是否应该重试
+        if current_retry_count < self.config.max_retries {
+            let new_retry_count = current_retry_count + 1;
+            task.status = TaskStatus::Retrying { retry_count: new_retry_count };
+            log::info!("🔄 Task {} will retry ({}/{})", task_id, new_retry_count, self.config.max_retries);
+            Ok(true)
         } else {
+            // 达到最大重试次数，标记为失败
             task.status = TaskStatus::Failed { 
                 reason: error.clone(), 
-                retry_count: 1 
+                retry_count: current_retry_count 
             };
-            Ok(true)
+            self.failed_tasks.insert(task_id, error);
+            log::error!("❌ Task {} failed after {} retries", task_id, current_retry_count);
+            Ok(self.config.continue_on_error)
         }
     }
 
@@ -193,6 +183,7 @@ impl BatchDecisionManager {
                 TaskStatus::Completed => stats.completed += 1,
                 TaskStatus::Failed { .. } => stats.failed += 1,
                 TaskStatus::Skipped { .. } => stats.skipped += 1,
+                TaskStatus::Retrying { .. } => stats.pending += 1, // 重试状态算作pending
             }
         }
         
@@ -292,14 +283,19 @@ mod tests {
             estimated_time_ms: 100,
         });
         
-        // 第一次失败 - 应该重试
+        // 第一次失败 (retry_count=0) - 应该重试
         let should_continue = manager.handle_failure(1, "Test error".to_string()).unwrap();
         assert!(should_continue);
+        assert_eq!(manager.failed_tasks.len(), 0); // 还未达到最大重试次数
         
-        // 第二次失败 - 达到最大重试次数
+        // 第二次失败 (retry_count=1) - 应该重试
+        let should_continue = manager.handle_failure(1, "Test error".to_string()).unwrap();
+        assert!(should_continue);
+        assert_eq!(manager.failed_tasks.len(), 0); // 还未达到最大重试次数
+        
+        // 第三次失败 (retry_count=2) - 达到最大重试次数
         let should_continue = manager.handle_failure(1, "Test error".to_string()).unwrap();
         assert!(should_continue); // continue_on_error = true
-        
-        assert_eq!(manager.failed_tasks.len(), 1);
+        assert_eq!(manager.failed_tasks.len(), 1); // 现在应该加入failed_tasks
     }
 }
