@@ -397,14 +397,18 @@ export function useRustCLI() {
           '--format', container
         ]
 
-        // 视频编码参数
+        // 🔥 视频编码参数 (2025-11-20更新: 添加H.266支持)
+        if (options.codec) args.push('--codec', options.codec)  // h264/h265/h266/av1/vp9
         if (options.crf !== undefined) args.push('--crf', options.crf.toString())
+        if (options.preset) args.push('--preset', options.preset)  // faster/fast/medium/slow/slower
         if (options.gop !== undefined) args.push('--gop', options.gop.toString())
         if (options.bframes !== undefined) args.push('--bframes', options.bframes.toString())
         if (options.refs !== undefined) args.push('--refs', options.refs.toString())
         if (options.rateControl) args.push('--rate-control', options.rateControl)
         if (options.meMethod) args.push('--me-method', options.meMethod)
         if (options.pixFmt) args.push('--pix-fmt', options.pixFmt)
+        if (options.twoPass) args.push('--two-pass')  // Two-pass encoding
+        if (options.hwAccel) args.push('--hw-accel', options.hwAccel)  // Hardware acceleration
 
         logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Executing command', {
           args: args.join(' ')
