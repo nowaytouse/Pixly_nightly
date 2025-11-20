@@ -419,10 +419,11 @@ mod tests {
         let plan = predictor.predict_video_plan(&features, QualityMode::Quality);
 
         // 4K Quality mode now uses H.266 for better compression ratio
-        match plan.target_codec {
-            VideoCodec::H266 => {}
-            _ => panic!("expected H266 for UHD video in Quality mode"),
-        }
+        assert!(
+            matches!(plan.target_codec, VideoCodec::H266),
+            "expected H266 for UHD video in Quality mode, got {:?}",
+            plan.target_codec
+        );
 
         assert_eq!(plan.target_container, "mp4");
         assert!(plan.two_pass);
