@@ -116,6 +116,10 @@
     "yes": "Yes",
     "no": "No"
   },
+  "log": {
+    "aiLog": "🔍 AI Log",
+    "features": "📋 Features"
+  },
   "image": {
     "title": "🖼️ Image Options",
     "format": "Output Format",
@@ -125,7 +129,8 @@
     "ssimValidation": "SSIM Quality Validation",
     "gpuAccel": "GPU Hardware Acceleration",
     "preprocess": "Smart Preprocessing",
-    "formatCorrection": "Format Correction"
+    "formatCorrection": "Format Correction",
+    "animationToVideo": "🎬 Animation to Video"
   },
   "video": {
     "title": "🎬 Video Options",

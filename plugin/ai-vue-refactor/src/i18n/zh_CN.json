@@ -116,6 +116,10 @@
     "yes": "是",
     "no": "否"
   },
+  "log": {
+    "aiLog": "🔍 AI日志",
+    "features": "📋 功能说明"
+  },
   "image": {
     "title": "🖼️ 图像选项",
     "format": "输出格式",
@@ -125,7 +129,8 @@
     "ssimValidation": "质量验证",
     "gpuAccel": "硬件加速",
     "preprocess": "智能预处理",
-    "formatCorrection": "格式纠正"
+    "formatCorrection": "格式纠正",
+    "animationToVideo": "🎬 动画转视频"
   },
   "video": {
     "title": "🎬 视频选项",

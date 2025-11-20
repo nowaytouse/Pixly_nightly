@@ -118,7 +118,7 @@
               </label>
               <label class="checkbox">
                 <input type="checkbox" v-model="enableVideoForAnimation">
-                <span>🎬 Animation to Video</span>
+                <span>{{ t('image.animationToVideo') }}</span>
               </label>
             </div>
           </details>
@@ -187,14 +187,14 @@
                 :class="{ active: showAILog }"
                 @click="showAILog = true"
               >
-                🔍 AI日志
+                {{ t('log.aiLog') }}
               </button>
               <button 
                 class="log-tab" 
                 :class="{ active: !showAILog }"
                 @click="showAILog = false"
               >
-                📋 功能说明
+                {{ t('log.features') }}
               </button>
             </div>
 
