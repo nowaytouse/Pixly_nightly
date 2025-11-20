@@ -200,7 +200,7 @@
 
             <!-- AI日志窗口 -->
             <div v-if="showAILog" class="log-window">
-              <div class="log-content" ref="logContent">
+              <div class="log-content" ref="logContent" @wheel.stop>
                 <div v-for="(log, index) in aiLogs" :key="index" class="log-entry" :class="log.type">
                   <span class="log-time">{{ log.time }}</span>
                   <span class="log-icon">{{ log.icon }}</span>
@@ -1444,6 +1444,9 @@ onMounted(() => {
 .log-window {
   height: 200px;
   overflow: hidden;
+  /* 创建独立的滚动上下文 */
+  isolation: isolate;
+  position: relative;
 }
 
 .log-content {
@@ -1457,6 +1460,13 @@ onMounted(() => {
   background: #1a1a1a;
   color: #e0e0e0;
   scroll-behavior: smooth;
+  /* 确保滚动事件不被阻止 */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  /* 确保可以接收鼠标事件 */
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
 }
 
 /* 自定义滚动条样式 */
