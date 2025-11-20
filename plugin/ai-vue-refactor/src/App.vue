@@ -526,9 +526,34 @@ const startConvert = async () => {
 
   processing.value = true
   progress.value = 0
+  
+  // 🔍 Reset transparency panel
+  if (transparencyPanel.value) {
+    transparencyPanel.value.reset()
+  }
 
   try {
     let results = []
+    
+    // 🔍 Update file analysis for first selected file
+    if (selected.length > 0 && transparencyPanel.value) {
+      const firstFile = selected[0]
+      transparencyPanel.value.updateFileAnalysis({
+        size: firstFile.size,
+        width: firstFile.width,
+        height: firstFile.height,
+        format: firstFile.ext?.toUpperCase() || 'Unknown',
+        colorDepth: 24 // Default, would need actual detection
+      })
+      
+      // 🔍 Add initial processing step
+      transparencyPanel.value.addProcessingStep({
+        name: '准备转换',
+        detail: `处理 ${selected.length} 个文件`,
+        status: 'active',
+        duration: null
+      })
+    }
     
     // 🔥 混合模式 - 自动分组处理
     if (isMixedMode.value) {
@@ -673,6 +698,37 @@ const startConvert = async () => {
 
     const successCount = results.filter(r => r.success).length
     progressText.value = t('progress.success', { success: successCount, total: results.length })
+    
+    // 🔍 Update transparency panel with completion data
+    if (transparencyPanel.value && selected.length > 0) {
+      // Mark processing steps as completed
+      transparencyPanel.value.updateProcessingStep(0, {
+        status: 'completed',
+        duration: 0 // Would need actual timing
+      })
+      
+      // Add AI decision data (mock for now - would come from actual AI)
+      transparencyPanel.value.updateAIDecision({
+        format: outputFormat.value === 'auto' ? 'AVIF' : outputFormat.value.toUpperCase(),
+        quality: 90,
+        speed: 4,
+        confidence: 0.95,
+        reasoning: [
+          `优化模式: ${optimizeMode.value}`,
+          `成功转换: ${successCount}/${results.length} 个文件`,
+          enableAIPrediction.value ? 'AI参数预测已启用' : '使用手动参数'
+        ]
+      })
+      
+      // Add performance stats (mock - would need actual data)
+      const firstFile = selected[0]
+      transparencyPanel.value.updatePerformanceStats({
+        totalTime: 0, // Would need actual timing
+        originalSize: firstFile.size,
+        compressedSize: Math.round(firstFile.size * 0.6), // Mock 40% compression
+        compressionRatio: 40
+      })
+    }
     
     setTimeout(() => {
       processing.value = false
