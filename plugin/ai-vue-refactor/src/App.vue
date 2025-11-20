@@ -345,7 +345,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, provide } from 'vue'
 import { useRustCLI } from './composables/useRustCLI'
 import { useEagleAPI } from './composables/useEagleAPI'
 import { logger, LOG_KEYS } from './utils/logger'
@@ -353,6 +353,9 @@ import { useI18n } from './composables/useI18n'
 import AITransparencyPanel from './components/AITransparencyPanel.vue'
 
 const { t, setLocale, locale } = useI18n()
+
+// Provide t function to child components
+provide('t', t)
 
 const rustCLI = useRustCLI()
 const eagleAPI = useEagleAPI()
