@@ -17,9 +17,15 @@
 - `quality_presets.rs` - QualityPreset enum, PresetConfig
 - `visual_quality_scorer.rs` - Visual quality scoring
 
-**Duplications**:
-- `QualityGrade` enum defined in both quality_checker.rs and quality_metrics.rs
-- `QualityMetrics` struct defined in both quality_metrics.rs and quality_analyzer.rs
+**⚠️ CRITICAL FINDING - NOT DUPLICATES**:
+- `QualityGrade` enum: **DIFFERENT PURPOSES**
+  - quality_checker.rs: SSIM-based (0.0-1.0), 4 levels
+  - quality_metrics.rs: Score-based (0-100), 5 levels
+- `QualityMetrics` struct: **COMPLETELY DIFFERENT**
+  - quality_analyzer.rs: File analysis metrics (30+ fields)
+  - quality_metrics.rs: Quality assessment scores (5 fields: VMAF/SSIM/PSNR/PESQ)
+
+**❌ CONSOLIDATION CANCELLED**: These are NOT duplicates, they serve different purposes!
 
 **Consolidation Plan**:
 ```
@@ -44,8 +50,12 @@ quality/
 - `format_knowledge.rs` - Format knowledge base
 - `format_params.rs` - Format-specific parameters
 
-**Duplications**:
-- `FormatRecommendation` struct defined in both format_selector.rs and format_recommender.rs
+**⚠️ CRITICAL FINDING - NOT DUPLICATES**:
+- `FormatRecommendation` struct: **DIFFERENT PURPOSES**
+  - format_selector.rs: Simple recommendation (5 fields)
+  - format_recommender.rs: Detailed recommendation (8 fields with scoring)
+
+**❌ CONSOLIDATION CANCELLED**: These are NOT duplicates, they serve different purposes!
 
 **Consolidation Plan**:
 ```
@@ -89,12 +99,23 @@ format/
 5. ⏳ Run tests
 6. ⏳ Commit changes
 
-## Expected Benefits
+## ⚠️ CONSOLIDATION ANALYSIS RESULT
 
-- **Code Reduction**: ~15-20% reduction in quality/format related code
-- **Maintainability**: Single source of truth for shared types
-- **Clarity**: Clear module organization
-- **Performance**: Reduced compilation time
+**Status**: ❌ **CANCELLED**
+
+**Reason**: Deep verification revealed that apparent "duplicates" are actually **different implementations for different purposes**:
+
+1. **QualityGrade**: SSIM-based vs Score-based (different scales)
+2. **QualityMetrics**: File analysis vs Quality assessment (different data)
+3. **FormatRecommendation**: Simple vs Detailed (different use cases)
+
+**Lesson Learned**: 
+- ✅ Always perform deep verification before refactoring
+- ✅ Similar names ≠ duplicate code
+- ✅ Different purposes require different implementations
+- ❌ Premature consolidation would have broken functionality
+
+**Ref**: PROJECT_QUALITY_MANIFESTO.md - "批判性思维与深度调查原则"
 
 ## Risks
 
