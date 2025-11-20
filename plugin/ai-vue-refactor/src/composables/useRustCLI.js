@@ -46,6 +46,58 @@ export function useRustCLI() {
   }
 
   /**
+   * 🎬 获取视频编码器推荐 (2025-11-20新增)
+   */
+  const getVideoCodecRecommendation = async (inputPath, qualityMode = 'balanced') => {
+    if (!isAvailable.value) {
+      throw new Error('Rust CLI 不可用')
+    }
+
+    try {
+      const { execSync } = require('child_process')
+      const path = require('path')
+      const rustPath = path.join(__dirname, '../../bin/pixly-rust')
+
+      // 调用 analyze 命令获取推荐
+      const args = [
+        'analyze',
+        inputPath,
+        '--json',
+        '--recommend-video-codec',
+        '--quality-mode', qualityMode
+      ]
+
+      const output = execSync(`"${rustPath}" ${args.join(' ')}`, {
+        encoding: 'utf8',
+        timeout: 10000
+      })
+
+      const result = JSON.parse(output)
+      
+      logger.info(LOG_KEYS.RUST_CLI_EXEC, 'Video codec recommendation', {
+        codec: result.recommended_codec,
+        container: result.recommended_container,
+        reason: result.reason
+      })
+
+      return result
+    } catch (err) {
+      logger.error(LOG_KEYS.RUST_CLI_ERROR, 'Failed to get video codec recommendation', {
+        error: err.message
+      })
+      // 返回默认推荐
+      return {
+        recommended_codec: 'h265',
+        recommended_container: 'mp4',
+        confidence: 0.8,
+        reason: 'Default recommendation (H.265/MP4)',
+        alternative_codecs: ['h266', 'av1', 'h264'],
+        alternative_containers: ['mkv', 'webm']
+      }
+    }
+  }
+
+  /**
    * 执行转换
    */
   const convert = async (options) => {
@@ -331,6 +383,7 @@ export function useRustCLI() {
     init,
     convert,
     convertVideo,
-    batchConvert
+    batchConvert,
+    getVideoCodecRecommendation  // 🎬 2025-11-20新增
   }
 }

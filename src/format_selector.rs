@@ -22,6 +22,25 @@ pub struct FormatRecommendation {
     pub estimated_size_change: f64,
 }
 
+/// 🎬 视频编码器推荐 (2025-11-20新增)
+#[derive(Debug, Clone)]
+pub struct VideoCodecRecommendation {
+    /// 推荐的编码器
+    pub recommended_codec: String,
+    /// 推荐的容器
+    pub recommended_container: String,
+    /// 置信度 (0.0-1.0)
+    pub confidence: f64,
+    /// 推荐理由
+    pub reason: String,
+    /// 备选编码器
+    pub alternative_codecs: Vec<String>,
+    /// 备选容器
+    pub alternative_containers: Vec<String>,
+    /// 预估文件大小变化
+    pub estimated_size_change: f64,
+}
+
 /// Smart format selector
 pub struct FormatSelector {
     /// Enable aggressive mode (try more formats)
@@ -285,6 +304,76 @@ impl FormatSelector {
                 true
             }
             _ => false,
+        }
+    }
+    
+    /// 🎬 推荐视频编码器和容器 (2025-11-20新增)
+    /// 
+    /// 基于输入视频特征智能推荐最佳编码器和容器组合
+    pub fn recommend_video_codec(
+        &self,
+        input_path: &Path,
+        target_quality: &str,  // "size" | "balanced" | "quality"
+    ) -> Result<VideoCodecRecommendation> {
+        let input_ext = input_path.extension()
+            .and_then(|e| e.to_str())
+            .map(|e| e.to_lowercase())
+            .unwrap_or_default();
+        
+        // 检测是否为动画图片（应转为视频）
+        let is_animated_image = matches!(input_ext.as_str(), "gif" | "apng" | "webp");
+        
+        if is_animated_image {
+            // 动画图片 → 视频
+            return Ok(VideoCodecRecommendation {
+                recommended_codec: "h265".to_string(),
+                recommended_container: "mp4".to_string(),
+                confidence: 0.95,
+                reason: format!("{}→H.265/MP4: Animated image to video, 70-90% size reduction", input_ext.to_uppercase()),
+                alternative_codecs: vec!["h266".to_string(), "av1".to_string()],
+                alternative_containers: vec!["webm".to_string()],
+                estimated_size_change: -0.8,
+            });
+        }
+        
+        // 视频 → 视频：根据质量目标推荐
+        match target_quality {
+            "size" => {
+                // 最小文件大小：H.266 (VVC)
+                Ok(VideoCodecRecommendation {
+                    recommended_codec: "h266".to_string(),
+                    recommended_container: "mp4".to_string(),
+                    confidence: 0.9,
+                    reason: "H.266/VVC: Best compression (30-50% better than H.265), ideal for archiving".to_string(),
+                    alternative_codecs: vec!["av1".to_string(), "h265".to_string()],
+                    alternative_containers: vec!["mkv".to_string()],
+                    estimated_size_change: -0.4,
+                })
+            }
+            "quality" => {
+                // 最高质量：H.265 (成熟稳定)
+                Ok(VideoCodecRecommendation {
+                    recommended_codec: "h265".to_string(),
+                    recommended_container: "mp4".to_string(),
+                    confidence: 0.95,
+                    reason: "H.265/HEVC: Excellent quality-size balance, mature and stable, hardware support".to_string(),
+                    alternative_codecs: vec!["h266".to_string(), "prores".to_string()],
+                    alternative_containers: vec!["mov".to_string()],
+                    estimated_size_change: -0.3,
+                })
+            }
+            _ => {
+                // 平衡模式：H.265 (默认推荐)
+                Ok(VideoCodecRecommendation {
+                    recommended_codec: "h265".to_string(),
+                    recommended_container: "mp4".to_string(),
+                    confidence: 0.95,
+                    reason: "H.265/HEVC: Best balance of quality, size, and compatibility".to_string(),
+                    alternative_codecs: vec!["h266".to_string(), "av1".to_string(), "h264".to_string()],
+                    alternative_containers: vec!["mkv".to_string(), "webm".to_string()],
+                    estimated_size_change: -0.35,
+                })
+            }
         }
     }
 }
