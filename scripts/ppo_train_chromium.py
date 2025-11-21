@@ -103,8 +103,8 @@ def generate_training_data(media_files, sample_size=None):
     else:
         sampled_files = image_files
     
-    print(f"\n🎯 Processing {len(sampled_files)} Imagesfiles...")
-    print(f"   (Videos和AudioConverting将在后续版本支持)")
+    print(f"\n🎯 Processing {len(sampled_files)} image files...", file=sys.stderr)
+    print(f"   (Video and audio conversion will be supported in future versions)", file=sys.stderr)
     
     for idx, file_path in enumerate(sampled_files, 1):
         file_ext = Path(file_path).suffix.lower()

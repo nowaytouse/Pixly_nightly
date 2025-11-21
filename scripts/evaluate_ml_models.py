@@ -85,60 +85,60 @@ def analyze_performance(results):
     return analysis
 
 def generate_report(results, analysis):
-    """生成评估报告"""
-    print("=" * 60)
-    print("🤖 MLModel性能评估报告")
-    print("=" * 60)
-    print(f"评估时间: {results['timestamp']}")
-    print()
+    """Generate evaluation report"""
+    print("=" * 60, file=sys.stderr)
+    print("🤖 ML Model Performance Evaluation Report", file=sys.stderr)
+    print("=" * 60, file=sys.stderr)
+    print(f"Evaluation Time: {results['timestamp']}", file=sys.stderr)
+    print("", file=sys.stderr)
     
-    print("📊 Model性能对比:")
-    print("-" * 60)
+    print("📊 Model Performance Comparison:", file=sys.stderr)
+    print("-" * 60, file=sys.stderr)
     
     for name, metrics in results["models"].items():
         print(f"\n{name.upper()}:")
-        print(f"  Quality准确度: {metrics['accuracy_quality']:.1%}")
-        print(f"  Effort准确度:  {metrics['accuracy_effort']:.1%}")
-        print(f"  Quality MAE:   {metrics['mae_quality']:.2f}")
-        print(f"  Effort MAE:    {metrics['mae_effort']:.2f}")
-        print(f"  推理时间:      {metrics['inference_time_ms']:.2f}ms")
-        print(f"  Average置信度:    {metrics['avg_confidence']:.1%}")
+        print(f"  Quality Accuracy: {metrics['accuracy_quality']:.1%}", file=sys.stderr)
+        print(f"  Effort Accuracy:  {metrics['accuracy_effort']:.1%}", file=sys.stderr)
+        print(f"  Quality MAE:   {metrics['mae_quality']:.2f}", file=sys.stderr)
+        print(f"  Effort MAE:    {metrics['mae_effort']:.2f}", file=sys.stderr)
+        print(f"  Inference Time:   {metrics['inference_time_ms']:.2f}ms", file=sys.stderr)
+        print(f"  Average Confidence: {metrics['avg_confidence']:.1%}", file=sys.stderr)
     
-    print("\n" + "=" * 60)
-    print("🎯 AnalyzingResult:")
-    print("-" * 60)
+    print("\n" + "=" * 60, file=sys.stderr)
+    print("🎯 Analysis Result:", file=sys.stderr)
+    print("-" * 60, file=sys.stderr)
     
     if analysis:
-        print(f"最佳QualityModel: {analysis['best_quality_model']}")
-        print(f"最佳EffortModel: {analysis['best_effort_model']}")
-        print(f"最快Model: {analysis['fastest_model']}")
+        print(f"Best Quality Model: {analysis['best_quality_model']}", file=sys.stderr)
+        print(f"Best Effort Model: {analysis['best_effort_model']}", file=sys.stderr)
+        print(f"Fastest Model: {analysis['fastest_model']}", file=sys.stderr)
         
         if analysis["recommendations"]:
-            print("\n💡 建议:")
+            print("\n💡 Recommendations:", file=sys.stderr)
             for rec in analysis["recommendations"]:
                 icon = {"warning": "⚠️", "info": "ℹ️", "success": "✅"}.get(rec["level"], "•")
-                print(f"  {icon} {rec['message']}")
+                print(f"  {icon} {rec['message']}", file=sys.stderr)
     
     print("=" * 60)
 
 def main():
-    print("🔍 LoadingModel评估Result...")
+    print("🔍 Loading model evaluation results...", file=sys.stderr)
     results = load_model_results()
     
     if not results:
-        print("❌ 未找到评估Resultfiles")
-        print("   请先运行: python3 scripts/test_ml_all_formats.py")
+        print("❌ Evaluation result files not found", file=sys.stderr)
+        print("   Please run first: python3 scripts/test_ml_all_formats.py", file=sys.stderr)
         return 1
     
-    print("✅ 评估Resultloaded")
+    print("✅ Evaluation results loaded", file=sys.stderr)
     
-    print("\n📈 AnalyzingModel性能...")
+    print("\n📈 Analyzing model performance...", file=sys.stderr)
     analysis = analyze_performance(results)
     
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 60, file=sys.stderr)
     generate_report(results, analysis)
     
-    # 保存分析结果
+    # Save analysis results
     output_file = Path("models") / "performance_analysis.json"
     with open(output_file, 'w') as f:
         json.dump({
@@ -147,7 +147,7 @@ def main():
             "analysis": analysis
         }, f, indent=2)
     
-    print(f"\n💾 AnalyzingResultsaved: {output_file}")
+    print(f"\n💾 Analysis results saved: {output_file}", file=sys.stderr)
     
     return 0
 

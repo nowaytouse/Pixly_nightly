@@ -793,9 +793,9 @@ const startConvert = async () => {
     // AI决策信息
     addLog('─────────────────────────', 'info', '')
     const targetFormat = outputFormat.value === 'auto' ? 'AVIF' : outputFormat.value.toUpperCase()
-    addLog(`目标格式: ${targetFormat}`, 'info', '🎯')
-    addLog(`优化模式: ${optimizeMode.value}`, 'info', '⚙️')
-    addLog(`AI预测: ${enableAIPrediction.value ? '✅ 已启用' : '❌ 未启用'}`, 'info', '🤖')
+    addLog(t('log.targetFormat', { format: targetFormat }), 'info', '🎯')
+    addLog(t('log.optimizeMode', { mode: optimizeMode.value }), 'info', '⚙️')
+    addLog(t('log.aiPrediction', { status: enableAIPrediction.value ? '✅ ' + t('log.enabled') : '❌ ' + t('log.disabled') }), 'info', '🤖')
     
     setTimeout(() => {
       processing.value = false
@@ -814,27 +814,27 @@ const isMaximized = ref(false)
 
 const minimizeWindow = () => {
   try {
-    console.log('[PIXLY AI] Minimizing window...')
+    logger.info(LOG_KEYS.UI_CLICK, 'Minimizing window')
     if (window.eagle && window.eagle.window && typeof window.eagle.window.minimize === 'function') {
       window.eagle.window.minimize()
-      console.log('[PIXLY AI] ✅ Window minimized')
+      logger.info(LOG_KEYS.UI_CLICK, 'Window minimized')
     } else if (window.eagle && window.eagle.app && typeof window.eagle.app.minimize === 'function') {
       window.eagle.app.minimize()
-      console.log('[PIXLY AI] ✅ Window minimized (via app)')
+      logger.info(LOG_KEYS.UI_CLICK, 'Window minimized (via app)')
     } else {
-      console.error('[PIXLY AI] ❌ Minimize method not found')
+      logger.error(LOG_KEYS.APP_ERROR, 'Minimize method not found')
     }
   } catch (error) {
-    console.error('[PIXLY AI] ❌ Failed to minimize:', error)
+    logger.error(LOG_KEYS.APP_ERROR, 'Failed to minimize window', { error: error.message })
   }
 }
 
 const maximizeWindow = () => {
   try {
-    console.log('[PIXLY AI] Toggling maximize...', { currentState: isMaximized.value })
+    logger.info(LOG_KEYS.UI_CLICK, 'Toggling maximize', { currentState: isMaximized.value })
     
     if (!window.eagle || !window.eagle.window) {
-      console.error('[PIXLY AI] ❌ Eagle window API not available')
+      logger.error(LOG_KEYS.APP_ERROR, 'Eagle window API not available')
       return
     }
     
@@ -844,53 +844,53 @@ const maximizeWindow = () => {
       if (typeof window.eagle.window.unmaximize === 'function') {
         window.eagle.window.unmaximize()
         isMaximized.value = false
-        console.log('[PIXLY AI] ✅ Window unmaximized')
+        logger.info(LOG_KEYS.UI_CLICK, 'Window unmaximized')
       } else if (typeof window.eagle.window.restore === 'function') {
         window.eagle.window.restore()
         isMaximized.value = false
-        console.log('[PIXLY AI] ✅ Window restored')
+        logger.info(LOG_KEYS.UI_CLICK, 'Window restored')
       } else {
-        console.error('[PIXLY AI] ❌ Unmaximize method not found')
+        logger.error(LOG_KEYS.APP_ERROR, 'Unmaximize method not found')
       }
     } else {
       // Currently normal, maximize
       if (typeof window.eagle.window.maximize === 'function') {
         window.eagle.window.maximize()
         isMaximized.value = true
-        console.log('[PIXLY AI] ✅ Window maximized')
+        logger.info(LOG_KEYS.UI_CLICK, 'Window maximized')
       } else {
-        console.error('[PIXLY AI] ❌ Maximize method not found')
+        logger.error(LOG_KEYS.APP_ERROR, 'Maximize method not found')
       }
     }
   } catch (error) {
-    console.error('[PIXLY AI] ❌ Failed to toggle maximize:', error)
+    logger.error(LOG_KEYS.APP_ERROR, 'Failed to toggle maximize', { error: error.message })
   }
 }
 
 const closeWindow = () => {
   try {
-    console.log('[PIXLY AI] Closing window...')
+    logger.info(LOG_KEYS.UI_CLICK, 'Closing window')
     
     if (!window.eagle) {
-      console.error('[PIXLY AI] ❌ Eagle API not available')
+      logger.error(LOG_KEYS.APP_ERROR, 'Eagle API not available')
       return
     }
     
     // Try different API methods
     if (window.eagle.window && typeof window.eagle.window.close === 'function') {
       window.eagle.window.close()
-      console.log('[PIXLY AI] ✅ Window closed')
+      logger.info(LOG_KEYS.UI_CLICK, 'Window closed')
     } else if (window.eagle.app && typeof window.eagle.app.close === 'function') {
       window.eagle.app.close()
-      console.log('[PIXLY AI] ✅ Window closed (via app)')
+      logger.info(LOG_KEYS.UI_CLICK, 'Window closed (via app)')
     } else if (window.close && typeof window.close === 'function') {
       window.close()
-      console.log('[PIXLY AI] ✅ Window closed (via window.close)')
+      logger.info(LOG_KEYS.UI_CLICK, 'Window closed (via window.close)')
     } else {
-      console.error('[PIXLY AI] ❌ Close method not found')
+      logger.error(LOG_KEYS.APP_ERROR, 'Close method not found')
     }
   } catch (error) {
-    console.error('[PIXLY AI] ❌ Failed to close:', error)
+    logger.error(LOG_KEYS.APP_ERROR, 'Failed to close window', { error: error.message })
   }
 }
 

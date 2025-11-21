@@ -32,7 +32,7 @@ def check_dependencies():
             missing.append(name)
     
     if missing:
-        print(f"❌ 缺少依赖: {', '.join(missing)}")
+        print(f"❌ Missing dependencies: {', '.join(missing)}", file=sys.stderr)
         return False
     
     return True
@@ -331,16 +331,16 @@ def save_training_data(training_data, output_file):
     print(f"   Audio samples: {stats['audio']}")
 
 def main():
-    """主函数"""
-    print("=" * 60)
-    print("🤖 PPO Training - All Media Types Support (混合策略)")
-    print("=" * 60)
+    """Main function"""
+    print("=" * 60, file=sys.stderr)
+    print("🤖 PPO Training - All Media Types Support (Hybrid Strategy)", file=sys.stderr)
+    print("=" * 60, file=sys.stderr)
     
-    # 检查依赖
-    print("\n🔍 Checking依赖工具...")
+    # Check dependencies
+    print("\n🔍 Checking dependencies...", file=sys.stderr)
     if not check_dependencies():
         return 1
-    print("✅ 所有依赖工具ready")
+    print("✅ All dependencies ready", file=sys.stderr)
     
     data_dir = '/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data'
     

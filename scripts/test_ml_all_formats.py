@@ -24,23 +24,23 @@ def create_test_features():
     )
 
 def test_format_support():
-    """测试所有格式支持"""
-    print("🧪 TestingML系统Format支持")
-    print("=" * 60)
+    """Test all format support"""
+    print("🧪 Testing ML System Format Support", file=sys.stderr)
+    print("=" * 60, file=sys.stderr)
     
     router = ModelRouter()
     features = create_test_features()
     
-    # 测试所有图像格式
+    # Test all image formats
     formats = ["webp", "avif", "jxl", "png", "jpeg", "gif", "bmp", "tiff"]
     
-    print("\n📷 ImagesFormatPredictionTesting:")
-    print("-" * 60)
+    print("\n📷 Image Format Prediction Testing:", file=sys.stderr)
+    print("-" * 60, file=sys.stderr)
     
     results = {}
     for fmt in formats:
         try:
-            # 使用LightGBM模型预测
+            # Use LightGBM model for prediction
             prediction = router.predict("lightgbm", features, fmt, "balanced")
             
             results[fmt] = {
@@ -50,39 +50,39 @@ def test_format_support():
                 "status": "✅"
             }
             
-            print(f"  {fmt:8s}: ✅ Q={prediction.quality:2d} E={prediction.effort:2d} C={prediction.confidence:.2f}")
+            print(f"  {fmt:8s}: ✅ Q={prediction.quality:2d} E={prediction.effort:2d} C={prediction.confidence:.2f}", file=sys.stderr)
             
         except Exception as e:
             results[fmt] = {
                 "error": str(e),
                 "status": "❌"
             }
-            print(f"  {fmt:8s}: ❌ {e}")
+            print(f"  {fmt:8s}: ❌ {e}", file=sys.stderr)
     
-    # 测试同格式优化
-    print("\n🔄 同FormatOptimizationPredictionTesting:")
-    print("-" * 60)
+    # Test same-format optimization
+    print("\n🔄 Same Format Optimization Prediction Testing:", file=sys.stderr)
+    print("-" * 60, file=sys.stderr)
     
     same_format_tests = ["jpeg", "png", "webp"]
     for fmt in same_format_tests:
         try:
             prediction = router.predict("lightgbm", features, fmt, "balanced")
-            print(f"  {fmt}→{fmt}: ✅ Q={prediction.quality:2d} (Optimization)")
+            print(f"  {fmt}→{fmt}: ✅ Q={prediction.quality:2d} (Optimization)", file=sys.stderr)
         except Exception as e:
-            print(f"  {fmt}→{fmt}: ❌ {e}")
+            print(f"  {fmt}→{fmt}: ❌ {e}", file=sys.stderr)
     
-    # 统计
-    print("\n" + "=" * 60)
+    # Statistics
+    print("\n" + "=" * 60, file=sys.stderr)
     success_count = sum(1 for r in results.values() if r.get("status") == "✅")
     total_count = len(results)
     
-    print(f"📊 TestingResult: {success_count}/{total_count} Format支持")
+    print(f"📊 Testing Result: {success_count}/{total_count} formats supported", file=sys.stderr)
     
     if success_count == total_count:
-        print("✅ 所有FormatMLPrediction正常工作!")
+        print("✅ All format ML predictions working correctly!", file=sys.stderr)
         return 0
     else:
-        print(f"⚠️  {total_count - success_count} Format需要修复")
+        print(f"⚠️  {total_count - success_count} formats need fixing", file=sys.stderr)
         return 1
 
 if __name__ == "__main__":
