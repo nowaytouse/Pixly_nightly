@@ -60,7 +60,8 @@ impl AIFormatRecommender {
         user_preferences: &UserPreferences,
     ) -> Vec<FormatRecommendation> {
         let formats = self.get_candidate_formats(features);
-        let mut recommendations = Vec::new();
+        // 🔥 性能优化：预分配容量
+        let mut recommendations = Vec::with_capacity(formats.len());
         
         for format in formats {
             let prediction = self.predictor.predict_with_confidence(

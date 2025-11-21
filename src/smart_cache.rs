@@ -192,7 +192,8 @@ impl SmartCache {
         // 如果缓存太大，删除最少使用的
         let total_size: u64 = entries.values().map(|e| e.size_bytes).sum();
         if total_size > self.config.max_size_bytes || entries.len() > self.config.max_entries as usize {
-            let mut sorted: Vec<_> = entries.iter().map(|(k, e)| (k.clone(), e.clone())).collect();
+            // 🔥 性能优化：只clone key，使用引用排序
+            let mut sorted: Vec<_> = entries.iter().map(|(k, e)| (k.clone(), e)).collect();
             sorted.sort_by_key(|(_, e)| e.access_count);
             
             let to_remove_count = (entries.len() as f64 * 0.2) as usize; // 删除20%

@@ -1,0 +1,93 @@
+{
+  "timestamp": "2025-11-21 09:16:57",
+  "baseline": [
+    0,
+    0
+  ],
+  "results": [
+    {
+      "name": "NumPy Array Creation (128d)",
+      "iterations": 10000,
+      "avg": 0.002,
+      "min": 0.001,
+      "max": 0.746,
+      "p95": 0.003,
+      "unit": "ms"
+    },
+    {
+      "name": "Feature Normalization",
+      "iterations": 10000,
+      "avg": 0.004,
+      "min": 0.003,
+      "max": 0.09,
+      "p95": 0.004,
+      "unit": "ms"
+    },
+    {
+      "name": "Matrix Multiplication (128x128)",
+      "iterations": 1000,
+      "avg": 0.015,
+      "min": 0.013,
+      "max": 0.167,
+      "p95": 0.015,
+      "unit": "ms"
+    },
+    {
+      "name": "List Comprehension (1000 items)",
+      "iterations": 1000,
+      "avg": 0.131,
+      "min": 0.116,
+      "max": 0.378,
+      "p95": 0.138,
+      "unit": "ms"
+    },
+    {
+      "name": "Dict Creation (100 items)",
+      "iterations": 1000,
+      "avg": 0.043,
+      "min": 0.038,
+      "max": 0.163,
+      "p95": 0.046,
+      "unit": "ms"
+    },
+    {
+      "name": "JSON Serialization",
+      "iterations": 10000,
+      "avg": 0.103,
+      "min": 0.093,
+      "max": 0.33,
+      "p95": 0.109,
+      "unit": "ms"
+    },
+    {
+      "name": "JSON Deserialization",
+      "iterations": 10000,
+      "avg": 0.03,
+      "min": 0.027,
+      "max": 0.18,
+      "p95": 0.031,
+      "unit": "ms"
+    },
+    {
+      "name": "Path Operations",
+      "iterations": 10000,
+      "avg": 0.006,
+      "min": 0.006,
+      "max": 0.113,
+      "p95": 0.007,
+      "unit": "ms"
+    },
+    {
+      "name": "Large NumPy Array (1000x1000)",
+      "iterations": 10,
+      "heapDiff": 0.0,
+      "unit": "MB"
+    },
+    {
+      "name": "1000 Feature Vectors (128d)",
+      "iterations": 10,
+      "heapDiff": 0.0,
+      "unit": "MB"
+    }
+  ]
+}

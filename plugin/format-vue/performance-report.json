@@ -1,0 +1,78 @@
+{
+  "timestamp": "2025-11-21T01:16:44.665Z",
+  "baseline": {
+    "rss": 45367296,
+    "heapTotal": 5390336,
+    "heapUsed": 4565616,
+    "external": 1898105,
+    "arrayBuffers": 16804
+  },
+  "results": [
+    {
+      "name": "Log Entry Creation",
+      "iterations": 10000,
+      "avg": "0.000",
+      "min": "0.000",
+      "max": "0.070",
+      "p95": "0.000",
+      "unit": "ms"
+    },
+    {
+      "name": "Array Push (1000 items)",
+      "iterations": 1000,
+      "avg": "0.002",
+      "min": "0.000",
+      "max": "2.149",
+      "p95": "0.000",
+      "unit": "ms"
+    },
+    {
+      "name": "Object Spread Copy",
+      "iterations": 10000,
+      "avg": "0.000",
+      "min": "0.000",
+      "max": "1.452",
+      "p95": "0.000",
+      "unit": "ms"
+    },
+    {
+      "name": "setTimeout Creation",
+      "iterations": 1000,
+      "avg": "1.164",
+      "min": "0.014",
+      "max": "3.845",
+      "p95": "1.247",
+      "unit": "ms"
+    },
+    {
+      "name": "Debounced setTimeout",
+      "iterations": 1000,
+      "avg": "1.166",
+      "min": "0.021",
+      "max": "1.594",
+      "p95": "1.247",
+      "unit": "ms"
+    },
+    {
+      "name": "File List Data Prep (100 files)",
+      "iterations": 100,
+      "avg": "0.008",
+      "min": "0.004",
+      "max": "0.201",
+      "p95": "0.014",
+      "unit": "ms"
+    },
+    {
+      "name": "1000 Log Entries",
+      "iterations": 10,
+      "heapDiff": "-0.59",
+      "unit": "MB"
+    },
+    {
+      "name": "1000 File Objects",
+      "iterations": 10,
+      "heapDiff": "0.96",
+      "unit": "MB"
+    }
+  ]
+}

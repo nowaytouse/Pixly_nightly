@@ -85,8 +85,9 @@ pub struct ConversionValidator;
 impl ConversionValidator {
     /// 🔍 Level 1: 输入文件验证
     pub fn validate_input_files(files: &[InputFile]) -> ValidationResult {
-        let mut errors = Vec::new();
-        let mut warnings = Vec::new();
+        // 🔥 性能优化：预分配容量
+        let mut errors = Vec::with_capacity(files.len());
+        let mut warnings = Vec::with_capacity(files.len());
         
         if files.is_empty() {
             errors.push("❌ No files selected".to_string());
@@ -140,8 +141,9 @@ impl ConversionValidator {
     
     /// 🔍 Level 2: 转换参数验证
     pub fn validate_parameters(config: &ConversionConfig, files: &[InputFile]) -> ValidationResult {
-        let mut errors = Vec::new();
-        let mut warnings = Vec::new();
+        // 🔥 性能优化：预分配容量
+        let mut errors = Vec::with_capacity(4);
+        let mut warnings = Vec::with_capacity(4);
         
         // 验证目标格式
         let valid_formats = ["jxl", "avif", "webp", "heic", "png", "jpg", "jpeg"];
