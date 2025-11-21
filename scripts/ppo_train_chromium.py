@@ -104,7 +104,7 @@ def generate_training_data(media_files, sample_size=None):
         sampled_files = image_files
     
     print(f"\n🎯 Processing {len(sampled_files)} Imagesfiles...")
-    print(f"   (Videos和Audio转换将在后续版本支持)")
+    print(f"   (Videos和AudioConverting将在后续版本支持)")
     
     for idx, file_path in enumerate(sampled_files, 1):
         file_ext = Path(file_path).suffix.lower()
@@ -165,7 +165,7 @@ def save_training_data(training_data, output_file):
 def main():
     """主函数"""
     print("=" * 60)
-    print("🤖 PPO训练 - Chromium测试数据")
+    print("🤖 PPOTraining - ChromiumTestingData")
     print("=" * 60)
     
     data_dir = '/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data'

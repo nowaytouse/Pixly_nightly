@@ -87,12 +87,12 @@ def analyze_performance(results):
 def generate_report(results, analysis):
     """生成评估报告"""
     print("=" * 60)
-    print("🤖 ML模型性能评估报告")
+    print("🤖 MLModel性能评估报告")
     print("=" * 60)
     print(f"评估时间: {results['timestamp']}")
     print()
     
-    print("📊 模型性能对比:")
+    print("📊 Model性能对比:")
     print("-" * 60)
     
     for name, metrics in results["models"].items():
@@ -102,16 +102,16 @@ def generate_report(results, analysis):
         print(f"  Quality MAE:   {metrics['mae_quality']:.2f}")
         print(f"  Effort MAE:    {metrics['mae_effort']:.2f}")
         print(f"  推理时间:      {metrics['inference_time_ms']:.2f}ms")
-        print(f"  平均置信度:    {metrics['avg_confidence']:.1%}")
+        print(f"  Average置信度:    {metrics['avg_confidence']:.1%}")
     
     print("\n" + "=" * 60)
-    print("🎯 分析结果:")
+    print("🎯 AnalyzingResult:")
     print("-" * 60)
     
     if analysis:
-        print(f"最佳质量模型: {analysis['best_quality_model']}")
-        print(f"最佳Effort模型: {analysis['best_effort_model']}")
-        print(f"最快模型: {analysis['fastest_model']}")
+        print(f"最佳QualityModel: {analysis['best_quality_model']}")
+        print(f"最佳EffortModel: {analysis['best_effort_model']}")
+        print(f"最快Model: {analysis['fastest_model']}")
         
         if analysis["recommendations"]:
             print("\n💡 建议:")
@@ -122,17 +122,17 @@ def generate_report(results, analysis):
     print("=" * 60)
 
 def main():
-    print("🔍 加载模型评估结果...")
+    print("🔍 LoadingModel评估Result...")
     results = load_model_results()
     
     if not results:
-        print("❌ 未找到评估结果files")
+        print("❌ 未找到评估Resultfiles")
         print("   请先运行: python3 scripts/test_ml_all_formats.py")
         return 1
     
-    print("✅ 评估结果已加载")
+    print("✅ 评估Resultloaded")
     
-    print("\n📈 分析模型性能...")
+    print("\n📈 AnalyzingModel性能...")
     analysis = analyze_performance(results)
     
     print("\n" + "=" * 60)
@@ -147,7 +147,7 @@ def main():
             "analysis": analysis
         }, f, indent=2)
     
-    print(f"\n💾 分析结果已保存: {output_file}")
+    print(f"\n💾 AnalyzingResultsaved: {output_file}")
     
     return 0
 

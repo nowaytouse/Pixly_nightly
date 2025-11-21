@@ -25,7 +25,7 @@ def create_test_features():
 
 def test_format_support():
     """测试所有格式支持"""
-    print("🧪 测试ML系统格式支持")
+    print("🧪 TestingML系统Format支持")
     print("=" * 60)
     
     router = ModelRouter()
@@ -34,7 +34,7 @@ def test_format_support():
     # 测试所有图像格式
     formats = ["webp", "avif", "jxl", "png", "jpeg", "gif", "bmp", "tiff"]
     
-    print("\n📷 Images格式预测测试:")
+    print("\n📷 ImagesFormatPredictionTesting:")
     print("-" * 60)
     
     results = {}
@@ -60,14 +60,14 @@ def test_format_support():
             print(f"  {fmt:8s}: ❌ {e}")
     
     # 测试同格式优化
-    print("\n🔄 同格式优化预测测试:")
+    print("\n🔄 同FormatOptimizationPredictionTesting:")
     print("-" * 60)
     
     same_format_tests = ["jpeg", "png", "webp"]
     for fmt in same_format_tests:
         try:
             prediction = router.predict("lightgbm", features, fmt, "balanced")
-            print(f"  {fmt}→{fmt}: ✅ Q={prediction.quality:2d} (优化)")
+            print(f"  {fmt}→{fmt}: ✅ Q={prediction.quality:2d} (Optimization)")
         except Exception as e:
             print(f"  {fmt}→{fmt}: ❌ {e}")
     
@@ -76,13 +76,13 @@ def test_format_support():
     success_count = sum(1 for r in results.values() if r.get("status") == "✅")
     total_count = len(results)
     
-    print(f"📊 测试结果: {success_count}/{total_count} 格式支持")
+    print(f"📊 TestingResult: {success_count}/{total_count} Format支持")
     
     if success_count == total_count:
-        print("✅ 所有格式ML预测正常工作!")
+        print("✅ 所有FormatMLPrediction正常工作!")
         return 0
     else:
-        print(f"⚠️  {total_count - success_count} 格式需要修复")
+        print(f"⚠️  {total_count - success_count} Format需要修复")
         return 1
 
 if __name__ == "__main__":

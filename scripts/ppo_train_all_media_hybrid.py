@@ -337,10 +337,10 @@ def main():
     print("=" * 60)
     
     # 检查依赖
-    print("\n🔍 检查依赖工具...")
+    print("\n🔍 Checking依赖工具...")
     if not check_dependencies():
         return 1
-    print("✅ 所有依赖工具已就绪")
+    print("✅ 所有依赖工具ready")
     
     data_dir = '/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data'
     
