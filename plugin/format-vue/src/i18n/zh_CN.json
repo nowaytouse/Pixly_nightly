@@ -201,6 +201,9 @@
     "allComplete": "✅ 全部完成！成功: {success}/{total}",
     "partialComplete": "⚠️ 部分完成！成功: {success}, 失败: {failed}",
     "allFailed": "❌ 全部失败！失败: {failed}/{total}",
-    "conversionComplete": "转换完成"
+    "conversionComplete": "转换完成",
+    "successCount": "成功: {success}/{total}",
+    "failedCount": "失败: {failed}",
+    "xmpMerged": "XMP已合并: {count}"
   }
 }

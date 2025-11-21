@@ -201,6 +201,9 @@
     "allComplete": "✅ All complete! Success: {success}/{total}",
     "partialComplete": "⚠️ Partial complete! Success: {success}, Failed: {failed}",
     "allFailed": "❌ All failed! Failed: {failed}/{total}",
-    "conversionComplete": "Conversion Complete"
+    "conversionComplete": "Conversion Complete",
+    "successCount": "Success: {success}/{total}",
+    "failedCount": "Failed: {failed}",
+    "xmpMerged": "XMP merged: {count}"
   }
 }

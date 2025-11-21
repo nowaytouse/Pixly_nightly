@@ -273,9 +273,9 @@ const startConversion = async () => {
     if (result.success) {
       // 🔥 显示详细的转换结果
       const summary = result.summary || {}
-      const successMsg = `✅ 转换完成！\n成功: ${summary.success || 0}/${summary.total || 0}` +
-                        (summary.failed > 0 ? `\n失败: ${summary.failed}` : '') +
-                        (summary.xmpMerged > 0 ? `\nXMP已合并: ${summary.xmpMerged}` : '')
+      const successMsg = `✅ ${t('log.conversionComplete')}\n${t('log.successCount', { success: summary.success || 0, total: summary.total || 0 })}` +
+                        (summary.failed > 0 ? `\n${t('log.failedCount', { failed: summary.failed })}` : '') +
+                        (summary.xmpMerged > 0 ? `\n${t('log.xmpMerged', { count: summary.xmpMerged })}` : '')
       
       // 🔍 添加完成总结日志
       addLog('─────────────────────────', 'info', '')
