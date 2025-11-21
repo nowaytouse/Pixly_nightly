@@ -224,12 +224,14 @@ const startConversion = async () => {
   
   // 🔍 添加开始日志
   if (conversionType.value === 'image') {
-    addLog(`开始处理 ${files.value.length} 个图像文件`, 'info', '🚀')
-    addLog(`输出格式: ${selectedFormat.value.toUpperCase()}`, 'info', '🎯')
-    addLog(`质量设置: ${quality.value}${lossless.value ? ' (无损)' : ''}`, 'info', '⚙️')
+    addLog(t('log.startProcessingImages', { count: files.value.length }), 'info', '🚀')
+    addLog(t('log.outputFormat', { format: selectedFormat.value.toUpperCase() }), 'info', '🎯')
+    addLog(lossless.value 
+      ? t('log.qualityLossless', { quality: quality.value })
+      : t('log.qualitySetting', { quality: quality.value }), 'info', '⚙️')
   } else {
-    addLog(`开始处理 ${files.value.length} 个视频文件`, 'info', '🚀')
-    addLog(`视频参数: ${JSON.stringify(videoParams.value)}`, 'info', '🎯')
+    addLog(t('log.startProcessingVideos', { count: files.value.length }), 'info', '🚀')
+    addLog(t('log.videoParams', { params: JSON.stringify(videoParams.value) }), 'info', '🎯')
   }
 
   logger.info(LOG_KEYS.CONVERT_START, 'Starting conversion', {
@@ -254,11 +256,11 @@ const startConversion = async () => {
       // 🔍 使用进度回调添加日志
       result = await convertImages(files.value, options, (index, total, fileName, status, error) => {
         if (status === 'processing') {
-          addLog(`[${index}/${total}] 处理: ${fileName}`, 'info', '⚙️')
+          addLog(t('log.processing', { current: index, total, file: fileName }), 'info', '⚙️')
         } else if (status === 'success') {
-          addLog(`  ✓ ${fileName}`, 'success', '')
+          addLog(t('log.success', { file: fileName }), 'success', '')
         } else if (status === 'error') {
-          addLog(`  ✗ ${fileName}: ${error}`, 'error', '')
+          addLog(t('log.error', { file: fileName, error }), 'error', '')
         }
       })
     } else {
@@ -278,11 +280,11 @@ const startConversion = async () => {
       // 🔍 添加完成总结日志
       addLog('─────────────────────────', 'info', '')
       if (summary.failed === 0) {
-        addLog(`✅ 全部完成！成功: ${summary.success}/${summary.total}`, 'success', '✅')
+        addLog(t('log.allComplete', { success: summary.success, total: summary.total }), 'success', '✅')
       } else if (summary.success > 0) {
-        addLog(`⚠️ 部分完成！成功: ${summary.success}, 失败: ${summary.failed}`, 'warning', '⚠️')
+        addLog(t('log.partialComplete', { success: summary.success, failed: summary.failed }), 'warning', '⚠️')
       } else {
-        addLog(`❌ 全部失败！失败: ${summary.failed}/${summary.total}`, 'error', '❌')
+        addLog(t('log.allFailed', { failed: summary.failed, total: summary.total }), 'error', '❌')
       }
       
       logger.info(LOG_KEYS.CONVERT_SUCCESS, 'Conversion completed', {
@@ -293,7 +295,7 @@ const startConversion = async () => {
       })
       
       // 🔥 显示 Toast 和 Eagle 通知
-      showToast('success', '转换完成', successMsg)
+      showToast('success', t('log.conversionComplete'), successMsg)
       showNotification(successMsg, 'success')
       
       // 🔥 删除已合并的 XMP 资源（从 Eagle 数据库）

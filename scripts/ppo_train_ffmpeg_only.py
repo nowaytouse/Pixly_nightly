@@ -16,7 +16,7 @@ import shutil
 def check_ffmpeg():
     """检查FFmpeg是否可用"""
     if not shutil.which('ffmpeg'):
-        print("❌ FFmpeg未安装")
+        print("❌ FFmpeg not installed")
         return False
     return True
 
@@ -229,7 +229,7 @@ def generate_training_data(media_files, sample_size=None, media_types=['image', 
             continue
         
         if not files:
-            print(f"\n⚠️  没有找到{type_name}文件，跳过")
+            print(f"\n⚠️  No{type_name}files found, skipping")
             continue
         
         if sample_size:
@@ -238,7 +238,7 @@ def generate_training_data(media_files, sample_size=None, media_types=['image', 
             sampled_files = files
         
         print(f"\n{'='*60}")
-        print(f"🎯 处理 {len(sampled_files)} 个{type_name}文件...")
+        print(f"🎯 Processing {len(sampled_files)} {type_name}files...")
         print(f"{'='*60}")
         
         for idx, file_path in enumerate(sampled_files, 1):
@@ -298,67 +298,67 @@ def save_training_data(training_data, output_file):
             'data': training_data
         }, f, indent=2)
     
-    print(f"\n💾 训练数据已保存: {output_path}")
-    print(f"   总样本数: {len(training_data)}")
-    print(f"   图像样本: {stats['image']}")
-    print(f"   视频样本: {stats['video']}")
-    print(f"   音频样本: {stats['audio']}")
+    print(f"\n💾 Training data saved: {output_path}")
+    print(f"   Total samples: {len(training_data)}")
+    print(f"   Image samples: {stats['image']}")
+    print(f"   Video samples: {stats['video']}")
+    print(f"   Audio samples: {stats['audio']}")
 
 def main():
     """主函数"""
     print("=" * 60)
-    print("🤖 PPO训练 - 纯FFmpeg方案")
+    print("🤖 PPO Training - Pure FFmpeg Solution")
     print("=" * 60)
     
     if not check_ffmpeg():
         return 1
     
-    print("✅ FFmpeg已就绪")
+    print("✅ FFmpeg ready")
     
     data_dir = '/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data'
     
-    print("\n📁 扫描媒体文件...")
+    print("\n📁 Scanning media files...")
     media_files = find_media_files(data_dir)
     
-    print(f"\n📊 文件统计:")
-    print(f"   图像: {len(media_files['images'])} 个")
-    print(f"   视频: {len(media_files['videos'])} 个")
-    print(f"   音频: {len(media_files['audio'])} 个")
-    print(f"   总计: {len(media_files['images']) + len(media_files['videos']) + len(media_files['audio'])} 个")
+    print(f"\n📊 File statistics:")
+    print(f"   Images: {len(media_files['images'])} ")
+    print(f"   Videos: {len(media_files['videos'])} ")
+    print(f"   Audio: {len(media_files['audio'])} ")
+    print(f"   Total: {len(media_files['images']) + len(media_files['videos']) + len(media_files['audio'])} ")
     
     # 步骤1: 小规模测试
     print("\n" + "=" * 60)
-    print("🧪 步骤1: 小规模测试 (每种类型2个文件)")
+    print("🧪 Step1: Small-scale test (per type2files)")
     print("=" * 60)
     
     test_data = generate_training_data(media_files, sample_size=2, media_types=['image', 'video', 'audio'])
     
     if len(test_data) == 0:
-        print("\n❌ 测试失败：没有生成训练数据")
+        print("\n❌ Test failed: No training data generated")
         return 1
     
-    print(f"\n✅ 小规模测试成功！生成了 {len(test_data)} 个训练样本")
+    print(f"\n✅ Small-scale test succeeded! Generated {len(test_data)} training samples")
     
     save_training_data(test_data, 'models/ppo_training_ffmpeg_test.json')
     
     # 步骤2: 全量训练
     print("\n" + "=" * 60)
-    print("🚀 步骤2: 全量训练")
+    print("🚀 Step2: Full training")
     print("=" * 60)
     
     # 自动继续全量训练
     response = 'y'
-    print("\n自动继续全量训练...")
+    print("\nAuto-continuing full training...")
     
     if response == 'y':
-        print("\n开始全量训练...")
+        print("\nStarting full training...")
         full_data = generate_training_data(media_files, sample_size=None, media_types=['image', 'video', 'audio'])
         
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         save_training_data(full_data, f'models/ppo_training_all_media_{timestamp}.json')
         
         print("\n" + "=" * 60)
-        print("🎉 训练完成！")
+        print("🎉 Training completed！")
         print("=" * 60)
         
         # 分类统计
@@ -366,30 +366,30 @@ def main():
         video_data = [d for d in full_data if d['media_type'] == 'video']
         audio_data = [d for d in full_data if d['media_type'] == 'audio']
         
-        print(f"\n📈 训练统计:")
-        print(f"   总样本数: {len(full_data)}")
+        print(f"\n📈 Training statistics:")
+        print(f"   Total samples: {len(full_data)}")
         
         if image_data:
-            print(f"\n   图像:")
-            print(f"     样本数: {len(image_data)}")
-            print(f"     平均压缩率: {sum(d['compression_ratio'] for d in image_data) / len(image_data):.2%}")
-            print(f"     平均奖励: {sum(d['reward'] for d in image_data) / len(image_data):.4f}")
+            print(f"\n   Images:")
+            print(f"     Samples: {len(image_data)}")
+            print(f"     Average compression ratio: {sum(d['compression_ratio'] for d in image_data) / len(image_data):.2%}")
+            print(f"     Average reward: {sum(d['reward'] for d in image_data) / len(image_data):.4f}")
         
         if video_data:
-            print(f"\n   视频:")
-            print(f"     样本数: {len(video_data)}")
-            print(f"     平均压缩率: {sum(d['compression_ratio'] for d in video_data) / len(video_data):.2%}")
-            print(f"     平均奖励: {sum(d['reward'] for d in video_data) / len(video_data):.4f}")
+            print(f"\n   Videos:")
+            print(f"     Samples: {len(video_data)}")
+            print(f"     Average compression ratio: {sum(d['compression_ratio'] for d in video_data) / len(video_data):.2%}")
+            print(f"     Average reward: {sum(d['reward'] for d in video_data) / len(video_data):.4f}")
         
         if audio_data:
-            print(f"\n   音频:")
-            print(f"     样本数: {len(audio_data)}")
-            print(f"     平均压缩率: {sum(d['compression_ratio'] for d in audio_data) / len(audio_data):.2%}")
-            print(f"     平均奖励: {sum(d['reward'] for d in audio_data) / len(audio_data):.4f}")
+            print(f"\n   Audio:")
+            print(f"     Samples: {len(audio_data)}")
+            print(f"     Average compression ratio: {sum(d['compression_ratio'] for d in audio_data) / len(audio_data):.2%}")
+            print(f"     Average reward: {sum(d['reward'] for d in audio_data) / len(audio_data):.4f}")
         
         return 0
     else:
-        print("\n⏸️  全量训练已取消")
+        print("\n⏸️  Full training cancelled")
         return 0
 
 if __name__ == '__main__':

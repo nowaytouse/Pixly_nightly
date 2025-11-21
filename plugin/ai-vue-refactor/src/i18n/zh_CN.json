@@ -118,7 +118,18 @@
   },
   "log": {
     "aiLog": "🔍 AI日志",
-    "features": "📋 功能说明"
+    "features": "📋 功能说明",
+    "startProcessing": "开始处理 {count} 个文件",
+    "optimizeMode": "优化模式: {mode}",
+    "fileInfo": "文件: {name} ({size})",
+    "dimensions": "尺寸: {width}×{height}",
+    "processing": "[{current}/{total}] 处理: {file}",
+    "success": "✓ {file}",
+    "error": "✗ {file}: {error}",
+    "allComplete": "✅ 全部完成！成功: {success}/{total}",
+    "partialComplete": "⚠️ 部分完成！成功: {success}, 失败: {failed}",
+    "allFailed": "❌ 全部失败！失败: {failed}/{total}",
+    "compression": "压缩: {input} → {output} ({ratio}%)"
   },
   "image": {
     "title": "🖼️ 图像选项",

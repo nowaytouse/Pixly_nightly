@@ -188,6 +188,19 @@
   "log": {
     "aiLog": "🔍 处理日志",
     "features": "🛠️ 快捷工具",
-    "waiting": "等待处理..."
+    "waiting": "等待处理...",
+    "startProcessingImages": "开始处理 {count} 个图像文件",
+    "startProcessingVideos": "开始处理 {count} 个视频文件",
+    "outputFormat": "输出格式: {format}",
+    "qualitySetting": "质量设置: {quality}",
+    "qualityLossless": "质量设置: {quality} (无损)",
+    "videoParams": "视频参数: {params}",
+    "processing": "[{current}/{total}] 处理: {file}",
+    "success": "✓ {file}",
+    "error": "✗ {file}: {error}",
+    "allComplete": "✅ 全部完成！成功: {success}/{total}",
+    "partialComplete": "⚠️ 部分完成！成功: {success}, 失败: {failed}",
+    "allFailed": "❌ 全部失败！失败: {failed}/{total}",
+    "conversionComplete": "转换完成"
   }
 }

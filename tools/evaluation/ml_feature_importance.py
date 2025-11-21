@@ -37,7 +37,7 @@ def load_training_data(data_path: str = "models/training_data_final.json") -> tu
     y_quality = np.array([sample['quality'] for sample in data])
     y_effort = np.array([sample['effort'] for sample in data])
     
-    print(f"  ✅ 加载 {len(X)} 个样本, 128维特征")
+    print(f"  ✅ 加载 {len(X)} 样本, 128维特征")
     return X, y_quality, y_effort
 
 def analyze_lightgbm_importance(X: np.ndarray, y: np.ndarray, 
@@ -252,7 +252,7 @@ def main():
     print("\n" + "=" * 70)
     print("✅ 特征重要性分析完成")
     print("=" * 70)
-    print("\n📊 生成的文件:")
+    print("\n📊 生成的files:")
     print("  - models/feature_importance_quality.json")
     print("  - models/feature_importance_quality.png")
     print("  - models/feature_importance_effort.json")

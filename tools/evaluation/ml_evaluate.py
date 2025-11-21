@@ -34,7 +34,7 @@ def load_test_data(data_path: str = "models/training_data_final.json") -> List[D
     
     data_file = Path(data_path)
     if not data_file.exists():
-        print(f"  ❌ 文件不存在: {data_path}")
+        print(f"  ❌ files不存在: {data_path}")
         return []
     
     with open(data_file, 'r') as f:
@@ -44,7 +44,7 @@ def load_test_data(data_path: str = "models/training_data_final.json") -> List[D
     test_size = len(data) // 5
     test_data = data[-test_size:]
     
-    print(f"  ✅ 加载 {len(test_data)} 个测试样本")
+    print(f"  ✅ 加载 {len(test_data)} 测试样本")
     return test_data
 
 def evaluate_model(
@@ -127,7 +127,7 @@ def evaluate_model(
     
     # 打印结果
     print(f"\n  📊 评估结果:")
-    print(f"     样本数: {metrics.total_samples}")
+    print(f"     Samples: {metrics.total_samples}")
     print(f"     Quality MAE: {metrics.mae_quality:.2f}")
     print(f"     Quality准确率: {metrics.accuracy_quality:.1%} (±5)")
     print(f"     Effort MAE: {metrics.mae_effort:.2f}")

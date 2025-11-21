@@ -47,16 +47,16 @@ def collect_training_data_with_real_features():
                 break
     
     if len(image_files) == 0:
-        print("❌ 未找到测试图像")
+        print("❌ 未找到测试Images")
         return None
     
-    print(f"✅ 找到 {len(image_files)} 个图像文件")
+    print(f"✅ 找到 {len(image_files)} Imagesfiles")
     print()
     
     training_samples = []
     
     for i, img_file in enumerate(image_files[:50], 1):  # 限制50个样本
-        print(f"[{i}/{min(50, len(image_files))}] 处理: {img_file.name}")
+        print(f"[{i}/{min(50, len(image_files))}] Processing: {img_file.name}")
         
         try:
             # 🔥 调用Rust CLI提取真实特征
@@ -130,14 +130,14 @@ def collect_training_data_with_real_features():
                     else:
                         print(f"   ⚠️  转换失败 Q{quality}E{effort}")
             
-            print(f"   ✅ 收集了 {len([s for s in training_samples if s['file_path'] == str(img_file)])} 个样本")
+            print(f"   ✅ 收集了 {len([s for s in training_samples if s['file_path'] == str(img_file)])} 样本")
             
         except Exception as e:
-            print(f"   ⚠️  处理失败: {e}")
+            print(f"   ⚠️  Processing失败: {e}")
             continue
     
     print()
-    print(f"✅ 收集完成: {len(training_samples)} 个样本")
+    print(f"✅ 收集完成: {len(training_samples)} 样本")
     
     return training_samples
 
@@ -165,7 +165,7 @@ def train_lightgbm_with_real_features(training_data):
     
     print(f"📊 数据集大小: {X.shape}")
     print(f"   特征维度: {X.shape[1]}")
-    print(f"   样本数量: {X.shape[0]}")
+    print(f"   Samples量: {X.shape[0]}")
     print()
     
     # 标准化特征
@@ -285,7 +285,7 @@ def main():
     if success:
         print()
         print("=" * 50)
-        print("🎉 训练完成！")
+        print("🎉 Training completed！")
         print()
         print("📊 下一步:")
         print("   1. 更新Python ML Bridge使用新模型")

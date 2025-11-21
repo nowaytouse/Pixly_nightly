@@ -188,6 +188,19 @@
   "log": {
     "aiLog": "🔍 Processing Log",
     "features": "🛠️ Quick Tools",
-    "waiting": "Waiting for processing..."
+    "waiting": "Waiting for processing...",
+    "startProcessingImages": "Start processing {count} image files",
+    "startProcessingVideos": "Start processing {count} video files",
+    "outputFormat": "Output format: {format}",
+    "qualitySetting": "Quality setting: {quality}",
+    "qualityLossless": "Quality setting: {quality} (lossless)",
+    "videoParams": "Video params: {params}",
+    "processing": "[{current}/{total}] Processing: {file}",
+    "success": "✓ {file}",
+    "error": "✗ {file}: {error}",
+    "allComplete": "✅ All complete! Success: {success}/{total}",
+    "partialComplete": "⚠️ Partial complete! Success: {success}, Failed: {failed}",
+    "allFailed": "❌ All failed! Failed: {failed}/{total}",
+    "conversionComplete": "Conversion Complete"
   }
 }

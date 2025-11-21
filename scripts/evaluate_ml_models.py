@@ -126,7 +126,7 @@ def main():
     results = load_model_results()
     
     if not results:
-        print("❌ 未找到评估结果文件")
+        print("❌ 未找到评估结果files")
         print("   请先运行: python3 scripts/test_ml_all_formats.py")
         return 1
     

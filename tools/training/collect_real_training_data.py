@@ -192,10 +192,10 @@ def collect_training_samples():
     image_files = find_test_images(max_count=50)
     
     if len(image_files) == 0:
-        print("❌ 未找到测试图像")
+        print("❌ 未找到测试Images")
         return []
     
-    print(f"✅ 找到 {len(image_files)} 个图像文件")
+    print(f"✅ 找到 {len(image_files)} Imagesfiles")
     print()
     
     # 参数组合
@@ -208,13 +208,13 @@ def collect_training_samples():
     current = 0
     
     print(f"📊 计划执行 {total_conversions} 次转换")
-    print(f"   图像: {len(image_files)}")
+    print(f"   Images: {len(image_files)}")
     print(f"   格式: {len(formats)}")
     print(f"   质量: {len(qualities)}")
     print()
     
     for img_idx, img_file in enumerate(image_files, 1):
-        print(f"[{img_idx}/{len(image_files)}] 处理: {img_file.name}")
+        print(f"[{img_idx}/{len(image_files)}] Processing: {img_file.name}")
         
         # 提取特征（真实）
         features = extract_features_from_rust(img_file)
@@ -261,7 +261,7 @@ def collect_training_samples():
         
         print()
     
-    print(f"✅ 收集完成: {len(training_samples)} 个真实样本")
+    print(f"✅ 收集完成: {len(training_samples)} 真实样本")
     
     return training_samples
 
@@ -283,7 +283,7 @@ def save_training_data(samples):
             'samples': samples
         }, f, indent=2)
     
-    print(f"✅ 训练数据已保存: {output_file}")
+    print(f"✅ Training data saved: {output_file}")
     return True
 
 
@@ -298,7 +298,7 @@ def main():
     print("   - 需要输出128维特征向量")
     print()
     print("📋 当前实现:")
-    print("   - 查找测试图像: ✅")
+    print("   - 查找测试Images: ✅")
     print("   - 执行真实转换: ✅")
     print("   - 提取真实特征: ⏳ 需要Rust CLI支持")
     print()
@@ -323,7 +323,7 @@ def main():
         print("🎉 数据收集完成！")
         print()
         print(f"📊 统计:")
-        print(f"   样本数量: {len(samples)}")
+        print(f"   Samples量: {len(samples)}")
         print(f"   特征维度: 128")
         print()
         print("📋 下一步:")
@@ -354,12 +354,12 @@ def collect_training_data(output_file="data/training_samples/real_features.json"
     print("=" * 60)
     
     # 1. 查找测试图像
-    print(f"\n📦 Step 1: 查找测试图像 (最多{max_samples}个)...")
+    print(f"\n📦 Step 1: 查找测试Images (最多{max_samples})...")
     image_files = find_test_images(max_samples)
-    print(f"   找到 {len(image_files)} 个图像文件")
+    print(f"   找到 {len(image_files)} Imagesfiles")
     
     if len(image_files) == 0:
-        print("❌ 没有找到测试图像")
+        print("❌ No测试Images")
         return
     
     # 2. 收集训练样本
@@ -367,7 +367,7 @@ def collect_training_data(output_file="data/training_samples/real_features.json"
     training_samples = []
     
     for i, image_path in enumerate(image_files, 1):
-        print(f"   [{i}/{len(image_files)}] 处理: {image_path.name}")
+        print(f"   [{i}/{len(image_files)}] Processing: {image_path.name}")
         
         # 提取特征
         features = extract_features_from_rust(image_path)
@@ -390,7 +390,7 @@ def collect_training_data(output_file="data/training_samples/real_features.json"
         if len(training_samples) >= max_samples * 9:  # 每个图像9个样本
             break
     
-    print(f"   ✅ 收集了 {len(training_samples)} 个训练样本")
+    print(f"   ✅ 收集了 {len(training_samples)} training samples")
     
     # 3. 保存训练数据
     print(f"\n💾 Step 3: 保存训练数据...")
@@ -401,12 +401,12 @@ def collect_training_data(output_file="data/training_samples/real_features.json"
         json.dump(training_samples, f, indent=2)
     
     print(f"   ✅ 保存到: {output_path}")
-    print(f"   文件大小: {output_path.stat().st_size / 1024:.1f} KB")
+    print(f"   files大小: {output_path.stat().st_size / 1024:.1f} KB")
     
     print("\n" + "=" * 60)
     print("✅ 训练数据收集完成！")
     print(f"\n📊 统计:")
-    print(f"   图像数量: {len(image_files)}")
+    print(f"   Images数量: {len(image_files)}")
     print(f"   训练样本: {len(training_samples)}")
     print(f"   特征维度: 128")
 

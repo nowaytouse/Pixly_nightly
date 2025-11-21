@@ -34,7 +34,7 @@ def test_format_support():
     # 测试所有图像格式
     formats = ["webp", "avif", "jxl", "png", "jpeg", "gif", "bmp", "tiff"]
     
-    print("\n📷 图像格式预测测试:")
+    print("\n📷 Images格式预测测试:")
     print("-" * 60)
     
     results = {}
@@ -82,7 +82,7 @@ def test_format_support():
         print("✅ 所有格式ML预测正常工作!")
         return 0
     else:
-        print(f"⚠️  {total_count - success_count} 个格式需要修复")
+        print(f"⚠️  {total_count - success_count} 格式需要修复")
         return 1
 
 if __name__ == "__main__":

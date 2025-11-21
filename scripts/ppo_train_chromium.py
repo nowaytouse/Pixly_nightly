@@ -103,8 +103,8 @@ def generate_training_data(media_files, sample_size=None):
     else:
         sampled_files = image_files
     
-    print(f"\n🎯 处理 {len(sampled_files)} 个图像文件...")
-    print(f"   (视频和音频转换将在后续版本支持)")
+    print(f"\n🎯 Processing {len(sampled_files)} Imagesfiles...")
+    print(f"   (Videos和Audio转换将在后续版本支持)")
     
     for idx, file_path in enumerate(sampled_files, 1):
         file_ext = Path(file_path).suffix.lower()
@@ -115,7 +115,7 @@ def generate_training_data(media_files, sample_size=None):
         else:
             continue
         
-        print(f"[{idx}/{len(sampled_files)}] 处理: {Path(file_path).name}")
+        print(f"[{idx}/{len(sampled_files)}] Processing: {Path(file_path).name}")
         
         # 测试不同质量参数
         for quality in [70, 85, 95]:
@@ -159,8 +159,8 @@ def save_training_data(training_data, output_file):
             'data': training_data
         }, f, indent=2)
     
-    print(f"\n💾 训练数据已保存: {output_path}")
-    print(f"   样本数: {len(training_data)}")
+    print(f"\n💾 Training data saved: {output_path}")
+    print(f"   Samples: {len(training_data)}")
 
 def main():
     """主函数"""
@@ -171,56 +171,56 @@ def main():
     data_dir = '/Users/nyamiiko/Documents/GIT/chromium-main/media/test/data'
     
     # 查找所有媒体文件
-    print("\n📁 扫描媒体文件...")
+    print("\n📁 Scanning media files...")
     media_files = find_media_files(data_dir)
     
-    print(f"\n📊 文件统计:")
-    print(f"   图像: {len(media_files['images'])} 个")
-    print(f"   视频: {len(media_files['videos'])} 个")
-    print(f"   音频: {len(media_files['audio'])} 个")
-    print(f"   总计: {len(media_files['images']) + len(media_files['videos']) + len(media_files['audio'])} 个")
+    print(f"\n📊 File statistics:")
+    print(f"   Images: {len(media_files['images'])} ")
+    print(f"   Videos: {len(media_files['videos'])} ")
+    print(f"   Audio: {len(media_files['audio'])} ")
+    print(f"   Total: {len(media_files['images']) + len(media_files['videos']) + len(media_files['audio'])} ")
     
     # 询问是否进行小规模测试
     print("\n" + "=" * 60)
-    print("🧪 步骤1: 小规模测试 (5个文件)")
+    print("🧪 Step1: Small-scale test (5files)")
     print("=" * 60)
     
     test_data = generate_training_data(media_files, sample_size=5)
     
     if len(test_data) == 0:
-        print("\n❌ 测试失败：没有生成训练数据")
+        print("\n❌ Test failed: No training data generated")
         return 1
     
-    print(f"\n✅ 小规模测试成功！生成了 {len(test_data)} 个训练样本")
+    print(f"\n✅ Small-scale test succeeded! Generated {len(test_data)} training samples")
     
     # 保存测试数据
     save_training_data(test_data, 'models/ppo_training_test.json')
     
     # 询问是否继续全量训练
     print("\n" + "=" * 60)
-    print("🚀 步骤2: 全量训练")
+    print("🚀 Step2: Full training")
     print("=" * 60)
     
     response = input("\n是否继续全量训练？(y/n): ").strip().lower()
     
     if response == 'y':
-        print("\n开始全量训练...")
+        print("\nStarting full training...")
         full_data = generate_training_data(media_files, sample_size=None)
         
         # 保存完整训练数据
         save_training_data(full_data, 'models/ppo_training_chromium.json')
         
         print("\n" + "=" * 60)
-        print("🎉 训练完成！")
+        print("🎉 Training completed！")
         print("=" * 60)
-        print(f"\n📈 训练统计:")
-        print(f"   总样本数: {len(full_data)}")
-        print(f"   平均压缩率: {sum(d['compression_ratio'] for d in full_data) / len(full_data):.2%}")
-        print(f"   平均奖励: {sum(d['reward'] for d in full_data) / len(full_data):.4f}")
+        print(f"\n📈 Training statistics:")
+        print(f"   Total samples: {len(full_data)}")
+        print(f"   Average compression ratio: {sum(d['compression_ratio'] for d in full_data) / len(full_data):.2%}")
+        print(f"   Average reward: {sum(d['reward'] for d in full_data) / len(full_data):.4f}")
         
         return 0
     else:
-        print("\n⏸️  全量训练已取消")
+        print("\n⏸️  Full training cancelled")
         return 0
 
 if __name__ == '__main__':

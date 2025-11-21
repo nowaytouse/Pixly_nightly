@@ -37,7 +37,7 @@ def check_dependencies():
 
 def check_models():
     """检查模型文件"""
-    print("\n🤖 检查模型文件...")
+    print("\n🤖 检查模型files...")
     
     models_dir = Path("models")
     if not models_dir.exists():
@@ -46,7 +46,7 @@ def check_models():
     
     # 检查LightGBM模型
     lightgbm_models = list(models_dir.glob("lightgbm_*.txt"))
-    print(f"  📊 LightGBM模型: {len(lightgbm_models)}个")
+    print(f"  📊 LightGBM模型: {len(lightgbm_models)}")
     for model in lightgbm_models:
         size_kb = model.stat().st_size / 1024
         print(f"     - {model.name} ({size_kb:.1f} KB)")
@@ -55,7 +55,7 @@ def check_models():
     ppo_dir = models_dir / "ppo"
     if ppo_dir.exists():
         ppo_models = list(ppo_dir.glob("*.pth"))
-        print(f"  🎮 PPO模型: {len(ppo_models)}个")
+        print(f"  🎮 PPO模型: {len(ppo_models)}")
         for model in ppo_models[:5]:  # 只显示前5个
             size_kb = model.stat().st_size / 1024
             print(f"     - {model.name} ({size_kb:.1f} KB)")
