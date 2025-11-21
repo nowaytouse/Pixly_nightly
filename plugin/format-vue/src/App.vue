@@ -146,6 +146,7 @@ const files = ref([])
 // 🔍 日志系统
 const logs = ref([])
 const quickToolsRef = ref(null)
+let scrollTimer = null  // 🔥 性能优化：防抖滚动
 
 // 添加日志
 const addLog = (message, type = 'info', icon = '📝') => {
@@ -159,17 +160,26 @@ const addLog = (message, type = 'info', icon = '📝') => {
     type // info, success, warning, error
   })
   
-  // 自动滚动到底部
-  setTimeout(() => {
+  // 🔥 性能优化：防抖滚动，避免创建大量定时器
+  if (scrollTimer) {
+    clearTimeout(scrollTimer)
+  }
+  scrollTimer = setTimeout(() => {
     if (quickToolsRef.value) {
       quickToolsRef.value.scrollLogToBottom()
     }
-  }, 10)
+    scrollTimer = null
+  }, 50)  // 增加到50ms，减少滚动频率
 }
 
 // 清空日志
 const clearLogs = () => {
   logs.value = []
+  // 🔥 清理定时器
+  if (scrollTimer) {
+    clearTimeout(scrollTimer)
+    scrollTimer = null
+  }
 }
 
 // Toast状态

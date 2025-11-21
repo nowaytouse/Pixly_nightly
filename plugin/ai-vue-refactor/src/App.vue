@@ -428,6 +428,9 @@ const showAILog = ref(true) // 默认显示AI日志
 const aiLogs = ref([])
 const logContent = ref(null)
 
+// 🔍 日志系统性能优化
+let scrollTimer = null  // 防抖滚动定时器
+
 // 添加日志
 const addLog = (message, type = 'info', icon = '📝') => {
   const now = new Date()
@@ -440,17 +443,26 @@ const addLog = (message, type = 'info', icon = '📝') => {
     type // info, success, warning, error
   })
   
-  // 自动滚动到底部
-  setTimeout(() => {
+  // 🔥 性能优化：防抖滚动，避免创建大量定时器
+  if (scrollTimer) {
+    clearTimeout(scrollTimer)
+  }
+  scrollTimer = setTimeout(() => {
     if (logContent.value) {
       logContent.value.scrollTop = logContent.value.scrollHeight
     }
-  }, 10)
+    scrollTimer = null
+  }, 50)  // 增加到50ms，减少滚动频率
 }
 
 // 清空日志
 const clearLogs = () => {
   aiLogs.value = []
+  // 🔥 清理定时器
+  if (scrollTimer) {
+    clearTimeout(scrollTimer)
+    scrollTimer = null
+  }
 }
 
 const isVideoMode = computed(() => {
