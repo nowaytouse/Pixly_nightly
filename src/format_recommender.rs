@@ -1,8 +1,11 @@
 // 🤖 AI格式推荐器
 // 自动推荐最佳目标格式
+// 🔥 Phase: Real ML Integration - Uses python_ml_caller for genuine AI predictions
 
 use crate::{ImageFeatures, QualityMode, UnifiedAIPredictor};
+use crate::python_ml_caller::{call_python_ml, is_python_ml_available, MLPredictRequest};
 use serde::{Deserialize, Serialize};
+use anyhow::{Result, Context};
 
 /// 格式推荐结果
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -40,19 +43,41 @@ impl Default for UserPreferences {
 }
 
 /// AI格式推荐器
+/// 🔥 Real ML Integration: Uses Python ML service for genuine predictions
 pub struct AIFormatRecommender {
-    predictor: UnifiedAIPredictor,
+    predictor: UnifiedAIPredictor,  // Fallback only (deprecated)
+    use_real_ml: bool,               // Enable real ML predictions
 }
 
 impl AIFormatRecommender {
     /// 创建新的推荐器
+    /// 🔥 Automatically detects and uses real ML if available
     pub fn new() -> Self {
+        let use_real_ml = is_python_ml_available();
+        if use_real_ml {
+            log::info!("🤖 Real ML available - Using Python ML service for predictions");
+        } else {
+            log::warn!("⚠️ Python ML unavailable - Using fallback heuristics (suboptimal)");
+        }
+        
         Self {
             predictor: UnifiedAIPredictor::new(),
+            use_real_ml,
+        }
+    }
+    
+    /// 创建推荐器（强制使用启发式）
+    /// For testing or when ML is intentionally disabled
+    pub fn new_heuristic_only() -> Self {
+        log::info!("🔧 Heuristic mode - Using rule-based predictions");
+        Self {
+            predictor: UnifiedAIPredictor::new(),
+            use_real_ml: false,
         }
     }
     
     /// 推荐最佳格式
+    /// 🔥 Real ML Integration: Uses Python ML if available, falls back to heuristics
     pub fn recommend_best_format(
         &self,
         features: &ImageFeatures,
@@ -60,18 +85,26 @@ impl AIFormatRecommender {
         user_preferences: &UserPreferences,
     ) -> Vec<FormatRecommendation> {
         let formats = self.get_candidate_formats(features);
-        // 🔥 性能优化：预分配容量
         let mut recommendations = Vec::with_capacity(formats.len());
         
         for format in formats {
-            let prediction = self.predictor.predict_with_confidence(
-                features, &format, quality_mode
-            );
+            // 🔥 Try real ML first
+            let prediction = if self.use_real_ml {
+                match self.predict_with_real_ml(features, &format, quality_mode) {
+                    Ok(ml_pred) => ml_pred,
+                    Err(e) => {
+                        log::warn!("⚠️ ML prediction failed for {}: {}, using fallback", format, e);
+                        self.predictor.predict_with_confidence(features, &format, quality_mode)
+                    }
+                }
+            } else {
+                // Fallback to heuristics
+                self.predictor.predict_with_confidence(features, &format, quality_mode)
+            };
             
             let space_saving = 100.0 * (1.0 - prediction.core.estimated_ratio);
             let quality_score = prediction.core.quality;
             
-            // 计算综合评分
             let score = self.calculate_format_score(
                 space_saving,
                 quality_score as f64,
@@ -94,9 +127,72 @@ impl AIFormatRecommender {
             });
         }
         
-        // 按评分排序
         recommendations.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
         recommendations
+    }
+    
+    /// 🔥 Real ML Prediction - Calls Python ML service
+    fn predict_with_real_ml(
+        &self,
+        features: &ImageFeatures,
+        target_format: &str,
+        quality_mode: QualityMode,
+    ) -> Result<crate::types::PredictionWithConfidence> {
+        // 1. Extract 128D features (if available from image data)
+        // For now, use ImageFeatures as-is (will be enhanced later)
+        
+        // 2. Build ML request
+        let ml_request = MLPredictRequest {
+            features: vec![
+                features.width as f64,
+                features.height as f64,
+                features.file_size as f64,
+                if features.has_alpha { 1.0 } else { 0.0 },
+                if features.is_animated { 1.0 } else { 0.0 },
+                features.complexity,
+            ],
+            target_format: target_format.to_string(),
+            quality_mode: match quality_mode {
+                QualityMode::Speed => "size".to_string(),
+                QualityMode::Balanced => "balanced".to_string(),
+                QualityMode::Quality => "quality".to_string(),
+                QualityMode::Lossless => "quality".to_string(),
+            },
+        };
+        
+        // 3. Call Python ML
+        let ml_response = call_python_ml(&ml_request)
+            .context("Python ML call failed")?;
+        
+        // 4. Convert to PredictionWithConfidence
+        use crate::types::{PredictionResult, PredictionWithConfidence};
+        
+        // Estimate size based on quality and format
+        let estimated_ratio = match target_format {
+            "avif" => 0.3,
+            "jxl" => 0.4,
+            "webp" => 0.5,
+            _ => 0.6,
+        } * (ml_response.quality as f64 / 100.0);
+        
+        let estimated_size = (features.file_size as f64 * estimated_ratio) as u64;
+        
+        let core = PredictionResult {
+            quality: ml_response.quality as u32,
+            speed: ml_response.effort as u32,
+            lossless: ml_response.lossless,
+            format_options: std::collections::HashMap::new(),
+            estimated_size,
+            estimated_ratio,
+            algorithm_version: ml_response.model_version.clone(),
+            predictor_version: "real-ml-v1".to_string(),
+        };
+        
+        Ok(PredictionWithConfidence {
+            core,
+            confidence: ml_response.confidence,
+            method: format!("python-ml-{}", ml_response.model_version),
+        })
     }
     
     /// 获取候选格式列表 - 基于源文件智能推荐

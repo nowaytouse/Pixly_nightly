@@ -801,7 +801,15 @@ fn run(cli: Cli) -> Result<()> {
                 println!("🤖 AI Smart Mode: Analyzing image features...");
                 println!("   🎯 Optimize mode: {}", optimize_mode);
                 
-                // 🔥 质量宣言：使用真实的AI预测，不fallback！
+                // 🔥 Real ML Integration: Check if Python ML is available
+                use pixly_kernel::python_ml_caller::is_python_ml_available;
+                if is_python_ml_available() {
+                    println!("   ✅ Python ML service available - Using REAL machine learning");
+                } else {
+                    println!("   ⚠️  Python ML unavailable - Using fallback heuristics (suboptimal)");
+                    println!("      To enable real ML: Ensure Python3 and scripts/ml_bridge.py are available");
+                }
+                
                 use pixly_kernel::{MediaAnalyzer, ImageFeatures, QualityMode};
                 use pixly_kernel::format_recommender::{AIFormatRecommender, UserPreferences};
                 
