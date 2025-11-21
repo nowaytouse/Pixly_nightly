@@ -109,13 +109,15 @@ defineExpose({
   }
 })
 
+// 🔥 修复无限循环：只在localTools变化时emit，不监听props变化
 watch(localTools, (newVal) => {
   emit('update:modelValue', newVal)
 }, { deep: true })
 
-watch(() => props.modelValue, (newVal) => {
-  localTools.value = { ...newVal }
-}, { deep: true })
+// 🔥 移除会导致无限循环的watch
+// watch(() => props.modelValue, (newVal) => {
+//   localTools.value = { ...newVal }
+// }, { deep: true })
 </script>
 
 <style scoped>
