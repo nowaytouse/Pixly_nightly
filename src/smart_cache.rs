@@ -197,9 +197,17 @@ impl SmartCache {
             sorted.sort_by_key(|(_, e)| e.access_count);
             
             let to_remove_count = (entries.len() as f64 * 0.2) as usize; // 删除20%
-            for (key, entry) in sorted.iter().take(to_remove_count) {
-                let _ = fs::remove_file(&entry.cache_path);
-                entries.remove(key);
+            
+            // 🔥 先收集要删除的keys和paths，避免借用冲突
+            let to_remove: Vec<_> = sorted.iter()
+                .take(to_remove_count)
+                .map(|(key, entry)| (key.clone(), entry.cache_path.clone()))
+                .collect();
+            
+            // 然后删除文件和条目
+            for (key, cache_path) in to_remove {
+                let _ = fs::remove_file(&cache_path);
+                entries.remove(&key);
             }
         }
         
