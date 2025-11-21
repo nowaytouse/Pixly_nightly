@@ -16,8 +16,7 @@ from ml_bridge import ModelRouter, StandardFeatures, ModelType
 
 def check_dependencies():
     """检查Python依赖"""
-    print("📦 检查Python依赖...")
-    
+ print("📦 Checking Python dependencies...", file=sys.stderr)    
     deps = {
         'numpy': None,
         'torch': None,
@@ -37,17 +36,14 @@ def check_dependencies():
 
 def check_models():
     """检查模型文件"""
-    print("\n🤖 检查模型files...")
-    
+ print("\n🤖 modelfiles...", file=sys.stderr)    
     models_dir = Path("models")
     if not models_dir.exists():
-        print(f"  ❌ models目录不存在")
-        return False
+ print(f" ❌ models directory does not exist", file=sys.stderr)        return False
     
     # 检查LightGBM模型
     lightgbm_models = list(models_dir.glob("lightgbm_*.txt"))
-    print(f"  📊 LightGBM模型: {len(lightgbm_models)}")
-    for model in lightgbm_models:
+ print(f" 📊 LightGBM models: {len(lightgbm_models)}", file=sys.stderr)    for model in lightgbm_models:
         size_kb = model.stat().st_size / 1024
         print(f"     - {model.name} ({size_kb:.1f} KB)")
     
@@ -55,45 +51,39 @@ def check_models():
     ppo_dir = models_dir / "ppo"
     if ppo_dir.exists():
         ppo_models = list(ppo_dir.glob("*.pth"))
-        print(f"  🎮 PPO模型: {len(ppo_models)}")
-        for model in ppo_models[:5]:  # 只显示前5个
+        print(f"  🎮 PPO models: {len(ppo_models)}", file=sys.stderr)
+        for model in ppo_models[:5]:  # Show first 5 only
             size_kb = model.stat().st_size / 1024
-            print(f"     - {model.name} ({size_kb:.1f} KB)")
+            print(f"     - {model.name} ({size_kb:.1f} KB)", file=sys.stderr)
     else:
-        print(f"  ❌ PPO目录不存在")
+        print(f"  ❌ PPO directory does not exist", file=sys.stderr)
     
-    # 检查训练数据
+    # Check training data
     training_data = models_dir / "training_data_final.json"
     if training_data.exists():
         size_mb = training_data.stat().st_size / (1024 * 1024)
-        print(f"  📚 训练数据: {size_mb:.1f} MB")
-    else:
-        print(f"  ⚠️  训练数据不存在")
-    
+ print(f" 📚 Training data: {size_mb:.1f} MB", file=sys.stderr)    else:
+ print(f" ⚠️ Training data does not exist", file=sys.stderr)    
     return len(lightgbm_models) > 0 or (ppo_dir.exists() and len(list(ppo_dir.glob("*.pth"))) > 0)
 
 def check_model_router():
     """检查模型路由器"""
-    print("\n🔀 检查模型路由器...")
-    
+ print("\n🔀 Checking model router...", file=sys.stderr)    
     try:
         router = ModelRouter()
         available = router.available_models
         
-        print(f"  可用模型:")
-        for model_type, is_available in available.items():
+ print(f" model:", file=sys.stderr)        for model_type, is_available in available.items():
             status = "✅" if is_available else "❌"
             print(f"    {status} {model_type.value.upper()}")
         
         return any(available.values())
     except Exception as e:
-        print(f"  ❌ 路由器初始化失败: {e}")
-        return False
+ print(f" ❌ Router initialization failed: {e}", file=sys.stderr)        return False
 
 def test_prediction():
     """测试预测功能"""
-    print("\n🧪 测试预测功能...")
-    
+ print("\n🧪...", file=sys.stderr)    
     try:
         router = ModelRouter()
         
@@ -132,16 +122,14 @@ def test_prediction():
         return True
         
     except Exception as e:
-        print(f"  ❌ 预测测试失败: {e}")
-        import traceback
+ print(f" ❌: {e}", file=sys.stderr)        import traceback
         traceback.print_exc()
         return False
 
 def main():
     """主函数"""
     print("=" * 60)
-    print("🏥 Pixly ML系统健康检查")
-    print("=" * 60)
+ print("🏥 Pixly ML", file=sys.stderr)    print("=" * 60)
     
     results = {
         'dependencies': check_dependencies(),
@@ -151,8 +139,7 @@ def main():
     }
     
     print("\n" + "=" * 60)
-    print("📊 健康检查结果:")
-    print("=" * 60)
+ print("📊:", file=sys.stderr)    print("=" * 60)
     
     for check, passed in results.items():
         status = "✅ PASS" if passed else "❌ FAIL"
@@ -162,11 +149,9 @@ def main():
     
     print("\n" + "=" * 60)
     if all_passed:
-        print("✅ 所有检查通过！ML系统健康")
-        return 0
+ print("✅ All checks passed！ML", file=sys.stderr)        return 0
     else:
-        print("❌ 部分检查失败，请修复问题")
-        return 1
+ print("❌ ，", file=sys.stderr)        return 1
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -18,8 +18,7 @@ try:
     HAS_MATPLOTLIB = True
 except ImportError:
     HAS_MATPLOTLIB = False
-    print("⚠️  matplotlib未安装，将跳过绘图功能")
-
+ print("⚠️ matplotlibnot installed, skipping plotting functionality", file=sys.stderr)
 # 添加scripts目录到路径
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -27,8 +26,7 @@ from ml_bridge import StandardFeatures
 
 def load_training_data(data_path: str = "models/training_data_final.json") -> tuple:
     """加载训练数据"""
-    print(f"📂 加载训练数据: {data_path}")
-    
+ print(f"📂 Loading training data: {data_path}", file=sys.stderr)    
     with open(data_path, 'r') as f:
         data = json.load(f)
     
@@ -37,20 +35,17 @@ def load_training_data(data_path: str = "models/training_data_final.json") -> tu
     y_quality = np.array([sample['quality'] for sample in data])
     y_effort = np.array([sample['effort'] for sample in data])
     
-    print(f"  ✅ 加载 {len(X)} 样本, 128维特征")
-    return X, y_quality, y_effort
+ print(f" ✅ Loaded {len(X)} sample, 128dimensional features", file=sys.stderr)    return X, y_quality, y_effort
 
 def analyze_lightgbm_importance(X: np.ndarray, y: np.ndarray, 
                                 target_name: str = "quality") -> Dict:
     """使用LightGBM内置方法分析特征重要性"""
-    print(f"\n🌳 分析LightGBM特征重要性 ({target_name})...")
-    
+ print(f"\n🌳 Analyzing LightGBM feature importance ({target_name})...", file=sys.stderr)    
     try:
         import lightgbm as lgb
         
         # 训练模型
-        print("  训练模型...")
-        train_data = lgb.Dataset(X, label=y)
+ print(" Training model...", file=sys.stderr)        train_data = lgb.Dataset(X, label=y)
         params = {
             'objective': 'regression',
             'metric': 'mae',
@@ -70,8 +65,7 @@ def analyze_lightgbm_importance(X: np.ndarray, y: np.ndarray,
         # 排序
         indices = np.argsort(importance)[::-1]
         
-        print(f"\n  📊 Top 20 重要特征:")
-        for i in range(min(20, len(indices))):
+ print(f"\n 📊 Top 20 Important features:", file=sys.stderr)        for i in range(min(20, len(indices))):
             idx = indices[i]
             print(f"     {i+1:2d}. {feature_names[idx]:<40} {importance[idx]:>10.2f}")
         
@@ -82,8 +76,7 @@ def analyze_lightgbm_importance(X: np.ndarray, y: np.ndarray,
         }
         
     except Exception as e:
-        print(f"  ❌ 分析失败: {e}")
-        import traceback
+ print(f" ❌: {e}", file=sys.stderr)        import traceback
         traceback.print_exc()
         return None
 
@@ -138,8 +131,7 @@ def get_feature_names() -> List[str]:
 
 def analyze_feature_groups(importance: np.ndarray) -> Dict:
     """分析特征组的重要性"""
-    print(f"\n📦 分析特征组重要性...")
-    
+ print(f"\n📦 Analyzing feature group importance...", file=sys.stderr)    
     groups = {
         'basic': importance[0:16],
         'color': importance[16:32],
@@ -153,8 +145,7 @@ def analyze_feature_groups(importance: np.ndarray) -> Dict:
     group_importance = {name: np.sum(values) for name, values in groups.items()}
     total = sum(group_importance.values())
     
-    print(f"\n  特征组贡献:")
-    for name, value in sorted(group_importance.items(), key=lambda x: x[1], reverse=True):
+ print(f"\n Feature group contribution:", file=sys.stderr)    for name, value in sorted(group_importance.items(), key=lambda x: x[1], reverse=True):
         percentage = (value / total) * 100
         print(f"     {name:<12} {value:>10.2f} ({percentage:>5.1f}%)")
     
@@ -164,11 +155,9 @@ def plot_feature_importance(importance: np.ndarray, feature_names: List[str],
                            output_path: str, top_n: int = 30):
     """绘制特征重要性图"""
     if not HAS_MATPLOTLIB:
-        print(f"\n⏭️  跳过绘图 (matplotlib未安装)")
-        return
+ print(f"\n⏭️ (matplotlib)", file=sys.stderr)        return
     
-    print(f"\n📊 绘制特征重要性图...")
-    
+ print(f"\n📊 features...", file=sys.stderr)    
     try:
         # 选择top N特征
         indices = np.argsort(importance)[-top_n:]
@@ -182,25 +171,20 @@ def plot_feature_importance(importance: np.ndarray, feature_names: List[str],
         plt.savefig(output_path, dpi=150, bbox_inches='tight')
         plt.close()
         
-        print(f"  ✅ 图表已保存: {output_path}")
-        
+ print(f" ✅: {output_path}", file=sys.stderr)        
     except Exception as e:
-        print(f"  ⚠️  绘图失败: {e}")
-
+ print(f" ⚠️: {e}", file=sys.stderr)
 def save_analysis_results(results: Dict, output_path: str):
     """保存分析结果"""
-    print(f"\n💾 保存分析结果: {output_path}")
-    
+ print(f"\n💾: {output_path}", file=sys.stderr)    
     with open(output_path, 'w') as f:
         json.dump(results, f, indent=2)
     
-    print(f"  ✅ 结果已保存")
-
+ print(f" ✅ ", file=sys.stderr)
 def main():
     """主函数"""
     print("=" * 70)
-    print("🔍 Pixly ML特征重要性分析")
-    print("=" * 70)
+ print("🔍 Pixly MLfeatures", file=sys.stderr)    print("=" * 70)
     
     # 加载数据
     X, y_quality, y_effort = load_training_data()
@@ -250,10 +234,8 @@ def main():
         )
     
     print("\n" + "=" * 70)
-    print("✅ 特征重要性分析完成")
-    print("=" * 70)
-    print("\n📊 生成的files:")
-    print("  - models/feature_importance_quality.json")
+ print("✅ featuresAnalysis complete", file=sys.stderr)    print("=" * 70)
+ print("\n📊 files:", file=sys.stderr)    print("  - models/feature_importance_quality.json")
     print("  - models/feature_importance_quality.png")
     print("  - models/feature_importance_effort.json")
     print("  - models/feature_importance_effort.png")

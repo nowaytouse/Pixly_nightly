@@ -28,8 +28,7 @@ def collect_training_data_with_real_features():
     2. 记录实际转换结果
     3. 构建训练数据集
     """
-    print("🔬 收集真实特征训练数据")
-    print("=" * 50)
+ print("🔬 Collecting real feature training data", file=sys.stderr)    print("=" * 50)
     
     # 查找测试图像
     test_dirs = [
@@ -47,11 +46,9 @@ def collect_training_data_with_real_features():
                 break
     
     if len(image_files) == 0:
-        print("❌ 未找到测试Images")
-        return None
+ print("❌ Test images not found", file=sys.stderr)        return None
     
-    print(f"✅ 找到 {len(image_files)} Imagesfiles")
-    print()
+ print(f"✅ Found {len(image_files)} Imagesfiles", file=sys.stderr)    print()
     
     training_samples = []
     
@@ -64,8 +61,7 @@ def collect_training_data_with_real_features():
             rust_cli = project_root / "target" / "release" / "pixly-converter"
             
             if not rust_cli.exists():
-                print(f"   ⚠️  Rust CLI不存在: {rust_cli}")
-                continue
+ print(f" ⚠️ Rust CLI: {rust_cli}", file=sys.stderr)                continue
             
             # 调用analyze命令
             result = subprocess.run(
@@ -76,8 +72,7 @@ def collect_training_data_with_real_features():
             )
             
             if result.returncode != 0:
-                print(f"   ⚠️  分析失败: {result.stderr}")
-                continue
+ print(f" ⚠️: {result.stderr}", file=sys.stderr)                continue
             
             # 解析输出获取特征
             # 注意: 当前analyze命令可能不输出JSON，需要从文本解析
@@ -128,17 +123,13 @@ def collect_training_data_with_real_features():
                         # 清理输出文件
                         output_file.unlink()
                     else:
-                        print(f"   ⚠️  转换失败 Q{quality}E{effort}")
-            
-            print(f"   ✅ 收集了 {len([s for s in training_samples if s['file_path'] == str(img_file)])} 样本")
-            
+ print(f" ⚠️ Conversion failed Q{quality}E{effort}", file=sys.stderr)            
+ print(f" ✅ {len([s for s in training_samples if s['file_path'] == str(img_file)])} sample", file=sys.stderr)            
         except Exception as e:
-            print(f"   ⚠️  Processing失败: {e}")
-            continue
+ print(f" ⚠️ Processing: {e}", file=sys.stderr)            continue
     
     print()
-    print(f"✅ 收集完成: {len(training_samples)} 样本")
-    
+ print(f"✅ Collection complete: {len(training_samples)} sample", file=sys.stderr)    
     return training_samples
 
 
@@ -147,26 +138,21 @@ def train_lightgbm_with_real_features(training_data):
     使用真实特征训练LightGBM模型
     """
     print()
-    print("🤖 训练LightGBM模型（真实特征）")
-    print("=" * 50)
+ print("🤖 LightGBM models（features）", file=sys.stderr)    print("=" * 50)
     
     try:
         import lightgbm as lgb
         from sklearn.model_selection import train_test_split
         from sklearn.preprocessing import StandardScaler
     except ImportError:
-        print("❌ 缺少依赖: pip install lightgbm scikit-learn")
-        return False
+ print("❌: pip install lightgbm scikit-learn", file=sys.stderr)        return False
     
     # 准备数据
     X = np.array([s['features_128d'] for s in training_data])
     y_quality = np.array([s['actual_quality'] for s in training_data])
     y_effort = np.array([s['actual_effort'] for s in training_data])
     
-    print(f"📊 数据集大小: {X.shape}")
-    print(f"   特征维度: {X.shape[1]}")
-    print(f"   Samples量: {X.shape[0]}")
-    print()
+ print(f"📊 size: {X.shape}", file=sys.stderr) print(f" featuresdimensions: {X.shape[1]}", file=sys.stderr) print(f" Samples: {X.shape[0]}", file=sys.stderr)    print()
     
     # 标准化特征
     scaler = StandardScaler()
@@ -181,8 +167,7 @@ def train_lightgbm_with_real_features(training_data):
     )
     
     # 训练Quality模型
-    print("🎯 训练Quality预测模型...")
-    lgb_quality = lgb.LGBMRegressor(
+ print("🎯 Qualitymodel...", file=sys.stderr)    lgb_quality = lgb.LGBMRegressor(
         n_estimators=100,
         learning_rate=0.01,
         num_leaves=15,
@@ -202,8 +187,7 @@ def train_lightgbm_with_real_features(training_data):
     print()
     
     # 训练Effort模型
-    print("⚡ 训练Effort预测模型...")
-    lgb_effort = lgb.LGBMRegressor(
+ print("⚡ Effortmodel...", file=sys.stderr)    lgb_effort = lgb.LGBMRegressor(
         n_estimators=100,
         learning_rate=0.01,
         num_leaves=15,
@@ -250,8 +234,7 @@ def train_lightgbm_with_real_features(training_data):
     with open(models_dir / "lightgbm_config_128d.json", 'w') as f:
         json.dump(config, f, indent=2)
     
-    print("✅ 模型已保存:")
-    print(f"   - lightgbm_quality_128d.txt")
+ print("✅ model:", file=sys.stderr)    print(f"   - lightgbm_quality_128d.txt")
     print(f"   - lightgbm_effort_128d.txt")
     print(f"   - feature_scaler_128d.pkl")
     print(f"   - lightgbm_config_128d.json")
@@ -261,23 +244,16 @@ def train_lightgbm_with_real_features(training_data):
 
 def main():
     """主函数"""
-    print("🚀 使用真实特征训练LightGBM模型")
-    print("=" * 50)
+ print("🚀 featuresLightGBM models", file=sys.stderr)    print("=" * 50)
     print()
-    print("✅ 真实性原则: 使用真实转换数据")
-    print("   1. ✅ 调用Rust CLI提取特征")
-    print("   2. ✅ 执行实际转换收集结果")
-    print("   3. ✅ 构建真实训练数据集")
-    print()
-    print("⚠️  注意: 这将执行实际转换，需要时间")
-    print()
+ print("✅: ", file=sys.stderr) print(" 1. ✅ Rust CLIfeatures", file=sys.stderr) print(" 2. ✅ ", file=sys.stderr) print(" 3. ✅ Training data", file=sys.stderr)    print()
+ print("⚠️: ，", file=sys.stderr)    print()
     
     # 收集训练数据
     training_data = collect_training_data_with_real_features()
     
     if not training_data:
-        print("❌ 数据收集失败")
-        return 1
+ print("❌ ", file=sys.stderr)        return 1
     
     # 训练模型
     success = train_lightgbm_with_real_features(training_data)
@@ -287,15 +263,10 @@ def main():
         print("=" * 50)
         print("🎉 Training completed！")
         print()
-        print("📊 下一步:")
-        print("   1. 更新Python ML Bridge使用新模型")
-        print("   2. 验证预测准确性提升")
-        print("   3. 对比真实特征vs简化特征")
-        return 0
+ print("📊 Next steps:", file=sys.stderr) print(" 1. Python ML Bridgemodel", file=sys.stderr) print(" 2. Verify prediction accuracy", file=sys.stderr) print(" 3. Compare real features vs simplified features", file=sys.stderr)        return 0
     else:
         print()
-        print("❌ 训练失败")
-        return 1
+ print("❌ ", file=sys.stderr)        return 1
 
 
 if __name__ == "__main__":

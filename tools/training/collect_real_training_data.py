@@ -184,21 +184,21 @@ def collect_training_samples():
        - 记录实际结果
     3. 构建训练数据集
     """
-    print("🔬 收集真实训练数据")
-    print("=" * 60)
-    print()
+    print("🔬 Collecting real training data", file=sys.stderr)
+    print("=" * 60, file=sys.stderr)
+    print("", file=sys.stderr)
     
-    # 查找图像
+    # Find images
     image_files = find_test_images(max_count=50)
     
     if len(image_files) == 0:
-        print("❌ 未找到测试Images")
+        print("❌ Test images not found", file=sys.stderr)
         return []
     
-    print(f"✅ 找到 {len(image_files)} Imagesfiles")
-    print()
+    print(f"✅ Found {len(image_files)} image files", file=sys.stderr)
+    print("", file=sys.stderr)
     
-    # 参数组合
+    # Parameter combinations
     formats = ['avif', 'webp', 'jxl']
     qualities = [75, 85, 90, 95]
     efforts = [4, 6, 8]
@@ -207,20 +207,20 @@ def collect_training_samples():
     total_conversions = len(image_files) * len(formats) * len(qualities)
     current = 0
     
-    print(f"📊 计划执行 {total_conversions} 次转换")
-    print(f"   Images: {len(image_files)}")
-    print(f"   格式: {len(formats)}")
-    print(f"   质量: {len(qualities)}")
-    print()
+    print(f"📊 Plan to execute {total_conversions} conversions", file=sys.stderr)
+    print(f"   Images: {len(image_files)}", file=sys.stderr)
+    print(f"   Formats: {len(formats)}", file=sys.stderr)
+    print(f"   Qualities: {len(qualities)}", file=sys.stderr)
+    print("", file=sys.stderr)
     
     for img_idx, img_file in enumerate(image_files, 1):
-        print(f"[{img_idx}/{len(image_files)}] Processing: {img_file.name}")
+        print(f"[{img_idx}/{len(image_files)}] Processing: {img_file.name}", file=sys.stderr)
         
-        # 提取特征（真实）
+        # Extract features (real)
         features = extract_features_from_rust(img_file)
         
         if features is None:
-            print(f"   ⚠️  特征提取失败，跳过")
+            print(f"   ⚠️  Feature extraction failed, skipping", file=sys.stderr)
             continue
         
         # 对每种格式和质量组合进行转换
@@ -255,21 +255,21 @@ def collect_training_samples():
                         'timestamp': datetime.now().isoformat()
                     }
                     training_samples.append(sample)
-                    print(f"   ✅ {fmt} Q{quality}: {result_size} bytes, {proc_time:.2f}s")
+                    print(f"   ✅ {fmt} Q{quality}: {result_size} bytes, {proc_time:.2f}s", file=sys.stderr)
                 else:
-                    print(f"   ❌ {fmt} Q{quality}: 转换失败")
+                    print(f"   ❌ {fmt} Q{quality}: Conversion failed", file=sys.stderr)
         
-        print()
+        print("", file=sys.stderr)
     
-    print(f"✅ 收集完成: {len(training_samples)} 真实样本")
+    print(f"✅ Collection complete: {len(training_samples)} real samples", file=sys.stderr)
     
     return training_samples
 
 
 def save_training_data(samples):
-    """保存训练数据"""
+    """Save training data"""
     if len(samples) == 0:
-        print("❌ 没有样本可保存")
+        print("❌ No samples to save", file=sys.stderr)
         return False
     
     output_file = project_root / "data" / "training_samples" / f"real_features_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
@@ -283,53 +283,53 @@ def save_training_data(samples):
             'samples': samples
         }, f, indent=2)
     
-    print(f"✅ Training data saved: {output_file}")
+    print(f"✅ Training data saved: {output_file}", file=sys.stderr)
     return True
 
 
 def main():
-    """主函数"""
-    print("🚀 收集真实训练数据 - 使用Rust CLI")
-    print("=" * 60)
-    print()
-    print("⚠️  注意: 此脚本需要Rust CLI支持")
-    print("   当前限制:")
-    print("   - Rust CLI的analyze命令需要添加--json选项")
-    print("   - 需要输出128维特征向量")
-    print()
-    print("📋 当前实现:")
-    print("   - 查找测试Images: ✅")
-    print("   - 执行真实转换: ✅")
-    print("   - 提取真实特征: ⏳ 需要Rust CLI支持")
-    print()
+    """Main function"""
+    print("🚀 Collect Real Training Data - Using Rust CLI", file=sys.stderr)
+    print("=" * 60, file=sys.stderr)
+    print("", file=sys.stderr)
+    print("⚠️  Note: This script requires Rust CLI support", file=sys.stderr)
+    print("   Current limitations:", file=sys.stderr)
+    print("   - Rust CLI analyze command needs --json option", file=sys.stderr)
+    print("   - Need to output 128-dimensional feature vector", file=sys.stderr)
+    print("", file=sys.stderr)
+    print("📋 Current implementation:", file=sys.stderr)
+    print("   - Find test images: ✅", file=sys.stderr)
+    print("   - Execute real conversions: ✅", file=sys.stderr)
+    print("   - Extract real features: ⏳ Needs Rust CLI support", file=sys.stderr)
+    print("", file=sys.stderr)
     
     # 收集样本
     samples = collect_training_samples()
     
     if len(samples) == 0:
-        print()
-        print("❌ 未收集到样本")
-        print()
-        print("🔧 需要完成:")
-        print("   1. 在Rust CLI的analyze命令添加--json选项")
-        print("   2. 输出包含features_128d字段的JSON")
-        print("   3. 重新运行此脚本")
+        print("", file=sys.stderr)
+        print("❌ No samples collected", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("🔧 TODO:", file=sys.stderr)
+        print("   1. Add --json option to Rust CLI analyze command", file=sys.stderr)
+        print("   2. Output JSON with features_128d field", file=sys.stderr)
+        print("   3. Re-run this script", file=sys.stderr)
         return 1
     
-    # 保存数据
+    # Save data
     if save_training_data(samples):
-        print()
-        print("=" * 60)
-        print("🎉 数据收集完成！")
-        print()
-        print(f"📊 统计:")
-        print(f"   Samples量: {len(samples)}")
-        print(f"   特征维度: 128")
-        print()
-        print("📋 下一步:")
-        print("   1. 运行 train_lightgbm_v2.py 训练模型")
-        print("   2. 验证预测准确性")
-        print("   3. 对比真实特征vs简化特征")
+        print("", file=sys.stderr)
+        print("=" * 60, file=sys.stderr)
+        print("🎉 Data collection complete!", file=sys.stderr)
+        print("", file=sys.stderr)
+        print(f"📊 Statistics:", file=sys.stderr)
+        print(f"   Sample count: {len(samples)}", file=sys.stderr)
+        print(f"   Feature dimensions: 128", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("📋 Next steps:", file=sys.stderr)
+        print("   1. Run train_lightgbm_v2.py to train model", file=sys.stderr)
+        print("   2. Verify prediction accuracy", file=sys.stderr)
+        print("   3. Compare real features vs simplified features", file=sys.stderr)
         return 0
     else:
         return 1
@@ -350,31 +350,31 @@ def collect_training_data(output_file="data/training_samples/real_features.json"
     3. 执行实际转换，记录结果
     4. 保存训练样本
     """
-    print("🔬 收集真实训练数据")
-    print("=" * 60)
+    print("🔬 Collecting real training data", file=sys.stderr)
+    print("=" * 60, file=sys.stderr)
     
-    # 1. 查找测试图像
-    print(f"\n📦 Step 1: 查找测试Images (最多{max_samples})...")
+    # 1. Find test images
+    print(f"\n📦 Step 1: Find test images (max {max_samples})...", file=sys.stderr)
     image_files = find_test_images(max_samples)
-    print(f"   找到 {len(image_files)} Imagesfiles")
+    print(f"   Found {len(image_files)} image files", file=sys.stderr)
     
     if len(image_files) == 0:
-        print("❌ No测试Images")
+        print("❌ No test images", file=sys.stderr)
         return
     
-    # 2. 收集训练样本
-    print(f"\n🔄 Step 2: 提取特征并执行转换...")
+    # 2. Collect training samples
+    print(f"\n🔄 Step 2: Extract features and execute conversions...", file=sys.stderr)
     training_samples = []
     
     for i, image_path in enumerate(image_files, 1):
-        print(f"   [{i}/{len(image_files)}] Processing: {image_path.name}")
+        print(f"   [{i}/{len(image_files)}] Processing: {image_path.name}", file=sys.stderr)
         
-        # 提取特征
+        # Extract features
         features = extract_features_from_rust(image_path)
         if features is None:
             continue
         
-        # 执行转换（使用不同参数）
+        # Execute conversions (with different parameters)
         for quality in [70, 80, 90]:
             for effort in [3, 4, 5]:
                 sample = {
@@ -386,29 +386,29 @@ def collect_training_data(output_file="data/training_samples/real_features.json"
                 }
                 training_samples.append(sample)
         
-        # 限制样本数量
-        if len(training_samples) >= max_samples * 9:  # 每个图像9个样本
+        # Limit sample count
+        if len(training_samples) >= max_samples * 9:  # 9 samples per image
             break
     
-    print(f"   ✅ 收集了 {len(training_samples)} training samples")
+    print(f"   ✅ Collected {len(training_samples)} training samples", file=sys.stderr)
     
-    # 3. 保存训练数据
-    print(f"\n💾 Step 3: 保存训练数据...")
+    # 3. Save training data
+    print(f"\n💾 Step 3: Save training data...", file=sys.stderr)
     output_path = project_root / output_file
     output_path.parent.mkdir(parents=True, exist_ok=True)
     
     with open(output_path, 'w') as f:
         json.dump(training_samples, f, indent=2)
     
-    print(f"   ✅ 保存到: {output_path}")
-    print(f"   files大小: {output_path.stat().st_size / 1024:.1f} KB")
+    print(f"   ✅ Saved to: {output_path}", file=sys.stderr)
+    print(f"   File size: {output_path.stat().st_size / 1024:.1f} KB", file=sys.stderr)
     
-    print("\n" + "=" * 60)
-    print("✅ 训练数据收集完成！")
-    print(f"\n📊 统计:")
-    print(f"   Images数量: {len(image_files)}")
-    print(f"   训练样本: {len(training_samples)}")
-    print(f"   特征维度: 128")
+    print("\n" + "=" * 60, file=sys.stderr)
+    print("✅ Training data collection complete!", file=sys.stderr)
+    print(f"\n📊 Statistics:", file=sys.stderr)
+    print(f"   Image count: {len(image_files)}", file=sys.stderr)
+    print(f"   Training samples: {len(training_samples)}", file=sys.stderr)
+    print(f"   Feature dimensions: 128", file=sys.stderr)
 
 
 if __name__ == "__main__":
@@ -425,10 +425,10 @@ if __name__ == "__main__":
     try:
         collect_training_data(args.output, args.max_samples)
     except KeyboardInterrupt:
-        print("\n\n⚠️  用户中断")
+        print("\n\n⚠️  User interrupted", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ 错误: {e}")
+        print(f"\n❌ Error: {e}", file=sys.stderr)
         import traceback
         traceback.print_exc()
         sys.exit(1)

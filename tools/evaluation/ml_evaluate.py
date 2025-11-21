@@ -30,12 +30,10 @@ class EvaluationMetrics:
 
 def load_test_data(data_path: str = "models/training_data_final.json") -> List[Dict]:
     """加载测试数据"""
-    print(f"📂 加载测试数据: {data_path}")
-    
+ print(f"📂 Loading test data: {data_path}", file=sys.stderr)    
     data_file = Path(data_path)
     if not data_file.exists():
-        print(f"  ❌ files不存在: {data_path}")
-        return []
+ print(f" ❌ files: {data_path}", file=sys.stderr)        return []
     
     with open(data_file, 'r') as f:
         data = json.load(f)
@@ -44,8 +42,7 @@ def load_test_data(data_path: str = "models/training_data_final.json") -> List[D
     test_size = len(data) // 5
     test_data = data[-test_size:]
     
-    print(f"  ✅ 加载 {len(test_data)} 测试样本")
-    return test_data
+ print(f" ✅ Loaded {len(test_data)} test samples", file=sys.stderr)    return test_data
 
 def evaluate_model(
     router: ModelRouter,
@@ -55,8 +52,7 @@ def evaluate_model(
 ) -> EvaluationMetrics:
     """评估单个模型"""
     
-    print(f"\n🧪 评估 {model_type.value.upper()} 模型...")
-    
+ print(f"\n🧪 Evaluating {model_type.value.upper()} model...", file=sys.stderr)    
     errors_quality = []
     errors_effort = []
     correct_quality = 0
@@ -69,8 +65,7 @@ def evaluate_model(
     
     for i, sample in enumerate(samples):
         if (i + 1) % 20 == 0:
-            print(f"  进度: {i+1}/{len(samples)}")
-        
+ print(f" Progress: {i+1}/{len(samples)}", file=sys.stderr)        
         try:
             # 提取特征
             features = StandardFeatures.from_vector(np.array(sample['features']))
@@ -107,13 +102,11 @@ def evaluate_model(
             inference_times.append(inference_time)
             
         except Exception as e:
-            print(f"  ⚠️  样本 {i} 预测失败: {e}")
-            continue
+ print(f" ⚠️ sample {i} prediction failed: {e}", file=sys.stderr)            continue
     
     # 计算指标
     if not errors_quality:
-        print(f"  ❌ 没有成功的预测")
-        return None
+ print(f" ❌ No successful predictions", file=sys.stderr)        return None
     
     metrics = EvaluationMetrics(
         mae_quality=np.mean(errors_quality),
@@ -126,26 +119,19 @@ def evaluate_model(
     )
     
     # 打印结果
-    print(f"\n  📊 评估结果:")
-    print(f"     Samples: {metrics.total_samples}")
+ print(f"\n 📊 evaluation results:", file=sys.stderr)    print(f"     Samples: {metrics.total_samples}")
     print(f"     Quality MAE: {metrics.mae_quality:.2f}")
-    print(f"     Quality准确率: {metrics.accuracy_quality:.1%} (±5)")
-    print(f"     Effort MAE: {metrics.mae_effort:.2f}")
-    print(f"     Effort准确率: {metrics.accuracy_effort:.1%} (±1)")
-    print(f"     平均置信度: {metrics.avg_confidence:.1%}")
-    print(f"     推理时间: {metrics.inference_time_ms:.2f}ms")
-    
+ print(f" Qualityaccuracy: {metrics.accuracy_quality:.1%} (±5)", file=sys.stderr)    print(f"     Effort MAE: {metrics.mae_effort:.2f}")
+ print(f" Effortaccuracy: {metrics.accuracy_effort:.1%} (±1)", file=sys.stderr) print(f" Average confidence: {metrics.avg_confidence:.1%}", file=sys.stderr) print(f" Inference time: {metrics.inference_time_ms:.2f}ms", file=sys.stderr)    
     return metrics
 
 def compare_models(results: Dict[ModelType, EvaluationMetrics]):
     """对比模型性能"""
     print("\n" + "=" * 70)
-    print("📊 模型性能对比")
-    print("=" * 70)
+ print("📊 Model performance comparison", file=sys.stderr)    print("=" * 70)
     
     # 表头
-    print(f"\n{'模型':<15} {'Quality MAE':<15} {'Effort MAE':<15} {'推理时间':<15}")
-    print("-" * 70)
+ print(f"\n{'model':<15} {'Quality MAE':<15} {'Effort MAE':<15} {'Inference time':<15}", file=sys.stderr)    print("-" * 70)
     
     # 数据行
     for model_type, metrics in results.items():
@@ -158,41 +144,35 @@ def compare_models(results: Dict[ModelType, EvaluationMetrics]):
     
     # 找出最佳模型
     print("\n" + "=" * 70)
-    print("🏆 最佳模型:")
-    print("=" * 70)
+ print("🏆 Bestmodel:", file=sys.stderr)    print("=" * 70)
     
     # 最低Quality MAE
     best_quality = min(results.items(), 
                       key=lambda x: x[1].mae_quality if x[1] else float('inf'))
     if best_quality[1]:
-        print(f"  Quality预测: {best_quality[0].value.upper()} "
-              f"(MAE={best_quality[1].mae_quality:.2f})")
+ print(f" Quality: {best_quality[0].value.upper()} "               f"(MAE={best_quality[1].mae_quality:.2f})")
     
     # 最低Effort MAE
     best_effort = min(results.items(),
                      key=lambda x: x[1].mae_effort if x[1] else float('inf'))
     if best_effort[1]:
-        print(f"  Effort预测: {best_effort[0].value.upper()} "
-              f"(MAE={best_effort[1].mae_effort:.2f})")
+ print(f" Effort: {best_effort[0].value.upper()} "               f"(MAE={best_effort[1].mae_effort:.2f})")
     
     # 最快推理
     best_speed = min(results.items(),
                     key=lambda x: x[1].inference_time_ms if x[1] else float('inf'))
     if best_speed[1]:
-        print(f"  推理速度: {best_speed[0].value.upper()} "
-              f"({best_speed[1].inference_time_ms:.2f}ms)")
+ print(f": {best_speed[0].value.upper()} "               f"({best_speed[1].inference_time_ms:.2f}ms)")
     
     # 最高置信度
     best_confidence = max(results.items(),
                          key=lambda x: x[1].avg_confidence if x[1] else 0)
     if best_confidence[1]:
-        print(f"  置信度: {best_confidence[0].value.upper()} "
-              f"({best_confidence[1].avg_confidence:.1%})")
+ print(f": {best_confidence[0].value.upper()} "               f"({best_confidence[1].avg_confidence:.1%})")
 
 def save_results(results: Dict[ModelType, EvaluationMetrics], output_path: str):
     """保存评估结果"""
-    print(f"\n💾 保存结果到: {output_path}")
-    
+ print(f"\n💾: {output_path}", file=sys.stderr)    
     output_data = {
         'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
         'models': {}
@@ -215,19 +195,16 @@ def save_results(results: Dict[ModelType, EvaluationMetrics], output_path: str):
     with open(output_path, 'w') as f:
         json.dump(output_data, f, indent=2)
     
-    print(f"  ✅ 结果已保存")
-
+ print(f" ✅ ", file=sys.stderr)
 def main():
     """主函数"""
     print("=" * 70)
-    print("📊 Pixly ML模型评估")
-    print("=" * 70)
+ print("📊 Pixly MLmodelEvaluating", file=sys.stderr)    print("=" * 70)
     
     # 加载测试数据
     test_data = load_test_data()
     if not test_data:
-        print("❌ 无法加载测试数据")
-        return 1
+ print("❌ Loading test data", file=sys.stderr)        return 1
     
     # 初始化路由器
     router = ModelRouter()
@@ -236,15 +213,13 @@ def main():
     results = {}
     for model_type, is_available in router.available_models.items():
         if not is_available:
-            print(f"\n⏭️  跳过 {model_type.value.upper()} (不可用)")
-            continue
+ print(f"\n⏭️ {model_type.value.upper()} ()", file=sys.stderr)            continue
         
         try:
             metrics = evaluate_model(router, model_type, test_data, max_samples=100)
             results[model_type] = metrics
         except Exception as e:
-            print(f"\n❌ {model_type.value.upper()} 评估失败: {e}")
-            import traceback
+ print(f"\n❌ {model_type.value.upper()} Evaluating: {e}", file=sys.stderr)            import traceback
             traceback.print_exc()
             results[model_type] = None
     
@@ -257,8 +232,7 @@ def main():
     save_results(results, output_path)
     
     print("\n" + "=" * 70)
-    print("✅ 评估完成")
-    print("=" * 70)
+ print("✅ Evaluating", file=sys.stderr)    print("=" * 70)
     
     return 0
 
