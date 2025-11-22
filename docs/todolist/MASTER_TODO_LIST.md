@@ -420,3 +420,225 @@
 - [x] **MF-003** 视觉质量评分器 ✅ **2025-11-20完成** (8h)
 - [x] **MF-004** 高级特征提取器 ✅ **已完成** (6h)
 - [x] **MF-005** ML预测器套件 ✅ **2025-11-20完成** (实际3h)
+
+---
+
+## 🎯 **第四阶段: 参考项目最佳实践集成** (2025-11-22 新增)
+
+**参考来源**: `@reference/` 目录中的优秀开源项目
+- Rimage - Rust图像优化工具
+- Pio - 感知图像优化器 (SSIM自动优化)
+- Symphonia - 纯Rust音频库 (模块化设计)
+- Squoosh - Google图像压缩工具
+
+**详细分析**: 见 `docs/REFERENCE_BASED_IMPROVEMENTS.md`
+
+### 🔴 高优先级 - 立即实施
+
+#### **REF-001** SSIM质量自动优化 (借鉴Pio) - 2-3天
+**状态**: ❌ 未开始  
+**优先级**: 🔴 P0 (最高影响力)  
+**预期效果**: 
+- 自动找到最优质量参数
+- 减少文件大小10-30% (相同感知质量)
+- 用户无需手动调整质量
+
+**实施内容**:
+- [ ] 创建 `src/ssim_optimizer.rs` 模块
+- [ ] 实现二分搜索算法找最优质量
+- [ ] 集成到CLI: `--target-ssim 0.95`
+- [ ] 添加质量映射表 (0-100 → SSIM值)
+- [ ] 单元测试: SSIM计算准确性
+- [ ] 集成测试: 端到端质量优化
+
+**技术方案**:
+```rust
+pub struct SSIMOptimizer {
+    target_ssim: f64,
+    min_quality: u8,
+    max_quality: u8,
+}
+
+impl SSIMOptimizer {
+    pub fn find_optimal_quality(
+        &self,
+        original: &DynamicImage,
+        format: &str,
+    ) -> Result<OptimalParams> {
+        // 二分搜索最优质量
+        // 使用dssim-core库计算SSIM
+    }
+}
+```
+
+---
+
+#### **REF-002** 模块化编解码器架构 (借鉴Rimage + Symphonia) - 3-4天
+**状态**: ❌ 未开始  
+**优先级**: 🔴 P0 (架构改进)  
+**预期效果**:
+- 统一的编解码器接口
+- 易于添加新格式支持
+- 更好的代码组织和维护性
+
+**实施内容**:
+- [ ] 创建 `src/codecs/` 目录结构
+- [ ] 定义 `Encoder` trait接口
+- [ ] 实现各编解码器 (AVIF/JXL/WebP/PNG/JPEG)
+- [ ] 创建编解码器注册表
+- [ ] 迁移现有编码逻辑
+- [ ] 保持向后兼容
+
+**目录结构**:
+```
+src/codecs/
+├── mod.rs          # Encoder trait定义
+├── avif.rs         # AVIF编码器
+├── jxl.rs          # JXL编码器
+├── webp.rs         # WebP编码器
+├── png.rs          # PNG编码器
+├── jpeg.rs         # JPEG编码器
+└── registry.rs     # 编解码器注册表
+```
+
+---
+
+#### **REF-003** 预处理流水线优化 (借鉴Rimage) - 2-3天
+**状态**: ❌ 未开始  
+**优先级**: 🔴 P0 (功能增强)  
+**预期效果**:
+- 可配置的预处理顺序
+- ICC配置文件处理
+- Alpha预乘支持
+
+**实施内容**:
+- [ ] 增强 `Operation` trait
+- [ ] 实现ICC配置文件转换 (使用lcms2)
+- [ ] 实现Alpha预乘操作
+- [ ] 支持自定义流水线顺序
+- [ ] CLI集成: `--icc-profile srgb --alpha-premultiply`
+
+---
+
+### 🟡 中优先级 - 近期实施
+
+#### **REF-004** 性能基准测试框架 (借鉴Symphonia) - 2天
+**状态**: ❌ 未开始  
+**优先级**: 🟡 P1  
+**预期效果**:
+- 与FFmpeg/ImageMagick对比
+- 透明的性能数据
+- 持续性能监控
+
+**实施内容**:
+- [ ] 创建 `benches/comparative_benchmark.rs`
+- [ ] 对比Pixly vs FFmpeg vs ImageMagick
+- [ ] 生成性能报告 (Markdown表格)
+- [ ] 集成到CI/CD
+
+---
+
+#### **REF-005** Feature Flags细粒度控制 (借鉴Rimage) - 1天
+**状态**: ❌ 未开始  
+**优先级**: 🟡 P1  
+**预期效果**:
+- 默认构建: ~15MB → ~8MB (-47%)
+- 最小构建: ~15MB → ~3MB (-80%)
+- 编译时间: 5min → 2min (-60%)
+
+**实施内容**:
+- [ ] 重构 `Cargo.toml` feature flags
+- [ ] 分离编解码器依赖
+- [ ] 分离操作依赖 (resize/quantization)
+- [ ] 创建预设配置 (default/minimal/all)
+
+**Feature配置**:
+```toml
+[features]
+default = ["avif", "jxl", "webp", "resize", "validation"]
+minimal = ["webp", "resize"]
+all = ["avif", "jxl", "webp", "png", "jpeg", "resize", "quantization", "validation", "simd"]
+```
+
+---
+
+#### **REF-006** 自适应质量预设系统 (借鉴Pio) - 2天
+**状态**: ❌ 未开始  
+**优先级**: 🟡 P1  
+**预期效果**:
+- 根据图像复杂度自动调整质量
+- 简单图像降低质量，复杂图像提高质量
+- 更智能的参数推荐
+
+**实施内容**:
+- [ ] 增强 `src/quality_presets.rs`
+- [ ] 实现图像复杂度分析
+- [ ] 实现自适应质量计算
+- [ ] 添加预设: web-optimized/high-quality/fast-preview
+
+**技术方案**:
+```rust
+pub struct AdaptivePreset {
+    base_quality: u8,
+    complexity_adjustment: bool,
+}
+
+fn analyze_complexity(image: &DynamicImage) -> Complexity {
+    // 计算边缘密度
+    // 计算颜色多样性
+    // 综合评分
+}
+```
+
+---
+
+### 🟢 低优先级 - 长期规划
+
+#### **REF-007** 音频支持增强 (借鉴Symphonia) - 1-2周
+**状态**: ❌ 未开始  
+**优先级**: 🟢 P2  
+**实施内容**:
+- [ ] 集成Symphonia用于音频解码
+- [ ] 支持Opus/FLAC/AAC编解码器
+- [ ] 音频质量优化 (类似SSIM)
+
+---
+
+#### **REF-008** Web Assembly支持 (借鉴Squoosh) - 1周
+**状态**: ❌ 未开始  
+**优先级**: 🟢 P2  
+**实施内容**:
+- [ ] 创建 `src/wasm.rs` WASM绑定
+- [ ] 使用wasm-bindgen导出API
+- [ ] 浏览器端图像优化
+
+---
+
+#### **REF-009** C API导出 (借鉴Symphonia规划) - 3-4天
+**状态**: ❌ 未开始  
+**优先级**: 🟢 P2  
+**实施内容**:
+- [ ] 创建 `src/ffi.rs` C API
+- [ ] 导出核心函数
+- [ ] 生成C头文件
+
+---
+
+## 📊 **第四阶段进度统计**
+
+### 优先级分布
+- 🔴 **高优先级**: 3个任务 (7-10天工作量)
+- 🟡 **中优先级**: 3个任务 (5天工作量)
+- 🟢 **低优先级**: 3个任务 (2-3周工作量)
+
+### 预期收益
+- **性能提升**: AVIF编码速度 +20%
+- **文件大小**: 相同质量下 -15%
+- **二进制大小**: 最小构建 -80%
+- **代码质量**: 模块化架构，易维护
+
+### 实施路线图
+- **Week 1** (11/22-11/29): REF-001 SSIM优化 + REF-003 预处理流水线
+- **Week 2** (11/29-12/06): REF-002 模块化架构
+- **Week 3** (12/06-12/13): REF-004/005/006 中优先级任务
+- **Week 4+**: 长期规划任务
