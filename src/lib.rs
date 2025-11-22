@@ -68,6 +68,7 @@ pub use codecs::video::animation_strategy::{
     AnimationToVideoConverter,
     AnimationPreservation,
 };
+pub use codecs::video::h266::{H266Encoder, H266Params};  // 🔥 Phase 4: H.266/VVC
 pub use codecs::video::video::*;
 pub use codecs::video::video_processor::{
     VideoProcessor,

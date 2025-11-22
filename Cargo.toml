@@ -58,10 +58,10 @@ unused_imports = "deny"
 unused_variables = "deny"
 dead_code = "warn"
 
-# 🚀 性能优化配置
+# 🚀 Phase 3: 性能优化配置（参考rimage）
 [profile.release]
 opt-level = 3              # 最高优化级别
-lto = "thin"               # 链接时优化（thin模式平衡编译速度和性能）
+lto = true                 # 完整LTO（比thin更激进）
 codegen-units = 1          # 单个代码生成单元，最大化优化
 strip = true               # 移除调试符号，减小二进制大小
 panic = "abort"            # panic时直接abort，减小二进制大小
@@ -69,6 +69,34 @@ overflow-checks = false    # release模式禁用溢出检查
 
 [profile.dev]
 opt-level = 1              # dev模式也启用基础优化，加快开发迭代
+
+# 🎯 Phase 3: Cargo Features 系统
+[features]
+default = [
+    "image-base",
+    "video-base",
+    "ai-core",
+    "parallel",
+]
+
+# 图像编码器特性
+image-base = []
+image-modern = ["image-base"]
+image-all = ["image-modern"]
+
+# 视频编码器特性
+video-base = []  # H.264, H.265通过ffmpeg
+video-modern = ["video-base"]  # AV1, VP9
+video-experimental = ["video-modern"]  # H.266/VVC
+
+# AI功能特性
+ai-core = []
+ai-advanced = ["ai-core"]
+
+# 性能优化特性
+simd = []  # SIMD加速
+parallel = ["rayon", "blake3/rayon"]  # 并行处理
+gpu = []  # GPU加速
 
 [[bin]]
 name = "pixly-kernel"
