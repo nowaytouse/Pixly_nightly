@@ -23,6 +23,8 @@ num_cpus = "1.16"
 fast_image_resize = "4.0"
 rayon = "1.10"
 log = "0.4"
+env_logger = "0.11"  # 🔥 Phase 6: 环境日志配置
+indicatif = "0.17"   # 🔥 Phase 6: 进度条 (参考rimage)
 once_cell = "1.19"
 which = "6.0"
 regex = { version = "1.10", default-features = false, features = ["std", "perf", "unicode-perl"] }  # 🚀 启用性能优化 + Unicode支持

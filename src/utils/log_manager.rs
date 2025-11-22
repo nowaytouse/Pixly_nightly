@@ -237,49 +237,49 @@ impl LogManager {
 #[macro_export]
 macro_rules! log_mgr_debug {
     ($($arg:tt)*) => {
-        $crate::log_manager::LogManager::global().log(
-            $crate::log_manager::LogLevel::Debug,
+        $crate::utils::log_manager::LogManager::global().log(
+            $crate::utils::log_manager::LogLevel::Debug,
             &format!($($arg)*)
-        )
+        );
     };
 }
 #[macro_export]
 macro_rules! log_mgr_verbose {
     ($($arg:tt)*) => {
-        $crate::log_manager::LogManager::global().log(
-            $crate::log_manager::LogLevel::Verbose,
+        $crate::utils::log_manager::LogManager::global().log(
+            $crate::utils::log_manager::LogLevel::Verbose,
             &format!($($arg)*)
-        )
+        );
     };
 }
 
 #[macro_export]
 macro_rules! log_mgr_info {
     ($($arg:tt)*) => {
-        $crate::log_manager::LogManager::global().log(
-            $crate::log_manager::LogLevel::Info,
+        $crate::utils::log_manager::LogManager::global().log(
+            $crate::utils::log_manager::LogLevel::Info,
             &format!($($arg)*)
-        )
+        );
     };
 }
 
 #[macro_export]
 macro_rules! log_mgr_warning {
     ($($arg:tt)*) => {
-        $crate::log_manager::LogManager::global().log(
-            $crate::log_manager::LogLevel::Warning,
+        $crate::utils::log_manager::LogManager::global().log(
+            $crate::utils::log_manager::LogLevel::Warning,
             &format!($($arg)*)
-        )
+        );
     };
 }
 
 #[macro_export]
 macro_rules! log_mgr_error {
     ($($arg:tt)*) => {
-        $crate::log_manager::LogManager::global().log(
-            $crate::log_manager::LogLevel::Error,
+        $crate::utils::log_manager::LogManager::global().log(
+            $crate::utils::log_manager::LogLevel::Error,
             &format!($($arg)*)
-        )
+        );
     };
 }
 
