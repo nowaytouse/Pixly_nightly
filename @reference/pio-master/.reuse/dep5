@@ -1,0 +1,42 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+
+Files: images/image1*
+Copyright: 2017 Snapwire / Josh Felise
+License: CC0-1.0
+Comment: https://snapwiresnaps.tumblr.com/post/140752672614/josh-felise-free-under-cc0-10-download
+
+Files: images/image2*
+Copyright: 2015 Snapwire / Dominik Martin
+License: CC0-1.0
+Comment: https://snapwiresnaps.tumblr.com/post/102447448703/dominik-martin-wwwdominikmartin-free
+
+Files: images/image3*
+Copyright: 2019 Snapwire / Michael Day
+License: CC0-1.0
+Comment: https://snapwiresnaps.tumblr.com/post/171101090646/michael-day-free-under-cc0-10-download
+
+Files: images/pio.gif
+Copyright: 2020 Tuomas Siipola
+           2013 Wilfredor
+License: CC0-1.0
+Comment: https://commons.wikimedia.org/wiki/File:Chicken_from_Venezuela.jpg
+
+Files: profiles/*
+Copyright: 2019 Clinton Ingram
+License: CC0-1.0
+Comment: https://github.com/saucecontrol/Compact-ICC-Profiles/
+
+Files: images/gluhlampe-explodiert.png
+Copyright: 2011 Stefan Krause
+License: CC-BY-NC-ND-3.0
+Comment: https://commons.wikimedia.org/wiki/File:Gl%C3%BChlampe_explodiert.jpg
+
+Files: images/biandintz-eta-zaldiak.png
+Copyright: 2006 Mikel Ortega with a retouche by Richard Bartz
+License: CC-BY-SA-2.0
+Comment: https://commons.wikimedia.org/wiki/File:Biandintz_eta_zaldiak_-_modified2.jpg
+
+Files: images/image-subsampling-test.png
+Copyright: 2020 Daniel Aleksandersen
+License: CC-BY-4.0
+Comment: https://www.ctrl.blog/entry/webp-sharp-yuv.html

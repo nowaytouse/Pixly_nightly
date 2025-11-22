@@ -74,7 +74,7 @@ export function useRustCLI() {
    */
   const getVideoCodecRecommendation = async (inputPath, qualityMode = 'balanced') => {
     if (!isAvailable.value) {
-      throw new Error('Rust CLI 不可用')
+      throw new Error('Rust CLI not available')
     }
 
     try {
@@ -126,7 +126,7 @@ export function useRustCLI() {
    */
   const convert = async (options) => {
     if (!isAvailable.value) {
-      throw new Error('Rust CLI 不可用')
+      throw new Error('Rust CLI not available')
     }
 
     const {
@@ -250,7 +250,7 @@ export function useRustCLI() {
    */
   const convertVideo = async (options) => {
     if (!isAvailable.value) {
-      throw new Error('Rust CLI 不可用')
+      throw new Error('Rust CLI not available')
     }
 
     const {
