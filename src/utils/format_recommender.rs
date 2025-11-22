@@ -3,7 +3,7 @@
 // 🔥 Phase: Real ML Integration - Uses python_ml_caller for genuine AI predictions
 
 use crate::{ImageFeatures, QualityMode, UnifiedAIPredictor};
-use crate::python_ml_caller::{call_python_ml, is_python_ml_available, MLPredictRequest};
+use crate::ai::python_ml_caller::{call_python_ml, is_python_ml_available, MLPredictRequest};
 use serde::{Deserialize, Serialize};
 use anyhow::{Result, Context};
 

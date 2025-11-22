@@ -14,7 +14,7 @@ use std::sync::{Arc, Mutex};
 use anyhow::{Result, Context};
 use serde::{Serialize, Deserialize};
 
-use crate::reward_calculator::{ConversionResult, RewardCalculator};
+use crate::ai::reward_calculator::{ConversionResult, RewardCalculator};
 
 /// 经验样本
 #[derive(Debug, Clone, Serialize, Deserialize)]

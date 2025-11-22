@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use anyhow::Result;
 use image::DynamicImage;
 
-use crate::sharpen::{SharpenConfig, SimdSharpener};
+use crate::operations::sharpen::{SharpenConfig, SimdSharpener};
 use crate::types::{ImageFeatures, PredictionRequest, PredictionResult, PredictionWithConfidence, QualityMode};
 
 /// 统一AI预测器 - 标准化算法

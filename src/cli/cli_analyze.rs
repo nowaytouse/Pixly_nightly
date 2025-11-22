@@ -4,7 +4,7 @@
 use std::path::Path;
 use anyhow::{Result, Context};
 use serde::{Serialize, Deserialize};
-use crate::media_analyzer::MediaAnalyzer;
+use crate::analysis::media_analyzer::MediaAnalyzer;
 
 #[derive(Debug, Clone)]
 #[derive(Default)]
@@ -68,7 +68,7 @@ pub fn handle_analyze(input: &str, options: &AnalyzeOptions) -> Result<()> {
         height: media_info.resolution.1,
         file_size: media_info.size,
         format: media_info.format.clone(),
-        is_animated: media_info.media_type == crate::media_analyzer::MediaType::Animation,
+        is_animated: media_info.media_type == crate::analysis::media_analyzer::MediaType::Animation,
         has_alpha,
         frame_count: media_info.frame_count.unwrap_or(1),
         duration: media_info.duration.unwrap_or(0.0) as f64,
@@ -91,7 +91,7 @@ pub fn handle_analyze(input: &str, options: &AnalyzeOptions) -> Result<()> {
         complexity: basic_info.complexity,
     };
     
-    let feature_vector = crate::feature_extractor_128d::extract_128d_features(
+    let feature_vector = crate::core::feature_extractor_128d::extract_128d_features(
         &img,
         input_path,
         &image_features
@@ -106,11 +106,11 @@ pub fn handle_analyze(input: &str, options: &AnalyzeOptions) -> Result<()> {
     
     // 5. 输出结果
     let media_type_str = match media_info.media_type {
-        crate::media_analyzer::MediaType::Image => "image",
-        crate::media_analyzer::MediaType::Animation => "animation",
-        crate::media_analyzer::MediaType::Video => "video",
-        crate::media_analyzer::MediaType::Audio => "audio",
-        crate::media_analyzer::MediaType::Unknown => "unknown",
+        crate::analysis::media_analyzer::MediaType::Image => "image",
+        crate::analysis::media_analyzer::MediaType::Animation => "animation",
+        crate::analysis::media_analyzer::MediaType::Video => "video",
+        crate::analysis::media_analyzer::MediaType::Audio => "audio",
+        crate::analysis::media_analyzer::MediaType::Unknown => "unknown",
     };
     
     let result = AnalysisResult {
@@ -137,9 +137,9 @@ pub fn handle_analyze(input: &str, options: &AnalyzeOptions) -> Result<()> {
 /// ✅ 使用真实的ML系统进行预测
 /// - 格式推荐: src/format_recommender.rs
 /// - 统一AI接口: src/ai_interface.rs
-fn get_ai_recommendation(media_info: &crate::media_analyzer::MediaInfo, basic_info: &BasicInfo, _features: &Vec<f64>) -> Result<Recommendation> {
-    use crate::format_recommender::{AIFormatRecommender, UserPreferences};
-    use crate::format_selector::FormatSelector; // 🔥 Phase 4: 集成智能格式选择
+fn get_ai_recommendation(media_info: &crate::analysis::media_analyzer::MediaInfo, basic_info: &BasicInfo, _features: &Vec<f64>) -> Result<Recommendation> {
+    use crate::utils::format_recommender::{AIFormatRecommender, UserPreferences};
+    use crate::utils::format_selector::FormatSelector; // 🔥 Phase 4: 集成智能格式选择
     
     // 🤖 使用真实的AI格式推荐器
     eprintln!("🤖 Using AI-powered format recommendation...");

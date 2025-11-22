@@ -191,7 +191,7 @@ impl MediaAnalyzer {
     /// - 调用feature_extractor_128d模块的完整实现
     /// - 不再使用简化估算
     pub fn extract_full_features(&self, file_path: &Path) -> Result<Vec<f64>> {
-        use crate::feature_extractor_128d;
+        use crate::core::feature_extractor_128d;
         use crate::ImageFeatures;
         
         // 1. 加载图像

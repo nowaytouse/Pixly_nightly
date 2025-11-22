@@ -4,7 +4,7 @@ use std::process;
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
-use pixly_kernel::conversion_core::{execute_conversion, ConversionConfig};
+use pixly_kernel::core::conversion_core::{execute_conversion, ConversionConfig};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -334,7 +334,7 @@ enum Commands {
 }
 
 /// 🎞️ 场景检测 - 优化GOP大小
-fn detect_scenes(input: &Path, config: &mut pixly_kernel::video_processor::VideoConversionConfig) -> Result<()> {
+fn detect_scenes(input: &Path, config: &mut pixly_kernel::codecs::video::video_processor::VideoConversionConfig) -> Result<()> {
     use std::process::Command;
     
     // 使用ffmpeg的场景检测
@@ -458,7 +458,7 @@ fn run(cli: Cli) -> Result<()> {
             ai,
             mode,
         } => {
-            use pixly_kernel::cli_audio::{handle_audio, AudioOptions};
+            use pixly_kernel::cli::cli_audio::{handle_audio, AudioOptions};
             
             let options = AudioOptions {
                 codec,
@@ -497,7 +497,7 @@ fn run(cli: Cli) -> Result<()> {
             me_method,
             pix_fmt,
         } => {
-            use pixly_kernel::video_processor::{VideoProcessor, VideoConversionConfig, AudioMode};
+            use pixly_kernel::codecs::video::video_processor::{VideoProcessor, VideoConversionConfig, AudioMode};
             use pixly_kernel::FeatureToggles;
             
             println!("🎬 Video Conversion Mode");
@@ -528,8 +528,8 @@ fn run(cli: Cli) -> Result<()> {
                 println!("   🎯 Optimize mode: {}", optimize_mode);
                 
                 // 🔥 提取视频特征
-                use pixly_kernel::video_features::{extract_video_features, video_features_to_128d};
-                use pixly_kernel::python_ml_caller::{call_python_ml, MLPredictRequest};
+                use pixly_kernel::codecs::video::video_features::{extract_video_features, video_features_to_128d};
+                use pixly_kernel::ai::python_ml_caller::{call_python_ml, MLPredictRequest};
                 
                 match extract_video_features(&input) {
                     Ok(video_features) => {
@@ -659,7 +659,7 @@ fn run(cli: Cli) -> Result<()> {
             format,
         } => {
             // 🔍 调用analyze模块
-            use pixly_kernel::cli_analyze::{handle_analyze, AnalyzeOptions};
+            use pixly_kernel::cli::cli_analyze::{handle_analyze, AnalyzeOptions};
             
             let options = AnalyzeOptions {
                 use_ai: ai,
@@ -732,12 +732,12 @@ fn run(cli: Cli) -> Result<()> {
             if online_learning {
                 println!("🎓 Online learning enabled - Conversion experiences will be recorded for model improvement");
                 // 🔥 启用全局在线学习器
-                pixly_kernel::online_learner_manager::OnlineLearnerManager::enable();
+                pixly_kernel::ai::online_learner_manager::OnlineLearnerManager::enable();
             }
             // 🎯 Phase 8: 智能格式选择
             let target_format = if let Some(user_format) = format {
                 // 用户指定格式，使用格式选择器验证
-                use pixly_kernel::format_selector::FormatSelector;
+                use pixly_kernel::utils::format_selector::FormatSelector;
                 let selector = FormatSelector::new(false);
                 match selector.select_best_format(&input, Some(&user_format)) {
                     Ok(recommendation) => {
@@ -750,7 +750,7 @@ fn run(cli: Cli) -> Result<()> {
                 }
             } else {
                 // 自动选择最佳格式
-                use pixly_kernel::format_selector::FormatSelector;
+                use pixly_kernel::utils::format_selector::FormatSelector;
                 let selector = FormatSelector::new(false);
                 match selector.select_best_format(&input, None) {
                     Ok(recommendation) => {
@@ -771,7 +771,7 @@ fn run(cli: Cli) -> Result<()> {
             
             // 🎯 CLI-001: 应用质量预设
             let (mut final_quality, preset_effort) = if let Some(preset_str) = preset {
-                use pixly_kernel::quality_presets::QualityPreset;
+                use pixly_kernel::utils::quality_presets::QualityPreset;
                 
                 match QualityPreset::parse_preset(&preset_str) {
                     Some(preset) => {
@@ -802,7 +802,7 @@ fn run(cli: Cli) -> Result<()> {
                 println!("   🎯 Optimize mode: {}", optimize_mode);
                 
                 // 🔥 Real ML Integration: Check if Python ML is available
-                use pixly_kernel::python_ml_caller::is_python_ml_available;
+                use pixly_kernel::ai::python_ml_caller::is_python_ml_available;
                 if is_python_ml_available() {
                     println!("   ✅ Python ML service available - Using REAL machine learning");
                 } else {
@@ -811,7 +811,7 @@ fn run(cli: Cli) -> Result<()> {
                 }
                 
                 use pixly_kernel::{MediaAnalyzer, ImageFeatures, QualityMode};
-                use pixly_kernel::format_recommender::{AIFormatRecommender, UserPreferences};
+                use pixly_kernel::utils::format_recommender::{AIFormatRecommender, UserPreferences};
                 
                 // 解析优化模式
                 let quality_mode = match optimize_mode.as_str() {
@@ -915,7 +915,7 @@ fn run(cli: Cli) -> Result<()> {
             
             // 🎨 视觉质量评分（如果未使用AI预测和预设）
             if !ai && preset_effort.is_none() {
-                use pixly_kernel::visual_quality_scorer::VisualQualityScorer;
+                use pixly_kernel::analysis::visual_quality_scorer::VisualQualityScorer;
                 
                 println!("🎨 Analyzing image quality...");
                 let scorer = VisualQualityScorer::new();
@@ -1016,7 +1016,7 @@ fn run(cli: Cli) -> Result<()> {
             // 🔥 Phase X.0: 格式自动修正
             let corrected_input = if format_correction {
                 println!("🔧 Checking file format...");
-                use pixly_kernel::format_corrector::FormatCorrector;
+                use pixly_kernel::utils::format_corrector::FormatCorrector;
                 
                 let corrector = FormatCorrector::new(false); // 不自动重命名，只检测
                 match corrector.check_and_correct(&input) {
@@ -1071,7 +1071,7 @@ fn run(cli: Cli) -> Result<()> {
             // 🔥 Phase X.1: Magika AI 文件验证
             if validate_files {
                 println!("🔒 Validating file with Magika AI...");
-                use pixly_kernel::magika_detector::MagikaDetector;
+                use pixly_kernel::utils::magika_detector::MagikaDetector;
                 
                 let detector = MagikaDetector::with_defaults();
                 match detector.detect_file_type(&actual_input) {
@@ -1095,7 +1095,7 @@ fn run(cli: Cli) -> Result<()> {
             // 🔥 Phase X.2: 智能预处理
             let preprocessed_input = if preprocess {
                 println!("🔗 Applying intelligent preprocessing...");
-                use pixly_kernel::preprocessing::{PreprocessPipeline, PreprocessStep};
+                use pixly_kernel::operations::preprocessing::{PreprocessPipeline, PreprocessStep};
                 
                 // 加载图像
                 match image::open(&actual_input) {
@@ -1135,7 +1135,7 @@ fn run(cli: Cli) -> Result<()> {
             let actual_input = preprocessed_input;
             
             // 🔥 Phase X.3: 捕获原始文件属性（时间戳 + 扩展属性）
-            use pixly_kernel::file_attributes::FileAttributes;
+            use pixly_kernel::utils::file_attributes::FileAttributes;
             println!("📦 Capturing file attributes...");
             let file_attrs = FileAttributes::capture(&input)
                 .unwrap_or_else(|e| {
@@ -1199,7 +1199,7 @@ fn run(cli: Cli) -> Result<()> {
                 println!("   🎓 Recording conversion experience...");
                 
                 // 提取特征（使用MediaAnalyzer）
-                use pixly_kernel::media_analyzer::MediaAnalyzer;
+                use pixly_kernel::analysis::media_analyzer::MediaAnalyzer;
                 let analyzer = MediaAnalyzer::new();
                 
                 if let Ok(media_info) = analyzer.analyze(&input) {
@@ -1216,8 +1216,8 @@ fn run(cli: Cli) -> Result<()> {
                     };
                     
                     // 记录经验
-                    use pixly_kernel::online_learner_manager::OnlineLearnerManager;
-                    use pixly_kernel::reward_calculator::ConversionResult as RewardResult;
+                    use pixly_kernel::ai::online_learner_manager::OnlineLearnerManager;
+                    use pixly_kernel::ai::reward_calculator::ConversionResult as RewardResult;
                     
                     let conversion_result = RewardResult {
                         original_size: result.input_size as u64,
@@ -1245,8 +1245,8 @@ fn run(cli: Cli) -> Result<()> {
             // 🔥 Phase X.4: SSIM 质量验证
             if check_quality {
                 println!("   📊 Checking quality with SSIM...");
-                use pixly_kernel::quality_checker::QualityChecker;
-                use pixly_kernel::online_learner_manager::OnlineLearnerManager;
+                use pixly_kernel::analysis::quality_checker::QualityChecker;
+                use pixly_kernel::ai::online_learner_manager::OnlineLearnerManager;
                 
                 let checker = QualityChecker::new();
                 match checker.check_conversion_quality(&input, &output_path) {

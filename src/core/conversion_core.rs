@@ -4,11 +4,11 @@
 use std::path::{Path, PathBuf};
 use anyhow::Result;
 use image::GenericImageView;
-use crate::feature_toggles::FeatureToggles;
-use crate::format_params::FormatSpecificParams;
-use crate::validation_integration::ValidationDisplay;
-use crate::conversion_validator::ConversionValidator;
-use crate::quality_analyzer::QualityAnalyzer;
+use crate::utils::feature_toggles::FeatureToggles;
+use crate::utils::format_params::FormatSpecificParams;
+use crate::core::validation_integration::ValidationDisplay;
+use crate::utils::conversion_validator::ConversionValidator;
+use crate::analysis::quality_analyzer::QualityAnalyzer;
 
 #[derive(Debug, Clone)]
 pub struct ConversionConfig {
@@ -392,9 +392,9 @@ fn record_conversion_for_learning(
     input_size: u64,
     output_size: u64,
 ) {
-    use crate::online_learner_manager::OnlineLearnerManager;
-    use crate::feature_extractor_128d::extract_128d_features;
-    use crate::reward_calculator::ConversionResult as RewardResult;
+    use crate::ai::online_learner_manager::OnlineLearnerManager;
+    use crate::core::feature_extractor_128d::extract_128d_features;
+    use crate::ai::reward_calculator::ConversionResult as RewardResult;
     
     // 加载图像并提取特征
     let img = match image::open(input) {
@@ -470,7 +470,7 @@ fn calculate_ssim_simple(input: &Path, output: &Path) -> Option<f64> {
 
 /// 🔒 使用Magika AI验证文件类型
 fn validate_file_with_magika(input: &Path) -> Result<()> {
-    use crate::magika_detector::MagikaDetector;
+    use crate::utils::magika_detector::MagikaDetector;
     
     let detector = MagikaDetector::with_defaults();
     match detector.detect_file_type(input) {
@@ -496,7 +496,7 @@ fn validate_file_with_magika(input: &Path) -> Result<()> {
 
 /// 🔧 检查格式修正
 fn check_format_correction(input: &Path) -> Result<()> {
-    use crate::format_corrector::FormatCorrector;
+    use crate::utils::format_corrector::FormatCorrector;
     
     let corrector = FormatCorrector::new(false);  // 不自动重命名，只检查
     match corrector.check_and_correct(input) {
@@ -523,7 +523,7 @@ fn check_format_correction(input: &Path) -> Result<()> {
 
 /// 🔗 应用智能预处理
 fn apply_preprocessing(input: &Path, _config: &ConversionConfig) -> Result<PathBuf> {
-    use crate::preprocessing::PreprocessPipeline;
+    use crate::operations::preprocessing::PreprocessPipeline;
     
     println!("   🔍 Analyzing image for preprocessing...");
     
@@ -581,7 +581,7 @@ fn should_convert_animation_to_video(input: &Path) -> Result<bool> {
 
 /// 🎬 转换动图为视频
 fn convert_animation_to_video(input: &Path, output: &Path) -> Result<()> {
-    use crate::video_processor::{VideoProcessor, VideoConversionConfig, AudioMode};
+    use crate::codecs::video::video_processor::{VideoProcessor, VideoConversionConfig, AudioMode};
     
     // 创建视频转换配置
     let config = VideoConversionConfig {
@@ -618,7 +618,7 @@ fn convert_animation_to_video(input: &Path, output: &Path) -> Result<()> {
 
 /// 📊 SSIM质量验证
 fn validate_ssim_quality(original: &Path, converted: &Path) -> Result<()> {
-    use crate::quality_checker::QualityChecker;
+    use crate::analysis::quality_checker::QualityChecker;
     
     let checker = QualityChecker::new();
     
@@ -818,7 +818,7 @@ fn convert_to_avif(input: &Path, output: &Path, config: &ConversionConfig) -> Re
     
     // 🔥 修复空壳功能：使用format_specific_params中的min/max quantizer
     let (min_q, max_q) = if let Some(ref params) = config.format_specific_params
-        && let crate::format_params::FormatSpecificParams::Avif(avif) = params {
+        && let crate::utils::format_params::FormatSpecificParams::Avif(avif) = params {
         (
             avif.min_quantizer.unwrap_or(0),
             avif.max_quantizer.unwrap_or(63)

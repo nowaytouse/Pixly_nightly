@@ -249,7 +249,7 @@ impl FilenameNormalizer {
     
     /// 使用Magika检测并修正扩展名
     fn detect_and_correct_extension(&self, path: &Path, current_ext: &str) -> String {
-        use crate::magika_detector::MagikaDetector;
+        use crate::utils::magika_detector::MagikaDetector;
         
         let detector = MagikaDetector::with_defaults();
         match detector.detect_file_type(path) {
@@ -275,7 +275,7 @@ impl FilenameNormalizer {
     
     /// 使用Magika检测扩展名（无扩展名文件）
     fn detect_extension(&self, path: &Path) -> Option<String> {
-        use crate::magika_detector::MagikaDetector;
+        use crate::utils::magika_detector::MagikaDetector;
         
         let detector = MagikaDetector::with_defaults();
         match detector.detect_file_type(path) {

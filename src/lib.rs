@@ -1,209 +1,189 @@
-// 🚨 错误处理模块 - 必须首先声明
-pub mod errors;
+// ! Pixly Kernel - AI-Driven Media Format Converter
+//!
+//! 🔥 架构原则 (2025-11-22 重构)
+//! - 完全AI驱动（零硬编码规则）
+//! - 零fallback hell
+//! - 响亮失败（不静默降级）
+//! - 模块化架构（清晰分离关注点）
+//!
+//! 详见: PROJECT_QUALITY_MANIFESTO.md
 
-// 🔥 Performance: String constants module (2025-11-20)
-// Eliminates runtime string allocations, -10-20% memory usage
+// 🚨 错误处理和类型定义 - 必须首先声明
+pub mod errors;
+pub mod types;
 pub mod constants;
 
-// 📋 Phase 4 模块复活化 (2025-11-19)
+// 🏗️ Phase 2: 模块化架构 (2025-11-22)
 // ================================
-// 纠正草率处理错误，负责任地集成高价值模块
-// 
-// Phase 4.1: 立即集成6个最高价值模块
-// - simd_processor: SIMD加速处理 (性能提升2-4x)
-// - smart_cache: 智能LRU缓存系统
-// - metadata_comprehensive: 最全面的元数据保留
-// - bayesian_optimizer: 贝叶斯参数优化
-// - animation_strategy: 动画编码策略选择
-// - external_tools: 外部工具检测和管理
-// 
-// 详细计划: docs/MODULE_RESURRECTION_PLAN_PHASE4.md
+// 将82个平铺文件重组为清晰的模块化结构
+// 参考: rimage, sharp, Symphonia 等优秀项目
 // ================================
 
-pub mod types;
-pub mod sharpen;
+/// 核心转换引擎模块
+pub mod core;
+
+/// 编码器模块（image/video/audio）
+pub mod codecs;
+
+/// 预处理操作模块
+pub mod operations;
+
+/// AI和机器学习模块
 pub mod ai;
-pub mod video;
-pub mod format_recommender;
-pub mod ppo_model;
-pub mod preprocessing;
-pub mod core_processor;
-pub mod performance;
-pub mod transform;
-pub mod validation;
-pub mod quality_analyzer;
-pub mod filename_normalizer;
-pub mod feature_extractor;
-pub mod time_estimator;
-pub mod progress;
-pub mod format_selector;  // Phase 4: 智能格式选择
-pub mod media_analyzer;
-pub mod image_params;
-pub mod quality_checker;
-pub mod quality_presets;  // 🎯 CLI-001: 质量预设系统
-pub mod magika_detector;
-pub mod eagle_adapter;
-pub mod dependency_checker;
-pub mod cli_audio;
-pub mod cli_analyze;  // ✅ AI-powered media analysis
-pub mod conversion_core;
-pub mod audio_processor;  // 🎵 Phase 1: 音频处理核心（从僵尸代码中恢复）
 
-// Phase 3.1: PPO强化学习
-pub mod reward_calculator;
-// Phase 3.2: 在线学习
-pub mod online_learning;
-pub mod online_learner_manager;
-pub mod batch_decision_manager;  // 🎯 智能批量决策管理器
-pub mod python_ml_caller;  // 🔥 Python ML Bridge调用模块
-pub mod video_features;  // 🎬 视频特征提取
-pub mod file_attributes;  // 🔥 文件属性保留（时间戳 + 扩展属性）
-pub mod format_corrector;  // 🔧 格式自动修正
-pub mod conversion_validator;
-pub mod validation_integration;
-// 🗑️ ml_predictor已删除 (2025-11-20) - 深度分析后决定：伪装ML，完整化成本4-6周，收益仅20ms
-pub mod dynamic_concurrency;
-pub mod linear_regression;
-pub mod quality_metrics;
-pub mod progress_tracker;
-pub mod quality_reporter;
-pub mod alpha_predictor;
-pub mod zero_copy_buffer;
-pub mod video_processor;
-pub mod video_strategy;  // 🎬 Phase 1: 视频编码策略（从僵尸代码恢复）
-// ✅ Phase 2: 统一缓存系统已实现
-pub mod unified_cache;
-pub mod feature_extractor_128d;
-pub mod ppo_model_enhanced;
-pub mod modern_formats;
-pub mod transparent_logger;
-pub mod unified_conversion_engine;
-pub mod log_manager;
-pub mod file_collector;
-pub mod config_manager;
+/// 质量分析模块
+pub mod analysis;
 
-// 🔥 Phase 4.1: 高价值模块集成
-pub mod simd_processor;           // SIMD加速处理
-pub mod smart_cache;              // 智能LRU缓存
-pub mod metadata_comprehensive;   // 最全面的元数据保留
-pub mod bayesian_optimizer;       // 贝叶斯参数优化
-pub mod animation_strategy;       // 动画编码策略
-pub mod external_tools;           // 外部工具管理
+/// CLI相关模块
+pub mod cli;
 
-// 🔥 Phase 4.2: 中等价值模块集成
-// 🗑️ automl已删除 (2025-11-20) - 深度分析后决定：空框架，完整化成本5-7周，收益为零
-pub mod visual_quality_scorer;    // 视觉质量评分
-// Phase 5: simd_sharpener已合并到simd_processor
-pub mod ml_time_estimator;        // ML时间估算
-pub mod same_format_optimizer;    // 同格式优化
-// Phase 5.2: quality_checker_advanced已合并到quality_checker
-pub mod custom_presets;           // 自定义预设管理
-pub mod file_type_detector;       // 文件类型检测
+/// 工具函数模块
+pub mod utils;
 
-// 🔥 Phase 4.3: 最终集成（经过深度评估）
-pub mod color_quantizer;          // 颜色量化（GIF优化）
-pub mod gif_optimizer_advanced;   // GIF高级优化
-pub mod ml_data_flow;             // ML数据流管理
+// 🔥 核心模块重新导出
+pub use core::conversion_core::execute_conversion;
+pub use core::core_processor::{
+    ImageProcessor as CoreImageProcessor,
+    ProcessingConfig as CoreProcessingConfig,
+    ProcessingResult as CoreProcessingResult,
+    ImageInfo as CoreImageInfo,
+};
+pub use core::performance::*;
+pub use core::unified_conversion_engine::{
+    UnifiedConversionEngine,
+    UnifiedConversionConfig,
+};
 
+// 🎨 编码器重新导出
+pub use codecs::image::modern_formats::{
+    ModernFormatConverter,
+    AVIFParams,
+    JXLParams,
+    FormatSupport,
+};
+pub use codecs::video::animation_strategy::{
+    AnimationStrategy,
+    AnimationInfo,
+    AnimationStrategySelector,
+    AnimationToVideoConverter,
+    AnimationPreservation,
+};
+pub use codecs::video::video::*;
+pub use codecs::video::video_processor::{
+    VideoProcessor,
+    VideoConversionConfig,
+    AudioMode,
+};
+pub use codecs::video::video_strategy::{
+    VideoCodec,
+    QualityTarget,
+    VideoConversionStrategy,
+    AudioStrategy,
+};
+pub use codecs::audio::audio_processor::{
+    AudioProcessor,
+    AudioInfo,
+    AudioConversionConfig,
+    AudioConversionResult,
+};
+
+// 🔧 操作模块重新导出
+pub use operations::preprocessing::*;
+pub use operations::transform::*;
+pub use operations::sharpen::*;
+pub use operations::color_quantizer::{ColorQuantizer, QuantizationConfig};
+
+// 🤖 AI模块重新导出
+pub use ai::ai::*;
+pub use ai::ppo_model_enhanced::{EnhancedPPOPredictor, MediaType, TrainingSample};
+pub use ai::online_learner_manager::OnlineLearnerManager;
+pub use ai::bayesian_optimizer::{
+    BayesianOptimizer,
+    OptimizationObjective,
+    ParameterSpace,
+    Observation,
+};
+pub use ai::alpha_predictor::AlphaQualityPredictor;
+pub use ai::ml_bridge::*;
+pub use ai::python_ml_caller::*;
+
+// 📊 分析模块重新导出
+pub use analysis::quality_analyzer::*;
+pub use analysis::quality_checker::{QualityChecker, AdvancedQualityMetrics, QualityGrade};
+pub use analysis::quality_metrics::*;
+pub use analysis::quality_reporter::{Reporter, QualityReport, CompressionStats};
+pub use analysis::media_analyzer::*;
+pub use analysis::visual_quality_scorer::{
+    VisualQualityScorer,
+    ImageFeatures as VQSImageFeatures,
+    QualityRecommendation,
+};
+
+// 🖥️ CLI模块重新导出
+pub use cli::cli_analyze::*;
+pub use cli::cli_audio::*;
+pub use cli::progress::*;
+pub use cli::progress_tracker::{ProgressTracker, ProgressInfo};
+
+// 🛠️ 工具模块重新导出
+pub use utils::config_manager::{ConfigManager, Config};
+pub use utils::dependency_checker::*;
+pub use utils::dynamic_concurrency::*;
+pub use utils::eagle_adapter::*;
+pub use utils::external_tools::{ExternalTool, ToolStatus, ExternalToolChecker};
+pub use utils::feature_toggles::FeatureToggles;
+pub use utils::file_collector::FileCollector;
+pub use utils::file_type_detector::{
+    FileTypeDetector,
+    FileTypeDetection,
+    SecurityValidation,
+};
+pub use utils::filename_normalizer::*;
+pub use utils::format_knowledge::*;
+pub use utils::format_params::{
+    FormatSpecificParams,
+    JxlParams,
+    WebPParams,
+    AvifParams,
+    HeicParams,
+};
+pub use utils::format_recommender::*;
+pub use utils::format_selector::*;
+pub use utils::image_params::*;
+pub use utils::log_manager::{LogManager, LogLevel as LogManagerLevel, LogConfig};
+pub use utils::magika_detector::*;
+pub use utils::metadata_comprehensive::{
+    ComprehensiveMetadata,
+    TechnicalMetadata,
+    DescriptiveMetadata,
+    AdministrativeMetadata,
+    StructuralMetadata,
+    UsageMetadata,
+    BusinessMetadata,
+};
+pub use utils::quality_presets::*;
+pub use utils::same_format_optimizer::{
+    SameFormatOptimizer,
+    OptimizationResult as SFOptimizationResult,
+};
+pub use utils::simd_processor::{
+    SIMDProcessor,
+    SimdProcessor,
+    SharpenConfig,
+    SharpenPerformanceInfo,
+};
+pub use utils::smart_cache::{SmartCache, CacheEntry, CacheStats};
+pub use utils::time_estimator::*;
+pub use utils::unified_ai_interface::{
+    UnifiedAIManager,
+    UnifiedAIRequest,
+    UnifiedAIResponse,
+    AIPreferences,
+};
+pub use utils::unified_cache::*;
+pub use utils::validation::*;
+pub use utils::zero_copy_buffer::*;
+pub use utils::custom_presets::{CustomPreset, PresetManager};
+
+// Re-export common types
 pub use types::*;
-pub use ppo_model_enhanced::{EnhancedPPOPredictor, MediaType, TrainingSample};
-pub use modern_formats::{ModernFormatConverter, AVIFParams, JXLParams, FormatSupport};
-pub use unified_conversion_engine::{UnifiedConversionEngine, UnifiedConversionConfig};
-pub use log_manager::{LogManager, LogLevel as LogManagerLevel, LogConfig};
-pub use file_collector::FileCollector;
-pub use config_manager::{ConfigManager, Config};
-
-// 🔥 Phase 4.1: 导出高价值模块
-// Phase 5: 增强版simd_processor (包含锐化功能)
-pub use simd_processor::{SIMDProcessor, SimdProcessor, SharpenConfig, SharpenPerformanceInfo};
-pub use smart_cache::{SmartCache, CacheEntry, CacheStats};
-pub use metadata_comprehensive::{
-    ComprehensiveMetadata, TechnicalMetadata, DescriptiveMetadata,
-    AdministrativeMetadata, StructuralMetadata, UsageMetadata, BusinessMetadata
-};
-pub use bayesian_optimizer::{BayesianOptimizer, OptimizationObjective, ParameterSpace, Observation};
-pub use animation_strategy::{
-    AnimationStrategy, AnimationInfo, AnimationStrategySelector, 
-    AnimationToVideoConverter, AnimationPreservation
-};
-pub use external_tools::{ExternalTool, ToolStatus, ExternalToolChecker};
-
-// 🔥 Phase 4.2: 导出中等价值模块
-// 🗑️ automl已删除 (2025-11-20)
-pub use visual_quality_scorer::{VisualQualityScorer, ImageFeatures as VQSImageFeatures, QualityRecommendation};
-// Phase 5: simd_sharpener已合并到simd_processor
-pub use ml_time_estimator::{TimeEstimator, TimeEstimate, FileFeatures as MLFileFeatures, ConversionRecord};
-pub use same_format_optimizer::{SameFormatOptimizer, OptimizationResult as SFOptimizationResult};
-// Phase 5.2: 增强版quality_checker (包含PSNR/MSE功能)
-pub use quality_checker::{QualityChecker, AdvancedQualityMetrics, QualityGrade};
-pub use custom_presets::{CustomPreset, PresetManager};
-pub use file_type_detector::{FileTypeDetector, FileTypeDetection, SecurityValidation};
-
-// 🔥 Phase 4.3: 导出最终集成模块
-pub use color_quantizer::{ColorQuantizer, QuantizationConfig};
-pub use gif_optimizer_advanced::{GifOptimizer, GifOptimizationConfig, OptimizationResult as GifOptResult};
-pub use ml_data_flow::MLDataFlow;
-pub use sharpen::*;
-pub use ai::*;
-pub use video::*;
-pub use preprocessing::*;
-pub use performance::*;
-pub use transform::*;
-pub use validation::*;
-pub use quality_analyzer::*;
-pub use filename_normalizer::*;
-
-// feature_extractor有名称冲突，使用模块导入
-pub use feature_extractor::{FeatureExtractor, MetadataFeatures as MLMetadataFeatures, ContextFeatures};
-
-// time_estimator和quality_predictor都导出ConversionParams，只保留一个
-// pub use time_estimator::*;
-pub use progress::*;
-pub use media_analyzer::*;
-pub use image_params::*;
-
-// Phase 5.2: quality_checker已在上面导出，这里删除重复
-
-// 核心处理器和批处理器（避免名称冲突）
-pub use core_processor::{ImageProcessor as CoreImageProcessor, ProcessingConfig as CoreProcessingConfig, ProcessingResult as CoreProcessingResult, ImageInfo as CoreImageInfo};
-
-// 新增模块导出（避免名称冲突）
-pub use eagle_adapter::*;
-pub use dependency_checker::*;
-
-// conversion_core和strategy都有ConversionConfig/ConversionResult，使用模块前缀
-pub use conversion_core::execute_conversion;
-
-// video_handler和video都有VideoInfo，使用模块前缀
-
-
-// conversion_engine和strategy都有ConversionResult，使用模块前缀
-
-// 🗑️ ml_predictor已删除 (2025-11-20)
-pub use dynamic_concurrency::*;
-pub use linear_regression::*;
-
-// quality_metrics和quality_analyzer都有QualityMetrics/QualityDistribution，使用模块前缀
-// Phase 7重构: quality_reporter现在使用quality_analyzer的QualityMetrics，无需别名
-pub use progress_tracker::{ProgressTracker, ProgressInfo};
-pub use quality_reporter::{Reporter, QualityReport, CompressionStats};
-pub use alpha_predictor::AlphaQualityPredictor;
-
-// CLI模块（通常不需要re-export，但保留声明）
-// pub use cli_convert::*;
-// pub use cli_batch::*;
-// pub use cli_audio::*;
-// pub use cli_analyze::*;
-pub mod ml_bridge;
-pub mod format_knowledge;
-pub mod feature_toggles;
-pub mod unified_ai_interface;
-pub mod format_params;
-
-// 导出功能开关
-pub use feature_toggles::FeatureToggles;
-pub use unified_ai_interface::{UnifiedAIManager, UnifiedAIRequest, UnifiedAIResponse, AIPreferences};
-pub use format_params::{FormatSpecificParams, JxlParams, WebPParams, AvifParams, HeicParams};
-pub use audio_processor::{AudioProcessor, AudioInfo, AudioConversionConfig, AudioConversionResult};
-pub use video_strategy::{VideoCodec, QualityTarget, VideoConversionStrategy, AudioStrategy};
-

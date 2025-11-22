@@ -4,7 +4,7 @@
 // Phase 7重构: 使用quality_analyzer的QualityMetrics和QualityDistribution
 // 消除重复定义，保持单一职责原则
 
-use crate::quality_analyzer::{QualityMetrics, QualityDistribution};
+use crate::analysis::quality_analyzer::{QualityMetrics, QualityDistribution};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;

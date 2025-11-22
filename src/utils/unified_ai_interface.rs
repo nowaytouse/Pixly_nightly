@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tracing::{info, warn, error};
 
-use crate::image_params::{ImageCharacteristics, OptimizedParams};
+use super::image_params::{ImageCharacteristics, OptimizedParams};
 
 /// 统一AI预测请求
 #[derive(Debug, Clone, Serialize, Deserialize)]

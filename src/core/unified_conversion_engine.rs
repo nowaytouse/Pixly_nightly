@@ -5,10 +5,10 @@ use anyhow::{Context, Result};
 use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
-use crate::ppo_model_enhanced::{EnhancedPPOPredictor, MediaType};
-use crate::modern_formats::{ModernFormatConverter, AVIFParams, JXLParams, FormatSupport};
-use crate::quality_metrics::{QualityAssessor, QualityMetrics};
-use crate::transparent_logger::{TransparentLogger, OperationTracker, LogLevel};
+use crate::ai::ppo_model_enhanced::{EnhancedPPOPredictor, MediaType};
+use crate::codecs::image::modern_formats::{ModernFormatConverter, AVIFParams, JXLParams, FormatSupport};
+use crate::analysis::quality_metrics::{QualityAssessor, QualityMetrics};
+use crate::utils::transparent_logger::{TransparentLogger, OperationTracker, LogLevel};
 use crate::errors::path_to_str;
 
 /// 统一转换配置

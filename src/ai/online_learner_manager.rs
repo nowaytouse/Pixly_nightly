@@ -9,8 +9,8 @@
 use std::sync::{Arc, Mutex};
 use std::path::PathBuf;
 use once_cell::sync::Lazy;
-use crate::online_learning::OnlineLearner;
-use crate::reward_calculator::ConversionResult;
+use super::online_learning::OnlineLearner;
+use super::reward_calculator::ConversionResult;
 
 /// 全局在线学习器实例
 static GLOBAL_LEARNER: Lazy<Arc<Mutex<OnlineLearner>>> = Lazy::new(|| {

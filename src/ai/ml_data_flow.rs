@@ -3,8 +3,8 @@
  * 
  * 统一Python训练 ↔ Rust推理的完整数据流
  */
-use crate::ml_bridge::{StandardFeatures, StandardPrediction, TrainingSample};
-use crate::feature_extractor_128d::extract_128d_features;
+use super::ml_bridge::{StandardFeatures, StandardPrediction, TrainingSample};
+use crate::core::feature_extractor_128d::extract_128d_features;
 use image::DynamicImage;
 use std::collections::HashMap;
 use std::path::Path;

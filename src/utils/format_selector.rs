@@ -5,7 +5,7 @@
 
 use anyhow::Result;
 use std::path::Path;
-use crate::format_knowledge::FormatKnowledgeBase;
+use super::format_knowledge::FormatKnowledgeBase;
 
 /// Format selection recommendation
 #[derive(Debug, Clone)]

@@ -3,7 +3,7 @@
 
 use std::path::Path;
 use anyhow::Result;
-use crate::audio_processor::{AudioProcessor, AudioConversionConfig};
+use crate::codecs::audio::audio_processor::{AudioProcessor, AudioConversionConfig};
 
 #[derive(Debug, Clone)]
 pub struct AudioOptions {

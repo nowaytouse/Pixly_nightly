@@ -215,7 +215,7 @@ impl MLBridge {
     /// 默认特征提取
     fn default_feature_extraction(&self, img: &image::DynamicImage) -> StandardFeatures {
         // 使用feature_extractor_128d函数式API
-        use crate::feature_extractor_128d::extract_128d_features;
+        use crate::core::feature_extractor_128d::extract_128d_features;
         
         // 创建基础特征
         let basic_features = crate::ImageFeatures {
