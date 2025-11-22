@@ -76,7 +76,6 @@ default = [
     "image-base",
     "video-base",
     "ai-core",
-    "parallel",
 ]
 
 # 图像编码器特性
@@ -93,9 +92,8 @@ video-experimental = ["video-modern"]  # H.266/VVC
 ai-core = []
 ai-advanced = ["ai-core"]
 
-# 性能优化特性
+# 性能优化特性 (rayon和blake3已经是默认依赖，自动启用)
 simd = []  # SIMD加速
-parallel = ["rayon", "blake3/rayon"]  # 并行处理
 gpu = []  # GPU加速
 
 [[bin]]
