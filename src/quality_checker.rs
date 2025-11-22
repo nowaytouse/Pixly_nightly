@@ -303,3 +303,164 @@ impl QualityChecker {
         Ok((mse, psnr))
     }
 }
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// REF-001: SSIM自动质量优化器 (借鉴Pio) - 2025-11-22
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/// 最优质量参数结果
+#[derive(Debug, Clone)]
+pub struct OptimalQualityResult {
+    /// 最优质量参数
+    pub quality: u8,
+    /// 达到的SSIM分数
+    pub ssim_score: f64,
+    /// 文件大小（字节）
+    pub file_size: u64,
+    /// 搜索迭代次数
+    pub iterations: usize,
+    /// 质量等级
+    pub grade: QualityGrade,
+}
+
+/// SSIM自动质量优化器
+/// 
+/// 借鉴Pio项目的设计，使用二分搜索自动找到最优质量参数
+pub struct SSIMOptimizer {
+    /// 目标SSIM值 (0.0-1.0)
+    target_ssim: f64,
+    /// 最小质量参数
+    min_quality: u8,
+    /// 最大质量参数
+    max_quality: u8,
+    /// 质量检查器
+    checker: QualityChecker,
+}
+
+impl SSIMOptimizer {
+    /// 创建优化器
+    /// 
+    /// # 参数
+    /// - `target_ssim`: 目标SSIM值 (推荐 0.95)
+    /// - `min_quality`: 最小质量 (推荐 60)
+    /// - `max_quality`: 最大质量 (推荐 95)
+    pub fn new(target_ssim: f64, min_quality: u8, max_quality: u8) -> Self {
+        Self {
+            target_ssim,
+            min_quality,
+            max_quality,
+            checker: QualityChecker::with_threshold(target_ssim),
+        }
+    }
+    
+    /// 创建Web优化预设 (SSIM 0.95, 质量范围 70-90)
+    pub fn web_optimized() -> Self {
+        Self::new(0.95, 70, 90)
+    }
+    
+    /// 创建高质量预设 (SSIM 0.98, 质量范围 85-100)
+    pub fn high_quality() -> Self {
+        Self::new(0.98, 85, 100)
+    }
+    
+    /// 创建快速预览预设 (SSIM 0.90, 质量范围 60-75)
+    pub fn fast_preview() -> Self {
+        Self::new(0.90, 60, 75)
+    }
+    
+    /// 寻找最优质量参数
+    /// 
+    /// 使用二分搜索算法，在指定质量范围内找到满足目标SSIM的最低质量参数
+    /// 
+    /// # 参数
+    /// - `original`: 原始图像
+    /// - `encode_fn`: 编码函数，接收质量参数，返回编码后的图像数据
+    /// 
+    /// # 返回
+    /// 最优质量参数和相关信息
+    pub fn find_optimal_quality<F>(
+        &self,
+        original: &DynamicImage,
+        mut encode_fn: F,
+    ) -> Result<OptimalQualityResult>
+    where
+        F: FnMut(u8) -> Result<Vec<u8>>,
+    {
+        let mut low = self.min_quality;
+        let mut high = self.max_quality;
+        let mut best_quality = high;
+        let mut best_ssim = 0.0;
+        let mut best_size = 0u64;
+        let mut iterations = 0;
+        
+        log::info!("🔍 Starting SSIM optimization: target={:.3}, range=[{}, {}]", 
+                   self.target_ssim, low, high);
+        
+        while low <= high {
+            iterations += 1;
+            let mid = (low + high) / 2;
+            
+            // 编码图像
+            let encoded_data = encode_fn(mid)
+                .with_context(|| format!("Failed to encode with quality {}", mid))?;
+            
+            let file_size = encoded_data.len() as u64;
+            
+            // 保存临时文件用于SSIM计算
+            let temp_path = std::env::temp_dir().join(format!("pixly_ssim_test_q{}.tmp", mid));
+            std::fs::write(&temp_path, &encoded_data)?;
+            
+            // 计算SSIM
+            let decoded = image::open(&temp_path)?;
+            let ssim = self.checker.calculate_ssim(original, &decoded)?;
+            
+            // 清理临时文件
+            let _ = std::fs::remove_file(&temp_path);
+            
+            log::debug!("  Quality {}: SSIM={:.4}, Size={}KB", 
+                       mid, ssim, file_size / 1024);
+            
+            if ssim >= self.target_ssim {
+                // SSIM满足要求，尝试更低质量
+                best_quality = mid;
+                best_ssim = ssim;
+                best_size = file_size;
+                high = mid - 1;
+            } else {
+                // SSIM不足，需要更高质量
+                low = mid + 1;
+            }
+        }
+        
+        log::info!("✅ Optimization complete: quality={}, SSIM={:.4}, size={}KB, iterations={}", 
+                   best_quality, best_ssim, best_size / 1024, iterations);
+        
+        Ok(OptimalQualityResult {
+            quality: best_quality,
+            ssim_score: best_ssim,
+            file_size: best_size,
+            iterations,
+            grade: QualityGrade::from_ssim(best_ssim),
+        })
+    }
+}
+
+#[cfg(test)]
+mod ssim_optimizer_tests {
+    use super::*;
+    
+    #[test]
+    fn test_optimizer_creation() {
+        let opt = SSIMOptimizer::web_optimized();
+        assert_eq!(opt.target_ssim, 0.95);
+        assert_eq!(opt.min_quality, 70);
+        assert_eq!(opt.max_quality, 90);
+        
+        let opt = SSIMOptimizer::high_quality();
+        assert_eq!(opt.target_ssim, 0.98);
+        
+        let opt = SSIMOptimizer::fast_preview();
+        assert_eq!(opt.target_ssim, 0.90);
+    }
+}
