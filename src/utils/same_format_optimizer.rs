@@ -235,19 +235,19 @@ mod tests {
         // 测试PNG工具检测
         let png_result = SameFormatOptimizer::check_tools_for_format("png");
         if png_result.is_ok() {
-            println!("PNG tool available: {:?}", png_result.unwrap());
+            log::debug!("PNG tool available: {:?}", png_result.unwrap());
         }
         
         // 测试JPEG工具检测
         let jpeg_result = SameFormatOptimizer::check_tools_for_format("jpeg");
         if jpeg_result.is_ok() {
-            println!("JPEG tool available: {:?}", jpeg_result.unwrap());
+            log::debug!("JPEG tool available: {:?}", jpeg_result.unwrap());
         }
         
         // 测试WebP工具检测
         let webp_result = SameFormatOptimizer::check_tools_for_format("webp");
         if webp_result.is_ok() {
-            println!("WebP tool available: {:?}", webp_result.unwrap());
+            log::debug!("WebP tool available: {:?}", webp_result.unwrap());
         }
     }
     

@@ -457,20 +457,20 @@ impl EagleAdapter {
         // 获取images/目录
         let images_dir = current_path.parent()?;
         
-        println!("   🔍 Searching for XMP resource with same name in Eagle library: {}", image_name);
-        println!("   🔍 Current .info directory: {:?}", current_path);
-        println!("   🔍 images directory: {:?}", images_dir);
+        log::debug!("   🔍 Searching for XMP resource with same name in Eagle library: {}", image_name);
+        log::debug!("   🔍 Current .info directory: {:?}", current_path);
+        log::debug!("   🔍 images directory: {:?}", images_dir);
         
         // 遍历images/目录下的所有.info目录
         let entries = match std::fs::read_dir(images_dir) {
             Ok(e) => e,
             Err(e) => {
-                println!("   ⚠️  Cannot read Eagle images directory: {}", e);
+                log::debug!("   ⚠️  Cannot read Eagle images directory: {}", e);
                 return None;
             }
         };
         
-        println!("   🔍 Starting to traverse .info directories in images directory");
+        log::debug!("   🔍 Starting to traverse .info directories in images directory");
         let mut found_count = 0;
         
         for entry in entries.flatten() {
@@ -496,7 +496,7 @@ impl EagleAdapter {
                         // 找到匹配的XMP资源！
                         let xmp_file = path.join(format!("{}.xmp", metadata.name));
                         if xmp_file.exists() {
-                            println!("   ✅ Found XMP resource in Eagle library: {}/{}.xmp", 
+                            log::debug!("   ✅ Found XMP resource in Eagle library: {}/{}.xmp", 
                                      path.file_name()?.to_str()?, metadata.name);
                             return Some(xmp_file);
                         }
@@ -511,8 +511,8 @@ impl EagleAdapter {
             }
         }
         
-        println!("   🔍 Traversal completed: checked {} entries in total", found_count);
-        println!("   ℹ️  XMP resource with same name not found in Eagle library");
+        log::debug!("   🔍 Traversal completed: checked {} entries in total", found_count);
+        log::debug!("   ℹ️  XMP resource with same name not found in Eagle library");
         None
     }
     

@@ -115,6 +115,7 @@ const getFileEmoji = (file) => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: var(--bg-panel); /* Explicitly set panel background */
 }
 
 .empty-state {
@@ -125,18 +126,19 @@ const getFileEmoji = (file) => {
   justify-content: center;
   gap: 16px;
   color: var(--text-tertiary);
-  animation: fadeIn var(--transition-slow) var(--ease-out);
+  animation: fadeIn var(--duration-slow) var(--ease-out);
 }
 
 .empty-icon {
   font-size: 48px;
   opacity: 0.5;
   animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
 }
 
 .empty-hint {
   font-size: 12px;
-  color: var(--text-tertiary);
+  color: var(--text-dim);
   margin-top: 8px;
 }
 
@@ -166,6 +168,7 @@ const getFileEmoji = (file) => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 4px; /* Add padding for hover effects */
   /* 流畅滚动 */
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
@@ -176,11 +179,11 @@ const getFileEmoji = (file) => {
   align-items: center;
   gap: 12px;
   padding: 12px;
-  background: var(--bg-tertiary);
-  border-radius: 6px;
-  border: 1px solid transparent;
-  transition: all var(--transition-base) var(--ease-out);
-  animation: slideInRight var(--transition-base) var(--ease-out);
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  transition: all var(--duration-normal) var(--ease-out);
+  animation: slideInRight var(--duration-normal) var(--ease-out);
   /* 性能优化 */
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -198,10 +201,10 @@ const getFileEmoji = (file) => {
 }
 
 .file-item:hover {
-  background: var(--bg-primary);
+  background: var(--bg-input);
   border-color: var(--border-color-hover);
-  transform: translateX(-2px);
-  box-shadow: var(--shadow-sm);
+  transform: translateX(2px); /* Move right slightly instead of left */
+  box-shadow: var(--shadow-md);
 }
 
 .file-thumbnail {
@@ -210,13 +213,14 @@ const getFileEmoji = (file) => {
   object-fit: cover;
   border-radius: 6px;
   flex-shrink: 0;
-  transition: transform var(--transition-base) var(--ease-out);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform var(--duration-fast) var(--ease-out);
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-app);
 }
 
 .file-item:hover .file-thumbnail {
   transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
 .file-thumbnail-placeholder {
@@ -227,41 +231,41 @@ const getFileEmoji = (file) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  background: linear-gradient(135deg, var(--bg-app) 0%, var(--bg-card) 100%);
   position: relative;
   overflow: hidden;
-  transition: transform var(--transition-base) var(--ease-out);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform var(--duration-fast) var(--ease-out);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
 }
 
 .file-item:hover .file-thumbnail-placeholder {
   transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .file-emoji {
-  font-size: 32px;
+  font-size: 24px;
   line-height: 1;
-  transition: transform var(--transition-base) var(--ease-bounce);
+  transition: transform var(--duration-fast) var(--ease-elastic);
 }
 
 .file-item:hover .file-emoji {
-  transform: scale(1.1);
+  transform: scale(1.2) rotate(5deg);
 }
 
 .file-ext-badge {
   position: absolute;
-  bottom: 2px;
-  right: 2px;
+  bottom: 0;
+  right: 0;
   background: var(--color-primary);
   color: white;
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
-  padding: 1px 3px;
-  border-radius: 2px;
+  padding: 2px 4px;
+  border-top-left-radius: 4px;
   line-height: 1;
   text-transform: uppercase;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .file-info {
@@ -271,12 +275,13 @@ const getFileEmoji = (file) => {
 
 .file-name {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color var(--transition-fast) var(--ease-out);
+  transition: color var(--duration-fast) var(--ease-out);
+  margin-bottom: 4px;
 }
 
 .file-item:hover .file-name {
@@ -286,28 +291,28 @@ const getFileEmoji = (file) => {
 .file-meta {
   font-size: 11px;
   color: var(--text-tertiary);
-  transition: color var(--transition-fast) var(--ease-out);
+  font-family: 'JetBrains Mono', monospace;
 }
 
 .remove-btn {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   background: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border: 1px solid transparent;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-tertiary);
-  transition: all 0.3s;
+  transition: all var(--duration-fast) var(--ease-out);
   flex-shrink: 0;
 }
 
 .remove-btn:hover {
-  background: var(--danger-color);
-  border-color: var(--danger-color);
-  color: white;
+  background: rgba(var(--hue-danger), 90%, 65%, 0.1);
+  color: var(--color-danger);
+  transform: scale(1.1);
 }
 </style>

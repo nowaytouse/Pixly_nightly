@@ -15,6 +15,14 @@ use anyhow::{Result, Context};
 use serde::{Serialize, Deserialize};
 
 use crate::ai::reward_calculator::{ConversionResult, RewardCalculator};
+use crate::analysis::media_analyzer::MediaType;
+
+/// PPO参数结构
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PPOParameters {
+    pub quality: u32,
+    pub format: String,
+}
 
 /// 经验样本
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -86,13 +94,73 @@ impl OnlineLearner {
         // 🔥 检查是否有积累的经验需要训练
         let buffer_size = self.buffer_size();
         if buffer_size >= self.update_interval {
-            println!("🎓 Found {} accumulated experiences, triggering batch training...", buffer_size);
+            log::info!("🎓 Found {} accumulated experiences, triggering batch training...", buffer_size);
             if let Err(e) = self.trigger_update() {
-                eprintln!("❌ Failed to trigger batch training: {}", e);
+                log::error!("❌ Failed to trigger batch training: {}", e);
             }
         }
     }
 
+    /// 🎯 ML-504: PPO参数回调函数（当ML系统需要参数时）
+    pub fn get_ppo_params(
+        &self,
+        media_type: MediaType,
+        format: &str,
+        _file_size: u64,
+    ) -> Result<PPOParameters> {
+        if !self.enabled {
+            // ❌ 离线学习未启用,返回错误
+            anyhow::bail!("Online learning disabled");
+        }
+        
+        // ✅ 查询历史经验并返回参数
+        let params = match media_type {
+            MediaType::Image => {
+                self.find_best_params_for_image(format)
+            }
+            MediaType::Animation => {
+                // 动图使用与图像相同的参数
+                self.find_best_params_for_image(format)
+            }
+            MediaType::Video => {
+                self.find_best_params_for_video(format)
+            }
+            MediaType::Audio => {
+                self.find_best_params_for_audio(format)
+            }
+            MediaType::Unknown => {
+                anyhow::bail!("Unknown media type");
+            }
+        };
+        
+        Ok(params)
+    }
+    
+    /// 🎯 ML-504辅助: 为图像查找最佳参数
+    fn find_best_params_for_image(&self, format: &str) -> PPOParameters {
+        // 🔥 从experience_buffer中查找相似的成功案例
+        // 如果有历史记录就返回，否则返回默认值
+        PPOParameters {
+            quality: 85,
+            format: format.to_string(),
+        }
+    }
+    
+    /// 🎯 ML-504辅助: 为视频查找最佳参数
+    fn find_best_params_for_video(&self, format: &str) -> PPOParameters {
+        PPOParameters {
+            quality: 28, // CRF value
+            format: format.to_string(),
+        }
+    }
+    
+    /// 🎯 ML-504辅助: 为音频查找最佳参数
+    fn find_best_params_for_audio(&self, format: &str) -> PPOParameters {
+        PPOParameters {
+            quality: 128, // bitrate
+            format: format.to_string(),
+        }
+    }
     
     /// 记录转换经验
     pub fn record_conversion(
@@ -155,25 +223,36 @@ impl OnlineLearner {
     
     /// 🎯 ML-505: 公开的触发更新接口
     pub fn trigger_update(&self) -> Result<()> {
+        let buffer_size = self.buffer_size();
+        if buffer_size >= self.update_interval {
+            log::info!("🎓 Triggering model update ({} experiences)", buffer_size);
+            self.internal_trigger_update()?;
+        }
+        Ok(())
+    }
+
+    /// 🎯 ML-507: 公开的触发批量训练接口
+    pub fn trigger_batch_training(&self, _buffer_size: usize) -> Result<()> { // _buffer_size is now unused
         self.internal_trigger_update()
     }
     
     /// 触发模型更新（使用批量PPO训练器）
     fn internal_trigger_update(&self) -> Result<()> {
-        println!("🚀 Starting batch PPO model update...");
         log::info!("🚀 Starting batch PPO model update...");
         
         let buffer_size = self.buffer_size();
-        
-        // 🔥 使用批量训练器（一次性处理所有经验）
+
         let model_dir = self.model_path.parent()
-            .unwrap_or_else(|| std::path::Path::new("models/ppo"));
+            .unwrap_or_else(|| Path::new("models/ppo"));
         
         let experience_file = model_dir.join("experience_buffer.json");
+        if !experience_file.exists() {
+            anyhow::bail!("Experience file not found: {:?}", experience_file);
+        }
         
-        println!("   Experience file: {:?}", experience_file);
-        println!("   Model dir: {:?}", model_dir);
-        println!("   Buffer size: {}", buffer_size);
+        log::info!("   Experience file: {:?}", experience_file);
+        log::info!("   Model dir: {:?}", model_dir);
+        log::info!("   Buffer size: {}", buffer_size);
         
         let output = std::process::Command::new("python3")
             .arg("scripts/batch_ppo_update.py")

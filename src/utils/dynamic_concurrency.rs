@@ -293,11 +293,11 @@ mod tests {
         
         // 测试复杂度计算（现在基于文件大小，不是格式）
         let complexity_small = manager.calculate_file_complexity(500 * 1024, "jpeg", 80);
-        println!("Small file complexity: {}", complexity_small);
+        log::debug!("Small file complexity: {}", complexity_small);
         assert!(complexity_small < 50.0); // 小文件相对低复杂度
         
         let complexity_large = manager.calculate_file_complexity(50 * 1024 * 1024, "avif", 95);
-        println!("Large file complexity: {}", complexity_large);
+        log::debug!("Large file complexity: {}", complexity_large);
         assert!(complexity_large > 60.0); // 大文件高复杂度（降低阈值，因为不再有格式加成）
         
         // 测试统计

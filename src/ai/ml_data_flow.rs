@@ -108,7 +108,7 @@ impl MLDataFlow {
         std::fs::write(path, json)
             .map_err(|e| format!("File write failed: {}", e))?;
         
-        println!("Saved {} training samples to: {}", self.training_buffer.len(), path);
+        log::info!("Saved {} training samples to: {}", self.training_buffer.len(), path);
         
         // 清空缓冲区
         self.training_buffer.clear();

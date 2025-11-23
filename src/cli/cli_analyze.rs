@@ -142,7 +142,7 @@ fn get_ai_recommendation(media_info: &crate::analysis::media_analyzer::MediaInfo
     use crate::utils::format_selector::FormatSelector; // 🔥 Phase 4: 集成智能格式选择
     
     // 🤖 使用真实的AI格式推荐器
-    eprintln!("🤖 Using AI-powered format recommendation...");
+    log::info!("🤖 Using AI-powered format recommendation...");
     
     // 🔥 Phase 4: 先使用FormatSelector验证格式选择
     let selector = FormatSelector::new(false);
@@ -150,10 +150,10 @@ fn get_ai_recommendation(media_info: &crate::analysis::media_analyzer::MediaInfo
     let format_recommendation = selector.select_best_format(input_path, None)
         .context("Format selection failed")?;
     
-    eprintln!("🎯 Smart format selection: {} (confidence: {:.0}%)", 
+    log::info!("🎯 Smart format selection: {} (confidence: {:.0}%)", 
               format_recommendation.recommended_format.to_uppercase(),
               format_recommendation.confidence * 100.0);
-    eprintln!("   Reason: {}", format_recommendation.reason);
+    log::info!("   Reason: {}", format_recommendation.reason);
     
     // 转换为ImageFeatures (使用标准结构)
     use crate::{ImageFeatures, QualityMode};
@@ -186,7 +186,7 @@ fn get_ai_recommendation(media_info: &crate::analysis::media_analyzer::MediaInfo
         best_recommendation.format.clone()
     };
     
-    eprintln!("✅ Final recommendation: {} (AI confidence: {:.0}%)", 
+    log::info!("✅ Final recommendation: {} (AI confidence: {:.0}%)", 
               final_format.to_uppercase(), 
               best_recommendation.confidence * 100.0);
     

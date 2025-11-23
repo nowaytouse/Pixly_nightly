@@ -1,9 +1,12 @@
 <template>
   <div class="pixly-app">
     <!-- 🔥 无边框窗口标题栏 -->
-    <div class="titlebar">
+    <div class="titlebar glass">
       <div class="titlebar-drag">
-        <span class="titlebar-title">{{ t('app.title') }}</span>
+        <div class="app-logo">
+          <span class="logo-icon">✨</span>
+          <span class="titlebar-title">{{ t('app.title') }}</span>
+        </div>
       </div>
       <div class="titlebar-actions">
         <button class="titlebar-btn" @click="toggleLanguage" :title="t('ui.language')">
@@ -12,17 +15,17 @@
       </div>
       <div class="titlebar-controls">
         <button class="titlebar-btn" @click="minimizeWindow" :title="t('ui.minimize')">
-          <svg width="12" height="12" viewBox="0 0 12 12">
+          <svg width="10" height="10" viewBox="0 0 12 12">
             <rect x="2" y="5" width="8" height="2" fill="currentColor"/>
           </svg>
         </button>
         <button class="titlebar-btn" @click="maximizeWindow" :title="t('ui.maximize')">
-          <svg width="12" height="12" viewBox="0 0 12 12">
+          <svg width="10" height="10" viewBox="0 0 12 12">
             <rect x="2" y="2" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
           </svg>
         </button>
         <button class="titlebar-btn titlebar-close" @click="closeWindow" :title="t('ui.close')">
-          <svg width="12" height="12" viewBox="0 0 12 12">
+          <svg width="10" height="10" viewBox="0 0 12 12">
             <path d="M2 2 L10 10 M10 2 L2 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </button>
@@ -30,12 +33,13 @@
     </div>
     
     <!-- 类型切换 -->
-    <div class="type-tabs">
+    <div class="type-tabs glass">
       <button 
         class="type-tab"
         :class="{ active: conversionType === 'image' }"
         @click="conversionType = 'image'"
       >
+        <span class="tab-icon">🖼️</span>
         {{ t('tabs.image') }}
       </button>
       <button 
@@ -43,6 +47,7 @@
         :class="{ active: conversionType === 'video' }"
         @click="conversionType = 'video'"
       >
+        <span class="tab-icon">🎬</span>
         {{ t('tabs.video') }}
       </button>
     </div>
@@ -51,48 +56,63 @@
       <div class="left-panel">
         <!-- 图像面板 -->
         <template v-if="conversionType === 'image'">
-          <FormatSelector v-model="selectedFormat" />
-          <QualityPanel 
-            v-model:modelValue="quality" 
-            v-model:lossless="lossless"
-          />
-          <AdvancedParams 
-            :format="selectedFormat" 
-            v-model="advancedParams" 
-            :lossless="lossless"
-          />
-          <QuickTools v-model="quickTools" :logs="logs" ref="quickToolsRef" />
+          <div class="panel-group fade-in">
+            <FormatSelector v-model="selectedFormat" />
+          </div>
+          <div class="panel-group fade-in" style="animation-delay: 50ms">
+            <QualityPanel 
+              v-model:modelValue="quality" 
+              v-model:lossless="lossless"
+            />
+          </div>
+          <div class="panel-group fade-in" style="animation-delay: 100ms">
+            <AdvancedParams 
+              :format="selectedFormat" 
+              v-model="advancedParams" 
+              :lossless="lossless"
+            />
+          </div>
+          <div class="panel-group fade-in" style="animation-delay: 150ms">
+            <QuickTools v-model="quickTools" :logs="logs" ref="quickToolsRef" />
+          </div>
         </template>
         
         <!-- 视频面板 -->
         <template v-else>
-          <VideoPanel v-model="videoParams" />
+          <div class="panel-group fade-in">
+            <VideoPanel v-model="videoParams" />
+          </div>
         </template>
       </div>
       
-      <div class="right-panel">
+      <div class="right-panel fade-in">
         <FileList :files="files" @remove="removeFile" />
       </div>
     </div>
     
-    <footer class="footer">
+    <footer class="footer glass">
       <div class="footer-left">
-        <span class="file-count">{{ files.length }} {{ t('files.count') }}</span>
+        <div class="status-badge">
+          <span class="status-dot" :class="{ active: !isConverting }"></span>
+          <span class="file-count">{{ files.length }} {{ t('files.count') }}</span>
+        </div>
         <button 
           class="btn-refresh"
           :disabled="isConverting"
           @click="loadFiles"
           :title="t('ui.refreshFiles')"
         >
-          🔄 {{ t('ui.refresh') }}
+          <span class="icon">🔄</span> {{ t('ui.refresh') }}
         </button>
       </div>
       <div class="footer-right">
         <button 
-          class="btn-convert"
+          class="btn btn-primary btn-lg"
           :disabled="files.length === 0 || isConverting"
           @click="startConversion"
         >
+          <span class="icon" v-if="isConverting">⚙️</span>
+          <span class="icon" v-else>✨</span>
           {{ isConverting ? t('convert.converting') : t('convert.start') }}
         </button>
       </div>
@@ -540,31 +560,26 @@ onMounted(async () => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-secondary);
+  background: var(--bg-app);
   color: var(--text-primary);
   overflow: hidden;
-  /* 性能优化 */
   transform: translateZ(0);
   backface-visibility: hidden;
 }
 
-/* 🔥 无边框窗口标题栏 - 固定在顶部 */
+/* 🔥 无边框窗口标题栏 */
 .titlebar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  height: 32px;
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   user-select: none;
-  /* 确保在滚动时保持在最上层 */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  padding: 0 4px;
 }
 
 .titlebar-drag {
@@ -577,18 +592,25 @@ onMounted(async () => {
   cursor: move;
 }
 
-.titlebar-title {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.titlebar-actions {
+.app-logo {
   display: flex;
-  height: 100%;
-  -webkit-app-region: no-drag;
+  align-items: center;
+  gap: 8px;
 }
 
+.logo-icon {
+  font-size: 16px;
+  filter: drop-shadow(0 0 8px rgba(0, 114, 239, 0.5));
+}
+
+.titlebar-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+
+.titlebar-actions,
 .titlebar-controls {
   display: flex;
   height: 100%;
@@ -596,7 +618,7 @@ onMounted(async () => {
 }
 
 .titlebar-btn {
-  width: 46px;
+  width: 40px;
   height: 100%;
   display: flex;
   align-items: center;
@@ -605,35 +627,28 @@ onMounted(async () => {
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast) var(--ease-out);
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
 .titlebar-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
 }
 
-.titlebar-btn:active {
-  background: rgba(255, 255, 255, 0.1);
-}
-
 .titlebar-close:hover {
-  background: #e81123;
+  background: var(--color-danger);
   color: white;
-}
-
-.titlebar-close:active {
-  background: #c50f1f;
+  box-shadow: 0 0 10px var(--color-danger);
 }
 
 .main-container {
   flex: 1;
   display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 16px;
-  padding: 16px;
-  /* 🔥 为固定的 titlebar (32px) + type-tabs (~56px) 留出空间 */
-  margin-top: 88px;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+  padding: 20px;
+  /* 🔥 为固定的 titlebar (36px) + type-tabs (~56px) 留出空间 */
+  margin-top: 92px; /* 36px titlebar + 56px tabs */
   overflow: hidden;
   /* 性能优化 */
   will-change: auto;
@@ -642,9 +657,10 @@ onMounted(async () => {
 .left-panel {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   overflow-y: auto;
   overflow-x: hidden;
+  padding-right: 4px; /* 防止滚动条遮挡内容 */
   /* 流畅滚动 */
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
@@ -652,14 +668,10 @@ onMounted(async () => {
   position: relative;
 }
 
-.left-panel > * {
-  animation: slideIn var(--transition-base) var(--ease-out);
+.panel-group {
+  animation: slideIn var(--duration-normal) var(--ease-out);
   animation-fill-mode: both;
 }
-
-.left-panel > *:nth-child(1) { animation-delay: 0ms; }
-.left-panel > *:nth-child(2) { animation-delay: 50ms; }
-.left-panel > *:nth-child(3) { animation-delay: 100ms; }
 
 @keyframes slideIn {
   from {
@@ -675,9 +687,12 @@ onMounted(async () => {
 .right-panel {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   overflow: hidden;
-  animation: fadeIn var(--transition-base) var(--ease-out);
+  background: var(--bg-panel);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  animation: fadeIn var(--duration-normal) var(--ease-out);
 }
 
 @keyframes fadeIn {
@@ -691,60 +706,101 @@ onMounted(async () => {
 
 .footer {
   border-top: 1px solid var(--border-color);
-  padding: 0 16px;
-  min-height: 56px;
+  padding: 0 20px;
+  min-height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-primary);
   flex-shrink: 0;
-  transition: all var(--transition-fast) var(--ease-out);
+  transition: all var(--duration-fast) var(--ease-out);
+  z-index: 100;
 }
 
 .footer-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg-input);
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 8px var(--color-success);
+  transition: all var(--duration-normal);
+}
+
+.status-dot.active {
+  background: var(--color-warning);
+  box-shadow: 0 0 8px var(--color-warning);
 }
 
 .file-count {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--text-secondary);
-  transition: color var(--transition-fast) var(--ease-out);
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
-.footer-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.btn-convert {
-  padding: 8px 24px;
-  background: var(--color-primary);
-  border: none;
-  border-radius: 6px;
-  color: white;
+.btn {
+  padding: 8px 16px;
+  background: var(--bg-button);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-base) var(--ease-out);
-  box-shadow: 0 2px 4px rgba(0, 114, 239, 0.3);
-  /* 性能优化 */
-  transform: translateZ(0);
-  backface-visibility: hidden;
+  transition: all var(--duration-fast) var(--ease-out);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-.btn-convert:hover:not(:disabled) {
-  background: var(--color-primary-hover);
+.btn:hover:not(:disabled) {
+  background: var(--bg-button-hover);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.3);
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  border: none;
+  color: white;
+  box-shadow: var(--glow-primary);
+}
+
+.btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 114, 239, 0.4);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.6);
+  filter: brightness(1.1);
 }
 
-.btn-convert:active:not(:disabled) {
-  background: var(--color-primary-active);
+.btn-primary:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 114, 239, 0.3);
+  box-shadow: var(--glow-primary);
 }
 
 .btn-convert:disabled {
@@ -799,30 +855,20 @@ onMounted(async () => {
 
 .type-tab {
   flex: 1;
-  padding: 8px 16px;
+  padding: 12px 16px;
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
   color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-base) var(--ease-out);
+  transition: all var(--duration-normal) var(--ease-out);
   position: relative;
-  /* 性能优化 */
-  transform: translateZ(0);
-}
-
-.type-tab::before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 0;
-  height: 2px;
-  background: var(--color-primary);
-  transition: all var(--transition-base) var(--ease-out);
-  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .type-tab:hover {
@@ -832,9 +878,17 @@ onMounted(async () => {
 
 .type-tab.active {
   color: var(--color-primary);
+  background: linear-gradient(to bottom, transparent, rgba(99, 102, 241, 0.05));
 }
 
-.type-tab.active::before {
+.type-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
   width: 100%;
+  height: 2px;
+  background: var(--gradient-primary);
+  box-shadow: var(--glow-primary);
 }
 </style>

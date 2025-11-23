@@ -69,12 +69,13 @@ pub use codecs::video::animation_strategy::{
     AnimationPreservation,
 };
 pub use codecs::video::h266::{H266Encoder, H266Params};  // 🔥 Phase 4: H.266/VVC
-pub use codecs::video::video::*;
+pub use codecs::video::core::*;
 pub use codecs::video::video_processor::{
     VideoProcessor,
     VideoConversionConfig,
     AudioMode,
 };
+
 pub use codecs::video::video_strategy::{
     VideoCodec,
     QualityTarget,
@@ -95,7 +96,7 @@ pub use operations::sharpen::*;
 pub use operations::color_quantizer::{ColorQuantizer, QuantizationConfig};
 
 // 🤖 AI模块重新导出
-pub use ai::ai::*;
+pub use ai::core::*;
 pub use ai::ppo_model_enhanced::{EnhancedPPOPredictor, MediaType, TrainingSample};
 pub use ai::online_learner_manager::OnlineLearnerManager;
 pub use ai::bayesian_optimizer::{
@@ -173,7 +174,6 @@ pub use utils::simd_processor::{
     SharpenConfig,
     SharpenPerformanceInfo,
 };
-pub use utils::smart_cache::{SmartCache, CacheEntry, CacheStats};
 pub use utils::time_estimator::*;
 pub use utils::unified_ai_interface::{
     UnifiedAIManager,
@@ -182,6 +182,8 @@ pub use utils::unified_ai_interface::{
     AIPreferences,
 };
 pub use utils::unified_cache::*;
+pub use utils::unified_validator::{UnifiedValidator, ConversionConfig as ValidatorConfig, InputFile as ValidatorInputFile, ConversionMode};
+pub use utils::i18n_messages::{I18nMessages, Language, MessageKey};
 pub use utils::validation::*;
 pub use utils::zero_copy_buffer::*;
 pub use utils::custom_presets::{CustomPreset, PresetManager};

@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::ai::ppo_model_enhanced::{EnhancedPPOPredictor, MediaType};
 use crate::codecs::image::modern_formats::{ModernFormatConverter, AVIFParams, JXLParams, FormatSupport};
-use crate::analysis::quality_metrics::{QualityAssessor, QualityMetrics};
+use crate::analysis::quality_metrics::{QualityAssessor, AssessmentMetrics};
 use crate::utils::transparent_logger::{TransparentLogger, OperationTracker, LogLevel};
 use crate::errors::path_to_str;
 
@@ -50,7 +50,7 @@ pub struct ConversionResult {
     pub input_size: u64,
     pub output_size: u64,
     pub compression_ratio: f64,
-    pub quality_metrics: Option<QualityMetrics>,
+    pub quality_metrics: Option<AssessmentMetrics>,
     pub used_ppo: bool,
     pub retries: u32,
     pub error: Option<String>,
@@ -436,7 +436,7 @@ impl UnifiedConversionEngine {
     }
     
     /// 评估质量
-    fn assess_quality(&self, request: &ConversionRequest) -> Result<QualityMetrics> {
+    fn assess_quality(&self, request: &ConversionRequest) -> Result<AssessmentMetrics> {
         match request.media_type {
             MediaType::Image => {
                 self.quality_assessor.assess_image_quality(

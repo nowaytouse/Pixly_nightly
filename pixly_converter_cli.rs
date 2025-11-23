@@ -756,7 +756,7 @@ fn run(cli: Cli) -> Result<()> {
                     Ok(recommendation) => {
                         println!("🎯 Smart format selection: {}", recommendation.recommended_format.to_uppercase());
                         println!("   💡 {}", recommendation.reason);
-                        println!("   📊 Confidence: {:.0}%", recommendation.confidence * 100.0);
+                        println!("   � Confidence: {:.0}%", recommendation.confidence * 100.0);
                         if recommendation.estimated_size_change < 0.0 {
                             println!("   📉 Estimated size reduction: {:.0}%", -recommendation.estimated_size_change * 100.0);
                         }

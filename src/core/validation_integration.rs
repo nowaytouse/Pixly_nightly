@@ -17,30 +17,30 @@ impl ValidationDisplay {
     /// 显示验证结果
     pub fn display_result(result: &ValidationResult) {
         if result.valid {
-            println!("✅ Validation passed");
-            println!("   Validation level: Level {}", result.level);
+            log::info!("✅ Validation passed");
+            log::info!("   Validation level: Level {}", result.level);
             
             if !result.warnings.is_empty() {
-                println!("\n⚠️  Warnings:");
+                log::info!("\n⚠️  Warnings:");
                 for warning in &result.warnings {
-                    println!("   {}", warning);
+                    log::info!("   {}", warning);
                 }
             }
         } else {
-            println!("❌ Validation failed");
-            println!("   Failed at level: Level {}", result.level);
+            log::error!("❌ Validation failed");
+            log::error!("   Failed at level: Level {}", result.level);
             
             if !result.errors.is_empty() {
-                println!("\nErrors:");
+                log::error!("\nErrors:");
                 for error in &result.errors {
-                    println!("   {}", error);
+                    log::error!("   {}", error);
                 }
             }
             
             if !result.warnings.is_empty() {
-                println!("\nWarnings:");
+                log::warn!("\nWarnings:");
                 for warning in &result.warnings {
-                    println!("   {}", warning);
+                    log::warn!("   {}", warning);
                 }
             }
         }
@@ -62,14 +62,14 @@ impl ValidationDisplay {
             print!("❌ {} errors ", result.errors.len());
         }
         
-        println!();
+        log::info!("");
     }
     
     /// 显示详细的验证报告
     pub fn display_detailed_report(result: &ValidationResult) {
-        println!("\n{}", "═".repeat(60));
-        println!("  Validation Report");
-        println!("{}", "═".repeat(60));
+        log::info!("\n{}", "═".repeat(60));
+        log::info!("  Validation Report");
+        log::info!("{}", "═".repeat(60));
         
         // 状态
         let status = if result.valid {
@@ -77,26 +77,26 @@ impl ValidationDisplay {
         } else {
             "Failed ❌"
         };
-        println!("Status: {}", status);
-        println!("Level: Level {}", result.level);
+        log::info!("Status: {}", status);
+        log::info!("Level: Level {}", result.level);
         
         // 错误
         if !result.errors.is_empty() {
-            println!("\nError List:");
+            log::info!("\nError List:");
             for (i, error) in result.errors.iter().enumerate() {
-                println!("  {}. {}", i + 1, error);
+                log::info!("  {}. {}", i + 1, error);
             }
         }
         
         // 警告
         if !result.warnings.is_empty() {
-            println!("\nWarning List:");
+            log::info!("\nWarning List:");
             for (i, warning) in result.warnings.iter().enumerate() {
-                println!("  {}. {}", i + 1, warning);
+                log::info!("  {}. {}", i + 1, warning);
             }
         }
         
-        println!("{}", "═".repeat(60));
+        log::info!("{}", "═".repeat(60));
     }
 }
 

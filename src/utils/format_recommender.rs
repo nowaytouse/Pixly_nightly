@@ -9,7 +9,7 @@ use anyhow::{Result, Context};
 
 /// 格式推荐结果
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FormatRecommendation {
+pub struct AIFormatRecommendation {
     pub format: String,
     pub score: f64,
     pub space_saving: f64,
@@ -83,7 +83,7 @@ impl AIFormatRecommender {
         features: &ImageFeatures,
         quality_mode: QualityMode,
         user_preferences: &UserPreferences,
-    ) -> Vec<FormatRecommendation> {
+    ) -> Vec<AIFormatRecommendation> {
         let formats = self.get_candidate_formats(features);
         let mut recommendations = Vec::with_capacity(formats.len());
         
@@ -115,7 +115,7 @@ impl AIFormatRecommender {
             
             let reason = self.generate_reason(&format, space_saving, quality_score as u8, prediction.confidence);
             
-            recommendations.push(FormatRecommendation {
+            recommendations.push(AIFormatRecommendation {
                 format: format.clone(),
                 score,
                 space_saving,
@@ -333,7 +333,7 @@ impl AIFormatRecommender {
         features: &ImageFeatures,
         quality_mode: QualityMode,
         user_preferences: &UserPreferences,
-    ) -> Option<FormatRecommendation> {
+    ) -> Option<AIFormatRecommendation> {
         let recommendations = self.recommend_best_format(features, quality_mode, user_preferences);
         recommendations.into_iter().next()
     }

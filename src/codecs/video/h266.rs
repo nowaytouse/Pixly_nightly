@@ -70,9 +70,9 @@ impl H266Encoder {
             .args(["-codecs"])
             .output()
             .ok()
-            .and_then(|output| {
+            .map(|output| {
                 let codecs = String::from_utf8_lossy(&output.stdout);
-                Some(codecs.contains("libvvenc") || codecs.contains("vvc"))
+                codecs.contains("libvvenc") || codecs.contains("vvc")
             })
             .unwrap_or(false)
     }

@@ -75,6 +75,16 @@ pub fn call_python_ml(request: &MLPredictRequest) -> Result<MLPredictResponse> {
         anyhow::bail!("Python ML prediction failed: {}", stderr);
     }
     
+    // 捕获并记录 Python 的 stderr 输出（通常包含有用的诊断信息）
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    if !stderr.is_empty() {
+        for line in stderr.lines() {
+            if line.contains("✅") || line.contains("🤖") || line.contains("⚠️") {
+                info!("   🐍 {}", line);
+            }
+        }
+    }
+    
     // 4. 解析响应 (🚀 性能优化: 直接从字节解析，避免String分配)
     let response: MLPredictResponse = serde_json::from_slice(&output.stdout)
         .context("Failed to parse Python ML response")?;
@@ -187,7 +197,7 @@ impl PythonMLCaller {
     }
     
     /// 🔥 AI自动参数优化
-    pub fn optimize_params(&self, features: &[f64], optimize_mode: &str) -> Result<OptimizedParams> {
+    pub fn optimize_params(&self, features: &[f64], optimize_mode: &str) -> Result<MLOptimizedParams> {
         let request = MLPredictRequest {
             features: features.to_vec(),
             target_format: "auto".to_string(),
@@ -196,7 +206,7 @@ impl PythonMLCaller {
         
         let response = call_python_ml(&request)?;
         
-        Ok(OptimizedParams {
+        Ok(MLOptimizedParams {
             quality: response.quality,
             speed: response.effort,
             lossless: response.lossless,
@@ -231,7 +241,7 @@ impl PythonMLCaller {
 
 /// 优化后的参数
 #[derive(Debug, Clone)]
-pub struct OptimizedParams {
+pub struct MLOptimizedParams {
     pub quality: u8,
     pub speed: u8,
     pub lossless: bool,

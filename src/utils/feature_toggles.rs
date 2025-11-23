@@ -153,7 +153,7 @@ impl FeatureToggles {
         
         // Two-Pass需要场景检测支持
         if self.enable_two_pass && !self.enable_scene_detection {
-            println!("⚠️  Warning: Two-Pass encoding works best with scene detection enabled");
+            log::warn!("⚠️  Warning: Two-Pass encoding works best with scene detection enabled");
         }
         
         Ok(())

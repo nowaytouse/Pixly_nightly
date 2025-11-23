@@ -175,6 +175,39 @@ done
 find . -name "*.png" -exec pixly-converter convert {} --format avif --ai \;
 ```
 
+### Logging System
+
+Pixly使用分级日志系统,可通过`RUST_LOG`环境变量控制输出详细程度:
+
+```bash
+# 显示所有日志(包括调试信息)
+RUST_LOG=debug pixly-converter convert input.jpg --format webp
+
+# 仅显示info及以上级别(默认)
+RUST_LOG=info pixly-converter convert input.jpg --format webp
+
+# 仅显示警告和错误
+RUST_LOG=warn pixly-converter convert input.jpg --format webp
+
+# 仅显示错误
+RUST_LOG=error pixly-converter convert input.jpg --format webp
+
+# 针对特定模块启用debug日志
+RUST_LOG=pixly_kernel::ai=debug,info pixly-converter convert input.jpg --format webp --ai
+```
+
+**日志级别说明**:
+- `error`: 关键错误(如转换失败)
+- `warn`: 警告信息(如配置问题)  
+- `info`: 常规信息(转换进度、完成状态)
+- `debug`: 调试信息(内部操作细节)
+
+**日志输出位置**:
+- 用户界面输出 → `stdout` (不受RUST_LOG影响)
+- 信息日志 → `stderr` (受RUST_LOG控制)
+- 错误日志 → `stderr`
+
+
 ## 📊 Testing
 
 ```bash

@@ -219,17 +219,17 @@ pub fn execute_conversion(
     // ═══════════════════════════════════════════════════
     let toggles = config.feature_toggles.as_ref();
     
-    println!("🔄 Executing conversion:");
-    println!("   Input: {:?}", input);
-    println!("   Output: {:?}", output);
-    println!("   Format: {}", format);
-    println!("   Quality: {}", config.quality);
-    println!("   Speed: {}", config.speed);
+    log::info!("🔄 Executing conversion:");
+    log::info!("   Input: {:?}", input);
+    log::info!("   Output: {:?}", output);
+    log::info!("   Format: {}", format);
+    log::info!("   Quality: {}", config.quality);
+    log::info!("   Speed: {}", config.speed);
     
     if let Some(t) = toggles {
-        println!("   Feature toggles: {}", t.summary());
+        log::info!("   Feature toggles: {}", t.summary());
         if config.has_advanced_params() {
-            println!("   Advanced params: Enabled");
+            log::info!("   Advanced params: Enabled");
         }
     }
     
@@ -241,19 +241,19 @@ pub fn execute_conversion(
     // ═══════════════════════════════════════════════════
     if toggles.map(|t| t.enable_video_for_animation).unwrap_or(false)
         && should_convert_animation_to_video(input)? {
-            println!("🎬 Large animated image detected, auto-converting to video format");
-            println!("   File: {:?}", input);
-            println!("   Expected size reduction: 60-80%");
-            println!("   Using codec: H.265/HEVC");
+            log::info!("🎬 Large animated image detected, auto-converting to video format");
+            log::info!("   File: {:?}", input);
+            log::info!("   Expected size reduction: 60-80%");
+            log::info!("   Using codec: H.265/HEVC");
             
             // 🔥 Auto-convert to video
             let video_output = output.with_extension("mp4");
-            println!("   Conversion target: {:?}", video_output);
+            log::info!("   Conversion target: {:?}", video_output);
             
             convert_animation_to_video(input, &video_output)?;
             
-            println!("   ✅ Animation converted to video");
-            println!();
+            log::info!("   ✅ Animation converted to video");
+            log::info!("");
             
             // 🔥 返回视频转换结果，不再继续图像转换
             let output_size = std::fs::metadata(&video_output)?.len();
@@ -278,7 +278,7 @@ pub fn execute_conversion(
     // 🔧 格式自动修正 (如果启用)
     // ═══════════════════════════════════════════════════
     if toggles.map(|t| t.enable_format_correction).unwrap_or(false) {
-        println!("🔧 Checking format correction...");
+        log::info!("🔧 Checking format correction...");
         check_format_correction(input)?;
     }
     
@@ -291,7 +291,7 @@ pub fn execute_conversion(
     // 🔗 智能预处理 (如果启用)
     // ═══════════════════════════════════════════════════
     let preprocessed_input = if toggles.map(|t| t.enable_preprocess).unwrap_or(false) {
-        println!("🔗 Running intelligent preprocessing...");
+        log::info!("🔗 Running intelligent preprocessing...");
         apply_preprocessing(input, config)?
     } else {
         input.to_path_buf()
@@ -316,7 +316,7 @@ pub fn execute_conversion(
     // 🔥 Phase 3.3: 输出验证
     // ═══════════════════════════════════════════════════
     if config.enable_validation {
-        println!("🔍 Running output validation...");
+        log::info!("🔍 Running output validation...");
         let result = ConversionValidator::validate_output(output, Some(input_size));
         ValidationDisplay::display_result(&result);
         
@@ -330,18 +330,18 @@ pub fn execute_conversion(
     // 📊 Phase 3.3: 质量分析
     // ═══════════════════════════════════════════════════
     if config.enable_quality_analysis {
-        println!("📊 Running quality analysis...");
+        log::info!("📊 Running quality analysis...");
         let analyzer = QualityAnalyzer::new();
         
         match analyzer.analyze(output) {
             Ok(metrics) => {
-                println!("   Estimated quality: {}", metrics.estimated_quality);
-                println!("   Complexity score: {:.2}", metrics.complexity_score);
-                println!("   Bytes per pixel: {:.2}", metrics.bytes_per_pixel);
-                println!("   Content type: {}", metrics.content_type);
+                log::info!("   Estimated quality: {}", metrics.estimated_quality);
+                log::info!("   Complexity score: {:.2}", metrics.complexity_score);
+                log::info!("   Bytes per pixel: {:.2}", metrics.bytes_per_pixel);
+                log::info!("   Content type: {}", metrics.content_type);
             }
             Err(e) => {
-                println!("   ⚠️  Quality analysis failed: {}", e);
+                log::warn!("   ⚠️  Quality analysis failed: {}", e);
             }
         }
     }
@@ -357,18 +357,18 @@ pub fn execute_conversion(
     // 📊 SSIM质量验证 (如果启用)
     // ═══════════════════════════════════════════════════
     if toggles.map(|t| t.enable_ssim).unwrap_or(false) {
-        println!("📊 Running SSIM quality validation...");
+        log::info!("📊 Running SSIM quality validation...");
         validate_ssim_quality(input, output)?;
     }
     
     let output_size = std::fs::metadata(output)?.len();
     let elapsed = start_time.elapsed();
     
-    println!("✅ Conversion completed:");
-    println!("   Input size: {} bytes", input_size);
-    println!("   Output size: {} bytes", output_size);
-    println!("   Compression ratio: {:.2}%", (output_size as f64 / input_size as f64) * 100.0);
-    println!("   Time elapsed: {:.2}s", elapsed.as_secs_f64());
+    log::info!("✅ Conversion completed:");
+    log::info!("   Input size: {} bytes", input_size);
+    log::info!("   Output size: {} bytes", output_size);
+    log::info!("   Compression ratio: {:.2}%", (output_size as f64 / input_size as f64) * 100.0);
+    log::info!("   Time elapsed: {:.2}s", elapsed.as_secs_f64());
     
     // ═══════════════════════════════════════════════════
     // 🎓 在线学习：记录转换经验

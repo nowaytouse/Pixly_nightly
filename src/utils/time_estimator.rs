@@ -504,3 +504,80 @@ mod tests {
         assert!(batch_time.as_secs_f64() > 0.0);
     }
 }
+
+/// 🌊 模拟进度生成器
+/// 
+/// 用于在无法获取精确进度时（如AI分析、模型加载），生成符合物理直觉的平滑进度曲线。
+pub struct SimulatedProgress {
+    start_time: std::time::Instant,
+    estimated_duration: Duration,
+    curve_type: ProgressCurve,
+}
+
+/// 进度曲线类型
+#[derive(Debug, Clone, Copy)]
+pub enum ProgressCurve {
+    /// 线性增长 (适合短任务)
+    Linear,
+    /// S型曲线 (适合长任务：启动慢 -> 加速 -> 收尾慢)
+    EaseInOut,
+    /// 芝诺逼近 (适合未知时长的任务：无限逼近99%)
+    Zeno { target: f64, factor: f64 },
+}
+
+impl SimulatedProgress {
+    /// 创建新的模拟进度
+    pub fn new(estimated_duration: Duration, curve_type: ProgressCurve) -> Self {
+        Self {
+            start_time: std::time::Instant::now(),
+            estimated_duration,
+            curve_type,
+        }
+    }
+
+    /// 获取当前模拟进度 (0.0 - 1.0)
+    pub fn get_current_progress(&self) -> f64 {
+        let elapsed = self.start_time.elapsed().as_secs_f64();
+        let total = self.estimated_duration.as_secs_f64();
+        
+        if total <= 0.0 {
+            return 0.0;
+        }
+
+        let raw_progress = (elapsed / total).min(1.0);
+
+        match self.curve_type {
+            ProgressCurve::Linear => raw_progress,
+            
+            ProgressCurve::EaseInOut => {
+                // Sigmoid-like S-curve: x^2 * (3 - 2x)
+                // 这是一个经典的平滑插值函数 (SmoothStep)
+                raw_progress * raw_progress * (3.0 - 2.0 * raw_progress)
+            },
+            
+            ProgressCurve::Zeno { target, factor } => {
+                // 芝诺逼近：进度 = 1 - (1 - target) ^ (elapsed * factor)
+                // 随着时间推移，无限逼近 target，但速度越来越慢
+                // 这里的实现简化为：基于时间的渐近线
+                // 假设 total 是 "预期" 时间，到达预期时间时达到 80%，之后极慢
+                
+                if raw_progress < 0.8 {
+                    // 前80%时间：线性增长到80%
+                    raw_progress
+                } else {
+                    // 后续时间：无限逼近 target (e.g. 0.99)
+                    // 使用指数衰减模拟
+                    let extra_time = elapsed - (total * 0.8);
+                    let remaining_space = target - 0.8;
+                    // 衰减公式
+                    0.8 + remaining_space * (1.0 - (-extra_time * factor).exp())
+                }
+            }
+        }
+    }
+    
+    /// 重置计时器
+    pub fn reset(&mut self) {
+        self.start_time = std::time::Instant::now();
+    }
+}

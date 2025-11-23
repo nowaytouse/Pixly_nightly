@@ -9,7 +9,7 @@ use crate::errors::path_to_str;
 
 /// 质量评估结果
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct QualityMetrics {
+pub struct AssessmentMetrics {
     pub vmaf: Option<f64>,      // 视频质量 (0-100)
     pub ssim: Option<f64>,      // 结构相似性 (0-1)
     pub psnr: Option<f64>,      // 峰值信噪比 (dB)
@@ -53,7 +53,7 @@ impl QualityAssessor {
         &self,
         original: P,
         compressed: P,
-    ) -> Result<QualityMetrics> {
+    ) -> Result<AssessmentMetrics> {
         let original = original.as_ref();
         let compressed = compressed.as_ref();
         
@@ -64,7 +64,7 @@ impl QualityAssessor {
         // 综合评分 (SSIM权重更高)
         let overall_score = (ssim * 70.0 + (psnr / 50.0).min(1.0) * 30.0) * 100.0;
         
-        Ok(QualityMetrics {
+        Ok(AssessmentMetrics {
             vmaf: None,
             ssim: Some(ssim),
             psnr: Some(psnr),
@@ -78,7 +78,7 @@ impl QualityAssessor {
         &self,
         original: P,
         compressed: P,
-    ) -> Result<QualityMetrics> {
+    ) -> Result<AssessmentMetrics> {
         let original = original.as_ref();
         let compressed = compressed.as_ref();
         
@@ -94,7 +94,7 @@ impl QualityAssessor {
         // VMAF已经是0-100的分数
         let overall_score = vmaf;
         
-        Ok(QualityMetrics {
+        Ok(AssessmentMetrics {
             vmaf: Some(vmaf),
             ssim,
             psnr,
@@ -109,7 +109,7 @@ impl QualityAssessor {
         &self,
         original: P,
         compressed: P,
-    ) -> Result<QualityMetrics> {
+    ) -> Result<AssessmentMetrics> {
         let original = original.as_ref();
         let compressed = compressed.as_ref();
         
@@ -122,7 +122,7 @@ impl QualityAssessor {
         // 综合评分 (映射到0-100)
         let overall_score = (pesq_score - 1.0) / 4.0 * 100.0;
         
-        Ok(QualityMetrics {
+        Ok(AssessmentMetrics {
             vmaf: None,
             ssim: None,
             psnr: None,
@@ -267,7 +267,7 @@ impl Default for QualityAssessor {
     }
 }
 
-impl QualityMetrics {
+impl AssessmentMetrics {
     /// 获取质量等级
     pub fn quality_grade(&self) -> QualityGrade {
         match self.overall_score {
@@ -340,12 +340,12 @@ mod tests {
     #[test]
     fn test_quality_assessor_creation() {
         let assessor = QualityAssessor::new();
-        println!("VMAF support: {}", assessor.has_vmaf_support());
+        log::debug!("VMAF support: {}", assessor.has_vmaf_support());
     }
     
     #[test]
     fn test_quality_grade() {
-        let metrics = QualityMetrics {
+        let metrics = AssessmentMetrics {
             vmaf: Some(92.0),
             ssim: Some(0.95),
             psnr: Some(40.0),
@@ -370,7 +370,7 @@ mod tests {
     
     #[test]
     fn test_detailed_report() {
-        let metrics = QualityMetrics {
+        let metrics = AssessmentMetrics {
             vmaf: Some(88.5),
             ssim: Some(0.92),
             psnr: Some(38.2),

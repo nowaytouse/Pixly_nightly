@@ -259,7 +259,7 @@ impl FilenameNormalizer {
                 
                 // 如果检测到的扩展名与当前不同，使用检测到的
                 if detected_ext != &current_ext.to_lowercase() {
-                    println!("📝 Extension corrected: .{} → .{} (confidence: {:.2}%)", 
+                    log::info!("📝 Extension corrected: .{} → .{} (confidence: {:.2}%)", 
                              current_ext, detected_ext, detection.confidence * 100.0);
                     detected_ext.clone()
                 } else {
@@ -281,7 +281,7 @@ impl FilenameNormalizer {
         match detector.detect_file_type(path) {
             Ok(detection) => {
                 let ext = detection.detected_type.clone();
-                println!("📝 Extension detected: .{} (confidence: {:.2}%)", 
+                log::info!("📝 Extension detected: .{} (confidence: {:.2}%)", 
                          ext, detection.confidence * 100.0);
                 Some(ext)
             }

@@ -1,5 +1,5 @@
 // AI and ML modules
-pub mod ai;
+pub mod core;
 pub mod alpha_predictor;
 pub mod batch_decision_manager;
 pub mod bayesian_optimizer;
