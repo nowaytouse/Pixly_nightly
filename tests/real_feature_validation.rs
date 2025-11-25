@@ -3,6 +3,7 @@
 //! Tests for validating that extracted features match expected values
 //! and that the feature extraction pipeline works correctly.
 
+#[allow(unused_imports)]
 use std::path::Path;
 
 /// Test that feature extraction produces valid 128-dimensional vectors

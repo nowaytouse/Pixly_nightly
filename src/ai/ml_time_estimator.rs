@@ -320,3 +320,244 @@ impl Default for TimeEstimator {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_test_features() -> FileFeatures {
+        FileFeatures {
+            file_path: "/tmp/test.jpg".to_string(),
+            width: 1920,
+            height: 1080,
+            file_size: 1_000_000,
+            format: "jpg".to_string(),
+            is_animated: false,
+            frame_count: 1,
+        }
+    }
+
+    fn create_test_params() -> ConversionParams {
+        ConversionParams {
+            target_format: "webp".to_string(),
+            quality: 85,
+            effort: 5,
+            lossless: false,
+            scale_ratio: None,
+            threads: 8,
+        }
+    }
+
+    #[test]
+    fn test_time_estimator_creation() {
+        let estimator = TimeEstimator::new();
+        assert!(estimator.learning_enabled);
+        assert!(!estimator.format_factors.is_empty());
+    }
+
+    #[test]
+    fn test_estimate_conversion_time() {
+        let estimator = TimeEstimator::new();
+        let features = create_test_features();
+        let params = create_test_params();
+
+        let estimate = estimator.estimate_conversion_time(&features, &params);
+
+        assert!(estimate.estimated_time.as_secs_f64() > 0.0);
+        assert!(estimate.confidence > 0.0 && estimate.confidence <= 1.0);
+        assert_eq!(estimate.estimation_method, EstimationMethod::Theoretical);
+    }
+
+    #[test]
+    fn test_format_factors() {
+        let estimator = TimeEstimator::new();
+
+        // AVIF should take longer than JPEG
+        let avif_factor = estimator.get_format_factor("avif");
+        let jpg_factor = estimator.get_format_factor("jpg");
+
+        assert!(avif_factor > jpg_factor, "AVIF should have higher factor than JPG");
+    }
+
+    #[test]
+    fn test_high_quality_takes_longer() {
+        let estimator = TimeEstimator::new();
+        let features = create_test_features();
+
+        let low_quality_params = ConversionParams {
+            target_format: "webp".to_string(),
+            quality: 70,
+            effort: 3,
+            lossless: false,
+            scale_ratio: None,
+            threads: 8,
+        };
+
+        let high_quality_params = ConversionParams {
+            target_format: "webp".to_string(),
+            quality: 98,
+            effort: 9,
+            lossless: false,
+            scale_ratio: None,
+            threads: 8,
+        };
+
+        let low_estimate = estimator.estimate_conversion_time(&features, &low_quality_params);
+        let high_estimate = estimator.estimate_conversion_time(&features, &high_quality_params);
+
+        assert!(
+            high_estimate.estimated_time > low_estimate.estimated_time,
+            "Higher quality should take longer"
+        );
+    }
+
+    #[test]
+    fn test_larger_image_takes_longer() {
+        let estimator = TimeEstimator::new();
+        let params = create_test_params();
+
+        let small_features = FileFeatures {
+            file_path: "/tmp/small.jpg".to_string(),
+            width: 640,
+            height: 480,
+            file_size: 100_000,
+            format: "jpg".to_string(),
+            is_animated: false,
+            frame_count: 1,
+        };
+
+        let large_features = FileFeatures {
+            file_path: "/tmp/large.jpg".to_string(),
+            width: 4096,
+            height: 2160,
+            file_size: 10_000_000,
+            format: "jpg".to_string(),
+            is_animated: false,
+            frame_count: 1,
+        };
+
+        let small_estimate = estimator.estimate_conversion_time(&small_features, &params);
+        let large_estimate = estimator.estimate_conversion_time(&large_features, &params);
+
+        assert!(
+            large_estimate.estimated_time > small_estimate.estimated_time,
+            "Larger images should take longer"
+        );
+    }
+
+    #[test]
+    fn test_animated_takes_longer() {
+        let estimator = TimeEstimator::new();
+        let params = create_test_params();
+
+        let static_features = FileFeatures {
+            file_path: "/tmp/static.gif".to_string(),
+            width: 500,
+            height: 500,
+            file_size: 500_000,
+            format: "gif".to_string(),
+            is_animated: false,
+            frame_count: 1,
+        };
+
+        let animated_features = FileFeatures {
+            file_path: "/tmp/animated.gif".to_string(),
+            width: 500,
+            height: 500,
+            file_size: 500_000,
+            format: "gif".to_string(),
+            is_animated: true,
+            frame_count: 100,
+        };
+
+        let static_estimate = estimator.estimate_conversion_time(&static_features, &params);
+        let animated_estimate = estimator.estimate_conversion_time(&animated_features, &params);
+
+        assert!(
+            animated_estimate.estimated_time > static_estimate.estimated_time,
+            "Animated images should take longer"
+        );
+    }
+
+    #[test]
+    fn test_record_and_use_historical_data() {
+        let mut estimator = TimeEstimator::new();
+        let features = create_test_features();
+        let params = create_test_params();
+
+        // First estimate (no historical data)
+        let first_estimate = estimator.estimate_conversion_time(&features, &params);
+        assert_eq!(first_estimate.estimation_method, EstimationMethod::Theoretical);
+
+        // Record actual time
+        let actual_time = Duration::from_millis(500);
+        estimator.record_actual_time(&features, &params, actual_time);
+
+        // Second estimate should use hybrid method
+        let second_estimate = estimator.estimate_conversion_time(&features, &params);
+        assert_eq!(second_estimate.estimation_method, EstimationMethod::Hybrid);
+        assert!(second_estimate.historical_time.is_some());
+    }
+
+    #[test]
+    fn test_batch_estimate() {
+        let estimator = TimeEstimator::new();
+        let features = create_test_features();
+        let params = create_test_params();
+
+        let files = vec![
+            (features.clone(), params.clone()),
+            (features.clone(), params.clone()),
+            (features.clone(), params.clone()),
+        ];
+
+        let single_estimate = estimator.estimate_conversion_time(&features, &params);
+        let batch_estimate = estimator.batch_estimate_time(&files);
+
+        // Batch should be less than 3x single due to parallel efficiency
+        let three_times_single = single_estimate.estimated_time.as_secs_f64() * 3.0;
+        assert!(
+            batch_estimate.as_secs_f64() < three_times_single,
+            "Batch estimate should account for parallel efficiency"
+        );
+    }
+
+    #[test]
+    fn test_lossless_takes_longer() {
+        let estimator = TimeEstimator::new();
+        let features = create_test_features();
+
+        let lossy_params = ConversionParams {
+            target_format: "webp".to_string(),
+            quality: 85,
+            effort: 5,
+            lossless: false,
+            scale_ratio: None,
+            threads: 8,
+        };
+
+        let lossless_params = ConversionParams {
+            target_format: "webp".to_string(),
+            quality: 85,
+            effort: 5,
+            lossless: true,
+            scale_ratio: None,
+            threads: 8,
+        };
+
+        let lossy_estimate = estimator.estimate_conversion_time(&features, &lossy_params);
+        let lossless_estimate = estimator.estimate_conversion_time(&features, &lossless_params);
+
+        assert!(
+            lossless_estimate.estimated_time > lossy_estimate.estimated_time,
+            "Lossless should take longer"
+        );
+    }
+
+    #[test]
+    fn test_unknown_format_uses_default_factor() {
+        let estimator = TimeEstimator::new();
+        let factor = estimator.get_format_factor("unknown_format");
+        assert_eq!(factor, 1.0, "Unknown format should use default factor of 1.0");
+    }
+}

@@ -585,18 +585,19 @@ impl Default for AVIFParams {
 impl AVIFParams {
 /// fromqualityvaluecreate (0-100)
  pub fn from_quality(quality: u8) -> Self {
- let crf = ((100 - quality) as f64 * 0.63) as u8; // mapto0-63
- let speed = if quality >= 90 {
+ let clamped_quality = quality.min(100); // Clamp to valid range
+ let crf = ((100 - clamped_quality) as f64 * 0.63) as u8; // mapto0-63
+ let speed = if clamped_quality >= 90 {
  6 // highqualityslow
- } else if quality >= 70 {
+ } else if clamped_quality >= 70 {
  4 // etcquality平衡
  } else {
  2 // lowqualityquick
  };
 
 // Calculate min/max quantizers based on quality
- let min_q = if quality > 90 { 0 } else if quality > 70 { 5 } else { 10 };
- let max_q = if quality > 90 { 20 } else if quality > 70 { 35 } else { 50 };
+ let min_q = if clamped_quality > 90 { 0 } else if clamped_quality > 70 { 5 } else { 10 };
+ let max_q = if clamped_quality > 90 { 20 } else if clamped_quality > 70 { 35 } else { 50 };
 
  Self {
  encoder: "libaom-av1".to_string(),
