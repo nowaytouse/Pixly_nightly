@@ -410,3 +410,262 @@ input[type="checkbox"]:checked::after {
   color: var(--color-primary);
   border: 1px solid rgba(var(--color-primary), 0.2);
 }
+
+/* =====================================================
+   🔥 高级动画效果 - 从ui-prototype提取
+   ===================================================== */
+
+/* 浮动动画 */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* 脉冲发光 */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px hsla(var(--hue-primary), 90%, 60%, 0.2); }
+  50% { box-shadow: 0 0 20px hsla(var(--hue-primary), 90%, 60%, 0.5); }
+}
+
+.animate-glow {
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
+/* 渐变边框动画 */
+@keyframes gradient-border {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-border {
+  position: relative;
+  background: var(--bg-panel);
+  border-radius: 12px;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 13px;
+  background: linear-gradient(
+    90deg,
+    var(--color-primary),
+    var(--color-secondary),
+    var(--color-primary)
+  );
+  background-size: 200% 100%;
+  animation: gradient-border 3s ease infinite;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity var(--duration-normal);
+}
+
+.gradient-border:hover::before {
+  opacity: 1;
+}
+
+/* 状态指示器 (从ui-prototype提取) */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-active {
+  background-color: var(--color-success);
+  box-shadow: 0 0 10px hsla(var(--hue-success), 80%, 60%, 0.5);
+}
+
+.status-idle {
+  background-color: var(--text-dim);
+}
+
+.status-processing {
+  background-color: var(--color-warning);
+  animation: pulse-glow 1s ease-in-out infinite;
+}
+
+.status-error {
+  background-color: var(--color-danger);
+  animation: pulse-glow 0.5s ease-in-out infinite;
+}
+
+/* 系统状态面板 (从ui-prototype提取) */
+.system-status-panel {
+  background: linear-gradient(135deg,
+    hsla(var(--hue-primary), 50%, 20%, 0.5),
+    hsla(var(--hue-secondary), 50%, 15%, 0.5));
+  border: 1px solid hsla(var(--hue-primary), 50%, 50%, 0.3);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.system-status-panel .label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: hsla(var(--hue-primary), 80%, 70%, 1);
+  margin-bottom: 8px;
+}
+
+/* 进度条增强 */
+.progress-bar-enhanced {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-enhanced .fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s var(--ease-out);
+  position: relative;
+}
+
+.progress-bar-enhanced .fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+.progress-bar-enhanced .fill.primary {
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+}
+
+.progress-bar-enhanced .fill.success {
+  background: linear-gradient(90deg, var(--color-success), hsl(calc(var(--hue-success) + 20), 80%, 50%));
+}
+
+/* 卡片悬浮效果增强 */
+.card-hover-lift {
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.3),
+    0 0 0 1px var(--border-color-hover);
+}
+
+/* 文字渐变效果 */
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 玻璃态按钮 (从ui-prototype提取) */
+.btn-glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.btn-glass:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.btn-glass:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* 图标按钮 */
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border-color: var(--border-color-hover);
+}
+
+.btn-icon:active {
+  transform: scale(0.95);
+}
+
+/* 分隔线 */
+.divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--border-color),
+    transparent
+  );
+  margin: 16px 0;
+}
+
+/* 工具提示 */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 6px 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--duration-fast) var(--ease-out);
+  z-index: 1000;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}

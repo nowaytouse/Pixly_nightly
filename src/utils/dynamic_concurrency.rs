@@ -249,10 +249,321 @@ impl ConcurrencyStats {
     }
 }
 
+// =====================================================
+// 🔥 RAM优化器 - 从xl-converter提取并Rust化
+// =====================================================
+// 灵感来源: xl-converter-unstable/core/ram_optimizer.py
+//
+// 针对高内存消耗的编码器(JXL, AVIF/SVT-AV1)进行智能限流
+// 基于图像分辨率动态调整并发worker数和每worker线程数
+// =====================================================
+
+/// RAM优化规则
+#[derive(Debug, Clone)]
+pub struct RamOptimizationRule {
+    /// 规则范围: "all", "jxl", "avif_svt"
+    pub scope: String,
+    /// 激活阈值(百万像素)
+    pub threshold_mp: f64,
+    /// 目标worker数：1表示单worker，"1/2"表示一半
+    pub target: RamTarget,
+}
+
+/// RAM目标设置
+#[derive(Debug, Clone)]
+pub enum RamTarget {
+    /// 固定为1个worker
+    Single,
+    /// 按比例(分子/分母)
+    Fraction(usize, usize),
+}
+
+impl RamTarget {
+    /// 从字符串解析 (如 "1", "1/2", "1/4")
+    pub fn parse(s: &str) -> Option<Self> {
+        if s == "1" {
+            return Some(Self::Single);
+        }
+        let parts: Vec<&str> = s.split('/').collect();
+        if parts.len() == 2 {
+            let num = parts[0].parse().ok()?;
+            let den = parts[1].parse().ok()?;
+            if num > 0 && den > 0 {
+                return Some(Self::Fraction(num, den));
+            }
+        }
+        None
+    }
+
+    /// 计算实际worker数
+    pub fn calculate(&self, total_workers: usize) -> usize {
+        match self {
+            Self::Single => 1,
+            Self::Fraction(num, den) => {
+                let result = total_workers * num / den;
+                result.max(1)
+            }
+        }
+    }
+}
+
+/// RAM优化器 (从xl-converter提取)
+///
+/// 核心功能:
+/// - 基于分辨率动态限制高内存编码器的并发数
+/// - 支持JXL和AVIF(SVT-AV1)的特殊处理
+/// - 防止内存溢出导致的系统卡死
+pub struct RamOptimizer {
+    enabled: bool,
+    total_workers: usize,
+    rules: Vec<RamOptimizationRule>,
+}
+
+impl RamOptimizer {
+    /// 创建RAM优化器
+    pub fn new(total_workers: usize) -> Self {
+        Self {
+            enabled: true,
+            total_workers,
+            rules: Self::default_rules(),
+        }
+    }
+
+    /// 默认优化规则 (从xl-converter提取)
+    fn default_rules() -> Vec<RamOptimizationRule> {
+        vec![
+            // JXL高effort模式: 4MP以上限制为一半worker
+            RamOptimizationRule {
+                scope: "jxl".to_string(),
+                threshold_mp: 4.0,
+                target: RamTarget::Fraction(1, 2),
+            },
+            // JXL高effort模式: 16MP以上限制为1/4 worker
+            RamOptimizationRule {
+                scope: "jxl".to_string(),
+                threshold_mp: 16.0,
+                target: RamTarget::Fraction(1, 4),
+            },
+            // JXL高effort模式: 32MP以上单worker
+            RamOptimizationRule {
+                scope: "jxl".to_string(),
+                threshold_mp: 32.0,
+                target: RamTarget::Single,
+            },
+            // AVIF (SVT-AV1): 8MP以上限制为一半
+            RamOptimizationRule {
+                scope: "avif_svt".to_string(),
+                threshold_mp: 8.0,
+                target: RamTarget::Fraction(1, 2),
+            },
+            // AVIF (SVT-AV1): 32MP以上单worker
+            RamOptimizationRule {
+                scope: "avif_svt".to_string(),
+                threshold_mp: 32.0,
+                target: RamTarget::Single,
+            },
+            // 通用规则: 超大图片(64MP+)强制单worker
+            RamOptimizationRule {
+                scope: "all".to_string(),
+                threshold_mp: 64.0,
+                target: RamTarget::Single,
+            },
+        ]
+    }
+
+    /// 设置自定义规则
+    pub fn set_rules(&mut self, rules: Vec<RamOptimizationRule>) {
+        self.rules = rules;
+    }
+
+    /// 启用/禁用优化器
+    pub fn set_enabled(&mut self, enabled: bool) {
+        self.enabled = enabled;
+    }
+
+    /// 检查是否需要RAM优化
+    pub fn needs_optimization(&self, format: &str, encoder: Option<&str>) -> bool {
+        if !self.enabled {
+            return false;
+        }
+
+        let format_lower = format.to_lowercase();
+
+        // JXL高内存场景
+        if format_lower == "jxl" || format_lower == "jpeg xl" {
+            return true;
+        }
+
+        // AVIF使用SVT-AV1编码器
+        if (format_lower == "avif") && encoder.map(|e| e.contains("svt")).unwrap_or(false) {
+            return true;
+        }
+
+        false
+    }
+
+    /// 获取优化后的最大worker数
+    pub fn get_optimized_workers(
+        &self,
+        megapixels: f64,
+        format: &str,
+        encoder: Option<&str>,
+    ) -> usize {
+        if !self.enabled {
+            return self.total_workers;
+        }
+
+        let format_lower = format.to_lowercase();
+        let scope = if format_lower == "jxl" || format_lower == "jpeg xl" {
+            "jxl"
+        } else if format_lower == "avif" && encoder.map(|e| e.contains("svt")).unwrap_or(false) {
+            "avif_svt"
+        } else {
+            "other"
+        };
+
+        // 按阈值降序排列，找到第一个匹配的规则
+        let mut applicable_rules: Vec<_> = self.rules.iter()
+            .filter(|r| r.scope == scope || r.scope == "all")
+            .filter(|r| megapixels >= r.threshold_mp)
+            .collect();
+
+        applicable_rules.sort_by(|a, b| b.threshold_mp.partial_cmp(&a.threshold_mp).unwrap());
+
+        if let Some(rule) = applicable_rules.first() {
+            let optimized = rule.target.calculate(self.total_workers);
+            log::info!(
+                "🔧 RAM优化: {}@{:.1}MP -> {} workers (规则: {}, 阈值: {}MP)",
+                format, megapixels, optimized, rule.scope, rule.threshold_mp
+            );
+            return optimized;
+        }
+
+        self.total_workers
+    }
+}
+
+impl Default for RamOptimizer {
+    fn default() -> Self {
+        let cpu_cores = num_cpus::get();
+        Self::new(cpu_cores * 2)
+    }
+}
+
+// =====================================================
+// 🔥 智能降采样预测器 - 从xl-converter提取
+// =====================================================
+// 灵感来源: xl-converter-unstable/core/downscale.py
+//
+// 使用线性回归预测达到目标文件大小所需的缩放比例
+// =====================================================
+
+/// 智能降采样预测器
+pub struct SmartDownscalePredictor {
+    /// 采样数据点 [(file_size_bytes, scale_percent), ...]
+    samples: Vec<(u64, f64)>,
+}
+
+impl SmartDownscalePredictor {
+    pub fn new() -> Self {
+        Self { samples: Vec::new() }
+    }
+
+    /// 添加采样点
+    pub fn add_sample(&mut self, file_size_bytes: u64, scale_percent: f64) {
+        self.samples.push((file_size_bytes, scale_percent));
+    }
+
+    /// 使用线性回归预测达到目标文件大小所需的缩放比例
+    ///
+    /// 算法来源: xl-converter的_linearRegression和_extrapolateScale
+    pub fn predict_scale(&self, target_size_bytes: u64) -> Option<f64> {
+        if self.samples.len() < 2 {
+            return None;
+        }
+
+        let n = self.samples.len() as f64;
+        let sum_x: f64 = self.samples.iter().map(|(x, _)| *x as f64).sum();
+        let sum_y: f64 = self.samples.iter().map(|(_, y)| *y).sum();
+        let mean_x = sum_x / n;
+        let mean_y = sum_y / n;
+
+        let numerator: f64 = self.samples.iter()
+            .map(|(x, y)| (*x as f64 - mean_x) * (*y - mean_y))
+            .sum();
+        let denominator: f64 = self.samples.iter()
+            .map(|(x, _)| (*x as f64 - mean_x).powi(2))
+            .sum();
+
+        if denominator == 0.0 {
+            return None;
+        }
+
+        let slope = numerator / denominator;
+        let intercept = mean_y - slope * mean_x;
+
+        let predicted_scale = slope * (target_size_bytes as f64) + intercept;
+
+        // 限制在合理范围内
+        Some(predicted_scale.clamp(1.0, 100.0))
+    }
+
+    /// 清除采样数据
+    pub fn clear(&mut self) {
+        self.samples.clear();
+    }
+}
+
+impl Default for SmartDownscalePredictor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
+    #[test]
+    fn test_ram_optimizer() {
+        let optimizer = RamOptimizer::new(8);
+
+        // 小图JXL不需要限制
+        let workers = optimizer.get_optimized_workers(2.0, "jxl", None);
+        assert_eq!(workers, 8);
+
+        // 4MP+ JXL限制为一半
+        let workers = optimizer.get_optimized_workers(8.0, "jxl", None);
+        assert_eq!(workers, 4);
+
+        // 32MP+ JXL单worker
+        let workers = optimizer.get_optimized_workers(35.0, "jxl", None);
+        assert_eq!(workers, 1);
+    }
+
+    #[test]
+    fn test_ram_target_parse() {
+        assert!(matches!(RamTarget::parse("1"), Some(RamTarget::Single)));
+        assert!(matches!(RamTarget::parse("1/2"), Some(RamTarget::Fraction(1, 2))));
+        assert!(matches!(RamTarget::parse("1/4"), Some(RamTarget::Fraction(1, 4))));
+        assert!(RamTarget::parse("invalid").is_none());
+    }
+
+    #[test]
+    fn test_smart_downscale_predictor() {
+        let mut predictor = SmartDownscalePredictor::new();
+
+        // 添加采样点 (模拟xl-converter的采样逻辑)
+        predictor.add_sample(500_000, 66.0); // 500KB at 66%
+        predictor.add_sample(200_000, 33.0); // 200KB at 33%
+
+        // 预测300KB需要的缩放比例
+        let scale = predictor.predict_scale(300_000);
+        assert!(scale.is_some());
+        let scale = scale.unwrap();
+        assert!(scale > 33.0 && scale < 66.0);
+    }
+
     #[test]
     fn test_dynamic_worker_pool() {
         let pool = DynamicWorkerPool::new(8);
