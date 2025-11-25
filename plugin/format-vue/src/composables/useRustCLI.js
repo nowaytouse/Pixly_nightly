@@ -23,11 +23,11 @@ export function useRustCLI() {
       logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Rust CLI already initialized', { path: rustBinaryPath.value })
       return rustBinaryPath.value
     }
-    
+
     const { spawn } = require('child_process')
     const path = require('path')
     const fs = require('fs')
-    
+
     // 🔥 获取插件根目录
     // 使用 window.location 获取插件的实际路径
     let pluginRoot
@@ -39,7 +39,7 @@ export function useRustCLI() {
       // Fallback: 使用 __dirname
       pluginRoot = path.resolve(__dirname, '../..')
     }
-    
+
     const possiblePaths = [
       path.join(pluginRoot, 'bin/pixly-converter'),           // plugin/format-vue/bin/
       path.join(pluginRoot, '../bin/pixly-converter'),        // plugin/bin/
@@ -48,16 +48,16 @@ export function useRustCLI() {
       path.join(pluginRoot, '../../target/debug/pixly-converter'),    // 项目根/target/debug/
       'pixly-converter'  // 系统PATH
     ]
-    
+
     logger.info(LOG_KEYS.RUST_CLI_EXEC, 'Searching for pixly-converter', {
       pluginRoot,
       searchPaths: possiblePaths.length
     })
-    
+
     for (const p of possiblePaths) {
       try {
         const resolved = path.resolve(p)
-        
+
         // 检查文件是否存在（除了系统PATH）
         if (p !== 'pixly-converter') {
           if (!fs.existsSync(resolved)) {
@@ -66,26 +66,26 @@ export function useRustCLI() {
           }
           logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Found file', { path: resolved })
         }
-        
+
         // 测试执行
         logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Testing executable', { path: p })
         const proc = spawn(p, ['--version'], { timeout: 3000 })
         let output = ''
         let error = ''
-        
+
         proc.stdout.on('data', (data) => {
           output += data.toString()
         })
-        
+
         proc.stderr.on('data', (data) => {
           error += data.toString()
         })
-        
+
         const success = await new Promise((resolve) => {
           proc.on('close', (code) => {
-            logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Version check result', { 
-              path: p, 
-              code, 
+            logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Version check result', {
+              path: p,
+              code,
               output: output.trim(),
               error: error.trim()
             })
@@ -96,10 +96,10 @@ export function useRustCLI() {
             resolve(false)
           })
         })
-        
+
         if (success) {
           rustBinaryPath.value = p
-          logger.info(LOG_KEYS.RUST_CLI_EXEC, '✅ Found pixly-converter', { 
+          logger.info(LOG_KEYS.RUST_CLI_EXEC, '✅ Found pixly-converter', {
             path: p,
             version: output.trim()
           })
@@ -110,10 +110,10 @@ export function useRustCLI() {
         continue
       }
     }
-    
+
     // 🔥 未找到，提供详细错误信息
     const errorMsg = `pixly-converter not found. Searched paths:\n${possiblePaths.map(p => `  - ${p}`).join('\n')}\n\nPlease:\n1. Compile: cargo build --release\n2. Copy to: ${path.join(pluginRoot, 'bin/pixly-converter')}`
-    
+
     logger.error(LOG_KEYS.RUST_CLI_ERROR, errorMsg)
     throw new Error(errorMsg)
   }
@@ -134,13 +134,13 @@ export function useRustCLI() {
       logger.info(LOG_KEYS.RUST_CLI_EXEC, 'Initializing Rust CLI')
       await initRustCLI()
       logger.info(LOG_KEYS.RUST_CLI_EXEC, 'Rust CLI initialized', { path: rustBinaryPath.value })
-      
+
       const results = []
       const path = require('path')
-      
+
       // 🔥 过滤掉 XMP 文件，只转换媒体文件
       const mediaFiles = files.filter(f => !f.isXmp)
-      
+
       logger.info(LOG_KEYS.CONVERT_START, 'Starting batch conversion', {
         total: files.length,
         media: mediaFiles.length,
@@ -153,16 +153,16 @@ export function useRustCLI() {
           xmpPath: f.xmpPath
         }))
       })
-      
+
       if (mediaFiles.length === 0) {
         throw new Error('No media files to convert (all files are XMP or invalid)')
       }
-      
+
       for (let i = 0; i < mediaFiles.length; i++) {
         const file = mediaFiles[i]
         currentFile.value = file.name
         progress.value = Math.round((i / mediaFiles.length) * 100)
-        
+
         // 🔍 调用进度回调 - 开始处理
         if (onProgress) {
           onProgress(i + 1, mediaFiles.length, file.name, 'processing')
@@ -237,11 +237,11 @@ export function useRustCLI() {
 
         // 🔥 快捷工具选项
         const tools = options.quickTools || {}
-        
+
         // XMP合并
         if (tools.autoMergeXmp !== false) {
           args.push('--merge-xmp')
-          
+
           // 如果文件有 XMP 路径，直接传递给 Rust CLI（避免扫描）
           if (file.xmpPath) {
             args.push('--xmp-path', file.xmpPath)
@@ -256,42 +256,40 @@ export function useRustCLI() {
           args.push('--normalize-filenames')
         }
 
-        // AI 文件验证
+        // AI 文件验证 (Magika)
         if (tools.fileValidation) {
-          args.push('--validate-file-type')
+          args.push('--validate-files')
         }
 
         // 格式修正
         if (tools.formatCorrection) {
-          args.push('--auto-correct-format')
+          args.push('--format-correction')
         }
 
         // 🔥 AI 智能选项
         const ai = options.aiOptions || {}
-        
-        // 智能质量预测
-        if (ai.smartQuality) {
-          args.push('--smart-quality')
-        }
 
-        // 自动参数优化
-        if (ai.autoOptimize) {
-          args.push('--auto-optimize')
+        // 启用 AI 模式 (统一参数)
+        if (ai.smartQuality || ai.autoOptimize) {
+          args.push('--ai')
+          if (options.optimizeMode) {
+            args.push('--optimize-mode', options.optimizeMode)
+          }
         }
 
         // SSIM 质量验证
         if (ai.ssimValidation) {
-          args.push('--ssim-validation')
-        }
-
-        // 动图转视频推荐
-        if (ai.videoForAnimation) {
-          args.push('--video-for-animation')
+          args.push('--check-quality')
         }
 
         // 智能预处理
         if (ai.smartPreprocess) {
-          args.push('--smart-preprocess')
+          args.push('--preprocess')
+        }
+
+        // GPU 加速 (默认启用)
+        if (ai.gpuAccel !== false) {
+          args.push('--gpu')
         }
 
         logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Executing command', {
@@ -314,7 +312,7 @@ export function useRustCLI() {
             hasXmp: file.hasXmp,
             xmpId: file.xmpId
           })
-          
+
           // 🔍 调用进度回调 - 成功
           if (onProgress) {
             onProgress(i + 1, mediaFiles.length, file.name, 'success')
@@ -330,7 +328,7 @@ export function useRustCLI() {
             file: file.name,
             error: fileError.message
           })
-          
+
           // 🔍 调用进度回调 - 失败
           if (onProgress) {
             onProgress(i + 1, mediaFiles.length, file.name, 'error', fileError.message)
@@ -339,21 +337,21 @@ export function useRustCLI() {
       }
 
       progress.value = 100
-      
+
       // 🔥 统计转换结果
       const successCount = results.filter(r => r.success).length
       const failCount = results.filter(r => !r.success).length
       const xmpMergedCount = results.filter(r => r.success && r.hasXmp).length
-      
+
       logger.info(LOG_KEYS.CONVERT_SUCCESS, 'Batch conversion complete', {
         total: mediaFiles.length,
         success: successCount,
         failed: failCount,
         xmpMerged: xmpMergedCount
       })
-      
-      return { 
-        success: successCount > 0, 
+
+      return {
+        success: successCount > 0,
         results,
         summary: {
           total: mediaFiles.length,
@@ -368,7 +366,7 @@ export function useRustCLI() {
         stack: error.stack,
         rustBinaryPath: rustBinaryPath.value
       })
-      
+
       return { success: false, error: error.message }
     } finally {
       isConverting.value = false
@@ -388,7 +386,7 @@ export function useRustCLI() {
       await initRustCLI()
       const results = []
       const path = require('path')
-      
+
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
         currentFile.value = file.name
@@ -461,11 +459,11 @@ export function useRustCLI() {
   const executeRustCLI = (args) => {
     return new Promise((resolve, reject) => {
       const { spawn } = require('child_process')
-      
-      logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Executing pixly-converter', { 
+
+      logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Executing pixly-converter', {
         args: args.join(' ')
       })
-      
+
       // 🔥 设置完整的PATH环境变量（包含Homebrew等工具路径）
       const fullPath = [
         '/opt/homebrew/bin',      // macOS Homebrew (Apple Silicon)
@@ -477,27 +475,27 @@ export function useRustCLI() {
         '/sbin',
         process.env.PATH || ''
       ].filter(Boolean).join(':')
-      
+
       const proc = spawn(rustBinaryPath.value, args, {
         env: {
           ...process.env,
           PATH: fullPath
         }
       })
-      
+
       let stdout = ''
       let stderr = ''
-      
+
       proc.stdout.on('data', (data) => {
         const text = data.toString()
         stdout += text
-        
+
         // 🔥 解析进度信息
         const lines = text.split('\n')
         for (const line of lines) {
           if (line.trim()) {
             logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Rust CLI output', { line })
-            
+
             // 检测转换完成
             if (line.includes('✅ Conversion complete')) {
               progress.value = 100
@@ -505,13 +503,13 @@ export function useRustCLI() {
           }
         }
       })
-      
+
       proc.stderr.on('data', (data) => {
         const text = data.toString()
         stderr += text
         logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Rust CLI stderr', { text })
       })
-      
+
       proc.on('close', (code) => {
         if (code === 0) {
           logger.info(LOG_KEYS.CONVERT_SUCCESS, 'Conversion completed', {
@@ -523,10 +521,10 @@ export function useRustCLI() {
             code,
             stderr: stderr.substring(0, 500)
           })
-          
+
           // 🔥 提供友好的错误信息（使用国际化）
           let errorMessage = stderr || `Exit code: ${code}`
-          
+
           // 检测常见错误
           if (stderr.includes('cjxl') && stderr.includes('not found')) {
             errorMessage = t('errors.jxlNotInstalled')
@@ -535,11 +533,11 @@ export function useRustCLI() {
           } else if (stderr.includes('No such file or directory')) {
             errorMessage = t('errors.fileNotFound')
           }
-          
+
           reject(new Error(errorMessage))
         }
       })
-      
+
       proc.on('error', (err) => {
         logger.error(LOG_KEYS.RUST_CLI_ERROR, 'Spawn failed', { error: err.message })
         reject(err)

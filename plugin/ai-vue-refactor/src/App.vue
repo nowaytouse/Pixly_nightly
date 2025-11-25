@@ -1,7 +1,8 @@
 <template>
   <div class="app" :data-theme="isDark ? 'dark' : 'light'">
+    <LiquidFilter />
     <!-- Header -->
-    <header class="header glass">
+    <header class="header liquid-glass">
       <div class="header-left">
         <div class="logo-container">
           <div class="logo-icon">🤖</div>
@@ -54,7 +55,7 @@
 
       <!-- Empty State -->
       <div v-else-if="files.length === 0" class="empty fade-in">
-        <div class="empty-content glass">
+        <div class="empty-content liquid-glass">
           <div class="empty-icon">📁</div>
           <h3>{{ t('empty.title') }}</h3>
           <p>{{ t('empty.subtitle') }}</p>
@@ -412,6 +413,7 @@ import { useEagleAPI } from './composables/useEagleAPI'
 import { logger, LOG_KEYS } from './utils/logger'
 import SmartProgressBar from './components/SmartProgressBar.vue'
 import SkeletonLoader from './components/SkeletonLoader.vue'
+import LiquidFilter from './components/LiquidFilter.vue'
 
 // Use global i18n instance from main.js
 const i18n = inject('i18n')
@@ -938,16 +940,47 @@ onMounted(() => {
 
 <style scoped>
 @import './styles/variables.css';
+@import './styles/liquid.css';
 
 .app {
   width: 100vw;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--color-bg-secondary);
+  background: #0f172a;
   color: var(--color-text-primary);
   overflow: hidden;
   font-family: 'Inter', sans-serif;
+  position: relative;
+}
+
+/* 🔥 动态极光背景 (让玻璃显形的关键) */
+.app::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    #0f172a 0deg,
+    #1e1b4b 60deg, /* Indigo 950 */
+    #312e81 120deg, /* Indigo 900 */
+    #4c1d95 180deg, /* Violet 900 */
+    #312e81 240deg,
+    #1e1b4b 300deg,
+    #0f172a 360deg
+  );
+  animation: bg-spin 120s linear infinite;
+  z-index: 0;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+@keyframes bg-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Header Styles */
@@ -957,8 +990,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 100;
-  border-bottom: 1px solid var(--color-border-primary);
+  z-index: 10; /* 提升层级 */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
 }
 
 .header-left {
@@ -1080,6 +1114,7 @@ onMounted(() => {
   flex: 1;
   overflow: hidden;
   position: relative;
+  z-index: 1; /* 确保在背景之上 */
 }
 
 .content {
@@ -1221,6 +1256,7 @@ onMounted(() => {
 
 /* Modern Glassmorphism Utilities */
 .glass {
+  /* Legacy glass support, now using liquid-glass */
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -1229,17 +1265,31 @@ onMounted(() => {
 }
 
 .glass-panel {
+  /* Enhanced with liquid properties */
   background: var(--color-bg-card);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
   border-radius: 16px;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  opacity: 0.5;
 }
 
 .glass-panel:hover {
   border-color: var(--color-border-glow);
   box-shadow: var(--glow-primary);
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.01);
 }
 
 /* Header Styles */
@@ -1302,51 +1352,70 @@ onMounted(() => {
   letter-spacing: 0.5px;
 }
 
-/* Button Styles */
+/* Button Styles - Radical Liquid Update */
 .btn {
   position: relative;
   overflow: hidden;
-  border: none;
-  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
 }
 
 .btn-primary {
-  background: var(--gradient-primary);
+  background: rgba(99, 102, 241, 0.2);
   color: white;
-  box-shadow: var(--glow-primary);
+  box-shadow: 
+    0 4px 15px rgba(99, 102, 241, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.6), rgba(139, 92, 246, 0.6));
+  z-index: -1;
+  opacity: 0.8;
+  transition: opacity 0.3s;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.6);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 8px 25px rgba(99, 102, 241, 0.5),
+    inset 0 0 20px rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.8);
 }
 
-.btn-primary:active {
-  transform: translateY(0);
+.btn-primary:hover::before {
+  opacity: 1;
+  animation: liquid-pulse 2s infinite alternate;
 }
 
 .icon-btn {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  border: 1px solid transparent;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
   color: var(--color-text-secondary);
+  backdrop-filter: blur(10px);
 }
 
 .icon-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.2);
   color: white;
-  border-color: var(--glass-border);
-  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
 }
 
 /* Window Controls */
@@ -1431,17 +1500,18 @@ onMounted(() => {
   letter-spacing: 0.5px;
 }
 
-/* Form Elements */
+/* Form Elements - Liquid Style */
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .form-group label {
   display: block;
   font-size: 12px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
   margin-bottom: 8px;
+  text-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
 .select-wrapper {
@@ -1450,26 +1520,30 @@ onMounted(() => {
 
 .select {
   width: 100%;
-  padding: 10px 12px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--glass-border);
-  border-radius: 8px;
-  color: var(--color-text-primary);
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: white;
   font-size: 13px;
   appearance: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .select:hover {
-  border-color: var(--color-border-secondary);
-  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
 }
 
 .select:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--color-primary-dim);
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3), 0 0 20px rgba(139, 92, 246, 0.2);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .details {

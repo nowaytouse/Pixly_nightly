@@ -4,7 +4,7 @@
     <div class="panel">
       <div class="panel-title">
         <span>📦</span>
-        <span>{{ t('video.container') }}</span>
+        <span>{{ t('video.container.label') }}</span>
       </div>
       <select v-model="localParams.container" class="param-select">
         <option value="mp4">{{ t('video.container.mp4') }}</option>
@@ -18,7 +18,7 @@
     <div class="panel">
       <div class="panel-title">
         <span>🎬</span>
-        <span>{{ t('video.codec') }}</span>
+        <span>{{ t('video.codec.label') }}</span>
       </div>
       <select v-model="localParams.codec" class="param-select">
         <option value="h266">{{ t('video.codec.h266') }}</option>
@@ -132,7 +132,7 @@
 
       <!-- 像素格式 -->
       <div class="param-group">
-        <label class="param-label">{{ t('video.pixelFormat') }}</label>
+        <label class="param-label">{{ t('video.pixelFormat.label') }}</label>
         <select v-model="localParams.pixelFormat" class="param-select">
           <option value="auto">{{ t('video.pixelFormat.auto') }}</option>
           <option value="yuv420p">{{ t('video.pixelFormat.yuv420p') }}</option>
@@ -143,7 +143,7 @@
 
       <!-- 硬件加速 -->
       <div class="param-group">
-        <label class="param-label">{{ t('video.hwAccel') }}</label>
+        <label class="param-label">{{ t('video.hwAccel.label') }}</label>
         <select v-model="localParams.hwAccel" class="param-select">
           <option value="auto">{{ t('video.hwAccel.auto') }}</option>
           <option value="none">{{ t('video.hwAccel.none') }}</option>

@@ -79,17 +79,6 @@
   },
   "video": {
     "title": "Video Parameters",
-    "codec": "Video Codec",
-    "codec.h266": "H.266/VVC (Latest)",
-    "codec.h265": "H.265/HEVC",
-    "codec.av1": "AV1",
-    "codec.h264": "H.264/AVC",
-    "codec.vp9": "VP9",
-    "container": "Container Format",
-    "container.mp4": "MP4",
-    "container.mov": "MOV",
-    "container.webm": "WebM",
-    "container.mkv": "MKV",
     "crf": "Quality Control (CRF)",
     "crfLabel": "CRF",
     "speed": "Encoding Speed",
@@ -97,18 +86,37 @@
     "gopLabel": "GOP",
     "bframes": "B-Frames",
     "refs": "Reference Frames",
-    "pixelFormat": "Pixel Format",
-    "pixelFormat.auto": "Auto",
-    "pixelFormat.yuv420p": "YUV 4:2:0 8-bit",
-    "pixelFormat.yuv422p": "YUV 4:2:2 8-bit",
-    "pixelFormat.yuv444p": "YUV 4:4:4 8-bit",
-    "hwAccel": "Hardware Acceleration",
-    "hwAccel.auto": "Auto",
-    "hwAccel.none": "None",
-    "hwAccel.nvenc": "NVIDIA (NVENC)",
-    "hwAccel.qsv": "Intel (QSV)",
-    "hwAccel.videotoolbox": "Apple (VideoToolbox)",
-    "twoPass": "Two-Pass Encoding"
+    "twoPass": "Two-Pass Encoding",
+    "codec": {
+      "label": "Video Codec",
+      "h266": "H.266/VVC (Latest)",
+      "h265": "H.265/HEVC",
+      "av1": "AV1",
+      "h264": "H.264/AVC",
+      "vp9": "VP9"
+    },
+    "container": {
+      "label": "Container Format",
+      "mp4": "MP4",
+      "mov": "MOV",
+      "webm": "WebM",
+      "mkv": "MKV"
+    },
+    "pixelFormat": {
+      "label": "Pixel Format",
+      "auto": "Auto",
+      "yuv420p": "YUV 4:2:0 8-bit",
+      "yuv422p": "YUV 4:2:2 8-bit",
+      "yuv444p": "YUV 4:4:4 8-bit"
+    },
+    "hwAccel": {
+      "label": "Hardware Acceleration",
+      "auto": "Auto",
+      "none": "None",
+      "nvenc": "NVIDIA (NVENC)",
+      "qsv": "Intel (QSV)",
+      "videotoolbox": "Apple (VideoToolbox)"
+    }
   },
   "params": {
     "encoder": "Encoder",

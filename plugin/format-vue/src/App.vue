@@ -1,7 +1,8 @@
 <template>
   <div class="pixly-app">
+    <LiquidFilter />
     <!-- 🔥 无边框窗口标题栏 -->
-    <div class="titlebar glass">
+    <div class="titlebar liquid-glass">
       <div class="titlebar-drag">
         <div class="app-logo">
           <span class="logo-icon">✨</span>
@@ -32,9 +33,19 @@
       </div>
     </div>
     
+    
     <!-- 类型切换 -->
-    <div class="type-tabs glass">
+    <!-- 类型切换 -->
+    <div class="type-tabs liquid-glass" ref="tabsContainer">
+      <!-- 💧 液态流动的背景指示器 -->
+      <div 
+        class="tab-indicator" 
+        :class="{ 'is-moving': isDragging || isTransitioning }"
+        :style="indicatorStyle"
+      ></div>
+      
       <button 
+        ref="tabImage"
         class="type-tab"
         :class="{ active: conversionType === 'image' }"
         @click="conversionType = 'image'"
@@ -43,6 +54,7 @@
         {{ t('tabs.image') }}
       </button>
       <button 
+        ref="tabVideo"
         class="type-tab"
         :class="{ active: conversionType === 'video' }"
         @click="conversionType = 'video'"
@@ -90,7 +102,7 @@
       </div>
     </div>
     
-    <footer class="footer glass">
+    <footer class="footer liquid-glass">
       <div class="footer-left">
         <div class="status-badge">
           <span class="status-dot" :class="{ active: !isConverting }"></span>
@@ -135,7 +147,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, inject, nextTick } from 'vue'
+import LiquidFilter from './components/LiquidFilter.vue'
 import FormatSelector from './components/FormatSelector.vue'
 import QualityPanel from './components/QualityPanel.vue'
 import AdvancedParams from './components/AdvancedParams.vue'
@@ -162,6 +175,165 @@ const quickTools = ref({
   normalizeFilenames: false
 })
 const files = ref([])
+
+// 🌊 可拖动的液态 Tab 指示器
+const tabsContainer = ref(null)
+const tabImage = ref(null)
+const tabVideo = ref(null)
+const indicatorStyle = ref({ opacity: 0 })
+const isDragging = ref(false)
+const isTransitioning = ref(false)
+const velocity = ref(0)
+
+let startX = 0
+let currentX = 0
+let lastX = 0
+let lastTime = 0
+let animationFrame = null
+
+const getTabPositions = () => {
+  if (!tabImage.value || !tabVideo.value) return []
+  return [
+    { type: 'image', left: tabImage.value.offsetLeft, width: tabImage.value.offsetWidth },
+    { type: 'video', left: tabVideo.value.offsetLeft, width: tabVideo.value.offsetWidth }
+  ]
+}
+
+const updateIndicatorPosition = (x, width, withTransition = true) => {
+  const vel = Math.abs(velocity.value)
+  indicatorStyle.value = {
+    left: `${x}px`,
+    width: `${width}px`,
+    opacity: 1,
+    '--velocity': vel,
+    '--distortion': vel > 0.5 ? Math.min(vel * 0.3, 1) : 0,
+    transition: withTransition ? 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)' : 'none'
+  }
+}
+
+const handleDragStart = (e) => {
+  const touch = e.touches ? e.touches[0] : e
+  startX = touch.clientX
+  currentX = startX
+  lastX = startX
+  lastTime = Date.now()
+  isDragging.value = true
+}
+
+const handleDragMove = (e) => {
+  if (!isDragging.value) return
+  e.preventDefault()
+  
+  const touch = e.touches ? e.touches[0] : e
+  currentX = touch.clientX
+  
+  // 计算速度（像素/毫秒）
+  const now = Date.now()
+  const dt = now - lastTime
+  if (dt > 0) {
+    velocity.value = Math.abs(currentX - lastX) / dt
+  }
+  lastX = currentX
+  lastTime = now
+  
+  // 获取容器边界
+  const container = tabsContainer.value
+  if (!container) return
+  const rect = container.getBoundingClientRect()
+  const relativeX = currentX - rect.left
+  
+  // 获取 Tab 位置
+  const tabs = getTabPositions()
+  if (tabs.length === 0) return
+  
+  // 限制在有效范围内
+  const minX = tabs[0].left
+  const maxX = tabs[tabs.length - 1].left + tabs[tabs.length - 1].width
+  const clampedX = Math.max(minX, Math.min(maxX, relativeX))
+  
+  // 动态宽度（根据位置插值）
+  const progress = (clampedX - minX) / (maxX - minX)
+  const width = tabs[0].width + (tabs[1].width - tabs[0].width) * progress
+  
+  updateIndicatorPosition(clampedX - width / 2, width, false)
+}
+
+const handleDragEnd = () => {
+  if (!isDragging.value) return
+  isDragging.value = false
+  isTransitioning.value = true
+  
+  // 找到最近的 Tab
+  const tabs = getTabPositions()
+  const container = tabsContainer.value
+  if (!container || tabs.length === 0) return
+  
+  const rect = container.getBoundingClientRect()
+  const relativeX = currentX - rect.left
+  
+  let nearestTab = tabs[0]
+  let minDist = Math.abs(relativeX - (tabs[0].left + tabs[0].width / 2))
+  
+  for (const tab of tabs) {
+    const dist = Math.abs(relativeX - (tab.left + tab.width / 2))
+    if (dist < minDist) {
+      minDist = dist
+      nearestTab = tab
+    }
+  }
+  
+  // 切换到最近的 Tab
+  conversionType.value = nearestTab.type
+  updateIndicatorPosition(nearestTab.left, nearestTab.width, true)
+  
+  // 动画结束后重置状态
+  setTimeout(() => {
+    isTransitioning.value = false
+    velocity.value = 0
+  }, 400)
+}
+
+const updateTabIndicator = () => {
+  const target = conversionType.value === 'image' ? tabImage.value : tabVideo.value
+  if (target) {
+    updateIndicatorPosition(target.offsetLeft, target.offsetWidth, true)
+  }
+}
+
+watch(conversionType, () => {
+  if (!isDragging.value) {
+    nextTick(updateTabIndicator)
+  }
+})
+
+onMounted(() => {
+  setTimeout(updateTabIndicator, 100)
+  window.addEventListener('resize', updateTabIndicator)
+  
+  // 添加拖动监听
+  const container = tabsContainer.value
+  if (container) {
+    container.addEventListener('mousedown', handleDragStart)
+    container.addEventListener('touchstart', handleDragStart)
+    window.addEventListener('mousemove', handleDragMove)
+    window.addEventListener('touchmove', handleDragMove, { passive: false })
+    window.addEventListener('mouseup', handleDragEnd)
+    window.addEventListener('touchend', handleDragEnd)
+  }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateTabIndicator)
+  const container = tabsContainer.value
+  if (container) {
+    container.removeEventListener('mousedown', handleDragStart)
+    container.removeEventListener('touchstart', handleDragStart)
+  }
+  window.removeEventListener('mousemove', handleDragMove)
+  window.removeEventListener('touchmove', handleDragMove)
+  window.removeEventListener('mouseup', handleDragEnd)
+  window.removeEventListener('touchend', handleDragEnd)
+})
 
 // 🔍 日志系统
 const logs = ref([])
@@ -555,16 +727,46 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+@import './styles/liquid.css';
+
 .pixly-app {
   width: 100vw;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-app);
+  background: #0f172a;
   color: var(--text-primary);
   overflow: hidden;
-  transform: translateZ(0);
-  backface-visibility: hidden;
+  position: relative;
+}
+
+/* 🔥 动态极光背景 */
+.pixly-app::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    #0f172a 0deg,
+    #1e1b4b 60deg,
+    #312e81 120deg,
+    #4c1d95 180deg,
+    #312e81 240deg,
+    #1e1b4b 300deg,
+    #0f172a 360deg
+  );
+  animation: bg-spin 120s linear infinite;
+  z-index: 0;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+@keyframes bg-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* 🔥 无边框窗口标题栏 */
@@ -579,7 +781,9 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   user-select: none;
-  padding: 0 4px;
+  padding: 0 16px;
+  -webkit-app-region: drag;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .titlebar-drag {
@@ -652,6 +856,8 @@ onMounted(async () => {
   overflow: hidden;
   /* 性能优化 */
   will-change: auto;
+  position: relative;
+  z-index: 1;
 }
 
 .left-panel {
@@ -753,54 +959,47 @@ onMounted(async () => {
   transition: color var(--duration-fast) var(--ease-out);
 }
 
+/* Button Styles - Radical Liquid Update */
 .btn {
-  padding: 8px 16px;
-  background: var(--bg-button);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn:hover:not(:disabled) {
-  background: var(--bg-button-hover);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.btn:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  filter: grayscale(0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
 }
 
 .btn-primary {
-  background: var(--gradient-primary);
-  border: none;
+  background: rgba(99, 102, 241, 0.2);
   color: white;
-  box-shadow: var(--glow-primary);
+  box-shadow: 
+    0 4px 15px rgba(99, 102, 241, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.6);
-  filter: brightness(1.1);
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.6), rgba(139, 92, 246, 0.6));
+  z-index: -1;
+  opacity: 0.8;
+  transition: opacity 0.3s;
 }
 
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: var(--glow-primary);
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 8px 25px rgba(99, 102, 241, 0.5),
+    inset 0 0 20px rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.btn-primary:hover::before {
+  opacity: 1;
+  animation: liquid-pulse 2s infinite alternate;
 }
 
 .btn-convert:disabled {
@@ -838,6 +1037,7 @@ onMounted(async () => {
   cursor: not-allowed;
 }
 
+/* 🌊 Tab 样式重构 */
 .type-tabs {
   position: fixed;
   top: 32px;
@@ -845,50 +1045,92 @@ onMounted(async () => {
   right: 0;
   z-index: 999;
   display: flex;
-  gap: 8px;
-  padding: 12px 16px 0;
+  gap: 8px; /* 增加间距 */
+  padding: 8px 16px; /* 增加内边距 */
   background: var(--bg-secondary);
-  /* 确保在滚动时保持在标题栏下方 */
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
 .type-tab {
   flex: 1;
-  padding: 12px 16px;
+  padding: 10px 16px;
   background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
   color: var(--text-secondary);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--duration-normal) var(--ease-out);
+  transition: color 0.3s ease;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  z-index: 2; /* 确保在指示器之上 */
 }
 
 .type-tab:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.03);
 }
 
 .type-tab.active {
-  color: var(--color-primary);
-  background: linear-gradient(to bottom, transparent, rgba(99, 102, 241, 0.05));
+  color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
+/* 移除旧的 active 样式 */
 .type-tab.active::after {
+  display: none;
+}
+
+/* 💧 Pure CSS Liquid Glass Indicator (No Distortion) */
+.tab-indicator {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  height: auto;
+  border-radius: 9999px;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+  background: transparent;
+  border: none;
+}
+
+/* Base layer – blur only (static) */
+.tab-indicator::before {
   content: '';
   position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: var(--gradient-primary);
-  box-shadow: var(--glow-primary);
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: backdrop-filter 0.3s ease;
 }
+
+/* When dragging – add liquid distortion */
+.tab-indicator.is-moving::before {
+  backdrop-filter: blur(8px) url(#real-liquid);
+  -webkit-backdrop-filter: blur(8px) url(#real-liquid);
+}
+
+/* Edge highlights – always present */
+.tab-indicator::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.6),
+    inset 0 -1px 0 rgba(255,255,255,0.3);
+  pointer-events: none;
+}
+
+/* Hover / active styling (optional) */
+.tab-indicator:hover {
+  background: rgba(255,255,255,0.05);
+}
+
 </style>
