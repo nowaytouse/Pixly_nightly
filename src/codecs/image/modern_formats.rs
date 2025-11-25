@@ -469,7 +469,8 @@ impl ModernFormatConverter {
  }
 
 // 🔥 Pixel format - based onselectchroma_subsampling
-// if明确specify，justpass；otherwise let FFmpegautoselect
+// If user explicitly specified these parameters, pass them to FFmpeg
+// otherwise let FFmpeg auto-select best format
  if !params.chroma_subsampling.is_empty() {
  let pix_fmt = match params.chroma_subsampling.as_str() {
  "444" => "yuv444p",
@@ -583,17 +584,17 @@ impl Default for AVIFParams {
 }
 
 impl AVIFParams {
-/// fromqualityvaluecreate (0-100)
- pub fn from_quality(quality: u8) -> Self {
- let clamped_quality = quality.min(100); // Clamp to valid range
- let crf = ((100 - clamped_quality) as f64 * 0.63) as u8; // mapto0-63
- let speed = if clamped_quality >= 90 {
- 6 // highqualityslow
- } else if clamped_quality >= 70 {
- 4 // etcquality平衡
- } else {
- 2 // lowqualityquick
- };
+    /// Create from quality value (0-100)
+    pub fn from_quality(quality: u8) -> Self {
+        let clamped_quality = quality.min(100); // Clamp to valid range
+        let crf = ((100 - clamped_quality) as f64 * 0.63) as u8; // Map to 0-63
+        let speed = if clamped_quality >= 90 {
+            6 // High quality, slower
+        } else if clamped_quality >= 70 {
+            4 // Balanced quality
+        } else {
+            2 // Low quality, faster
+        };
 
 // Calculate min/max quantizers based on quality
  let min_q = if clamped_quality > 90 { 0 } else if clamped_quality > 70 { 5 } else { 10 };
@@ -655,15 +656,15 @@ impl Default for JXLParams {
 }
 
 impl JXLParams {
-/// fromqualityvaluecreate
- pub fn from_quality(quality: u8) -> Self {
- let effort = if quality >= 90 {
- 9 // highqualitymaximumeffort
- } else if quality >= 70 {
- 7 // etcquality平衡
- } else {
- 5 // lowqualityquick
- };
+    /// Create from quality value
+    pub fn from_quality(quality: u8) -> Self {
+        let effort = if quality >= 90 {
+            9 // High quality, maximum effort
+        } else if quality >= 70 {
+            7 // Balanced quality
+        } else {
+            5 // Low quality, faster
+        };
 
  Self {
  quality,

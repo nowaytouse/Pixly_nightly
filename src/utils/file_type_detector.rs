@@ -25,7 +25,7 @@ pub struct FileTypeDetection {
 /// detaileddescription
  pub description: Option<String>,
 
-/// isnofortwo制file
+/// Whether file is binary
  pub is_binary: bool,
 }
 

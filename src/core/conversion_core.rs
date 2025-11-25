@@ -591,7 +591,7 @@ fn convert_animation_to_video(input: &Path, output: &Path) -> Result<()> {
  preset: "medium".to_string(),
  target_resolution: None,
  target_fps: None,
- audio_mode: AudioMode::Remove, // 没hasaudio
+ audio_mode: AudioMode::Remove, // No audio
  two_pass: false,
  hw_accel: "auto".to_string(),
  gop_size: Some(250),

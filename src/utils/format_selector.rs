@@ -439,7 +439,7 @@ mod tests {
 
  assert_eq!(result.recommended_format, "avif");
  assert!(result.confidence > 0.9);
- assert!(result.estimated_size_change < 0.0); // should该small
+ assert!(result.estimated_size_change < 0.0); // Should be smaller
  }
 
  #[test]

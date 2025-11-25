@@ -388,7 +388,7 @@ impl PerformanceCore {
  self.start_time.elapsed()
  }
 
-/// estimated SIMD加速倍
+/// Estimate SIMD speedup multiplier
  pub fn estimate_speedup(&self) -> f32 {
  if self.cpu_info.supports_avx512 {
  16.0
@@ -456,7 +456,7 @@ mod tests {
  async fn test_estimate_speedup() {
  let config = PerformanceConfig {
  enable_simd: true,
- worker_threads: 2, // usingthread避免冲突
+ worker_threads: 2, // Use 2 threads to avoid conflicts
  memory_pool_size_mb: 128,
  enable_profiling: false,
  };
@@ -468,8 +468,8 @@ mod tests {
  assert!(speedup >= 1.0);
  }
  Err(_) => {
-// threadpoolalreadyinitialization，skiptest
-// test估逻辑
+// Thread pool already initialized, skip test
+                // Test estimation logic
  let cpu_info = PerformanceCore::detect_cpu_info();
  let speedup = if cpu_info.supports_avx512 {
  16.0

@@ -184,7 +184,7 @@ pub struct AvifParams {
 /// Tilesline (1-8) - pairshouldHTML: avif Tiles Rows
  pub tiles_rows: Option<u8>,
 
-/// Tiles列 (1-8) - pairshouldHTML: avif Tiles Cols
+/// Tiles columns (1-8) - corresponds to HTML: avif Tiles Cols
  pub tiles_cols: Option<u8>,
 
 /// Alpha - pairshouldHTML: avif Premultiply

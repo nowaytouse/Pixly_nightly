@@ -309,38 +309,136 @@ fn parse_ffmpeg_time(line: &str) -> Option<f32> {
 
 #[cfg(test)]
 mod tests {
- use super::*;
+    use super::*;
 
- #[test]
- fn test_audio_processor_creation() {
- let processor = AudioProcessor::new();
- assert_eq!(processor.ffmpeg_path, "ffmpeg");
- }
+    #[test]
+    fn test_audio_processor_creation() {
+        let processor = AudioProcessor::new();
+        assert_eq!(processor.ffmpeg_path, "ffmpeg");
+    }
 
- #[test]
- fn test_default_config() {
- let config = AudioConversionConfig::default();
- assert_eq!(config.codec, "opus"); // Default to modern Opus
- assert_eq!(config.container, "ogg");
- }
+    #[test]
+    fn test_default_config() {
+        let config = AudioConversionConfig::default();
+        assert_eq!(config.codec, "opus"); // Default to modern Opus
+        assert_eq!(config.container, "ogg");
+        assert_eq!(config.bitrate, 128);
+        assert_eq!(config.quality, 5);
+    }
 
- #[test]
- fn test_recommended_configs() {
- let processor = AudioProcessor::new();
+    #[test]
+    fn test_recommended_configs() {
+        let processor = AudioProcessor::new();
 
-// Opus recommendation
- let opus_config = processor.get_recommended_config("mp3", "opus");
- assert_eq!(opus_config.codec, "opus");
- assert_eq!(opus_config.sample_rate, Some(48000));
+        // Opus recommendation
+        let opus_config = processor.get_recommended_config("mp3", "opus");
+        assert_eq!(opus_config.codec, "opus");
+        assert_eq!(opus_config.sample_rate, Some(48000));
 
-// AAC recommendation
- let aac_config = processor.get_recommended_config("mp3", "aac");
- assert_eq!(aac_config.codec, "aac");
- assert_eq!(aac_config.container, "m4a");
+        // AAC recommendation
+        let aac_config = processor.get_recommended_config("mp3", "aac");
+        assert_eq!(aac_config.codec, "aac");
+        assert_eq!(aac_config.container, "m4a");
 
-// FLAC recommendation
- let flac_config = processor.get_recommended_config("mp3", "flac");
- assert_eq!(flac_config.codec, "flac");
- assert_eq!(flac_config.bitrate, 0); // Lossless
- }
+        // FLAC recommendation
+        let flac_config = processor.get_recommended_config("mp3", "flac");
+        assert_eq!(flac_config.codec, "flac");
+        assert_eq!(flac_config.bitrate, 0); // Lossless
+    }
+
+    #[test]
+    fn test_select_encoder_opus() {
+        let processor = AudioProcessor::new();
+        assert_eq!(processor.select_encoder("opus"), "libopus");
+    }
+
+    #[test]
+    fn test_select_encoder_vorbis() {
+        let processor = AudioProcessor::new();
+        assert_eq!(processor.select_encoder("vorbis"), "libvorbis");
+    }
+
+    #[test]
+    fn test_select_encoder_aac() {
+        let processor = AudioProcessor::new();
+        assert_eq!(processor.select_encoder("aac"), "aac");
+    }
+
+    #[test]
+    fn test_select_encoder_mp3() {
+        let processor = AudioProcessor::new();
+        assert_eq!(processor.select_encoder("mp3"), "libmp3lame");
+    }
+
+    #[test]
+    fn test_select_encoder_flac() {
+        let processor = AudioProcessor::new();
+        assert_eq!(processor.select_encoder("flac"), "flac");
+    }
+
+    #[test]
+    fn test_select_encoder_unknown_defaults_to_opus() {
+        let processor = AudioProcessor::new();
+        assert_eq!(processor.select_encoder("unknown_codec"), "libopus");
+    }
+
+    #[test]
+    fn test_recommended_mp3_config() {
+        let processor = AudioProcessor::new();
+        let config = processor.get_recommended_config("wav", "mp3");
+        assert_eq!(config.codec, "mp3");
+        assert_eq!(config.container, "mp3");
+        assert_eq!(config.sample_rate, Some(44100));
+        assert_eq!(config.bitrate, 192);
+    }
+
+    #[test]
+    fn test_recommended_unknown_codec_uses_default() {
+        let processor = AudioProcessor::new();
+        let config = processor.get_recommended_config("wav", "unknown");
+        // Should return default config
+        assert_eq!(config.codec, "opus");
+        assert_eq!(config.container, "ogg");
+    }
+
+    #[test]
+    fn test_parse_ffmpeg_time_valid() {
+        let result = parse_ffmpeg_time("out_time_ms=5000000");
+        assert_eq!(result, Some(5.0));
+    }
+
+    #[test]
+    fn test_parse_ffmpeg_time_invalid() {
+        let result = parse_ffmpeg_time("progress=continue");
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_parse_ffmpeg_time_zero() {
+        let result = parse_ffmpeg_time("out_time_ms=0");
+        assert_eq!(result, Some(0.0));
+    }
+
+    #[test]
+    fn test_audio_default_impl() {
+        let processor1 = AudioProcessor::new();
+        let processor2 = AudioProcessor::default();
+        assert_eq!(processor1.ffmpeg_path, processor2.ffmpeg_path);
+        assert_eq!(processor1.ffprobe_path, processor2.ffprobe_path);
+    }
+
+    #[test]
+    fn test_audio_conversion_config_custom() {
+        let config = AudioConversionConfig {
+            codec: "aac".to_string(),
+            container: "m4a".to_string(),
+            bitrate: 256,
+            sample_rate: Some(44100),
+            channels: Some(2),
+            quality: 8,
+        };
+        assert_eq!(config.codec, "aac");
+        assert_eq!(config.bitrate, 256);
+        assert_eq!(config.channels, Some(2));
+    }
 }
