@@ -9,7 +9,6 @@ pub mod ml_data_flow;
 pub mod ml_time_estimator;
 pub mod online_learner_manager;
 pub mod online_learning;
-pub mod ppo_model;
 pub mod ppo_model_enhanced;
 pub mod python_ml_caller;
 pub mod reward_calculator;
