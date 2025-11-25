@@ -140,10 +140,10 @@ impl FileAttributes {
 }
 
 /// 便捷函数：保留文件属性的转换
-/// 
+///
 /// 使用方式：
 /// ```no_run
-/// use pixly_kernel::file_attributes::FileAttributes;
+/// use pixly_kernel::utils::file_attributes::FileAttributes;
 /// use std::path::Path;
 /// # fn main() -> anyhow::Result<()> {
 /// let input_path = Path::new("input.jpg");

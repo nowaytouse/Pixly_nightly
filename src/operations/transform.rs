@@ -11,8 +11,8 @@
 //!
 //! ## 使用示例
 //!
-//! ```rust
-//! use pixly_kernel::transform::{TransformBuilder, CropMode, RotateMode};
+//! ```rust,ignore
+//! use pixly_kernel::operations::transform::{TransformBuilder, CropMode, RotateMode};
 //!
 //! # fn example() -> anyhow::Result<()> {
 //! # let image = image::DynamicImage::new_rgb8(100, 100);

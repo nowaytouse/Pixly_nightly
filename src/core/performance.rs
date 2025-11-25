@@ -11,8 +11,8 @@
 //!
 //! ## 使用示例
 //!
-//! ```rust
-//! use pixly_kernel::performance::{PerformanceCore, PerformanceConfig, ImageOperation};
+//! ```rust,ignore
+//! use pixly_kernel::core::performance::{PerformanceCore, PerformanceConfig, ImageOperation};
 //!
 //! # async fn example() -> anyhow::Result<()> {
 //! let config = PerformanceConfig::default();

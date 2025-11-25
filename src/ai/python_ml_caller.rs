@@ -37,14 +37,14 @@ pub struct MLPredictResponse {
 /// 
 /// # 示例
 /// ```no_run
-/// use pixly_kernel::python_ml_caller::{call_python_ml, MLPredictRequest};
+/// use pixly_kernel::ai::python_ml_caller::{call_python_ml, MLPredictRequest};
 /// # fn main() -> anyhow::Result<()> {
 /// let request = MLPredictRequest {
 ///     features: vec![1.0; 128],
 ///     target_format: "avif".to_string(),
 ///     quality_mode: "balanced".to_string(),
 /// };
-/// 
+///
 /// match call_python_ml(&request) {
 ///     Ok(response) => println!("Quality: {}", response.quality),
 ///     Err(e) => eprintln!("ML failed: {}", e),
