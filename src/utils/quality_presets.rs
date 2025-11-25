@@ -1,33 +1,33 @@
 // src/quality_presets.rs
 //! 🎯 CLI-001: qualitypresetSystem
-//! 
-//! provide预定义qualityconfiguration，简用户select
+//!
+//! providequalityconfiguration，select
 
 use serde::{Serialize, Deserialize};
 
 /// qualitypresetlevel
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum QualityPreset {
- /// 草稿quality - 最快speed，minimumfile
+/// draftquality - mostfastspeed，minimumfile
  Draft,
- /// standardquality - balancedspeed and quality
+/// standardquality - balancedspeed and quality
  Standard,
- /// highquality - priorityquality
+/// highquality - priorityquality
  High,
- /// highest quality - 接近lossless
+/// highest quality - nearlossless
  Maximum,
 }
 
 /// presetconfiguration
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure PresetConfig {
+pub struct PresetConfig {
  pub quality: u32,
  pub effort: u32,
  pub description: &'static str,
 }
 
 impl QualityPreset {
- /// get所 has preset
+/// get has preset
  pub fn all() -> Vec<Self> {
  vec![
  Self::Draft,
@@ -36,8 +36,8 @@ impl QualityPreset {
  Self::Maximum,
  ]
  }
- 
- /// fromstringparse（note： not isstd::str::From Str trait）
+
+/// fromstringparse（note： not isstd::str::From Str trait）
  pub fn parse_preset(s: &str) -> Option<Self> {
  match s.to_lowercase().as_str() {
  "draft" | "d" => Some(Self::Draft),
@@ -47,8 +47,8 @@ impl QualityPreset {
  _ => None,
  }
  }
- 
- /// 转forstring
+
+/// forstring
  pub fn as_str(&self) -> &'static str {
  match self {
  Self::Draft => "draft",
@@ -57,8 +57,8 @@ impl QualityPreset {
  Self::Maximum => "maximum",
  }
  }
- 
- /// getWebPconfiguration
+
+/// getWebPconfiguration
  pub fn webp_config(&self) -> PresetConfig {
  match self {
  Self::Draft => PresetConfig {
@@ -83,8 +83,8 @@ impl QualityPreset {
  },
  }
  }
- 
- /// getAVIFconfiguration
+
+/// getAVIFconfiguration
  pub fn avif_config(&self) -> PresetConfig {
  match self {
  Self::Draft => PresetConfig {
@@ -109,8 +109,8 @@ impl QualityPreset {
  },
  }
  }
- 
- /// getJXLconfiguration
+
+/// getJXLconfiguration
  pub fn jxl_config(&self) -> PresetConfig {
  match self {
  Self::Draft => PresetConfig {
@@ -135,8 +135,8 @@ impl QualityPreset {
  },
  }
  }
- 
- /// based onformatgetconfiguration
+
+/// based onformatgetconfiguration
  pub fn config_for_format(&self, format: &str) -> PresetConfig {
  match format.to_lowercase().as_str() {
  "webp" => self.webp_config(),
@@ -177,30 +177,30 @@ impl QualityPreset {
  Self::Maximum => "Maximum: Best compression",
  },
  },
- _ => self.webp_config(), // defaultusingWebP配置
+ _ => self.webp_config(), // defaultusingWebPconfig
  }
  }
- 
- /// display所 has presetinformation
+
+/// display has presetinformation
  pub fn display_all() {
  println!("📊 Available Quality Presets:\n");
- 
+
  for preset in Self::all() {
  println!(" {} - {}", preset.as_str(), preset.description());
- println!(" WebP: Q{}, E{}", 
+ println!(" WebP: Q{}, E{}",
  preset.webp_config().quality,
  preset.webp_config().effort);
- println!(" AVIF: Q{}, E{}", 
+ println!(" AVIF: Q{}, E{}",
  preset.avif_config().quality,
  preset.avif_config().effort);
- println!(" JXL: Q{}, E{}", 
+ println!(" JXL: Q{}, E{}",
  preset.jxl_config().quality,
  preset.jxl_config().effort);
  println!();
  }
  }
- 
- /// get描述
+
+/// getdescription
  fn description(&self) -> &'static str {
  match self {
  Self::Draft => "Fast encoding, smaller files",
@@ -214,7 +214,7 @@ impl QualityPreset {
 #[cfg(test)]
 mod tests {
  use super::*;
- 
+
  #[test]
  fn test_preset_parsing() {
  assert_eq!(QualityPreset::parse_preset("draft"), Some(QualityPreset::Draft));
@@ -222,14 +222,14 @@ mod tests {
  assert_eq!(QualityPreset::parse_preset("high"), Some(QualityPreset::High));
  assert_eq!(QualityPreset::parse_preset("max"), Some(QualityPreset::Maximum));
  }
- 
+
  #[test]
  fn test_webp_config() {
  let config = QualityPreset::Standard.webp_config();
  assert_eq!(config.quality, 80);
  assert_eq!(config.effort, 4);
  }
- 
+
  #[test]
  fn test_format_config() {
  let config = QualityPreset::High.config_for_format("avif");

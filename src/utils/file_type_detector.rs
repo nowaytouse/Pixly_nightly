@@ -1,6 +1,6 @@
 //! filetypedetectionmodule
-//! 
-//! useinferlibrary进line AI驱动filetypedetection
+//!
+//! useinferlibraryline AIfiletypedetection
 
 use anyhow::{Context, Result};
 use std::path::Path;
@@ -9,91 +9,91 @@ use serde::{Deserialize, Serialize};
 
 /// filetypedetectionresult
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure FileTypeDetection {
- /// AIdetectionfiletypelabel（如 "jpeg", "png", "gif"）
+pub struct FileTypeDetection {
+/// AIdetectionfiletypelabel（like "jpeg", "png", "gif"）
  pub detected_type: String,
- 
- /// detection置信度 (0.0-1.0)
+
+/// detectionconfidence (0.0-1.0)
  pub confidence: f64,
- 
- /// is否forhigh置信度detection（>0.9）
+
+/// isnoforhighconfidencedetection（>0.9）
  pub is_high_confidence: bool,
- 
- /// MIMEtype（如 "image/jpeg"）
+
+/// MIMEtype（like "image/jpeg"）
  pub mime_type: Option<String>,
- 
- /// detailed描述
+
+/// detaileddescription
  pub description: Option<String>,
- 
- /// is否fortwo进制file
+
+/// isnofortwo制file
  pub is_binary: bool,
 }
 
 /// filesecurityvalidationresult
 #[derive(Debug, Clone)]
-pub structure SecurityValidation {
- /// is否passvalidation
+pub struct SecurityValidation {
+/// isnopassvalidation
  pub is_safe: bool,
- 
- /// 扩展名anddetectiontypeis否match
+
+/// extensionanddetectiontypeisnomatch
  pub type_match: bool,
- 
- /// detectionto扩展名
+
+/// detectiontoextension
  pub expected_extension: Option<String>,
- 
- /// actualdetectiontype
+
+/// actualdetectiontype
  pub detected_type: String,
- 
- /// warninginformation
+
+/// warninginformation
  pub warnings: Vec<String>,
- 
- /// is否for可疑file（伪装、损坏 etc ）
+
+/// isnoforcanfile（、 etc ）
  pub is_suspicious: bool,
 }
 
 /// filetypedetection
-pub structure FileTypeDetector {
- /// minimum置信度threshold（below此value视for not 可靠）
+pub struct FileTypeDetector {
+/// minimumconfidencethreshold（belowthisvaluefor not can）
  min_confidence: f64,
- 
- /// is否enabled严格mode（detectionto not match when reject）
+
+/// isnoenabledmode（detectionto not match when reject）
  strict_mode: bool,
 }
 
 impl FileTypeDetector {
- /// createnewdetection
+/// createnewdetection
  pub fn new(min_confidence: f64, strict_mode: bool) -> Self {
  Self {
  min_confidence,
  strict_mode,
  }
  }
- 
- /// createdefaultdetection（置信度 0.9，not严格mode）
+
+/// createdefaultdetection（confidence 0.9，notmode）
  pub fn with_defaults() -> Self {
  Self::new(0.9, false)
  }
- 
- /// detectionfiletype
+
+/// detectionfiletype
  pub fn detect_file_type<P: AsRef<Path>>(&self, file_path: P) -> Result<FileTypeDetection> {
  let file_path = file_path.as_ref();
- 
- // readfile before 几bytes进linedetection
+
+// readfile before how manybyteslinedetection
  let file_data = fs::read(file_path)
  .context(format!("Failed to read file: {:?}", file_path))?;
- 
+
  let detected_type = if let Some(kind) = infer::get(&file_data) {
  kind.extension().to_string()
  } else {
- // 回退tofile扩展名detection
+// tofileextensiondetection
  file_path.extension()
  .and_then(|ext| ext.to_str())
  .unwrap_or("unknown")
  .to_string()
  };
- 
+
  let confidence = if detected_type != "unknown" { 0.95 } else { 0.1 };
- 
+
  let detection = FileTypeDetection {
  detected_type: detected_type.clone(),
  confidence,
@@ -102,29 +102,29 @@ impl FileTypeDetector {
  description: Some(format!("File type: {}", detected_type)),
  is_binary: !detected_type.starts_with("text"),
  };
- 
+
  Ok(detection)
  }
- 
- /// validationfilesecurity性（detection伪装file）
+
+/// validationfilesecurity（detectionfile）
  pub fn validate_security(
  &self,
  file_path: &Path,
  expected_extension: Option<&str>,
  ) -> Result<SecurityValidation> {
  let detection = self.detect_file_type(file_path)?;
- 
+
  let file_extension = file_path
  .extension()
  .and_then(|e| e.to_str())
  .map(|e| e.to_lowercase());
- 
+
  let mut warnings = Vec::new();
  let mut is_suspicious = false;
- 
+
  let type_match = if let Some(expected) = expected_extension {
  let matches = self.extension_matches_type(expected, &detection.detected_type);
- 
+
  if !matches && detection.is_high_confidence {
  warnings.push(format!(
  "File type mismatch: Expected '{}' but detected '{}' (confidence: {:.1}%)",
@@ -134,11 +134,11 @@ impl FileTypeDetector {
  ));
  is_suspicious = true;
  }
- 
+
  matches
  } else if let Some(file_ext) = &file_extension {
  let matches = self.extension_matches_type(file_ext, &detection.detected_type);
- 
+
  if !matches && detection.is_high_confidence {
  warnings.push(format!(
  "Extension mismatch: File has '.{}' but detected as '{}' (confidence: {:.1}%)",
@@ -148,7 +148,7 @@ impl FileTypeDetector {
  ));
  is_suspicious = true;
  }
- 
+
  matches
  } else {
  if detection.is_high_confidence {
@@ -160,7 +160,7 @@ impl FileTypeDetector {
  }
  true
  };
- 
+
  if self.is_executable_type(&detection.detected_type) && detection.is_high_confidence {
  warnings.push(format!(
  "SECURITY WARNING: Detected as executable type '{}'",
@@ -168,7 +168,7 @@ impl FileTypeDetector {
  ));
  is_suspicious = true;
  }
- 
+
  if !detection.is_high_confidence {
  warnings.push(format!(
  "Low confidence detection: {:.1}% (threshold: {:.1}%)",
@@ -176,13 +176,13 @@ impl FileTypeDetector {
  self.min_confidence * 100.0
  ));
  }
- 
+
  let is_safe = if self.strict_mode {
  type_match && !is_suspicious && detection.is_high_confidence
  } else {
  !self.is_executable_type(&detection.detected_type) || type_match
  };
- 
+
  Ok(SecurityValidation {
  is_safe,
  type_match,
@@ -192,17 +192,17 @@ impl FileTypeDetector {
  is_suspicious,
  })
  }
- 
- /// check扩展名andtypeis否match
+
+/// checkextensionandtypeisnomatch
  pub fn extension_matches_type(&self, extension: &str, detected_type: &str) -> bool {
  let ext = extension.to_lowercase();
  let dtype = detected_type.to_lowercase();
- 
+
  if ext == dtype {
  return true;
  }
- 
- // 常见别名mapping
+
+// aliasmapping
  matches!(
  (ext.as_str(), dtype.as_str()),
  ("jpg", "jpeg") | ("jpeg", "jpg") |
@@ -211,8 +211,8 @@ impl FileTypeDetector {
  ("mpg", "mpeg") | ("mpeg", "mpg")
  )
  }
- 
- /// 判断is否for可executefiletype
+
+/// isnoforcanexecutefiletype
  fn is_executable_type(&self, detected_type: &str) -> bool {
  matches!(
  detected_type.to_lowercase().as_str(),

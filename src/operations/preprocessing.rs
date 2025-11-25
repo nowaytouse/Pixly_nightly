@@ -73,7 +73,7 @@ impl FilterType {
 }
 
 /// preprocessingpipeline
-pub structure PreprocessPipeline {
+pub struct PreprocessPipeline {
  steps: Vec<PreprocessStep>,
 }
 

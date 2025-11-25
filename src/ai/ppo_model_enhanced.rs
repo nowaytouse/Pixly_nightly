@@ -1,12 +1,12 @@
-// 🤖 enhanced版PPO强学习model
-// supportimage、video、audio全媒体typetrainingdata
+// 🤖 enhancedPPOstronglearningmodel
+// supportimage、video、audiomediatypetrainingdata
 
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::collections::HashMap;
 use anyhow::{Context, Result};
 
-/// 媒体type
+/// mediatype
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum MediaType {
@@ -15,9 +15,9 @@ pub enum MediaType {
  Audio,
 }
 
-/// singletraining样本
+/// singletrainingsample
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure TrainingSample {
+pub struct TrainingSample {
  pub media_type: MediaType,
  pub input_file: String,
  pub input_size: u64,
@@ -28,9 +28,9 @@ pub structure TrainingSample {
  pub reward: f64,
 }
 
-/// PPOtrainingdata集
+/// PPOtrainingdata
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure PPOTrainingData {
+pub struct PPOTrainingData {
  pub timestamp: String,
  pub total_samples: usize,
  pub stats: HashMap<String, usize>,
@@ -38,73 +38,73 @@ pub structure PPOTrainingData {
 }
 
 impl PPOTrainingData {
- /// fromJSONfileload
+/// fromJSONfileload
  pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
  let content = std::fs::read_to_string(path)
  .context("Failed to read PPO training data file")?;
- 
+
  let data: PPOTrainingData = serde_json::from_str(&content)
  .context("Failed to parse PPO training data")?;
- 
+
  Ok(data)
  }
- 
- /// 按媒体typefilter样本
+
+/// mediatypefiltersample
  pub fn filter_by_media_type(&self, media_type: MediaType) -> Vec<&TrainingSample> {
  self.data.iter()
  .filter(|s| s.media_type == media_type)
  .collect()
  }
- 
- /// 按formatfilter样本
+
+/// formatfiltersample
  pub fn filter_by_format(&self, format: &str) -> Vec<&TrainingSample> {
  self.data.iter()
  .filter(|s| s.target_format == format)
  .collect()
  }
- 
- /// get最佳compression率样本
+
+/// getmostcompressionsample
  pub fn get_best_compression(&self, media_type: MediaType, format: &str) -> Option<&TrainingSample> {
  self.data.iter()
  .filter(|s| s.media_type == media_type && s.target_format == format)
  .min_by(|a, b| a.compression_ratio.partial_cmp(&b.compression_ratio)
  .unwrap_or(std::cmp::Ordering::Equal))
  }
- 
- /// getaveragecompression率
+
+/// getaveragecompression
  pub fn average_compression_ratio(&self, media_type: MediaType, format: &str) -> f64 {
  let samples: Vec<_> = self.data.iter()
  .filter(|s| s.media_type == media_type && s.target_format == format)
  .collect();
- 
+
  if samples.is_empty() {
  return 1.0;
  }
- 
+
  let sum: f64 = samples.iter().map(|s| s.compression_ratio).sum();
  sum / samples.len() as f64
  }
- 
- /// getaverage奖励
+
+/// getaveragereward
  pub fn average_reward(&self, media_type: MediaType, format: &str) -> f64 {
  let samples: Vec<_> = self.data.iter()
  .filter(|s| s.media_type == media_type && s.target_format == format)
  .collect();
- 
+
  if samples.is_empty() {
  return 0.0;
  }
- 
+
  let sum: f64 = samples.iter().map(|s| s.reward).sum();
  sum / samples.len() as f64
  }
- 
- /// recommendedOptimal quality parameter
+
+/// recommendedOptimal quality parameter
  pub fn recommend_quality(&self, media_type: MediaType, format: &str, target_ratio: f64) -> u32 {
  let samples: Vec<_> = self.data.iter()
  .filter(|s| s.media_type == media_type && s.target_format == format)
  .collect();
- 
+
  if samples.is_empty() {
  return match media_type {
  MediaType::Image => 85,
@@ -112,8 +112,8 @@ impl PPOTrainingData {
  MediaType::Audio => 192,
  };
  }
- 
- // findtoclosesttargetcompression率样本
+
+// findtoclosesttargetcompressionsample
  samples.iter()
  .min_by(|a, b| {
  let diff_a = (a.compression_ratio - target_ratio).abs();
@@ -125,126 +125,126 @@ impl PPOTrainingData {
  }
 }
 
-/// enhanced版PPOprediction
-pub structure EnhancedPPOPredictor {
+/// enhancedPPOprediction
+pub struct EnhancedPPOPredictor {
  training_data: PPOTrainingData,
  enabled: bool,
 }
 
 impl EnhancedPPOPredictor {
- /// createnewprediction
+/// createnewprediction
  pub fn new(training_data: PPOTrainingData) -> Self {
  Self {
  training_data,
  enabled: true,
  }
  }
- 
- /// fromfileload
+
+/// fromfileload
  pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
  let training_data = PPOTrainingData::from_file(path)?;
  Ok(Self::new(training_data))
  }
- 
- /// predictionimageconversionparameter
+
+/// predictionimageconversionparameter
  pub fn predict_image_params(&self, format: &str, file_size: u64) -> ImageConversionParams {
  if !self.enabled {
  return ImageConversionParams::default();
  }
- 
+
  let avg_ratio = self.training_data.average_compression_ratio(MediaType::Image, format);
  let avg_reward = self.training_data.average_reward(MediaType::Image, format);
- 
- // based onfilesize and trainingdataadjustedquality
+
+// based onfilesize and trainingdataadjustedquality
  let base_quality = if file_size > 5_000_000 {
- 80 // 大file用较低quality
+ 80 // largefilerelativelylowquality
  } else if file_size < 500_000 {
- 90 // 小file用较高quality
+ 90 // smallfilerelativelyhighquality
  } else {
  85 // etcfile
  };
- 
- // usetrainingdatafine-tuned
+
+// usetrainingdatafine-tuned
  let quality_adjustment = (avg_reward * 10.0) as i32;
  let quality = (base_quality + quality_adjustment).clamp(60, 100) as u8;
- 
+
  ImageConversionParams {
  quality,
  speed: self.predict_speed_from_ratio(avg_ratio),
- lossless: avg_ratio < 0.5, // 如果压缩率很好，可以try无损
+ lossless: avg_ratio < 0.5, // likecompressvery，canbytry
  }
  }
- 
- /// predictionvideoconversionparameter
+
+/// predictionvideoconversionparameter
  pub fn predict_video_params(&self, format: &str, _file_size: u64) -> VideoConversionParams {
  if !self.enabled {
  return VideoConversionParams::default();
  }
- 
+
  let avg_ratio = self.training_data.average_compression_ratio(MediaType::Video, format);
  let avg_reward = self.training_data.average_reward(MediaType::Video, format);
- 
- // based ontrainingdatarecommended比特率
+
+// based ontrainingdatarecommendedbitrate
  let bitrate = if avg_ratio < 1.0 {
- // compression效果好，can用较low比特率
+// compression效，canrelativelylowbitrate
  1000
  } else if avg_ratio < 2.0 {
- // etc compression，用 etc 比特率
+// etc compression， etc bitrate
  1500
  } else {
- // compression效果差，用较high比特率guaranteequality
+// compression效差，relativelyhighbitrateguaranteequality
  2000
  };
- 
+
  VideoConversionParams {
  bitrate,
  preset: self.predict_preset_from_reward(avg_reward),
  crf: self.calculate_crf_from_ratio(avg_ratio),
  }
  }
- 
- /// predictionaudioconversionparameter
+
+/// predictionaudioconversionparameter
  pub fn predict_audio_params(&self, format: &str, _file_size: u64) -> AudioConversionParams {
  if !self.enabled {
  return AudioConversionParams::default();
  }
- 
+
  let _avg_ratio = self.training_data.average_compression_ratio(MediaType::Audio, format);
  let _avg_reward = self.training_data.average_reward(MediaType::Audio, format);
- 
- // based ontrainingdatarecommended比特率
+
+// based ontrainingdatarecommendedbitrate
  let bitrate = if format == "aac" {
- // AACcompression效果最好，can用较low比特率
+// AACcompression效most，canrelativelylowbitrate
  128
  } else if format == "opus" {
- // Opus适合 etc 比特率
+// Opus etc bitrate
  160
  } else {
- // MP3need较high比特率
+// MP3needrelativelyhighbitrate
  192
  };
- 
+
  AudioConversionParams {
  bitrate,
  sample_rate: 48000,
  channels: 2,
  }
  }
- 
- /// recommended最佳format
+
+/// recommendedmostformat
  pub fn recommend_best_format(&self, media_type: MediaType) -> String {
  let formats = match media_type {
  MediaType::Image => vec!["webp", "avif", "jxl"],
  MediaType::Video => vec!["webm", "mp4"],
  MediaType::Audio => vec!["opus", "aac", "mp3"],
  };
- 
- // findtoaverage奖励highestformat
+
+// findtoaveragerewardhighestformat
  formats.iter()
  .max_by(|a, b| {
  let reward_a = self.training_data.average_reward(media_type.clone(), a);
  let reward_b = self.training_data.average_reward(media_type.clone(), b);
- // Handle NaN by treating it as Equal (shouldn't happen with valid rewards)
+// Handle NaN by treating it as Equal (shouldn't happen with valid rewards)
  reward_a.partial_cmp(&reward_b).unwrap_or(std::cmp::Ordering::Equal)
  })
  .map(|s| s.to_string())
@@ -254,19 +254,19 @@ impl EnhancedPPOPredictor {
  MediaType::Audio => "aac".to_string(),
  })
  }
- 
- /// fromcompression率predictionspeedparameter
+
+/// fromcompressionpredictionspeedparameter
  fn predict_speed_from_ratio(&self, ratio: f64) -> u8 {
  if ratio < 0.5 {
- 6 // 压缩效果好，可以用慢速
+ 6 // compress效，canbyslow
  } else if ratio < 0.8 {
- 4 // etc压缩，用平衡速度
+ 4 // etccompress，平衡speed
  } else {
- 2 // 压缩效果差，用quick
+ 2 // compress效差，quick
  }
  }
- 
- /// from奖励predictionpreset
+
+/// fromrewardpredictionpreset
  fn predict_preset_from_reward(&self, reward: f64) -> String {
  if reward > 0.5 {
  "slow".to_string()
@@ -276,25 +276,25 @@ impl EnhancedPPOPredictor {
  "fast".to_string()
  }
  }
- 
- /// fromcompression率calculation CRF
+
+/// fromcompressioncalculation CRF
  fn calculate_crf_from_ratio(&self, ratio: f64) -> u8 {
- // CRF: 0-51, valuemore小qualitymorehigh
+// CRF: 0-51, valuemoresmallqualitymorehigh
  if ratio < 1.0 {
- 18 // 压缩效果好，用高quality
+ 18 // compress效，highquality
  } else if ratio < 2.0 {
- 23 // etc压缩，用etcquality
+ 23 // etccompress，etcquality
  } else {
- 28 // 压缩效果差，用较低quality
+ 28 // compress效差，relativelylowquality
  }
  }
- 
- /// gettrainingstatisticsinformation
+
+/// gettrainingstatisticsinformation
  pub fn get_training_stats(&self) -> String {
  let image_count = self.training_data.stats.get("image").unwrap_or(&0);
  let video_count = self.training_data.stats.get("video").unwrap_or(&0);
  let audio_count = self.training_data.stats.get("audio").unwrap_or(&0);
- 
+
  format!(
  "PPO Training Data: total_samples={}, images={}, videos={}, audio={}, timestamp={}",
  self.training_data.total_samples,
@@ -304,8 +304,8 @@ impl EnhancedPPOPredictor {
  self.training_data.timestamp
  )
  }
- 
- /// enabled/disabledprediction
+
+/// enabled/disabledprediction
  pub fn set_enabled(&mut self, enabled: bool) {
  self.enabled = enabled;
  }
@@ -313,7 +313,7 @@ impl EnhancedPPOPredictor {
 
 /// imageconversionparameter
 #[derive(Debug, Clone)]
-pub structure ImageConversionParams {
+pub struct ImageConversionParams {
  pub quality: u8,
  pub speed: u8,
  pub lossless: bool,
@@ -331,7 +331,7 @@ impl Default for ImageConversionParams {
 
 /// videoconversionparameter
 #[derive(Debug, Clone)]
-pub structure VideoConversionParams {
+pub struct VideoConversionParams {
  pub bitrate: u32,
  pub preset: String,
  pub crf: u8,
@@ -349,7 +349,7 @@ impl Default for VideoConversionParams {
 
 /// audioconversionparameter
 #[derive(Debug, Clone)]
-pub structure AudioConversionParams {
+pub struct AudioConversionParams {
  pub bitrate: u32,
  pub sample_rate: u32,
  pub channels: u8,
@@ -368,10 +368,10 @@ impl Default for AudioConversionParams {
 #[cfg(test)]
 mod tests {
  use super::*;
- 
+
  #[test]
  fn test_training_data_loading() {
- // createtestdata
+// createtestdata
  let data = PPOTrainingData {
  timestamp: "2025-11-17".to_string(),
  total_samples: 2,
@@ -404,12 +404,12 @@ mod tests {
  },
  ],
  };
- 
+
  assert_eq!(data.total_samples, 2);
  assert_eq!(data.filter_by_media_type(MediaType::Image).len(), 1);
  assert_eq!(data.filter_by_media_type(MediaType::Video).len(), 1);
  }
- 
+
  #[test]
  fn test_enhanced_predictor() {
  let data = PPOTrainingData {
@@ -429,14 +429,14 @@ mod tests {
  },
  ],
  };
- 
+
  let predictor = EnhancedPPOPredictor::new(data);
  let params = predictor.predict_image_params("webp", 100000);
- 
+
  assert!(params.quality >= 60 && params.quality <= 100);
  assert!(params.speed >= 1 && params.speed <= 10);
  }
- 
+
  #[test]
  fn test_format_recommendation() {
  let data = PPOTrainingData {
@@ -466,11 +466,11 @@ mod tests {
  },
  ],
  };
- 
+
  let predictor = EnhancedPPOPredictor::new(data);
  let best_format = predictor.recommend_best_format(MediaType::Audio);
- 
- // AACshould be recommended，因forit奖励更high
+
+// AACshould be recommended，becauseforitrewardmorehigh
  assert_eq!(best_format, "aac");
  }
 }

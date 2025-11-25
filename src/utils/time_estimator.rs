@@ -4,33 +4,33 @@
 //!
 //! ## Corealgorithm
 //!
-//! - **theoreticaltimecalculation** - based onfilefeaturemulti因子calculation
-//! - **historicaldata学习** - fromactual Conversion record学习
-//! - **混合估算** - 70%historical + 30%theoretical
-//! - **formatspecificprediction** - differentformat复杂度因子
+//! - **theoreticaltimecalculation** - based onfilefeaturemultibecausesubcalculation
+//! - **historicaldatalearning** - fromactual Conversion recordlearning
+//! - **** - 70%historical + 30%theoretical
+//! - **formatspecificprediction** - differentformatcomplexitybecausesub
 //!
-//! ## use场景
+//! ## use
 //!
 //! - batchprocessingprogressprediction
-//! - 用户waittime提示
-//! - resource调度optimization
+//! - waittime
+//! - resourcescheduleoptimization
 
 use std::collections::HashMap;
 use std::time::Duration;
 
 /// ML-driven conversion time estimator
-pub structure TimeEstimator {
- /// historicaldatarecord
+pub struct TimeEstimator {
+/// historicaldatarecord
  historical_records: HashMap<String, Vec<ConversionRecord>>,
- /// format复杂度因子
+/// formatcomplexitybecausesub
  format_factors: HashMap<String, f64>,
- /// is否enabledhistoricaldata学习
+/// isnoenabledhistoricaldatalearning
  learning_enabled: bool,
 }
 
 /// filefeaturestructure
 #[derive(Debug, Clone)]
-pub structure FileFeatures {
+pub struct FileFeatures {
  pub file_path: String,
  pub width: u32,
  pub height: u32,
@@ -42,7 +42,7 @@ pub structure FileFeatures {
 
 /// conversionparameter
 #[derive(Debug, Clone)]
-pub structure ConversionParams {
+pub struct ConversionParams {
  pub target_format: String,
  pub quality: u8,
  pub effort: u8,
@@ -51,9 +51,9 @@ pub structure ConversionParams {
  pub threads: u32,
 }
 
-/// Conversion record（forhistoricaldata学习）
+/// Conversion record（forhistoricaldatalearning）
 #[derive(Debug, Clone)]
-pub structure ConversionRecord {
+pub struct ConversionRecord {
  pub file_size: u64,
  pub width: u32,
  pub height: u32,
@@ -68,7 +68,7 @@ pub structure ConversionRecord {
 
 /// Time estimation result
 #[derive(Debug, Clone)]
-pub structure TimeEstimate {
+pub struct TimeEstimate {
  pub estimated_time: Duration,
  pub base_time: Duration,
  pub historical_time: Option<Duration>,
@@ -84,9 +84,9 @@ pub enum EstimationMethod {
  Hybrid,
 }
 
-/// time估算statisticsinformation
+/// timestatisticsinformation
 #[derive(Debug, Default)]
-pub structure TimeEstimatorStats {
+pub struct TimeEstimatorStats {
  pub total_records: usize,
  pub conversion_pairs: usize,
  pub total_time: Duration,
@@ -95,11 +95,11 @@ pub structure TimeEstimatorStats {
 }
 
 impl TimeEstimator {
- /// createtime估算
+/// createtime
  pub fn new() -> Self {
  let mut format_factors = HashMap::new();
 
- // format复杂度因子
+// formatcomplexitybecausesub
  format_factors.insert("jpg".to_string(), 0.3);
  format_factors.insert("jpeg".to_string(), 0.3);
  format_factors.insert("webp".to_string(), 0.8);
@@ -116,7 +116,7 @@ impl TimeEstimator {
  }
  }
 
- /// predictionsinglefileconversiontime
+/// predictionsinglefileconversiontime
  pub fn estimate_conversion_time(
  &self,
  features: &FileFeatures,
@@ -127,7 +127,7 @@ impl TimeEstimator {
 
  let (estimated_time, method, confidence) = match historical_time {
  Some(hist_time) => {
- // 70%historicaldata + 30%theoretical估算
+// 70%historicaldata + 30%theoretical
  let weighted_time = Duration::from_secs_f64(
  hist_time.as_secs_f64() * 0.7 + base_time.as_secs_f64() * 0.3,
  );
@@ -145,7 +145,7 @@ impl TimeEstimator {
  }
  }
 
- /// based onfilefeaturetheoreticaltimecalculation
+/// based onfilefeaturetheoreticaltimecalculation
  fn calculate_base_time(&self, features: &FileFeatures, params: &ConversionParams) -> Duration {
  let mut megapixels = (features.width as f64 * features.height as f64) / 1_000_000.0;
  if megapixels < 0.1 {
@@ -196,12 +196,12 @@ impl TimeEstimator {
  Duration::from_secs_f64(total_seconds)
  }
 
- /// getformat复杂度因子
+/// getformatcomplexitybecausesub
  fn get_format_factor(&self, format: &str) -> f64 {
  self.format_factors.get(format).copied().unwrap_or(1.0)
  }
 
- /// fromhistoricaldataquery相似conversiontime
+/// fromhistoricaldataqueryconversiontime
  fn query_historical_time(
  &self,
  features: &FileFeatures,
@@ -238,7 +238,7 @@ impl TimeEstimator {
  Some(Duration::from_millis(avg_time_ms))
  }
 
- /// 判断is否for相似conversion
+/// isnoforconversion
  fn is_similar_conversion(
  &self,
  record: &ConversionRecord,
@@ -282,7 +282,7 @@ impl TimeEstimator {
  record.lossless == params.lossless
  }
 
- /// recordactualconversiontimetohistoricaldata
+/// recordactualconversiontimetohistoricaldata
  pub fn record_actual_time(
  &mut self,
  features: &FileFeatures,
@@ -318,12 +318,12 @@ impl TimeEstimator {
  }
  }
 
- /// generaterecord键
+/// generaterecordkey
  fn make_record_key(&self, source_format: &str, target_format: &str) -> String {
  format!("{}:{}", source_format, target_format)
  }
 
- /// get估算statisticsinformation
+/// getstatisticsinformation
  pub fn get_stats(&self) -> TimeEstimatorStats {
  let mut stats = TimeEstimatorStats::default();
 
@@ -344,12 +344,12 @@ impl TimeEstimator {
  stats
  }
 
- /// enabled/disabled学习feature
+/// enabled/disabledlearningfeature
  pub fn set_learning_enabled(&mut self, enabled: bool) {
  self.learning_enabled = enabled;
  }
 
- /// cleanup过期historicalrecord
+/// cleanuphistoricalrecord
  pub fn cleanup_old_records(&mut self, max_age: Duration) {
  let cutoff_time = std::time::SystemTime::now() - max_age;
 
@@ -361,7 +361,7 @@ impl TimeEstimator {
  .retain(|_, records| !records.is_empty());
  }
 
- /// batch估算multifileconversiontime
+/// batchmultifileconversiontime
  pub fn estimate_batch_time(&self, files: &[(FileFeatures, ConversionParams)]) -> Duration {
  let total_time: Duration = files
  .iter()
@@ -506,27 +506,27 @@ mod tests {
 }
 
 /// 🌊 simulatedprogressgenerate
-/// 
-/// foratno法getexactprogress when （如AIanalysis、modelload），generate符合物理直觉平滑progress曲线。
-pub structure SimulatedProgress {
+///
+/// foratnogetexactprogress when （likeAIanalysis、modelload），generateprogressline。
+pub struct SimulatedProgress {
  start_time: std::time::Instant,
  estimated_duration: Duration,
  curve_type: ProgressCurve,
 }
 
-/// progress曲线type
+/// progresslinetype
 #[derive(Debug, Clone, Copy)]
 pub enum ProgressCurve {
- /// 线性增长 (适合短task)
+/// linelong (shorttask)
  Linear,
- /// S曲线 (适合长task：启动慢 -> 加速 -> 收尾慢)
+/// Sline (longtask：startslow ->  -> tailslow)
  EaseInOut,
- /// 芝诺逼近 (适合unknown when 长task：no限逼近99%)
+/// near (unknown when longtask：nonear99%)
  Zeno { target: f64, factor: f64 },
 }
 
 impl SimulatedProgress {
- /// createnewsimulatedprogress
+/// createnewsimulatedprogress
  pub fn new(estimated_duration: Duration, curve_type: ProgressCurve) -> Self {
  Self {
  start_time: std::time::Instant::now(),
@@ -535,11 +535,11 @@ impl SimulatedProgress {
  }
  }
 
- /// getcurrentsimulatedprogress (0.0 - 1.0)
+/// getcurrentsimulatedprogress (0.0 - 1.0)
  pub fn get_current_progress(&self) -> f64 {
  let elapsed = self.start_time.elapsed().as_secs_f64();
  let total = self.estimated_duration.as_secs_f64();
- 
+
  if total <= 0.0 {
  return 0.0;
  }
@@ -548,35 +548,35 @@ impl SimulatedProgress {
 
  match self.curve_type {
  ProgressCurve::Linear => raw_progress,
- 
+
  ProgressCurve::EaseInOut => {
- // Sigmoid-like S-curve: x^2 * (3 - 2x)
- // thisisa经典平滑interpolationfunction (Smooth Step)
+// Sigmoid-like S-curve: x^2 * (3 - 2x)
+// thisisainterpolationfunction (Smooth Step)
  raw_progress * raw_progress * (3.0 - 2.0 * raw_progress)
  },
- 
+
  ProgressCurve::Zeno { target, factor } => {
- // 芝诺逼近：progress = 1 - (1 - target) ^ (elapsed * factor)
- // 随着time推移，no限逼近 target，但speedmore来more慢
- // this里implementation简for：based ontime渐近线
- // assume total is "expected" time，to达expectedtime when 达to 80%，之 after 极慢
- 
+// near：progress = 1 - (1 - target) ^ (elapsed * factor)
+// time，nonear target，butspeedmoremoreslow
+// thisimplementationfor：based ontimenearline
+// assume total is "expected" time，toexpectedtime when to 80%， after extremelyslow
+
  if raw_progress < 0.8 {
- // before 80%time：线性增长to80%
+// before 80%time：linelongto80%
  raw_progress
  } else {
- // after 续time：no限逼近 target (e.g. 0.99)
- // use指数衰减simulated
+// after time：nonear target (e.g. 0.99)
+// usesimulated
  let extra_time = elapsed - (total * 0.8);
  let remaining_space = target - 0.8;
- // 衰减公式
+// 
  0.8 + remaining_space * (1.0 - (-extra_time * factor).exp())
  }
  }
  }
  }
- 
- /// reset计 when 
+
+/// reset when
  pub fn reset(&mut self) {
  self.start_time = std::time::Instant::now();
  }

@@ -1,14 +1,14 @@
-//! 🎓 format知识library
-//! 
-//! 最全面、最modernimageformat知识
+//! 🎓 formatlibrary
+//!
+//! mostsurface、mostmodernimageformat
 //! forMLtraining and intelligentrecommended
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// format特性
+/// format
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure FormatKnowledge {
+pub struct FormatKnowledge {
  pub name: String,
  pub full_name: String,
  pub year_released: u16,
@@ -19,12 +19,12 @@ pub structure FormatKnowledge {
  pub strengths: Vec<String>,
  pub weaknesses: Vec<String>,
  pub browser_support: BrowserSupport,
- pub compression_efficiency: f64, // 0-1, 相对于基准格式
+ pub compression_efficiency: f64, // 0-1, pairatformat
 }
 
-/// format能力
+/// formatcapability
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure FormatCapabilities {
+pub struct FormatCapabilities {
  pub supports_alpha: bool,
  pub supports_animation: bool,
  pub supports_lossless: bool,
@@ -37,7 +37,7 @@ pub structure FormatCapabilities {
 
 /// formatperformance
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure FormatPerformance {
+pub struct FormatPerformance {
  pub encode_speed: Speed,
  pub decode_speed: Speed,
  pub compression_ratio: f64, // vs JPEG baseline
@@ -53,7 +53,7 @@ pub enum Speed {
  VeryFast,
 }
 
-/// use场景
+/// use
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum UseCase {
  WebPhotography,
@@ -66,9 +66,9 @@ pub enum UseCase {
  Scientific,
 }
 
-/// 浏览support
+/// support
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure BrowserSupport {
+pub struct BrowserSupport {
  pub chrome: bool,
  pub firefox: bool,
  pub safari: bool,
@@ -76,7 +76,7 @@ pub structure BrowserSupport {
  pub global_support_percentage: f64,
 }
 
-/// 媒体type
+/// mediatype
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum MediaType {
  Image,
@@ -84,13 +84,13 @@ pub enum MediaType {
  Audio,
 }
 
-/// format知识library
-pub structure FormatKnowledgeBase {
+/// formatlibrary
+pub struct FormatKnowledgeBase {
  formats: HashMap<String, FormatKnowledge>,
 }
 
 impl FormatKnowledgeBase {
- /// create知识library
+/// createlibrary
  pub fn new() -> Self {
  let mut kb = Self {
  formats: HashMap::new(),
@@ -100,10 +100,10 @@ impl FormatKnowledgeBase {
  kb.load_audio_formats();
  kb
  }
- 
- /// loadmodernimageformat知识
+
+/// loadmodernimageformat
  fn load_modern_formats(&mut self) {
- // AVIF - 最modernformat
+// AVIF - mostmodernformat
  self.formats.insert("avif".to_string(), FormatKnowledge {
  name: "avif".to_string(),
  full_name: "AV1 Image File Format".to_string(),
@@ -145,8 +145,8 @@ impl FormatKnowledgeBase {
  },
  compression_efficiency: 0.95,
  });
- 
- // JXL - 最先进技术
+
+// JXL - most
  self.formats.insert("jxl".to_string(), FormatKnowledge {
  name: "jxl".to_string(),
  full_name: "JPEG XL".to_string(),
@@ -189,8 +189,8 @@ impl FormatKnowledgeBase {
  },
  compression_efficiency: 0.98,
  });
- 
- // Web P - 最广泛support
+
+// Web P - mostsupport
  self.formats.insert("webp".to_string(), FormatKnowledge {
  name: "webp".to_string(),
  full_name: "WebP".to_string(),
@@ -233,8 +233,8 @@ impl FormatKnowledgeBase {
  },
  compression_efficiency: 0.85,
  });
- 
- // PNG - losslessstandard
+
+// PNG - losslessstandard
  self.formats.insert("png".to_string(), FormatKnowledge {
  name: "png".to_string(),
  full_name: "Portable Network Graphics".to_string(),
@@ -277,8 +277,8 @@ impl FormatKnowledgeBase {
  },
  compression_efficiency: 0.5,
  });
- 
- // JPEG - 传统standard
+
+// JPEG - standard
  self.formats.insert("jpeg".to_string(), FormatKnowledge {
  name: "jpeg".to_string(),
  full_name: "Joint Photographic Experts Group".to_string(),
@@ -323,10 +323,10 @@ impl FormatKnowledgeBase {
  compression_efficiency: 0.6,
  });
  }
- 
- /// loadvideoformat知识
+
+/// loadvideoformat
  fn load_video_formats(&mut self) {
- // H.266/VVC - latest generation video encoding standard
+// H.266/VVC - latest generation video encoding standard
  self.formats.insert("h266".to_string(), FormatKnowledge {
  name: "h266".to_string(),
  full_name: "Versatile Video Coding (VVC)".to_string(),
@@ -345,7 +345,7 @@ impl FormatKnowledgeBase {
  performance: FormatPerformance {
  encode_speed: Speed::VerySlow,
  decode_speed: Speed::Slow,
- compression_ratio: 0.35, // 35% of H.264 - 最佳压缩
+ compression_ratio: 0.35, // 35% of H.264 - mostcompress
  quality_retention: 0.99,
  },
  use_cases: vec![UseCase::Archival, UseCase::WebPhotography],
@@ -369,8 +369,8 @@ impl FormatKnowledgeBase {
  },
  compression_efficiency: 0.99,
  });
- 
- // H.265/HEVC - modernvideostandard
+
+// H.265/HEVC - modernvideostandard
  self.formats.insert("h265".to_string(), FormatKnowledge {
  name: "h265".to_string(),
  full_name: "High Efficiency Video Coding (HEVC)".to_string(),
@@ -412,8 +412,8 @@ impl FormatKnowledgeBase {
  },
  compression_efficiency: 0.92,
  });
- 
- // AV1 - 最先进videoencoding
+
+// AV1 - mostvideoencoding
  self.formats.insert("av1".to_string(), FormatKnowledge {
  name: "av1".to_string(),
  full_name: "AOMedia Video 1".to_string(),
@@ -455,8 +455,8 @@ impl FormatKnowledgeBase {
  },
  compression_efficiency: 0.96,
  });
- 
- // VP9 - Google开sourceencoding
+
+// VP9 - Googlesourceencoding
  self.formats.insert("vp9".to_string(), FormatKnowledge {
  name: "vp9".to_string(),
  full_name: "VP9".to_string(),
@@ -497,8 +497,8 @@ impl FormatKnowledgeBase {
  },
  compression_efficiency: 0.88,
  });
- 
- // H.264 - 传统standard (仅at用户明确requirement when use)
+
+// H.264 - standard (onlyatrequirement when use)
  self.formats.insert("h264".to_string(), FormatKnowledge {
  name: "h264".to_string(),
  full_name: "Advanced Video Coding (AVC) - LEGACY".to_string(),
@@ -520,7 +520,7 @@ impl FormatKnowledgeBase {
  compression_ratio: 1.0, // baseline
  quality_retention: 0.92,
  },
- use_cases: vec![], // notrecommendedfor任何场景
+ use_cases: vec![], // notrecommendedforanywhat
  strengths: vec![
  "Universal support (100%)".to_string(),
  "Hardware acceleration everywhere".to_string(),
@@ -540,13 +540,13 @@ impl FormatKnowledgeBase {
  edge: true,
  global_support_percentage: 100.0,
  },
- compression_efficiency: 0.50, // 降低效率score，notrecommendedusing
+ compression_efficiency: 0.50, // lowefficiencyscore，notrecommendedusing
  });
  }
- 
- /// loadaudioformat知识
+
+/// loadaudioformat
  fn load_audio_formats(&mut self) {
- // Opus - 最先进audioencoding
+// Opus - mostaudioencoding
  self.formats.insert("opus".to_string(), FormatKnowledge {
  name: "opus".to_string(),
  full_name: "Opus Interactive Audio Codec".to_string(),
@@ -588,8 +588,8 @@ impl FormatKnowledgeBase {
  },
  compression_efficiency: 0.95,
  });
- 
- // AAC - modernaudiostandard
+
+// AAC - modernaudiostandard
  self.formats.insert("aac".to_string(), FormatKnowledge {
  name: "aac".to_string(),
  full_name: "Advanced Audio Coding".to_string(),
@@ -631,8 +631,8 @@ impl FormatKnowledgeBase {
  },
  compression_efficiency: 0.85,
  });
- 
- // MP3 - 传统standard
+
+// MP3 - standard
  self.formats.insert("mp3".to_string(), FormatKnowledge {
  name: "mp3".to_string(),
  full_name: "MPEG-1 Audio Layer III".to_string(),
@@ -673,8 +673,8 @@ impl FormatKnowledgeBase {
  },
  compression_efficiency: 0.65,
  });
- 
- // FLAC - losslessaudio
+
+// FLAC - losslessaudio
  self.formats.insert("flac".to_string(), FormatKnowledge {
  name: "flac".to_string(),
  full_name: "Free Lossless Audio Codec".to_string(),
@@ -717,13 +717,13 @@ impl FormatKnowledgeBase {
  compression_efficiency: 0.75,
  });
  }
- 
- /// getformat知识
+
+/// getformat
  pub fn get_format(&self, format: &str) -> Option<&FormatKnowledge> {
  self.formats.get(format)
  }
- 
- /// based on需求recommendedformat
+
+/// based onneedrecommendedformat
  pub fn recommend_for_requirements(&self, requirements: &FormatRequirements) -> Vec<String> {
  let mut scored_formats: Vec<(String, f64)> = self.formats.iter()
  .map(|(name, knowledge)| {
@@ -731,16 +731,16 @@ impl FormatKnowledgeBase {
  (name.clone(), score)
  })
  .collect();
- 
+
  scored_formats.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
  scored_formats.into_iter().map(|(name, _)| name).collect()
  }
- 
- /// calculationmatchscore
+
+/// calculationmatchscore
  fn calculate_match_score(&self, knowledge: &FormatKnowledge, req: &FormatRequirements) -> f64 {
  let mut score = 0.0;
- 
- // required能力check
+
+// requiredcapabilitycheck
  if req.needs_alpha && !knowledge.capabilities.supports_alpha {
  return 0.0;
  }
@@ -750,17 +750,17 @@ impl FormatKnowledgeBase {
  if req.needs_hdr && !knowledge.capabilities.supports_hdr {
  return 0.0;
  }
- 
- // compressionefficiency权重
+
+// compressionefficiencyweight
  score += knowledge.compression_efficiency * req.compression_weight * 100.0;
- 
- // qualitykeep权重
+
+// qualitykeepweight
  score += knowledge.performance.quality_retention * req.quality_weight * 100.0;
- 
- // 浏览support权重
+
+// supportweight
  score += knowledge.browser_support.global_support_percentage * req.compatibility_weight;
- 
- // encodingspeed权重
+
+// encodingspeedweight
  let speed_score = match knowledge.performance.encode_speed {
  Speed::VeryFast => 1.0,
  Speed::Fast => 0.8,
@@ -769,28 +769,28 @@ impl FormatKnowledgeBase {
  Speed::VerySlow => 0.2,
  };
  score += speed_score * req.speed_weight * 100.0;
- 
+
  score
  }
- 
- /// get所 has format
+
+/// get has format
  pub fn list_all_formats(&self) -> Vec<&FormatKnowledge> {
  self.formats.values().collect()
  }
- 
- /// getspecific媒体typeformat
+
+/// getspecificmediatypeformat
  pub fn get_formats_by_type(&self, media_type: MediaType) -> Vec<&FormatKnowledge> {
  self.formats.values()
  .filter(|f| f.media_type == media_type)
  .collect()
  }
- 
- /// will format知识conversionfor MLfeature向量 (32dimensional)
- /// this些feature will be 喂 to MLmodel， let itfully理解every种format特性
+
+/// will formatconversionfor MLfeature (32dimensional)
+/// thisfeature will be  to MLmodel， let itfullyeverytypeformat
  pub fn get_ml_features(&self, format: &str) -> Vec<f32> {
  if let Some(knowledge) = self.get_format(format) {
  vec![
- // 基础能力 (8dimensional)
+// basiccapability (8dimensional)
  if knowledge.capabilities.supports_alpha { 1.0 } else { 0.0 },
  if knowledge.capabilities.supports_animation { 1.0 } else { 0.0 },
  if knowledge.capabilities.supports_lossless { 1.0 } else { 0.0 },
@@ -803,8 +803,8 @@ impl FormatKnowledgeBase {
  MediaType::Video => 0.5,
  MediaType::Audio => 1.0,
  },
- 
- // performancefeature (8dimensional)
+
+// performancefeature (8dimensional)
  match knowledge.performance.encode_speed {
  Speed::VerySlow => 0.2,
  Speed::Slow => 0.4,
@@ -823,10 +823,10 @@ impl FormatKnowledgeBase {
  knowledge.performance.quality_retention as f32,
  knowledge.compression_efficiency as f32,
  knowledge.browser_support.global_support_percentage as f32 / 100.0,
- (knowledge.year_released as f32 - 1990.0) / 35.0, // 归a化年份
+ (knowledge.year_released as f32 - 1990.0) / 35.0, // acopy
  if knowledge.browser_support.chrome { 1.0 } else { 0.0 },
- 
- // compatibility性 and 生态 (8dimensional)
+
+// compatibility and  (8dimensional)
  if knowledge.browser_support.firefox { 1.0 } else { 0.0 },
  if knowledge.browser_support.safari { 1.0 } else { 0.0 },
  if knowledge.browser_support.edge { 1.0 } else { 0.0 },
@@ -834,16 +834,16 @@ impl FormatKnowledgeBase {
  knowledge.weaknesses.len() as f32 / 10.0,
  knowledge.use_cases.len() as f32 / 10.0,
  knowledge.capabilities.color_space_support.len() as f32 / 5.0,
- 0.0, // 保留
- 
- // high级feature (8dimensional)
- // calculationformat"modern性"score
+ 0.0, // 
+
+// highlevelfeature (8dimensional)
+// calculationformat"modern"score
  if knowledge.year_released >= 2015 { 1.0 } else { 0.5 },
- // calculationformat"通用性"score
+// calculationformat"通用"score
  if knowledge.browser_support.global_support_percentage >= 95.0 { 1.0 } else { 0.5 },
- // calculationformat"efficiency"score
+// calculationformat"efficiency"score
  knowledge.compression_efficiency as f32 * knowledge.performance.quality_retention as f32,
- // calculationformat"speed"score
+// calculationformat"speed"score
  (match knowledge.performance.encode_speed {
  Speed::VeryFast => 1.0,
  Speed::Fast => 0.8,
@@ -857,45 +857,45 @@ impl FormatKnowledgeBase {
  Speed::Slow => 0.4,
  Speed::VerySlow => 0.2,
  }) / 2.0,
- 0.0, // 保留
- 0.0, // 保留
- 0.0, // 保留
- 0.0, // 保留
+ 0.0, // 
+ 0.0, // 
+ 0.0, // 
+ 0.0, // 
  ]
  } else {
  vec![0.0; 32]
  }
  }
- 
- /// 判断is否shoulduse同formatoptimization
- /// 当用户disabledformatconversion when ，forceuse同formatoptimization
+
+/// isnoshoulduseformatoptimization
+/// whendisabledformatconversion when ，forceuseformatoptimization
  pub fn should_use_same_format_optimization(
  &self,
  source_format: &str,
  target_format: Option<&str>,
  format_conversion_enabled: bool,
  ) -> bool {
- // ifdisabledformatconversion，mustuse同formatoptimization
+// ifdisabledformatconversion，mustuseformatoptimization
  if !format_conversion_enabled {
  return true;
  }
- 
- // if没 has specifytargetformat，use同formatoptimization
+
+// if has specifytargetformat，useformatoptimization
  if target_format.is_none() {
  return true;
  }
- 
- // iftargetformatandsourceformatsame，use同formatoptimization
+
+// iftargetformatandsourceformatsame，useformatoptimization
  if let Some(target) = target_format
  && target == source_format {
  return true;
  }
- 
+
  false
  }
- 
- /// suggestedformatupgrade - from旧formatupgradetomodernformat
- /// return: (is否shouldupgrade, recommendednewformatlist, upgrade原因)
+
+/// suggestedformatupgrade - fromoldformatupgradetomodernformat
+/// return: (isnoshouldupgrade, recommendednewformatlist, upgradeoriginalbecause)
  pub fn suggest_format_upgrade(
  &self,
  source_format: &str,
@@ -904,16 +904,16 @@ impl FormatKnowledgeBase {
  Some(f) => f,
  None => return (false, vec![], String::new()),
  };
- 
- // checkis否is过 when format
- let is_outdated = source.year_released < 2010 || 
+
+// checkisnois when format
+ let is_outdated = source.year_released < 2010 ||
  source.compression_efficiency < 0.70;
- 
+
  if !is_outdated {
  return (false, vec![], String::new());
  }
- 
- // based on媒体typerecommendedmodernformat
+
+// based onmediatyperecommendedmodernformat
  let (recommendations, reason) = match source.media_type {
  MediaType::Image => {
  if source_format == "jpeg" {
@@ -951,12 +951,12 @@ impl FormatKnowledgeBase {
  }
  },
  };
- 
+
  (!recommendations.is_empty(), recommendations, reason)
  }
- 
- /// getrecommendedmodernformat（按priority级sort）
- /// fullybased onformat知识，零硬encoding规则
+
+/// getrecommendedmodernformat（prioritylevelsort）
+/// fullybased onformat，hardencodingthen
  pub fn get_modern_format_recommendations(
  &self,
  media_type: MediaType,
@@ -968,25 +968,25 @@ impl FormatKnowledgeBase {
  .filter(|f| !needs_hdr || f.capabilities.supports_hdr)
  .filter(|f| !needs_alpha || f.capabilities.supports_alpha)
  .collect();
- 
- // 按modern性 and efficiencysort
+
+// modern and efficiencysort
  formats.sort_by(|a, b| {
- let score_a = a.compression_efficiency * 
+ let score_a = a.compression_efficiency *
  (if a.year_released >= 2015 { 1.2 } else { 1.0 });
- let score_b = b.compression_efficiency * 
+ let score_b = b.compression_efficiency *
  (if b.year_released >= 2015 { 1.2 } else { 1.0 });
  score_b.partial_cmp(&score_a).unwrap_or(std::cmp::Ordering::Equal)
  });
- 
+
  formats.into_iter()
  .map(|f| f.name.clone())
  .collect()
  }
 }
 
-/// format需求
+/// formatneed
 #[derive(Debug, Clone)]
-pub structure FormatRequirements {
+pub struct FormatRequirements {
  pub needs_alpha: bool,
  pub needs_animation: bool,
  pub needs_hdr: bool,
@@ -1040,7 +1040,7 @@ mod tests {
  compatibility_weight: 0.0,
  speed_weight: 0.0,
  };
- 
+
  let recommendations = kb.recommend_for_requirements(&req);
  assert!(!recommendations.is_empty());
  }

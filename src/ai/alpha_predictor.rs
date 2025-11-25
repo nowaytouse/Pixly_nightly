@@ -5,10 +5,10 @@
 // Independent control of alpha quality can save 5-15% file size.
 
 #[derive(Default)]
-pub structure AlphaQualityPredictor;
+pub struct AlphaQualityPredictor;
 
 #[derive(Debug, Clone)]
-pub structure FileFeatures {
+pub struct FileFeatures {
  pub has_alpha: bool,
  pub format: String,
  pub file_size: u64,
@@ -23,50 +23,50 @@ impl AlphaQualityPredictor {
  Self
  }
 
- /// prediction独立Alphaquality
- /// return: None (跟随RGBquality) or Some(qualityvalue) (0-100)
- ///
- /// Alpha复杂度classification:
- /// - 简single蒙版 (0-0.3): 纯transparency/ not transparency,no渐变 → availablelowquality (RGB-15)
- /// - etc 复杂度 (0.3-0.7): 部分渐变 → 略lowquality (RGB-5)
- /// - high复杂度 (0.7-1.0): 复杂渐变/半transparency → 跟随RGBquality
+/// predictionAlphaquality
+/// return: None (RGBquality) or Some(qualityvalue) (0-100)
+///
+/// Alphacomplexityclassification:
+/// - single (0-0.3): transparency/ not transparency,no → availablelowquality (RGB-15)
+/// - etc complexity (0.3-0.7): partial → lowquality (RGB-5)
+/// - highcomplexity (0.7-1.0): /halftransparency → RGBquality
  pub fn predict_alpha_quality(&self, features: &FileFeatures, rgb_quality: u8) -> Option<u8> {
- // 1. if没 has Alphachannel,return None
+// 1. if has Alphachannel,return None
  if !features.has_alpha {
  return None;
  }
 
- // 2. 估算Alpha复杂度
+// 2. Alphacomplexity
  let alpha_complexity = self.estimate_alpha_complexity(features);
 
- // 3. based on复杂度决定Alphaquality
+// 3. based oncomplexityAlphaquality
  if alpha_complexity < 0.3 {
- // 简singleAlpha (如纯蒙版, UI元素)
- // can用显著更lowquality
+// singleAlpha (like, UIelementelement)
+// canmorelowquality
  let alpha_quality = (rgb_quality as i16 - 15).max(60) as u8;
  Some(alpha_quality)
  } else if alpha_complexity < 0.7 {
- // etc Alpha (部分渐变, 阴影效果)
- // can用略lowquality
+// etc Alpha (partial, )
+// can用lowquality
  let alpha_quality = (rgb_quality as i16 - 5).max(75) as u8;
  Some(alpha_quality)
  } else {
- // 复杂Alpha (复杂渐变, 半transparency效果)
- // need跟随RGBquality
+// Alpha (, halftransparency)
+// needRGBquality
  None
  }
  }
 
- /// 估算Alpha复杂度
- /// return: 0.0-1.0 (0=简single蒙版, 1=复杂渐变)
+/// Alphacomplexity
+/// return: 0.0-1.0 (0=single, 1=)
  fn estimate_alpha_complexity(&self, features: &FileFeatures) -> f64 {
- let mut complexity = 0.3; // 基础复杂度 (保守估计)
+ let mut complexity = 0.3; // basiccomplexity (estimated)
 
- // 1. based onfileformat推断
+// 1. based onfileformat
  match features.format.as_str() {
  "png" => {
- // PNGAlpha通常forUI元素/图标
- // iffile很小 (<1MB) 且resolution etc ,mayis UI/图标
+// PNGAlphaforUIelementelement/
+// iffileverysmall (<1MB) andresolution etc ,mayis UI/
  if features.file_size < 1024 * 1024
  && (features.width * features.height) < 2_000_000
  {
@@ -74,23 +74,23 @@ impl AlphaQualityPredictor {
  }
  }
  "gif" => {
- // GIFtransparency度is1bit (纯transparencyor纯 not transparency)
+// GIFtransparencydegreeis1bit (transparencyor not transparency)
  complexity = 0.1;
  }
  _ => {}
  }
 
- // 2. based onimage复杂度 (权重提highto0.5)
+// 2. based onimagecomplexity (weighthighto0.5)
  complexity += features.complexity * 0.5;
 
- // 3. based onnoise水平 (权重提highto0.3)
+// 3. based onnoise (weighthighto0.3)
  complexity += features.noise_level * 0.3;
 
- // 4. normalizeto [0, 1]
+// 4. normalizeto [0, 1]
  complexity.clamp(0.0, 1.0)
  }
 
- /// getAlphaqualitysuggested
+/// getAlphaqualitysuggested
  pub fn get_alpha_quality_recommendation(
  &self,
  features: &FileFeatures,
@@ -157,19 +157,19 @@ mod tests {
  let predictor = AlphaQualityPredictor::new();
  let features = FileFeatures {
  has_alpha: true,
- format: "webp".to_string(), // 改用webp避免PNG-0.2调整
+ format: "webp".to_string(), // webpPNG-0.2whole
  file_size: 5 * 1024 * 1024,
  width: 4000,
  height: 4000,
- complexity: 0.9, // improve复杂度
- noise_level: 0.6, // improve噪声
+ complexity: 0.9, // improvecomplexity
+ noise_level: 0.6, // improvenoise
  };
 
  let complexity = predictor.estimate_alpha_complexity(&features);
- // 0.3 + 0.9*0.5 + 0.6*0.3 = 0.3 + 0.45 + 0.18 = 0.93
+// 0.3 + 0.9*0.5 + 0.6*0.3 = 0.3 + 0.45 + 0.18 = 0.93
  assert!(complexity >= 0.7, "complexity={}", complexity);
- 
+
  let alpha_quality = predictor.predict_alpha_quality(&features, 90);
- assert!(alpha_quality.is_none()); // 复杂Alpha应该跟随RGB
+ assert!(alpha_quality.is_none()); // Alphashould该RGB
  }
 }

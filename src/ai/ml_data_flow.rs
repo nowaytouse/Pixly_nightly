@@ -1,7 +1,7 @@
 /**
- * MLdata流管理器
- * 
- * 统aPython训练 ↔ Rust推理fulldata流
+ * MLdatadevice
+ *
+ * aPythontraining ↔ Rustinferencefulldata
  */
 use super::ml_bridge::{StandardFeatures, StandardPrediction, TrainingSample};
 use crate::core::feature_extractor_128d::extract_128d_features;
@@ -9,20 +9,20 @@ use image::DynamicImage;
 use std::collections::HashMap;
 use std::path::Path;
 
-/// MLdata流Manager
-pub structure MLDataFlow {
- /// training样本缓冲区
+/// MLdataManager
+pub struct MLDataFlow {
+/// trainingsample
  training_buffer: Vec<TrainingSample>,
- 
- /// maximum缓冲区size
+
+/// maximumsize
  max_buffer_size: usize,
- 
- /// autosavepath
+
+/// autosavepath
  auto_save_path: Option<String>,
 }
 
 impl MLDataFlow {
- /// createnewdata流Manager
+/// createnewdataManager
  pub fn new() -> Self {
  Self {
  training_buffer: Vec::new(),
@@ -30,8 +30,8 @@ impl MLDataFlow {
  auto_save_path: None,
  }
  }
- 
- /// extractionfeature（usefunction式API）
+
+/// extractionfeature（usefunctionAPI）
  fn extract_features(&self, img: &DynamicImage, path: &Path) -> Vec<f64> {
  let basic_features = crate::ImageFeatures {
  width: img.width(),
@@ -42,25 +42,25 @@ impl MLDataFlow {
  is_animated: false,
  complexity: 0.5,
  };
- 
+
  extract_128d_features(img, path, &basic_features)
  }
- 
 
- 
- /// settingautosavepath
+
+
+/// settingautosavepath
  pub fn with_auto_save(mut self, path: String) -> Self {
  self.auto_save_path = Some(path);
  self
  }
- 
- /// setting缓冲区size
+
+/// settingsize
  pub fn with_buffer_size(mut self, size: usize) -> Self {
  self.max_buffer_size = size;
  self
  }
- 
- /// extractionstandardizefeature (Rust → Pythontraining)
+
+/// extractionstandardizefeature (Rust → Pythontraining)
  pub fn extract_standard_features(
  &mut self,
  img: &DynamicImage,
@@ -69,67 +69,67 @@ impl MLDataFlow {
  let features_vec = self.extract_features(img, Path::new(""));
  StandardFeatures::from_vector(&features_vec).expect("Feature vector conversion failed")
  }
- 
- /// recordtraining样本 (收集feedbackdata)
+
+/// recordtrainingsample (feedbackdata)
  pub fn record_training_sample(&mut self, sample: TrainingSample) -> Result<(), String> {
- // Validate features
+// Validate features
  let vec = sample.features.to_vector();
  if vec.len() != 128 {
  return Err(format!("Invalid feature dimension: {}", vec.len()));
  }
- 
- // addto缓冲区
+
+// addto
  self.training_buffer.push(sample);
- 
- // checkis否needautosave
+
+// checkisnoneedautosave
  if self.training_buffer.len() >= self.max_buffer_size
  && let Some(path) = self.auto_save_path.clone() {
  self.flush_training_buffer(&path)?;
  }
- 
+
  Ok(())
  }
- 
- /// refreshtraining缓冲区tofile
+
+/// refreshtrainingtofile
  pub fn flush_training_buffer(&mut self, path: &str) -> Result<(), String> {
  if self.training_buffer.is_empty() {
  return Ok(());
  }
- 
- // conversionforJSONformat
+
+// conversionforJSONformat
  let samples: Vec<_> = self.training_buffer.iter()
  .map(|s| s.to_training_format())
  .collect();
- 
+
  let json = serde_json::to_string_pretty(&samples)
  .map_err(|e| format!("JSON serialization failed: {}", e))?;
- 
- // savetofile
+
+// savetofile
  std::fs::write(path, json)
  .map_err(|e| format!("File write failed: {}", e))?;
- 
+
  log::info!("Saved {} training samples to: {}", self.training_buffer.len(), path);
- 
- // clear缓冲区
+
+// clear
  self.training_buffer.clear();
- 
+
  Ok(())
  }
- 
- /// Load Python prediction result (Python -> Rust inference)
+
+/// Load Python prediction result (Python -> Rust inference)
  pub fn load_prediction_from_json(&self, json: &str) -> Result<StandardPrediction, String> {
  serde_json::from_str(json)
  .map_err(|e| format!("Prediction result parsing failed: {}", e))
  }
 
- /// Load Python prediction result from file
+/// Load Python prediction result from file
  pub fn load_prediction_from_file(&self, path: &Path) -> Result<StandardPrediction, String> {
  let json = std::fs::read_to_string(path)
  .map_err(|e| format!("File read failed: {}", e))?;
  self.load_prediction_from_json(&json)
  }
- 
- /// exportfeaturetoPythontrainingformat
+
+/// exportfeaturetoPythontrainingformat
  pub fn export_features_for_training(
  &self,
  features: &StandardFeatures,
@@ -140,8 +140,8 @@ impl MLDataFlow {
  .map_err(|e| format!("Export failed: {}", e))?;
  Ok(())
  }
- 
- /// batchexporttraining样本
+
+/// batchexporttrainingsample
  pub fn export_training_batch(
  &self,
  samples: &[TrainingSample],
@@ -150,24 +150,24 @@ impl MLDataFlow {
  let batch: Vec<_> = samples.iter()
  .map(|s| s.to_training_format())
  .collect();
- 
+
  let json = serde_json::to_string_pretty(&batch)
  .map_err(|e| format!("JSON serialization failed: {}", e))?;
- 
+
  std::fs::write(output_path, json)
  .map_err(|e| format!("File write failed: {}", e))?;
- 
+
  Ok(())
  }
- 
- /// get缓冲区status
+
+/// getstatus
  pub fn buffer_status(&self) -> (usize, usize) {
  (self.training_buffer.len(), self.max_buffer_size)
  }
- 
- /// validationdata流a致性
+
+/// validationdataa
  pub fn validate_data_flow(&self) -> Result<(), String> {
- // createtestfeature
+// createtestfeature
  let test_features = StandardFeatures {
  basic: [1.0; 16],
  color: [2.0; 16],
@@ -177,25 +177,25 @@ impl MLDataFlow {
  metadata: [6.0; 32],
  context: [7.0; 16],
  };
- 
- // Test vector conversion
+
+// Test vector conversion
  let vec = test_features.to_vector();
  if vec.len() != 128 {
  return Err(format!("Invalid feature dimension: {}", vec.len()));
  }
- 
- // Test JSON serialization
+
+// Test JSON serialization
  let json = test_features.to_json()?;
  let restored = StandardFeatures::from_json(&json)?;
- 
- // Verify consistency
+
+// Verify consistency
  let restored_vec = restored.to_vector();
  for (i, (&original, &restored)) in vec.iter().zip(restored_vec.iter()).enumerate() {
  if (original - restored).abs() > 1e-10 {
  return Err(format!("Feature mismatch at index {}: {} vs {}", i, original, restored));
  }
  }
- 
+
  Ok(())
  }
 }
@@ -219,7 +219,7 @@ mod tests {
  #[test]
  fn test_buffer_management() {
  let mut flow = MLDataFlow::new().with_buffer_size(10);
- 
+
  let features = StandardFeatures {
  basic: [1.0; 16],
  color: [2.0; 16],
@@ -229,7 +229,7 @@ mod tests {
  metadata: [6.0; 32],
  context: [7.0; 16],
  };
- 
+
  let sample = TrainingSample {
  features,
  actual_quality: 75,
@@ -242,7 +242,7 @@ mod tests {
  user_rating: Some(4.5),
  timestamp: 1700000000,
  };
- 
+
  assert!(flow.record_training_sample(sample).is_ok());
  assert_eq!(flow.buffer_status().0, 1);
  }

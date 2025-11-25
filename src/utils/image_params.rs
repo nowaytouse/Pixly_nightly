@@ -3,7 +3,7 @@
 //
 // Corefeature:
 // - imagefeatureanalysis
-// - 复杂度calculation
+// - complexitycalculation
 // - parameteroptimizationsuggested
 
 use anyhow::{Context, Result};
@@ -14,7 +14,7 @@ use std::collections::HashSet;
 
 /// imagefeature
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure ImageCharacteristics {
+pub struct ImageCharacteristics {
  pub width: u32,
  pub height: u32,
  pub file_size: u64,
@@ -27,7 +27,7 @@ pub structure ImageCharacteristics {
 
 /// optimizationparameter
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure OptimizedParams {
+pub struct OptimizedParams {
  pub quality: u8,
  pub speed: u8,
  pub lossless: bool,
@@ -38,7 +38,7 @@ pub structure OptimizedParams {
 }
 
 /// imageparameteranalysis
-pub structure ImageParamAnalyzer;
+pub struct ImageParamAnalyzer;
 
 impl ImageParamAnalyzer {
  pub fn analyze_image<P: AsRef<Path>>(path: P) -> Result<ImageCharacteristics> {
@@ -72,14 +72,14 @@ impl ImageParamAnalyzer {
  path: Some(path.to_string_lossy().to_string()),
  })
  }
- 
+
  fn calculate_complexity(img: &image::DynamicImage) -> f64 {
  let rgba = img.to_rgba8();
  let (width, height) = rgba.dimensions();
  let total_pixels = (width * height) as usize;
  let sample_size = total_pixels.min(1000);
  let step = (total_pixels / sample_size).max(1);
- 
+
  let mut unique_colors = HashSet::new();
  for (sampled, (_, _, pixel)) in rgba.enumerate_pixels().enumerate() {
  if sampled >= sample_size {
@@ -94,65 +94,65 @@ impl ImageParamAnalyzer {
  unique_colors.insert(quantized);
  }
  }
- 
+
  let color_diversity = (unique_colors.len() as f64 / sample_size as f64).min(1.0);
  let color_score = color_diversity * 0.4;
- 
+
  let gray = img.to_luma8();
  let mut edge_count = 0;
  let edge_sample = 200.min(total_pixels);
- 
+
  for i in 0..edge_sample {
  let x = (i * width as usize / edge_sample) as u32;
  let y = (i * height as usize / edge_sample) as u32;
- 
+
  if x > 0 && y > 0 && x < width - 1 && y < height - 1 {
  let center = gray.get_pixel(x, y)[0] as i32;
  let right = gray.get_pixel(x + 1, y)[0] as i32;
  let bottom = gray.get_pixel(x, y + 1)[0] as i32;
- 
+
  let gx = (right - center).abs();
  let gy = (bottom - center).abs();
  let gradient = (gx + gy) / 2;
- 
+
  if gradient > 30 {
  edge_count += 1;
  }
  }
  }
- 
+
  let edge_density = edge_count as f64 / edge_sample as f64;
  let edge_score = edge_density * 0.3;
- 
+
  let mut luminance_sum = 0u64;
  let mut luminance_sq_sum = 0u64;
  let luma_sample = 500.min(total_pixels);
- 
+
  for i in 0..luma_sample {
  let x = (i * width as usize / luma_sample) as u32;
  let y = (i * height as usize / luma_sample) as u32;
- 
+
  if x < width && y < height {
  let luma = gray.get_pixel(x, y)[0] as u64;
  luminance_sum += luma;
  luminance_sq_sum += luma * luma;
  }
  }
- 
+
  let mean = luminance_sum as f64 / luma_sample as f64;
  let variance = (luminance_sq_sum as f64 / luma_sample as f64) - (mean * mean);
  let std_dev = variance.sqrt();
  let texture_score = (std_dev / 128.0).min(1.0) * 0.3;
- 
+
  (color_score + edge_score + texture_score).min(1.0)
  }
- 
+
  fn detect_animation(path: &Path) -> Result<bool> {
  let ext = path.extension()
  .and_then(|s| s.to_str())
  .map(|s| s.to_lowercase())
  .unwrap_or_default();
- 
+
  Ok(matches!(ext.as_str(), "gif" | "apng" | "webp"))
  }
 }
@@ -160,7 +160,7 @@ impl ImageParamAnalyzer {
 #[cfg(test)]
 mod tests {
  use super::*;
- 
+
  #[test]
  fn test_image_characteristics() {
  let chars = ImageCharacteristics {
@@ -173,7 +173,7 @@ mod tests {
  complexity: 0.5,
  path: None,
  };
- 
+
  assert_eq!(chars.width, 1920);
  assert_eq!(chars.height, 1080);
  assert!(!chars.has_alpha);

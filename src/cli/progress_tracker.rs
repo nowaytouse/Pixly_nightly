@@ -1,6 +1,6 @@
-//! Unifiedprogress跟踪System
-//! 
-//! providemulti级progresstracking and real-timeupdate
+//! UnifiedprogresstraceSystem
+//!
+//! providemultilevelprogresstracking and real-timeupdate
 
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
@@ -30,7 +30,7 @@ pub enum ProgressState {
 
 /// progressinformation
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure ProgressInfo {
+pub struct ProgressInfo {
  pub level: ProgressLevel,
  pub state: ProgressState,
  pub progress: f64,
@@ -56,7 +56,7 @@ impl ProgressInfo {
  metadata: HashMap::new(),
  }
  }
- 
+
  pub fn update(&mut self, completed: u64, start_time: Instant) {
  self.completed = completed;
  self.progress = if self.total > 0 {
@@ -64,11 +64,11 @@ impl ProgressInfo {
  } else {
  0.0
  };
- 
+
  let elapsed = start_time.elapsed();
  if elapsed.as_secs() > 0 && completed > 0 {
  self.throughput = Some(completed as f64 / elapsed.as_secs_f64());
- 
+
  if let Some(throughput) = self.throughput {
  let remaining = self.total.saturating_sub(completed);
  if throughput > 0.0 {
@@ -78,7 +78,7 @@ impl ProgressInfo {
  }
  }
  }
- 
+
  if completed >= self.total {
  self.state = ProgressState::Completed;
  } else if self.state == ProgressState::Preparing {
@@ -87,8 +87,8 @@ impl ProgressInfo {
  }
 }
 
-/// progress跟踪
-pub structure ProgressTracker {
+/// progresstrace
+pub struct ProgressTracker {
  completed: Arc<AtomicU64>,
  total: u64,
  start_time: Instant,
@@ -104,21 +104,21 @@ impl ProgressTracker {
  info: Arc::new(Mutex::new(ProgressInfo::new(level, total, operation))),
  }
  }
- 
+
  pub fn increment(&self) {
  let completed = self.completed.fetch_add(1, Ordering::Relaxed) + 1;
  if let Ok(mut info) = self.info.lock() {
  info.update(completed, self.start_time);
  }
  }
- 
+
  pub fn set_completed(&self, completed: u64) {
  self.completed.store(completed, Ordering::Relaxed);
  if let Ok(mut info) = self.info.lock() {
  info.update(completed, self.start_time);
  }
  }
- 
+
  pub fn get_info(&self) -> ProgressInfo {
  self.info.lock()
  .map(|info| info.clone())
@@ -137,7 +137,7 @@ impl ProgressTracker {
  }
  })
  }
- 
+
  pub fn get_progress(&self) -> f64 {
  let completed = self.completed.load(Ordering::Relaxed);
  if self.total > 0 {
@@ -151,14 +151,14 @@ impl ProgressTracker {
 #[cfg(test)]
 mod tests {
  use super::*;
- 
+
  #[test]
  fn test_progress_tracker() {
- let tracker = ProgressTracker::new(ProgressLevel::Task, 100, "测试任务".to_string());
- 
+ let tracker = ProgressTracker::new(ProgressLevel::Task, 100, "testtask".to_string());
+
  tracker.increment();
  assert_eq!(tracker.get_progress(), 1.0);
- 
+
  tracker.set_completed(50);
  assert_eq!(tracker.get_progress(), 50.0);
  }

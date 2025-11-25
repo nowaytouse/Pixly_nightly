@@ -12,7 +12,7 @@ use crate::errors::path_to_str;
 
 /// audioinformation
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure AudioInfo {
+pub struct AudioInfo {
  pub path: PathBuf,
  pub size: u64,
  pub codec: String,
@@ -26,7 +26,7 @@ pub structure AudioInfo {
 
 /// audioconversionconfiguration
 #[derive(Debug, Clone)]
-pub structure AudioConversionConfig {
+pub struct AudioConversionConfig {
  pub codec: String,
  pub container: String,
  pub bitrate: u32, // kbps
@@ -50,7 +50,7 @@ impl Default for AudioConversionConfig {
 
 /// audioconversionresult
 #[derive(Debug)]
-pub structure AudioConversionResult {
+pub struct AudioConversionResult {
  pub success: bool,
  pub output_path: PathBuf,
  pub original_size: u64,
@@ -61,7 +61,7 @@ pub structure AudioConversionResult {
 }
 
 /// audiohandler
-pub structure AudioProcessor {
+pub struct AudioProcessor {
  ffmpeg_path: String,
  ffprobe_path: String,
 }
@@ -79,22 +79,22 @@ impl AudioProcessor {
  ffprobe_path: "ffprobe".to_string(),
  }
  }
- 
- /// check FFmpegis否available
+
+/// check FFmpegisnoavailable
  pub fn check_ffmpeg(&self) -> Result<bool> {
  let output = Command::new(&self.ffmpeg_path)
  .arg("-version")
  .output();
- 
+
  Ok(output.is_ok())
  }
- 
- /// analysisaudioinformation
+
+/// analysisaudioinformation
  pub fn analyze_audio(&self, audio_path: &Path) -> Result<AudioInfo> {
  if !audio_path.exists() {
  bail!("Audio file not found: {:?}", audio_path);
  }
- 
+
  let output = Command::new(&self.ffprobe_path)
  .args([
  "-v", "quiet",
@@ -105,24 +105,24 @@ impl AudioProcessor {
  ])
  .output()
  .context("Failed to run ffprobe")?;
- 
+
  if !output.status.success() {
  bail!("FFprobe failed: {}", String::from_utf8_lossy(&output.stderr));
  }
- 
+
  let json_str = String::from_utf8_lossy(&output.stdout);
  let probe_data: serde_json::Value = serde_json::from_str(&json_str)
  .context("Failed to parse ffprobe JSON")?;
- 
+
  let streams = probe_data["streams"].as_array()
  .context("No streams found")?;
- 
+
  let audio_stream = streams.iter()
  .find(|s| s["codec_type"] == "audio")
  .context("No audio stream found")?;
- 
+
  let format = &probe_data["format"];
- 
+
  Ok(AudioInfo {
  path: audio_path.to_path_buf(),
  size: std::fs::metadata(audio_path)?.len(),
@@ -141,8 +141,8 @@ impl AudioProcessor {
  bit_depth: audio_stream["bits_per_sample"].as_u64().map(|b| b as u8),
  })
  }
- 
- /// conversionaudio
+
+/// conversionaudio
  pub fn convert_audio<F>(
  &self,
  input: &Path,
@@ -155,49 +155,49 @@ impl AudioProcessor {
  {
  let start_time = std::time::Instant::now();
  let original_size = std::fs::metadata(input)?.len();
- 
+
  let input_info = self.analyze_audio(input)?;
- 
+
  let mut cmd = Command::new(&self.ffmpeg_path);
  cmd.arg("-i").arg(input)
  .arg("-y")
  .arg("-hide_banner")
  .arg("-loglevel").arg("info")
  .arg("-progress").arg("pipe:2");
- 
- // Select encoder
+
+// Select encoder
  let encoder = self.select_encoder(&config.codec);
  cmd.arg("-c:a").arg(&encoder);
 
- // Set bitrate or quality
+// Set bitrate or quality
  if config.codec == "opus" || config.codec == "vorbis" {
- // VBR mode
+// VBR mode
  cmd.arg("-q:a").arg(config.quality.to_string());
  } else {
- // CBR mode
+// CBR mode
  cmd.arg("-b:a").arg(format!("{}k", config.bitrate));
  }
 
- // Set sample rate
+// Set sample rate
  if let Some(sr) = config.sample_rate {
  cmd.arg("-ar").arg(sr.to_string());
  }
 
- // Set number of channels
+// Set number of channels
  if let Some(ch) = config.channels {
  cmd.arg("-ac").arg(ch.to_string());
  }
 
- // Set container format
+// Set container format
  cmd.arg("-f").arg(&config.container);
  cmd.arg(output);
- 
+
  cmd.stdout(Stdio::piped())
  .stderr(Stdio::piped());
- 
+
  let mut child = cmd.spawn()
  .context("Failed to spawn ffmpeg")?;
- 
+
  if let (Some(callback), Some(stderr)) = (progress_callback, child.stderr.take()) {
  let duration = input_info.duration;
  std::thread::spawn(move || {
@@ -214,10 +214,10 @@ impl AudioProcessor {
  }
  });
  }
- 
+
  let status = child.wait()
  .context("Failed to wait for ffmpeg")?;
- 
+
  if !status.success() {
  return Ok(AudioConversionResult {
  success: false,
@@ -229,10 +229,10 @@ impl AudioProcessor {
  error: Some("FFmpeg conversion failed".to_string()),
  });
  }
- 
+
  let converted_size = std::fs::metadata(output)?.len();
  let compression_ratio = original_size as f32 / converted_size as f32;
- 
+
  Ok(AudioConversionResult {
  success: true,
  output_path: output.to_path_buf(),
@@ -243,8 +243,8 @@ impl AudioProcessor {
  error: None,
  })
  }
- 
- /// select Encoder
+
+/// select Encoder
  fn select_encoder(&self, codec: &str) -> String {
  match codec {
  "opus" => "libopus".to_string(),
@@ -256,9 +256,9 @@ impl AudioProcessor {
  }
  }
 
- /// Get recommended audio configuration (based on format knowledge base)
+/// Get recommended audio configuration (based on format knowledge base)
  pub fn get_recommended_config(&self, _source_codec: &str, target_codec: &str) -> AudioConversionConfig {
- // Recommendation based on format knowledge base
+// Recommendation based on format knowledge base
  match target_codec {
  "opus" => AudioConversionConfig {
  codec: "opus".to_string(),
@@ -328,17 +328,17 @@ mod tests {
  fn test_recommended_configs() {
  let processor = AudioProcessor::new();
 
- // Opus recommendation
+// Opus recommendation
  let opus_config = processor.get_recommended_config("mp3", "opus");
  assert_eq!(opus_config.codec, "opus");
  assert_eq!(opus_config.sample_rate, Some(48000));
 
- // AAC recommendation
+// AAC recommendation
  let aac_config = processor.get_recommended_config("mp3", "aac");
  assert_eq!(aac_config.codec, "aac");
  assert_eq!(aac_config.container, "m4a");
 
- // FLAC recommendation
+// FLAC recommendation
  let flac_config = processor.get_recommended_config("mp3", "flac");
  assert_eq!(flac_config.codec, "flac");
  assert_eq!(flac_config.bitrate, 0); // Lossless

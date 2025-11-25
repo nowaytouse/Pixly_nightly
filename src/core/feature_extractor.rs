@@ -1,25 +1,25 @@
 //! 🧠 128dimensionalfeatureextraction
 //!
-//! for机学习modelprovidehighquality128dimensionalfeature向量
+//! formachinelearningmodelprovidehighquality128dimensionalfeature
 //!
-//! ## feature构成
+//! ## feature
 //!
-//! - **imagefeature (0-63)**: color直方图、纹理、形状、quality指标
-//! - **元datafeature (64-95)**: EXIF、fileproperty、用户偏好
-//! - **上下文feature (96-127)**: processinghistorical、设备、environmentparameter
+//! - **imagefeature (0-63)**: color、texture、、quality
+//! - **elementdatafeature (64-95)**: EXIF、fileproperty、
+//! - **contextfeature (96-127)**: processinghistorical、、environmentparameter
 //!
-//! ## use场景
+//! ## use
 //!
-//! - 机学习modeltraining
+//! - machinelearningmodeltraining
 //! - imagequalityevaluate
 //! - intelligentparameterprediction
-//! - 内容classification
+//! - insideclassification
 
 use image::{DynamicImage, GenericImageView, Pixel};
 use std::collections::HashMap;
 
 /// 128dimensionalfeatureextraction
-pub structure FeatureExtractor {
+pub struct FeatureExtractor {
  pub image_features: ImageFeatures,
  pub metadata_features: MetadataFeatures,
  pub context_features: ContextFeatures,
@@ -27,41 +27,41 @@ pub structure FeatureExtractor {
 
 /// imagefeature (64dimensional)
 #[derive(Debug, Clone)]
-pub structure ImageFeatures {
- /// color直方图 (16dimensional)
+pub struct ImageFeatures {
+/// color (16dimensional)
  pub color_histogram: [f64; 16],
- /// 纹理feature (16dimensional)
+/// texturefeature (16dimensional)
  pub texture_features: [f64; 16],
- /// 形状feature (16dimensional)
+/// feature (16dimensional)
  pub shape_features: [f64; 16],
- /// quality指标 (16dimensional)
+/// quality (16dimensional)
  pub quality_metrics: [f64; 16],
 }
 
-/// 元datafeature (32dimensional)
+/// elementdatafeature (32dimensional)
 #[derive(Debug, Clone)]
-pub structure MetadataFeatures {
- /// EXIFinformation (16dimensional)
+pub struct MetadataFeatures {
+/// EXIFinformation (16dimensional)
  pub exif_features: [f64; 16],
- /// fileproperty (8dimensional)
+/// fileproperty (8dimensional)
  pub file_attributes: [f64; 8],
- /// 用户偏好 (8dimensional)
+///  (8dimensional)
  pub user_preferences: [f64; 8],
 }
 
-/// 上下文feature (32dimensional)
+/// contextfeature (32dimensional)
 #[derive(Debug, Clone)]
-pub structure ContextFeatures {
- /// processinghistorical (16dimensional)
+pub struct ContextFeatures {
+/// processinghistorical (16dimensional)
  pub processing_history: [f64; 16],
- /// 设备information (8dimensional)
+/// information (8dimensional)
  pub device_info: [f64; 8],
- /// environmentparameter (8dimensional)
+/// environmentparameter (8dimensional)
  pub environment_params: [f64; 8],
 }
 
 impl FeatureExtractor {
- /// createnewfeatureextraction
+/// createnewfeatureextraction
  pub fn new() -> Self {
  Self {
  image_features: ImageFeatures::default(),
@@ -70,7 +70,7 @@ impl FeatureExtractor {
  }
  }
 
- /// extraction128dimensionalfeature向量
+/// extraction128dimensionalfeature
  pub fn extract_features(
  &mut self,
  img: &DynamicImage,
@@ -78,41 +78,41 @@ impl FeatureExtractor {
  ) -> Vec<f64> {
  let mut features = vec![0.0; 128];
 
- // extractionimagefeature (0-63)
+// extractionimagefeature (0-63)
  let image_features = self.extract_image_features(img);
  features[0..64].copy_from_slice(&image_features[..]);
 
- // extraction元datafeature (64-95)
+// extractionelementdatafeature (64-95)
  let metadata_features = self.extract_metadata_features(metadata);
  features[64..96].copy_from_slice(&metadata_features[..]);
 
- // extraction上下文feature (96-127)
+// extractioncontextfeature (96-127)
  let context_features = self.extract_context_features();
  features[96..128].copy_from_slice(&context_features[..]);
 
  features
  }
 
- /// extractionimagefeature (64dimensional)
+/// extractionimagefeature (64dimensional)
  fn extract_image_features(&mut self, img: &DynamicImage) -> [f64; 64] {
  let mut features = [0.0; 64];
 
- // color直方图 (0-15)
+// color (0-15)
  let color_hist = self.calculate_color_histogram(img);
  features[0..16].copy_from_slice(&color_hist[..]);
  self.image_features.color_histogram = color_hist;
 
- // 纹理feature (16-31)
+// texturefeature (16-31)
  let texture = self.calculate_texture_features(img);
  features[16..32].copy_from_slice(&texture[..]);
  self.image_features.texture_features = texture;
 
- // 形状feature (32-47)
+// feature (32-47)
  let shape = self.calculate_shape_features(img);
  features[32..48].copy_from_slice(&shape[..]);
  self.image_features.shape_features = shape;
 
- // quality指标 (48-63)
+// quality (48-63)
  let quality = self.calculate_quality_metrics(img);
  features[48..64].copy_from_slice(&quality[..]);
  self.image_features.quality_metrics = quality;
@@ -120,7 +120,7 @@ impl FeatureExtractor {
  features
  }
 
- /// calculationcolor直方图 (16dimensional)
+/// calculationcolor (16dimensional)
  fn calculate_color_histogram(&self, img: &DynamicImage) -> [f64; 16] {
  let mut histogram = [0.0; 16];
  let (width, height) = img.dimensions();
@@ -149,7 +149,7 @@ impl FeatureExtractor {
  histogram
  }
 
- /// calculation纹理feature (16dimensional)
+/// calculationtexturefeature (16dimensional)
  fn calculate_texture_features(&self, img: &DynamicImage) -> [f64; 16] {
  let mut features = [0.0; 16];
  let (width, height) = img.dimensions();
@@ -228,7 +228,7 @@ impl FeatureExtractor {
  features
  }
 
- /// calculation形状feature (16dimensional)
+/// calculationfeature (16dimensional)
  fn calculate_shape_features(&self, img: &DynamicImage) -> [f64; 16] {
  let mut features = [0.0; 16];
  let (width, height) = img.dimensions();
@@ -248,7 +248,7 @@ impl FeatureExtractor {
  features
  }
 
- /// calculationquality指标 (16dimensional)
+/// calculationquality (16dimensional)
  fn calculate_quality_metrics(&self, img: &DynamicImage) -> [f64; 16] {
  let mut features = [0.0; 16];
  let (width, height) = img.dimensions();
@@ -286,7 +286,7 @@ impl FeatureExtractor {
  features
  }
 
- /// extraction元datafeature (32dimensional)
+/// extractionelementdatafeature (32dimensional)
  fn extract_metadata_features(&mut self, metadata: &HashMap<String, String>) -> [f64; 32] {
  let mut features = [0.0; 32];
 
@@ -305,7 +305,7 @@ impl FeatureExtractor {
  features
  }
 
- /// extraction上下文feature (32dimensional)
+/// extractioncontextfeature (32dimensional)
  fn extract_context_features(&mut self) -> [f64; 32] {
  let mut features = [0.0; 32];
 
@@ -321,8 +321,8 @@ impl FeatureExtractor {
  *feature = ((idx - 24) as f64 * 0.3) % 1.0;
  }
 
- // 🔥 securityarrayconversion - useexpect因forthisisinternal逻辑error
- // if切片长度 not match，description代码 has bug，shouldatdevelopment阶段发现
+// 🔥 securityarrayconversion - useexpectbecauseforthisisinternalerror
+// iflength not match，description has bug，shouldatdevelopmentsegment
  self.context_features.processing_history = features[0..16]
  .try_into()
  .expect("BUG: processing_history slice must be exactly 16 elements");
@@ -465,15 +465,15 @@ impl FeatureExtractor {
  features[0] = (size_val / (10.0 * 1024.0 * 1024.0)).min(1.0);
  }
 
- // not 再based onformatname！改forbased onactualfilefeature
- // feature[1]: compressiontypeindicator（based onactualdetection，notformat名）
+// not againbased onformatname！forbased onactualfilefeature
+// feature[1]: compressiontypeindicator（based onactualdetection，notformat）
  if let Some(has_alpha) = metadata.get("has_alpha")
  && has_alpha == "true" {
- features[1] = 0.8; // has透明channel
+ features[1] = 0.8; // haschannel
  }
  if let Some(is_animated) = metadata.get("is_animated")
  && is_animated == "true" {
- features[1] = features[1].max(0.6); // 动画file
+ features[1] = features[1].max(0.6); // file
  }
 
  for (idx, feature) in features.iter_mut().enumerate().skip(2) {
@@ -560,6 +560,6 @@ mod tests {
 
  assert_eq!(histogram.len(), 16);
  let sum: f64 = histogram.iter().sum();
- assert!((sum - 1.0).abs() < 0.01); // 归a化check
+ assert!((sum - 1.0).abs() < 0.01); // acheck
  }
 }

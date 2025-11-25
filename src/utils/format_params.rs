@@ -1,12 +1,12 @@
 /**
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- * 格式专属参数 (Format-Specific Parameters)
+ * formatparameter (Format-Specific Parameters)
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- * 
+ *
  * 🎯 target:
- * - fullsupportHTML界面所has格式专属参数
- * - 与Eagle插件HTML界面completely对应
- * - 类型安全参数验证
+ * - fullsupportHTMLsurfacehasformatparameter
+ * - withEaglepluginHTMLsurfacecompletelypairshould
+ * - typeparametervalidate
  */
 use serde::{Deserialize, Serialize};
 
@@ -15,20 +15,20 @@ use serde::{Deserialize, Serialize};
 // ═══════════════════════════════════════════════════
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure JxlParams {
- /// Effort level (1-9) - 对应HTML: jxl Effort
+pub struct JxlParams {
+/// Effort level (1-9) - pairshouldHTML: jxl Effort
  pub effort: Option<u8>,
- 
- /// distancevalue (0-15) - 对应HTML: jxl Distance
+
+/// distancevalue (0-15) - pairshouldHTML: jxl Distance
  pub distance: Option<f32>,
- 
- /// Bit depth (8/10/12/16) - 对应HTML: jxl Bit Depth
+
+/// Bit depth (8/10/12/16) - pairshouldHTML: jxl Bit Depth
  pub bit_depth: Option<u8>,
- 
- /// Color space - 对应HTML: jxl Color Space
+
+/// Color space - pairshouldHTML: jxl Color Space
  pub color_space: Option<String>,
- 
- /// 边缘enhanced (0-4) - 对应HTML: jxl Patches
+
+/// edgeenhanced (0-4) - pairshouldHTML: jxl Patches
  pub patches: Option<u8>,
 }
 
@@ -50,22 +50,22 @@ impl JxlParams {
  && !(1..=9).contains(&effort) {
  return Err(format!("JXL effort must be 1-9, got {}", effort));
  }
- 
+
  if let Some(distance) = self.distance
  && !(0.0..=15.0).contains(&distance) {
  return Err(format!("JXL distance must be 0-15, got {}", distance));
  }
- 
+
  if let Some(bit_depth) = self.bit_depth
  && ![8, 10, 12, 16].contains(&bit_depth) {
  return Err(format!("JXL bit_depth must be 8/10/12/16, got {}", bit_depth));
  }
- 
+
  if let Some(patches) = self.patches
  && patches > 4 {
  return Err(format!("JXL patches must be 0-4, got {}", patches));
  }
- 
+
  Ok(())
  }
 }
@@ -75,35 +75,35 @@ impl JxlParams {
 // ═══════════════════════════════════════════════════
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure WebPParams {
- /// compressionmethod (0-6) - 对应HTML: webp Method
+pub struct WebPParams {
+/// compressionmethod (0-6) - pairshouldHTML: webp Method
  pub method: Option<u8>,
- 
- /// Filter strength (0-100) - 对应HTML: webp Filter Strength
+
+/// Filter strength (0-100) - pairshouldHTML: webp Filter Strength
  pub filter_strength: Option<u8>,
- 
- /// sharpeninglevel (0-7) - 对应HTML: webp Sharpness
+
+/// sharpeninglevel (0-7) - pairshouldHTML: webp Sharpness
  pub sharpness: Option<u8>,
- 
- /// 分段count (1-4) - 对应HTML: webp Segments
+
+/// segmentcount (1-4) - pairshouldHTML: webp Segments
  pub segments: Option<u8>,
- 
- /// SNSstrength (0-100) - 对应HTML: webp Sns Strength
+
+/// SNSstrength (0-100) - pairshouldHTML: webp Sns Strength
  pub sns_strength: Option<u8>,
- 
- /// autofilter - 对应HTML: webp Auto Filter
+
+/// autofilter - pairshouldHTML: webp Auto Filter
  pub auto_filter: bool,
- 
- /// exactmode - 对应HTML: webp Exact Mode
+
+/// exactmode - pairshouldHTML: webp Exact Mode
  pub exact_mode: bool,
- 
- /// removed Alpha - 对应HTML: webp No Alpha
+
+/// removed Alpha - pairshouldHTML: webp No Alpha
  pub no_alpha: bool,
- 
- /// lowmemorymode - 对应HTML: webp Low Memory
+
+/// lowmemorymode - pairshouldHTML: webp Low Memory
  pub low_memory: bool,
- 
- /// encoding遍数 (1-10) - 对应HTML: webp Pass
+
+/// encoding (1-10) - pairshouldHTML: webp Pass
  pub pass: Option<u8>,
 }
 
@@ -130,32 +130,32 @@ impl WebPParams {
  && method > 6 {
  return Err(format!("WebP method must be 0-6, got {}", method));
  }
- 
+
  if let Some(filter_strength) = self.filter_strength
  && filter_strength > 100 {
  return Err(format!("WebP filter_strength must be 0-100, got {}", filter_strength));
  }
- 
+
  if let Some(sharpness) = self.sharpness
  && sharpness > 7 {
  return Err(format!("WebP sharpness must be 0-7, got {}", sharpness));
  }
- 
+
  if let Some(segments) = self.segments
  && !(1..=4).contains(&segments) {
  return Err(format!("WebP segments must be 1-4, got {}", segments));
  }
- 
+
  if let Some(sns_strength) = self.sns_strength
  && sns_strength > 100 {
  return Err(format!("WebP sns_strength must be 0-100, got {}", sns_strength));
  }
- 
+
  if let Some(pass) = self.pass
  && !(1..=10).contains(&pass) {
  return Err(format!("WebP pass must be 1-10, got {}", pass));
  }
- 
+
  Ok(())
  }
 }
@@ -165,29 +165,29 @@ impl WebPParams {
 // ═══════════════════════════════════════════════════
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure AvifParams {
- /// encodingspeed (0-10) - 对应HTML: avif Speed
+pub struct AvifParams {
+/// encodingspeed (0-10) - pairshouldHTML: avif Speed
  pub speed: Option<u8>,
- 
- /// minimumquantization (0-63) - 对应HTML: avif Min Quantizer
+
+/// minimumquantization (0-63) - pairshouldHTML: avif Min Quantizer
  pub min_quantizer: Option<u8>,
- 
- /// maximumquantization (0-63) - 对应HTML: avif Max Quantizer
+
+/// maximumquantization (0-63) - pairshouldHTML: avif Max Quantizer
  pub max_quantizer: Option<u8>,
- 
- /// 色度子sampling - 对应HTML: avif Chroma Subsampling
+
+/// degreesubsampling - pairshouldHTML: avif Chroma Subsampling
  pub chroma_subsampling: Option<String>,
- 
- /// Bit depth (8/10/12) - 对应HTML: avif Bit Depth
+
+/// Bit depth (8/10/12) - pairshouldHTML: avif Bit Depth
  pub bit_depth: Option<u8>,
- 
- /// Tilesline数 (1-8) - 对应HTML: avif Tiles Rows
+
+/// Tilesline (1-8) - pairshouldHTML: avif Tiles Rows
  pub tiles_rows: Option<u8>,
- 
- /// Tiles列数 (1-8) - 对应HTML: avif Tiles Cols
+
+/// Tiles列 (1-8) - pairshouldHTML: avif Tiles Cols
  pub tiles_cols: Option<u8>,
- 
- /// 预乘Alpha - 对应HTML: avif Premultiply
+
+/// Alpha - pairshouldHTML: avif Premultiply
  pub premultiply_alpha: bool,
 }
 
@@ -212,32 +212,32 @@ impl AvifParams {
  && speed > 10 {
  return Err(format!("AVIF speed must be 0-10, got {}", speed));
  }
- 
+
  if let Some(min_q) = self.min_quantizer
  && min_q > 63 {
  return Err(format!("AVIF min_quantizer must be 0-63, got {}", min_q));
  }
- 
+
  if let Some(max_q) = self.max_quantizer
  && max_q > 63 {
  return Err(format!("AVIF max_quantizer must be 0-63, got {}", max_q));
  }
- 
+
  if let Some(bit_depth) = self.bit_depth
  && ![8, 10, 12].contains(&bit_depth) {
  return Err(format!("AVIF bit_depth must be 8/10/12, got {}", bit_depth));
  }
- 
+
  if let Some(rows) = self.tiles_rows
  && !(1..=8).contains(&rows) {
  return Err(format!("AVIF tiles_rows must be 1-8, got {}", rows));
  }
- 
+
  if let Some(cols) = self.tiles_cols
  && !(1..=8).contains(&cols) {
  return Err(format!("AVIF tiles_cols must be 1-8, got {}", cols));
  }
- 
+
  Ok(())
  }
 }
@@ -247,20 +247,20 @@ impl AvifParams {
 // ═══════════════════════════════════════════════════
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure HeicParams {
- /// compressionquality (1-100) - 对应HTML: heic Quality
+pub struct HeicParams {
+/// compressionquality (1-100) - pairshouldHTML: heic Quality
  pub quality: Option<u8>,
- 
- /// Encoder - 对应HTML: heic Encoder
+
+/// Encoder - pairshouldHTML: heic Encoder
  pub encoder: Option<String>,
- 
- /// 色度子sampling - 对应HTML: heic Chroma Subsampling
+
+/// degreesubsampling - pairshouldHTML: heic Chroma Subsampling
  pub chroma_subsampling: Option<String>,
- 
- /// losslessencoding - 对应HTML: heic Lossless
+
+/// losslessencoding - pairshouldHTML: heic Lossless
  pub lossless: bool,
- 
- /// 嵌入缩略图 - 对应HTML: heic Thumb Embed
+
+/// embedding - pairshouldHTML: heic Thumb Embed
  pub embed_thumbnail: bool,
 }
 
@@ -282,17 +282,17 @@ impl HeicParams {
  && !(1..=100).contains(&quality) {
  return Err(format!("HEIC quality must be 1-100, got {}", quality));
  }
- 
+
  if let Some(ref encoder) = self.encoder
  && !["x265", "libheif"].contains(&encoder.as_str()) {
  return Err(format!("HEIC encoder must be x265 or libheif, got {}", encoder));
  }
- 
+
  if let Some(ref chroma) = self.chroma_subsampling
  && !["420", "422", "444"].contains(&chroma.as_str()) {
  return Err(format!("HEIC chroma_subsampling must be 420/422/444, got {}", chroma));
  }
- 
+
  Ok(())
  }
 }
@@ -326,7 +326,7 @@ impl FormatSpecificParams {
 #[cfg(test)]
 mod tests {
  use super::*;
- 
+
  #[test]
  fn test_jxl_params_default() {
  let params = JxlParams::default();
@@ -334,7 +334,7 @@ mod tests {
  assert_eq!(params.distance, Some(1.0));
  assert!(params.validate().is_ok());
  }
- 
+
  #[test]
  fn test_jxl_params_validation() {
  let params = JxlParams {
@@ -342,7 +342,7 @@ mod tests {
  ..Default::default()
  };
  assert!(params.validate().is_err());
- 
+
  let params = JxlParams {
  effort: Some(7),
  distance: Some(20.0),
@@ -350,7 +350,7 @@ mod tests {
  };
  assert!(params.validate().is_err());
  }
- 
+
  #[test]
  fn test_webp_params_default() {
  let params = WebPParams::default();
@@ -358,7 +358,7 @@ mod tests {
  assert!(params.auto_filter);
  assert!(params.validate().is_ok());
  }
- 
+
  #[test]
  fn test_avif_params_default() {
  let params = AvifParams::default();
@@ -366,7 +366,7 @@ mod tests {
  assert_eq!(params.chroma_subsampling, Some("420".to_string()));
  assert!(params.validate().is_ok());
  }
- 
+
  #[test]
  fn test_heic_params_default() {
  let params = HeicParams::default();

@@ -1,13 +1,13 @@
 // src/online_learning.rs
-//! 🎓 at线学习module - Phase 3.2
-//! 
-//! will PPOtrainingintegrationtoactualconversion流程
-//! 
+//! 🎓 atlinelearningmodule - Phase 3.2
+//!
+//! will PPOtrainingintegrationtoactualconversion
+//!
 //! feature：
-//! - recordevery次conversion经验（feature、parameter、奖励）
-//! - 累积经验缓冲
-//! - 定期触发modelupdate（every100次conversion）
-//! - model热load
+//! - recordeverytimesconversion（feature、parameter、reward）
+//! - 累积
+//! - triggermodelupdate（every100timesconversion）
+//! - modelhotload
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -19,26 +19,26 @@ use crate::analysis::media_analyzer::MediaType;
 
 /// PPOparameterstructure
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure PPOParameters {
+pub struct PPOParameters {
  pub quality: u32,
  pub format: String,
 }
 
-/// 经验样本
+/// sample
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure Experience {
+pub struct Experience {
  pub features: Vec<f64>,
  pub quality: u32,
  pub effort: u32,
  pub reward: f64,
  pub timestamp: u64,
  #[serde(default)]
- pub ssim: Option<f64>, // 🎯 SSIMqualityscore（可选，forafter续更new）
+ pub ssim: Option<f64>, // 🎯 SSIMqualityscore（optional，foraftermorenew）
 }
 
 /// 🎯 ML-506: modelversioninformation
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure ModelVersion {
+pub struct ModelVersion {
  pub version: u32,
  pub timestamp: u64,
  pub num_experiences: usize,
@@ -46,24 +46,24 @@ pub structure ModelVersion {
  pub path: PathBuf,
 }
 
-/// at线学习
-pub structure OnlineLearner {
- /// PPOmodelpath
+/// atlinelearning
+pub struct OnlineLearner {
+/// PPOmodelpath
  model_path: PathBuf,
- /// 经验缓冲
+/// 
  experience_buffer: Arc<Mutex<Vec<Experience>>>,
- /// update间隔（经验count）
+/// updateinterval（count）
  update_interval: usize,
- /// 奖励calculation
+/// rewardcalculation
  reward_calculator: RewardCalculator,
- /// is否enabled
+/// isnoenabled
  enabled: bool,
- /// 🎯 ML-506: currentmodelversion（useinternal可变性）
+/// 🎯 ML-506: currentmodelversion（useinternalcan）
  current_version: Arc<Mutex<u32>>,
 }
 
 impl OnlineLearner {
- /// createnewat线学习（autoload持久经验）
+/// createnewatlinelearning（autoload持久）
  pub fn new(model_path: PathBuf, update_interval: usize) -> Self {
  let mut learner = Self {
  model_path,
@@ -71,10 +71,10 @@ impl OnlineLearner {
  update_interval,
  reward_calculator: RewardCalculator::new(),
  enabled: true,
- current_version: Arc::new(Mutex::new(0)), // 🎯 ML-506: 初始version
+ current_version: Arc::new(Mutex::new(0)), // 🎯 ML-506: version
  };
- 
- // Auto-load persisted experiences
+
+// Auto-load persisted experiences
  if let Err(e) = learner.load_persisted_experiences() {
  log::warn!("Failed to load persisted experiences: {}", e);
  }
@@ -82,16 +82,16 @@ impl OnlineLearner {
  learner
  }
 
- /// Disable online learning
+/// Disable online learning
  pub fn disable(&mut self) {
  self.enabled = false;
  }
 
- /// Enable online learning
+/// Enable online learning
  pub fn enable(&mut self) {
  self.enabled = true;
 
- // Check if there are accumulated experiences that need training
+// Check if there are accumulated experiences that need training
  let buffer_size = self.buffer_size();
  if buffer_size >= self.update_interval {
  log::info!("Found {} accumulated experiences, triggering batch training...", buffer_size);
@@ -101,7 +101,7 @@ impl OnlineLearner {
  }
  }
 
- /// ML-504: PPO parameter callback function (when ML system needs parameters)
+/// ML-504: PPO parameter callback function (when ML system needs parameters)
  pub fn get_ppo_params(
  &self,
  media_type: MediaType,
@@ -109,17 +109,17 @@ impl OnlineLearner {
  _file_size: u64,
  ) -> Result<PPOParameters> {
  if !self.enabled {
- // Online learning disabled, return error
+// Online learning disabled, return error
  anyhow::bail!("Online learning disabled");
  }
 
- // Query historical experience and return parameters
+// Query historical experience and return parameters
  let params = match media_type {
  MediaType::Image => {
  self.find_best_params_for_image(format)
  }
  MediaType::Animation => {
- // Animation uses same parameters as image
+// Animation uses same parameters as image
  self.find_best_params_for_image(format)
  }
  MediaType::Video => {
@@ -136,17 +136,17 @@ impl OnlineLearner {
  Ok(params)
  }
 
- /// ML-504 helper: Find best parameters for image
+/// ML-504 helper: Find best parameters for image
  fn find_best_params_for_image(&self, format: &str) -> PPOParameters {
- // Look for similar successful cases in experience_buffer
- // Return historical record if available, otherwise return default
+// Look for similar successful cases in experience_buffer
+// Return historical record if available, otherwise return default
  PPOParameters {
  quality: 85,
  format: format.to_string(),
  }
  }
 
- /// ML-504 helper: Find best parameters for video
+/// ML-504 helper: Find best parameters for video
  fn find_best_params_for_video(&self, format: &str) -> PPOParameters {
  PPOParameters {
  quality: 28, // CRF value
@@ -154,15 +154,15 @@ impl OnlineLearner {
  }
  }
 
- /// ML-504 helper: Find best parameters for audio
+/// ML-504 helper: Find best parameters for audio
  fn find_best_params_for_audio(&self, format: &str) -> PPOParameters {
  PPOParameters {
  quality: 128, // bitrate
  format: format.to_string(),
  }
  }
- 
- /// Record conversion experience
+
+/// Record conversion experience
  pub fn record_conversion(
  &self,
  features: Vec<f64>,
@@ -174,10 +174,10 @@ impl OnlineLearner {
  return Ok(());
  }
 
- // Calculate reward
+// Calculate reward
  let reward = self.reward_calculator.calculate(&result);
 
- // Create experience
+// Create experience
  let experience = Experience {
  features,
  quality,
@@ -190,20 +190,20 @@ impl OnlineLearner {
  ssim: None, // Initially None, can be updated later via update_last_experience_ssim
  };
 
- // Store experience
+// Store experience
  let mut buffer = self.experience_buffer.lock().expect("Mutex poisoned");
  buffer.push(experience);
 
  log::info!("Recorded experience: reward={:.4}, buffer_size={}",
  reward, buffer.len());
 
- // Persist experiences to disk
+// Persist experiences to disk
  drop(buffer); // Release lock
  if let Err(e) = self.persist_experiences() {
  log::warn!("Failed to persist experiences: {}", e);
  }
 
- // Check if update is needed
+// Check if update is needed
  let buffer_size = self.buffer_size();
  if buffer_size >= self.update_interval {
  log::info!("Triggering model update ({} experiences)", buffer_size);
@@ -212,8 +212,8 @@ impl OnlineLearner {
 
  Ok(())
  }
- 
- /// ML-505: Check if model should be updated
+
+/// ML-505: Check if model should be updated
  pub fn should_update(&self) -> bool {
  if !self.enabled {
  return false;
@@ -221,7 +221,7 @@ impl OnlineLearner {
  self.buffer_size() >= self.update_interval
  }
 
- /// ML-505: Public trigger update interface
+/// ML-505: Public trigger update interface
  pub fn trigger_update(&self) -> Result<()> {
  let buffer_size = self.buffer_size();
  if buffer_size >= self.update_interval {
@@ -231,12 +231,12 @@ impl OnlineLearner {
  Ok(())
  }
 
- /// ML-507: Public batch training trigger interface
+/// ML-507: Public batch training trigger interface
  pub fn trigger_batch_training(&self, _buffer_size: usize) -> Result<()> { // _buffer_size is now unused
  self.internal_trigger_update()
  }
 
- /// Trigger model update (using batch PPO trainer)
+/// Trigger model update (using batch PPO trainer)
  fn internal_trigger_update(&self) -> Result<()> {
  log::info!("Starting batch PPO model update...");
 
@@ -269,25 +269,25 @@ impl OnlineLearner {
  let stdout = String::from_utf8_lossy(&output.stdout);
  log::info!("Batch model update complete ({} experiences)", buffer_size);
 
- // ML-506: Version management
- // 1. Backup old model
+// ML-506: Version management
+// 1. Backup old model
  if let Err(e) = self.backup_model() {
  log::warn!("Failed to backup model: {}", e);
  }
 
- // 2. Save version info
+// 2. Save version info
  if let Err(e) = self.save_version_info() {
  log::warn!("Failed to save version info: {}", e);
  }
 
- // 3. Increment version number
+// 3. Increment version number
  {
  let mut ver = self.current_version.lock().expect("Mutex poisoned");
  *ver += 1;
  log::info!("Model version updated: v{}", *ver);
  }
 
- // Parse result (last line is JSON)
+// Parse result (last line is JSON)
  if let Some(last_line) = stdout.lines().last()
  && let Ok(result) = serde_json::from_str::<serde_json::Value>(last_line)
  && let Some(avg_loss) = result.get("avg_loss").and_then(|v| v.as_f64()) {
@@ -303,15 +303,15 @@ impl OnlineLearner {
  }
 
 
- 
- /// getcurrent缓冲size
+
+/// getcurrentsize
  pub fn buffer_size(&self) -> usize {
  self.experience_buffer.lock().expect("Mutex poisoned").len()
  }
- 
- /// Update SSIM value of last experience
- ///
- /// Used to supplement SSIM quality score after conversion completes
+
+/// Update SSIM value of last experience
+///
+/// Used to supplement SSIM quality score after conversion completes
  pub fn update_last_experience_ssim(&self, ssim: f64) -> Result<()> {
  if !self.enabled {
  return Ok(());
@@ -322,7 +322,7 @@ impl OnlineLearner {
  last_exp.ssim = Some(ssim);
  log::info!("Updated last experience SSIM: {:.4}", ssim);
 
- // Persist update
+// Persist update
  drop(buffer);
  if let Err(e) = self.persist_experiences() {
  log::warn!("Failed to persist SSIM update: {}", e);
@@ -334,7 +334,7 @@ impl OnlineLearner {
  Ok(())
  }
 
- /// Manually trigger update
+/// Manually trigger update
  pub fn manual_update(&self) -> Result<()> {
  let size = self.buffer_size();
  if size == 0 {
@@ -345,8 +345,8 @@ impl OnlineLearner {
  log::info!("Manual update triggered ({} experiences)", size);
  self.trigger_update()
  }
- 
- /// ML-506: Backup current model
+
+/// ML-506: Backup current model
  fn backup_model(&self) -> Result<()> {
  if !self.model_path.exists() {
  return Ok(()); // No model to backup
@@ -370,7 +370,7 @@ impl OnlineLearner {
  Ok(())
  }
 
- /// ML-506: Save version info
+/// ML-506: Save version info
  fn save_version_info(&self) -> Result<()> {
  let buffer = self.experience_buffer.lock().expect("Mutex poisoned");
  let current_ver = *self.current_version.lock().expect("Mutex poisoned");
@@ -405,12 +405,12 @@ impl OnlineLearner {
  Ok(())
  }
 
- /// ML-506: Get current version
+/// ML-506: Get current version
  pub fn current_version(&self) -> u32 {
  *self.current_version.lock().expect("Mutex poisoned")
  }
 
- /// ML-506: Rollback to specified version
+/// ML-506: Rollback to specified version
  pub fn rollback_to_version(&self, version: u32) -> Result<()> {
  let backup_path = self.model_path.parent()
  .context("Invalid model path")?
@@ -428,11 +428,11 @@ impl OnlineLearner {
  Ok(())
  }
 
- /// Persist experiences to disk
+/// Persist experiences to disk
  fn persist_experiences(&self) -> Result<()> {
  let persist_path = Path::new("models/ppo/experience_buffer.json");
 
- // Ensure directory exists
+// Ensure directory exists
  if let Some(parent) = persist_path.parent() {
  std::fs::create_dir_all(parent)?;
  }
@@ -445,7 +445,7 @@ impl OnlineLearner {
  Ok(())
  }
 
- /// Load persisted experiences
+/// Load persisted experiences
  fn load_persisted_experiences(&mut self) -> Result<()> {
  let persist_path = Path::new("models/ppo/experience_buffer.json");
 
@@ -468,19 +468,19 @@ impl OnlineLearner {
 #[cfg(test)]
 mod tests {
  use super::*;
- 
+
  #[test]
  fn test_record_experience() {
- // usetemporarydirectory避免load持久经验
+// usetemporarydirectoryload持久
  let temp_dir = std::env::temp_dir().join("pixly_test_online_learning");
- let _ = std::fs::remove_dir_all(&temp_dir); // clean up旧data
+ let _ = std::fs::remove_dir_all(&temp_dir); // clean upolddata
  std::fs::create_dir_all(&temp_dir).unwrap();
- 
+
  let learner = OnlineLearner::new(
  temp_dir.join("test.pth"),
  100
  );
- 
+
  let features = vec![0.5; 128];
  let result = ConversionResult {
  original_size: 1000000,
@@ -488,12 +488,12 @@ mod tests {
  ssim: 0.98,
  processing_time: 2.0,
  };
- 
+
  let initial_size = learner.buffer_size();
  learner.record_conversion(features, 80, 6, result).unwrap();
  assert_eq!(learner.buffer_size(), initial_size + 1);
- 
- // cleanup
+
+// cleanup
  let _ = std::fs::remove_dir_all(&temp_dir);
  }
 }

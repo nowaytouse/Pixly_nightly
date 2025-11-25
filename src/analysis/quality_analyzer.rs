@@ -1,14 +1,14 @@
 //! 🔍 qualityanalysis
 //!
-//! 综合image and videoqualityanalysis，providedetailedquality指标
+//! comprehensiveimage and videoqualityanalysis，providedetailedquality
 //!
 //! ## Corefeature
 //!
-//! - **multiformatsupport** - JPEG、PNG、Web P、AVIF、JXL etc 
+//! - **multiformatsupport** - JPEG、PNG、Web P、AVIF、JXL etc
 //! - **FFprobeintegration** - depthanalysisimage and video
 //! - **BPPevaluate** - byteseverypixelqualityevaluate
-//! - **内容detection** - 照片、图形、屏幕截图classification
-//! - **compression潜力** - evaluate进a步compressionmay性
+//! - **insidedetection** - photo、graphic、screenshotclassification
+//! - **compression** - evaluateastepcompressionmay
 
 use anyhow::Result;
 use image::GenericImageView;
@@ -18,16 +18,16 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, SystemTime};
 
-/// quality指标 - full媒体filequalityevaluate
+/// quality - fullmediafilequalityevaluate
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure QualityMetrics {
- // 基础information
+pub struct QualityMetrics {
+// basicinformation
  pub file_path: PathBuf,
  pub file_size: u64,
  pub format: String,
  pub media_type: String,
 
- // imagefeature
+// imagefeature
  pub width: u32,
  pub height: u32,
  pub pixel_count: u64,
@@ -36,21 +36,21 @@ pub structure QualityMetrics {
  pub bit_depth: u8,
  pub color_space: String,
 
- // qualityevaluate
+// qualityevaluate
  pub bytes_per_pixel: f64,
  pub estimated_quality: u8,
  pub complexity_score: f64,
  pub content_type: String,
 
- // compressionevaluate
+// compressionevaluate
  pub compression_potential: f64,
  pub is_already_compressed: bool,
 
- // classification
+// classification
  pub quality_class: String,
  pub size_class: String,
 
- // analysis元data
+// analysiselementdata
  pub analyzed_at: SystemTime,
  pub analysis_time: Duration,
  pub analysis_error: Option<String>,
@@ -58,22 +58,22 @@ pub structure QualityMetrics {
 
 /// FFprobedatastructure
 #[derive(Debug, Deserialize)]
-structure FFProbeData {
+struct FFProbeData {
  streams: Vec<FFProbeStream>,
 }
 
-/// FFprobe流information
+/// FFprobeinformation
 #[derive(Debug, Deserialize)]
-structure FFProbeStream {
+struct FFProbeStream {
  width: Option<u32>,
  height: Option<u32>,
  pix_fmt: Option<String>,
  color_space: Option<String>,
 }
 
-/// quality分布statistics
+/// qualitystatistics
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub structure QualityDistribution {
+pub struct QualityDistribution {
  pub extremely_high: usize,
  pub high: usize,
  pub medium: usize,
@@ -83,12 +83,12 @@ pub structure QualityDistribution {
 }
 
 /// imagequalityanalysis
-pub structure ImageAnalyzer {
+pub struct ImageAnalyzer {
  ffprobe_path: String,
 }
 
-/// 主qualityanalysis
-pub structure QualityAnalyzer {
+/// mainqualityanalysis
+pub struct QualityAnalyzer {
  image_analyzer: ImageAnalyzer,
  supported_image_formats: HashMap<String, bool>,
 }
@@ -133,12 +133,12 @@ impl Default for ImageAnalyzer {
 }
 
 impl ImageAnalyzer {
- /// createnewimageanalysis
+/// createnewimageanalysis
  pub fn new() -> Self {
  Self::default()
  }
 
- /// analysisimagefileandreturnquality指标
+/// analysisimagefileandreturnquality
  pub fn analyze_image<P: AsRef<Path>>(&self, file_path: P) -> Result<QualityMetrics> {
  let start_time = SystemTime::now();
  let path = file_path.as_ref();
@@ -158,7 +158,7 @@ impl ImageAnalyzer {
  .map(|e| e.to_lowercase())
  .unwrap_or_default();
 
- // tryuseffprobeanalysis
+// tryuseffprobeanalysis
  match self.ffprobe_image(path) {
  Ok(probe_data) => {
  if let Some(stream) = probe_data.streams.first() {
@@ -172,14 +172,14 @@ impl ImageAnalyzer {
  }
  }
  Err(_) => {
- // useimagelibrary作forfallback
+// useimagelibraryforfallback
  if let Err(e) = self.analyze_with_image_crate(path, &mut metrics) {
  metrics.analysis_error = Some(format!("Analysis failed: {}", e));
  }
  }
  }
 
- // calculation派生指标
+// calculation派生
  if metrics.width > 0 && metrics.height > 0 {
  metrics.pixel_count = metrics.width as u64 * metrics.height as u64;
  }
@@ -199,7 +199,7 @@ impl ImageAnalyzer {
  Ok(metrics)
  }
 
- /// useimagelibraryanalysis（fallbackmethod）
+/// useimagelibraryanalysis（fallbackmethod）
  fn analyze_with_image_crate<P: AsRef<Path>>(
  &self,
  path: P,
@@ -245,7 +245,7 @@ impl ImageAnalyzer {
  Ok(())
  }
 
- /// useffprobeanalysisimage
+/// useffprobeanalysisimage
  fn ffprobe_image<P: AsRef<Path>>(&self, file_path: P) -> Result<FFProbeData> {
  let output = Command::new(&self.ffprobe_path)
  .args([
@@ -266,7 +266,7 @@ impl ImageAnalyzer {
  Ok(data)
  }
 
- /// classificationQuality grade
+/// classificationQuality grade
  fn classify_quality(&self, bpp: f64, format: &str) -> String {
  let (high_threshold, medium_threshold, low_threshold) = match format {
  "jpg" | "jpeg" => (3.0, 1.0, 0.2),
@@ -287,7 +287,7 @@ impl ImageAnalyzer {
  }
  }
 
- /// 估算qualityscore
+/// qualityscore
  fn estimate_quality(&self, metrics: &QualityMetrics) -> u8 {
  let bpp = metrics.bytes_per_pixel;
 
@@ -300,7 +300,7 @@ impl ImageAnalyzer {
  quality.clamp(0.0, 100.0) as u8
  }
 
- /// detection内容type
+/// detectioninsidetype
  fn detect_content_type(&self, metrics: &QualityMetrics) -> String {
  let bpp = metrics.bytes_per_pixel;
 
@@ -327,7 +327,7 @@ impl ImageAnalyzer {
  }
  }
 
- /// evaluatecompression潜力
+/// evaluatecompression
  fn assess_compression_potential(&self, metrics: &QualityMetrics) -> f64 {
  let bpp = metrics.bytes_per_pixel;
 
@@ -354,7 +354,7 @@ impl ImageAnalyzer {
  }
  }
 
- /// classificationfilesize
+/// classificationfilesize
  pub fn classify_size_static(file_size: u64) -> String {
  let size_mb = file_size as f64 / (1024.0 * 1024.0);
 
@@ -371,7 +371,7 @@ impl ImageAnalyzer {
  }
  }
 
- /// 估算Bit depth
+/// Bit depth
  fn estimate_bit_depth(&self, pix_fmt: &str) -> u8 {
  if pix_fmt.contains("p10") || pix_fmt.contains("10le") {
  10
@@ -384,7 +384,7 @@ impl ImageAnalyzer {
  }
  }
 
- /// detectioncolorempty间
+/// detectioncolorempty
  fn detect_color_space(&self, stream: &FFProbeStream) -> String {
  if let Some(color_space) = &stream.color_space {
  if color_space.contains("bt709") {
@@ -401,7 +401,7 @@ impl ImageAnalyzer {
 }
 
 impl QualityAnalyzer {
- /// createnewqualityanalysis
+/// createnewqualityanalysis
  pub fn new() -> Self {
  let mut supported_image_formats = HashMap::new();
  for ext in &[
@@ -417,7 +417,7 @@ impl QualityAnalyzer {
  }
  }
 
- /// analysisfileandreturnquality指标
+/// analysisfileandreturnquality
  pub fn analyze<P: AsRef<Path>>(&self, file_path: P) -> Result<QualityMetrics> {
  let path = file_path.as_ref();
  let ext = path
@@ -433,23 +433,23 @@ impl QualityAnalyzer {
  anyhow::bail!("Unsupported file format: {}", ext)
  }
 
- /// batchanalysismultifile
+/// batchanalysismultifile
  pub fn analyze_batch<P: AsRef<Path>>(&self, file_paths: &[P]) -> Vec<Result<QualityMetrics>> {
  file_paths.iter().map(|path| self.analyze(path)).collect()
  }
 
- /// getquality分布statistics
+/// getqualitystatistics
  pub fn get_quality_distribution(&self, metrics_list: &[QualityMetrics]) -> QualityDistribution {
  let mut distribution = QualityDistribution::default();
 
  for metrics in metrics_list {
  distribution.total += 1;
  match metrics.quality_class.as_str() {
- "Extremely High" | "极高" => distribution.extremely_high += 1,
- "High" | "高" => distribution.high += 1,
+ "Extremely High" | "extremelyhigh" => distribution.extremely_high += 1,
+ "High" | "high" => distribution.high += 1,
  "Medium" | "" => distribution.medium += 1,
- "Low" | "低" => distribution.low += 1,
- "Extremely Low" | "极低" => distribution.extremely_low += 1,
+ "Low" | "low" => distribution.low += 1,
+ "Extremely Low" | "extremelylow" => distribution.extremely_low += 1,
  _ => {}
  }
  }

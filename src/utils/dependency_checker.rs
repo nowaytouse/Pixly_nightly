@@ -1,10 +1,10 @@
 /**
- * Dependency Checker - 外部依赖check
- * 
- * check必需外部工具：
- * - exiftool (元data处理)
- * - ffmpeg (视频处理)
- * - ffprobe (视频分析)
+ * Dependency Checker - externaldependencycheck
+ *
+ * checkrequiredexternal：
+ * - exiftool (elementdataprocess)
+ * - ffmpeg (videoprocess)
+ * - ffprobe (videoanalyze)
  * - cjxl/djxl (JPEG XL)
  * - avifenc/avifdec (AVIF)
  */
@@ -13,9 +13,9 @@ use std::path::PathBuf;
 use std::env;
 use log::{debug, info};
 
-/// dependency项information
+/// dependencyiteminformation
 #[derive(Debug, Clone)]
-pub structure Dependency {
+pub struct Dependency {
  pub name: &'static str,
  pub required: bool,
  pub description: &'static str,
@@ -24,14 +24,14 @@ pub structure Dependency {
 
 /// checkresult
 #[derive(Debug)]
-pub structure CheckResult {
+pub struct CheckResult {
  pub name: &'static str,
  pub available: bool,
  pub version: Option<String>,
 }
 
 impl Dependency {
- /// checkdependencyis否available
+/// checkdependencyisnoavailable
  pub fn check(&self) -> CheckResult {
  let (available, version) = match self.name {
  "ffmpeg" => {
@@ -70,7 +70,7 @@ impl Dependency {
  (available, version)
  }
  };
- 
+
  CheckResult { name: self.name, available, version }
  }
 }
@@ -107,7 +107,7 @@ fn get_command_version_by_path(path: &PathBuf) -> Option<String> {
  } else {
  vec!["--version"]
  };
- 
+
  Command::new(path)
  .args(&args)
  .output()
@@ -139,7 +139,7 @@ pub fn find_ffmpeg() -> Option<PathBuf> {
  return Some(ffmpeg_path);
  }
  }
- 
+
  let mut common_paths: Vec<String> = Vec::new();
  match env::consts::OS {
  "macos" => {
@@ -162,20 +162,20 @@ pub fn find_ffmpeg() -> Option<PathBuf> {
  }
  _ => {}
  }
- 
+
  for path_str in common_paths {
  let path = PathBuf::from(&path_str);
  if path.exists() {
  return Some(path);
  }
  }
- 
+
  if is_command_available("ffmpeg") {
  #[cfg(target_os = "windows")]
  let which_cmd = "where";
  #[cfg(not(target_os = "windows"))]
  let which_cmd = "which";
- 
+
  if let Ok(output) = Command::new(which_cmd).arg("ffmpeg").output()
  && output.status.success()
  && let Ok(path_str) = String::from_utf8(output.stdout)
@@ -194,7 +194,7 @@ pub fn find_exiftool() -> Option<PathBuf> {
  return Some(exiftool_path);
  }
  }
- 
+
  let mut common_paths: Vec<String> = Vec::new();
  match env::consts::OS {
  "macos" => {
@@ -213,14 +213,14 @@ pub fn find_exiftool() -> Option<PathBuf> {
  }
  _ => {}
  }
- 
+
  for path_str in common_paths {
  let path = PathBuf::from(&path_str);
  if path.exists() {
  return Some(path);
  }
  }
- 
+
  if is_command_available("exiftool") {
  return Some(PathBuf::from("exiftool"));
  }
@@ -232,19 +232,19 @@ pub fn get_dependencies() -> Vec<Dependency> {
  Dependency {
  name: "exiftool",
  required: true,
- description: "元data处理（EXIF/XMP/ICC）",
+ description: "elementdataprocess（EXIF/XMP/ICC）",
  install_hint: get_install_hint("exiftool"),
  },
  Dependency {
  name: "ffmpeg",
  required: false,
- description: "视频convert and GIF分析",
+ description: "videoconvert and GIFanalyze",
  install_hint: get_install_hint("ffmpeg"),
  },
  Dependency {
  name: "ffprobe",
  required: false,
- description: "视频information获取",
+ description: "videoinformationget",
  install_hint: get_install_hint("ffmpeg"),
  },
  Dependency {
@@ -256,7 +256,7 @@ pub fn get_dependencies() -> Vec<Dependency> {
  Dependency {
  name: "djxl",
  required: false,
- description: "JPEG XL解码",
+ description: "JPEG XLdecode",
  install_hint: get_install_hint("cjxl"),
  },
  Dependency {
@@ -268,7 +268,7 @@ pub fn get_dependencies() -> Vec<Dependency> {
  Dependency {
  name: "avifdec",
  required: false,
- description: "AVIF解码",
+ description: "AVIFdecode",
  install_hint: get_install_hint("avifenc"),
  },
  ]
@@ -281,23 +281,23 @@ fn get_install_hint(tool: &str) -> &'static str {
  "ffmpeg" => "macOS: brew install ffmpeg",
  "cjxl" => "macOS: brew install jpeg-xl",
  "avifenc" => "macOS: brew install libavif",
- _ => "请查看官方文档",
+ _ => "",
  },
  "windows" => match tool {
- "exiftool" => "Windows: 下载 https://exiftool.org/",
- "ffmpeg" => "Windows: 下载 https://ffmpeg.org/",
- "cjxl" => "Windows: 下载 https://github.com/libjxl/libjxl/releases",
- "avifenc" => "Windows: 下载 https://github.com/AOMediaCodec/libavif/releases",
- _ => "请查看官方文档",
+ "exiftool" => "Windows: down https://exiftool.org/",
+ "ffmpeg" => "Windows: down https://ffmpeg.org/",
+ "cjxl" => "Windows: down https://github.com/libjxl/libjxl/releases",
+ "avifenc" => "Windows: down https://github.com/AOMediaCodec/libavif/releases",
+ _ => "",
  },
  "linux" => match tool {
  "exiftool" => "Linux: sudo apt install libimage-exiftool-perl",
  "ffmpeg" => "Linux: sudo apt install ffmpeg",
  "cjxl" => "Linux: sudo apt install libjxl-tools",
  "avifenc" => "Linux: sudo apt install libavif-bin",
- _ => "请查看官方文档",
+ _ => "",
  },
- _ => "请查看官方文档",
+ _ => "",
  }
 }
 
@@ -308,19 +308,19 @@ pub fn check_all_dependencies() -> Vec<CheckResult> {
 pub fn check_and_report_dependencies(verbose: bool) -> bool {
  let dependencies = get_dependencies();
  let results = check_all_dependencies();
- 
+
  let mut all_required_available = true;
  let mut warnings = Vec::new();
- 
+
  if verbose {
  info!("🔍 Checking external dependencies...");
  }
- 
+
  for (dep, result) in dependencies.iter().zip(results.iter()) {
  if result.available {
  if verbose {
  if let Some(version) = &result.version {
- info!(" ✅ {} - {} ({})", 
+ info!(" ✅ {} - {} ({})",
  result.name, dep.description,
  version.lines().next().unwrap_or("unknown"));
  } else {
@@ -338,17 +338,17 @@ pub fn check_and_report_dependencies(verbose: bool) -> bool {
  }
  }
  }
- 
+
  if !warnings.is_empty() && verbose {
  info!("💡 Optional tools not installed: {}", warnings.join(", "));
  }
- 
+
  if !all_required_available {
  eprintln!("❌ Missing required dependencies!");
  } else if verbose {
  info!("✅ All required dependencies are satisfied!");
  }
- 
+
  all_required_available
 }
 

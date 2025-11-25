@@ -1,10 +1,10 @@
-//! 🛡️ errorrecovery and check点System
-//! 
-//! provide强大errorrecovery能力：
-//! - autoretry机制
-//! - check点save/recovery
-//! - failuretask跟踪
-//! - 渐进式retrystrategy
+//! 🛡️ errorrecovery and checkpointSystem
+//!
+//! providestronglargeerrorrecoverycapability：
+//! - autoretrymachine
+//! - checkpointsave/recovery
+//! - failuretasktrace
+//! - retrystrategy
 
 use std::path::{Path, PathBuf};
 use std::time::Duration;
@@ -15,24 +15,24 @@ use anyhow::{Result, Context};
 /// retrystrategy
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum RetryStrategy {
- /// not retry
+/// not retry
  Never,
- /// 固定间隔
+/// interval
  Fixed {
- /// Maximum retry count
+/// Maximum retry count
  max_retries: usize,
- /// 间隔time（毫秒）
+/// intervaltime（）
  interval_ms: u64,
  },
- /// 指数退避
+/// 
  Exponential {
- /// Maximum retry count
+/// Maximum retry count
  max_retries: usize,
- /// 初始delay（毫秒）
+/// delay（）
  initial_delay_ms: u64,
- /// 退避因子
+/// becausesub
  backoff_factor: f64,
- /// maximumdelay（毫秒）
+/// maximumdelay（）
  max_delay_ms: u64,
  },
 }
@@ -49,7 +49,7 @@ impl Default for RetryStrategy {
 }
 
 impl RetryStrategy {
- /// getretrydelay
+/// getretrydelay
  pub fn get_delay(&self, attempt: usize) -> Option<Duration> {
  match self {
  Self::Never => None,
@@ -76,52 +76,52 @@ impl RetryStrategy {
 /// errortypeclassification
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ErrorCategory {
- /// 暂 when 性error（可retry）
+///  when error（canretry）
  Transient,
- /// permanent性error（ not 可retry）
+/// permanenterror（ not canretry）
  Permanent,
- /// resourceerror（may可retry）
+/// resourceerror（maycanretry）
  Resource,
- /// unknownerror
+/// unknownerror
  Unknown,
 }
 
 /// errorclassification
-pub structure ErrorClassifier;
+pub struct ErrorClassifier;
 
 impl ErrorClassifier {
- /// classificationerror
+/// classificationerror
  pub fn classify(error: &anyhow::Error) -> ErrorCategory {
  let error_str = error.to_string().to_lowercase();
- 
- // 暂 when 性error
- if error_str.contains("timeout") 
+
+//  when error
+ if error_str.contains("timeout")
  || error_str.contains("connection refused")
  || error_str.contains("temporary")
  || error_str.contains("try again") {
  return ErrorCategory::Transient;
  }
- 
- // resourceerror
+
+// resourceerror
  if error_str.contains("no space")
  || error_str.contains("out of memory")
  || error_str.contains("too many open files")
  || error_str.contains("resource") {
  return ErrorCategory::Resource;
  }
- 
- // permanent性error
+
+// permanenterror
  if error_str.contains("not found")
  || error_str.contains("permission denied")
  || error_str.contains("invalid")
  || error_str.contains("unsupported") {
  return ErrorCategory::Permanent;
  }
- 
+
  ErrorCategory::Unknown
  }
- 
- /// is否should retry
+
+/// isnoshould retry
  pub fn should_retry(error: &anyhow::Error) -> bool {
  matches!(
  Self::classify(error),
@@ -130,42 +130,42 @@ impl ErrorClassifier {
  }
 }
 
-/// check点data
+/// checkpointdata
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure Checkpoint<T: Serialize> {
- /// check点ID
+pub struct Checkpoint<T: Serialize> {
+/// checkpointID
  pub id: String,
- /// createtime戳
+/// createtime
  pub timestamp: u64,
- /// completedtaskIDlist
+/// completedtaskIDlist
  pub completed_tasks: Vec<usize>,
- /// failuretaskIDlist
+/// failuretaskIDlist
  pub failed_tasks: Vec<usize>,
- /// customdata
+/// customdata
  pub data: T,
 }
 
-/// check点Manager
-pub structure CheckpointManager {
+/// checkpointManager
+pub struct CheckpointManager {
  checkpoint_dir: PathBuf,
 }
 
 impl CheckpointManager {
- /// createnewcheck点Manager
+/// createnewcheckpointManager
  pub fn new<P: AsRef<Path>>(checkpoint_dir: P) -> Result<Self> {
  let dir = checkpoint_dir.as_ref().to_path_buf();
  fs::create_dir_all(&dir)?;
- 
+
  Ok(Self {
  checkpoint_dir: dir,
  })
  }
- 
- /// savecheck点
+
+/// savecheckpoint
  pub fn save<T: Serialize>(&self, checkpoint: &Checkpoint<T>) -> Result<PathBuf> {
  let filename = format!("checkpoint_{}.json", checkpoint.id);
  let path = self.checkpoint_dir.join(filename);
- 
+
  let json = serde_json::to_string_pretty(checkpoint)
  .context("Failed to serialize checkpoint")?;
 
@@ -175,33 +175,33 @@ impl CheckpointManager {
  log::info!("Checkpoint saved: {:?}", path);
  Ok(path)
  }
- 
- /// loadcheck点
+
+/// loadcheckpoint
  pub fn load<T>(&self, id: &str) -> Result<Checkpoint<T>>
  where
  T: Serialize + for<'de> Deserialize<'de>,
  {
  let filename = format!("checkpoint_{}.json", id);
  let path = self.checkpoint_dir.join(filename);
- 
+
  let json = fs::read_to_string(&path)
  .context("Failed to read checkpoint")?;
- 
+
  let checkpoint = serde_json::from_str(&json)
  .context("Failed to deserialize checkpoint")?;
 
  log::info!("Checkpoint loaded: {:?}", path);
  Ok(checkpoint)
  }
- 
- /// 列出所 has check点
+
+///  has checkpoint
  pub fn list_checkpoints(&self) -> Result<Vec<String>> {
  let mut checkpoints = Vec::new();
- 
+
  for entry in fs::read_dir(&self.checkpoint_dir)? {
  let entry = entry?;
  let path = entry.path();
- 
+
  if let Some(name) = path.file_stem()
  && let Some(name_str) = name.to_str()
  && name_str.starts_with("checkpoint_") {
@@ -209,11 +209,11 @@ impl CheckpointManager {
  checkpoints.push(id.to_string());
  }
  }
- 
+
  Ok(checkpoints)
  }
- 
- /// deletecheck点
+
+/// deletecheckpoint
  pub fn delete(&self, id: &str) -> Result<()> {
  let filename = format!("checkpoint_{}.json", id);
  let path = self.checkpoint_dir.join(filename);
@@ -226,25 +226,25 @@ impl CheckpointManager {
  }
 }
 
-/// 带retryexecute
-pub structure RetryExecutor {
+/// retryexecute
+pub struct RetryExecutor {
  strategy: RetryStrategy,
 }
 
 impl RetryExecutor {
- /// createnewretryexecute
+/// createnewretryexecute
  pub fn new(strategy: RetryStrategy) -> Self {
  Self { strategy }
  }
- 
- /// execute带retry操作
+
+/// executeretry
  pub fn execute<F, T, E>(&self, mut operation: F) -> Result<T>
  where
  F: FnMut() -> Result<T, E>,
  E: std::error::Error + Send + Sync + 'static,
  {
  let mut attempt = 0;
- 
+
  loop {
  match operation() {
  Ok(result) => {
@@ -256,13 +256,13 @@ impl RetryExecutor {
  Err(e) => {
  let error = anyhow::Error::new(e);
 
- // Check if retry is allowed
+// Check if retry is allowed
  if !ErrorClassifier::should_retry(&error) {
  log::error!("Permanent error, not retrying: {}", error);
  return Err(error);
  }
 
- // Get retry delay
+// Get retry delay
  if let Some(delay) = self.strategy.get_delay(attempt) {
  log::warn!(
  "Attempt {} failed: {}. Retrying in {:?}...",
@@ -289,36 +289,36 @@ impl RetryExecutor {
 
 /// failuretasktracking
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure FailedTask {
- /// taskID
+pub struct FailedTask {
+/// taskID
  pub id: usize,
- /// failure原因
+/// failureoriginalbecause
  pub error: String,
- /// errortype
+/// errortype
  pub error_category: ErrorCategory,
- /// failuretime
+/// failuretime
  pub failed_at: u64,
- /// trycount
+/// trycount
  pub attempts: usize,
 }
 
 /// recovery Manager
-pub structure RecoveryManager {
+pub struct RecoveryManager {
  #[allow(dead_code)]
  checkpoint_manager: CheckpointManager,
  failed_tasks: Vec<FailedTask>,
 }
 
 impl RecoveryManager {
- /// createnewrecovery Manager
+/// createnewrecovery Manager
  pub fn new<P: AsRef<Path>>(checkpoint_dir: P) -> Result<Self> {
  Ok(Self {
  checkpoint_manager: CheckpointManager::new(checkpoint_dir)?,
  failed_tasks: Vec::new(),
  })
  }
- 
- /// recordfailuretask
+
+/// recordfailuretask
  pub fn record_failure(&mut self, task_id: usize, error: &anyhow::Error, timestamp: u64) {
  let failed_task = FailedTask {
  id: task_id,
@@ -327,19 +327,19 @@ impl RecoveryManager {
  failed_at: timestamp,
  attempts: 1,
  };
- 
+
  self.failed_tasks.push(failed_task);
  }
- 
- /// get可retryfailuretask
+
+/// getcanretryfailuretask
  pub fn get_retryable_tasks(&self) -> Vec<&FailedTask> {
  self.failed_tasks
  .iter()
  .filter(|t| matches!(t.error_category, ErrorCategory::Transient | ErrorCategory::Unknown))
  .collect()
  }
- 
- /// getfailurestatistics
+
+/// getfailurestatistics
  pub fn get_failure_stats(&self) -> FailureStatistics {
  let total = self.failed_tasks.len();
  let permanent = self.failed_tasks.iter()
@@ -351,7 +351,7 @@ impl RecoveryManager {
  let resource = self.failed_tasks.iter()
  .filter(|t| t.error_category == ErrorCategory::Resource)
  .count();
- 
+
  FailureStatistics {
  total_failures: total,
  permanent_failures: permanent,
@@ -364,7 +364,7 @@ impl RecoveryManager {
 
 /// failurestatistics
 #[derive(Debug, Serialize, Deserialize)]
-pub structure FailureStatistics {
+pub struct FailureStatistics {
  pub total_failures: usize,
  pub permanent_failures: usize,
  pub transient_failures: usize,
@@ -376,19 +376,19 @@ pub structure FailureStatistics {
 mod tests {
  use super::*;
  use tempfile::TempDir;
- 
+
  #[test]
  fn test_retry_strategy_fixed() {
  let strategy = RetryStrategy::Fixed {
  max_retries: 3,
  interval_ms: 100,
  };
- 
+
  assert_eq!(strategy.get_delay(0), Some(Duration::from_millis(100)));
  assert_eq!(strategy.get_delay(2), Some(Duration::from_millis(100)));
  assert_eq!(strategy.get_delay(3), None);
  }
- 
+
  #[test]
  fn test_retry_strategy_exponential() {
  let strategy = RetryStrategy::Exponential {
@@ -397,36 +397,36 @@ mod tests {
  backoff_factor: 2.0,
  max_delay_ms: 1000,
  };
- 
+
  assert_eq!(strategy.get_delay(0), Some(Duration::from_millis(100)));
  assert_eq!(strategy.get_delay(1), Some(Duration::from_millis(200)));
  assert_eq!(strategy.get_delay(2), Some(Duration::from_millis(400)));
  assert_eq!(strategy.get_delay(3), None);
  }
- 
+
  #[test]
  fn test_error_classification() {
  let timeout_error = anyhow::anyhow!("Connection timeout");
  assert_eq!(ErrorClassifier::classify(&timeout_error), ErrorCategory::Transient);
- 
+
  let not_found_error = anyhow::anyhow!("File not found");
  assert_eq!(ErrorClassifier::classify(&not_found_error), ErrorCategory::Permanent);
- 
+
  let resource_error = anyhow::anyhow!("Out of memory");
  assert_eq!(ErrorClassifier::classify(&resource_error), ErrorCategory::Resource);
  }
- 
+
  #[test]
  fn test_should_retry() {
  assert!(ErrorClassifier::should_retry(&anyhow::anyhow!("Timeout")));
  assert!(!ErrorClassifier::should_retry(&anyhow::anyhow!("Invalid format")));
  }
- 
+
  #[test]
  fn test_checkpoint_save_load() {
  let temp_dir = TempDir::new().unwrap();
  let manager = CheckpointManager::new(temp_dir.path()).unwrap();
- 
+
  let checkpoint = Checkpoint {
  id: "test123".to_string(),
  timestamp: 1000,
@@ -434,22 +434,22 @@ mod tests {
  failed_tasks: vec![4],
  data: "custom data".to_string(),
  };
- 
+
  manager.save(&checkpoint).unwrap();
  let loaded: Checkpoint<String> = manager.load("test123").unwrap();
- 
+
  assert_eq!(loaded.id, "test123");
  assert_eq!(loaded.completed_tasks, vec![1, 2, 3]);
  assert_eq!(loaded.data, "custom data");
  }
- 
+
  #[test]
  fn test_retry_executor() {
  let executor = RetryExecutor::new(RetryStrategy::Fixed {
  max_retries: 3,
  interval_ms: 1,
  });
- 
+
  let mut attempts = 0;
  let result = executor.execute(|| {
  attempts += 1;
@@ -459,7 +459,7 @@ mod tests {
  Ok(42)
  }
  });
- 
+
  assert_eq!(result.unwrap(), 42);
  assert_eq!(attempts, 3);
  }

@@ -1,5 +1,5 @@
 //! �� Intelligent Batch Decision Manager
-//! 
+//!
 //! Processing batch conversion intelligent decisions：
 //! - Corrupted file skip strategy
 //! - Failure retry mechanism
@@ -28,12 +28,12 @@ pub enum TaskStatus {
  Completed,
  Failed { reason: String, retry_count: u32 },
  Skipped { reason: String },
- Retrying { retry_count: u32 }, // new增：重试状态，saveretry_count
+ Retrying { retry_count: u32 }, // new：retrystate，saveretry_count
 }
 
 /// batchtask
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure BatchTask {
+pub struct BatchTask {
  pub id: usize,
  pub input_path: PathBuf,
  pub output_path: PathBuf,
@@ -45,16 +45,16 @@ pub structure BatchTask {
 
 /// Batch decision configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure BatchDecisionConfig {
- /// Maximum retry count
+pub struct BatchDecisionConfig {
+/// Maximum retry count
  pub max_retries: u32,
- /// Skip corrupted files
+/// Skip corrupted files
  pub skip_corrupted: bool,
- /// Skip oversized files（MB）
+/// Skip oversized files（MB）
  pub skip_size_threshold_mb: Option<u64>,
- /// Enable priority scheduling
+/// Enable priority scheduling
  pub enable_priority_scheduling: bool,
- /// Continue after failure
+/// Continue after failure
  pub continue_on_error: bool,
 }
 
@@ -63,7 +63,7 @@ impl Default for BatchDecisionConfig {
  Self {
  max_retries: 3,
  skip_corrupted: true,
- skip_size_threshold_mb: Some(500), // 跳过>500MBfile
+ skip_size_threshold_mb: Some(500), // skip>500MBfile
  enable_priority_scheduling: true,
  continue_on_error: true,
  }
@@ -71,7 +71,7 @@ impl Default for BatchDecisionConfig {
 }
 
 /// Intelligent Batch Decision Manager
-pub structure BatchDecisionManager {
+pub struct BatchDecisionManager {
  config: BatchDecisionConfig,
  tasks: Vec<BatchTask>,
  failed_tasks: HashMap<usize, String>,
@@ -79,7 +79,7 @@ pub structure BatchDecisionManager {
 }
 
 impl BatchDecisionManager {
- /// Create new manager
+/// Create new manager
  pub fn new(config: BatchDecisionConfig) -> Self {
  Self {
  config,
@@ -89,35 +89,35 @@ impl BatchDecisionManager {
  }
  }
 
- /// addtask
+/// addtask
  pub fn add_task(&mut self, task: BatchTask) {
  self.tasks.push(task);
  }
 
- /// Add multiple tasks
+/// Add multiple tasks
  pub fn add_tasks(&mut self, tasks: Vec<BatchTask>) {
  self.tasks.extend(tasks);
  }
 
- /// Get next pending task（considering priority）
+/// Get next pending task（considering priority）
  pub fn next_task(&mut self) -> Option<&mut BatchTask> {
  if self.config.enable_priority_scheduling {
- // Priority scheduling：Find highest priority pending task
+// Priority scheduling：Find highest priority pending task
  self.tasks
  .iter_mut()
  .filter(|t| matches!(t.status, TaskStatus::Pending))
  .max_by_key(|t| t.priority)
  } else {
- // FIFO scheduling
+// FIFO scheduling
  self.tasks
  .iter_mut()
  .find(|t| matches!(t.status, TaskStatus::Pending))
  }
  }
 
- /// Check if file should be skipped
+/// Check if file should be skipped
  pub fn should_skip(&self, task: &BatchTask) -> Option<String> {
- // Check file size
+// Check file size
  if let Some(threshold) = self.config.skip_size_threshold_mb {
  let size_mb = task.file_size / (1024 * 1024);
  if size_mb > threshold {
@@ -125,7 +125,7 @@ impl BatchDecisionManager {
  }
  }
 
- // Check if file exists
+// Check if file exists
  if !task.input_path.exists() {
  return Some("File not found".to_string());
  }
@@ -133,27 +133,27 @@ impl BatchDecisionManager {
  None
  }
 
- /// processingtaskfailure
+/// processingtaskfailure
  pub fn handle_failure(&mut self, task_id: usize, error: String) -> Result<bool> {
  let task = self.tasks.iter_mut()
  .find(|t| t.id == task_id)
  .context("Task not found")?;
 
- // Get current retry count
+// Get current retry count
  let current_retry_count = match &task.status {
  TaskStatus::Failed { retry_count, .. } => *retry_count,
  TaskStatus::Retrying { retry_count } => *retry_count,
- _ => 0, // 首次失败，重试次数for0
+ _ => 0, // firsttimesfailure，retrytimesfor0
  };
 
- // Check if retry is needed
+// Check if retry is needed
  if current_retry_count < self.config.max_retries {
  let new_retry_count = current_retry_count + 1;
  task.status = TaskStatus::Retrying { retry_count: new_retry_count };
  log::info!("Task {} will retry ({}/{})", task_id, new_retry_count, self.config.max_retries);
  Ok(true)
  } else {
- // Max retries reached, mark as failed
+// Max retries reached, mark as failed
  task.status = TaskStatus::Failed {
  reason: error.clone(),
  retry_count: current_retry_count
@@ -164,7 +164,7 @@ impl BatchDecisionManager {
  }
  }
 
- /// Mark task as skipped
+/// Mark task as skipped
  pub fn skip_task(&mut self, task_id: usize, reason: String) {
  if let Some(task) = self.tasks.iter_mut().find(|t| t.id == task_id) {
  task.status = TaskStatus::Skipped { reason: reason.clone() };
@@ -172,10 +172,10 @@ impl BatchDecisionManager {
  }
  }
 
- /// getstatisticsinformation
+/// getstatisticsinformation
  pub fn get_statistics(&self) -> BatchStatistics {
  let mut stats = BatchStatistics::default();
- 
+
  for task in &self.tasks {
  match &task.status {
  TaskStatus::Pending => stats.pending += 1,
@@ -183,20 +183,20 @@ impl BatchDecisionManager {
  TaskStatus::Completed => stats.completed += 1,
  TaskStatus::Failed { .. } => stats.failed += 1,
  TaskStatus::Skipped { .. } => stats.skipped += 1,
- TaskStatus::Retrying { .. } => stats.pending += 1, // 重试状态算作pending
+ TaskStatus::Retrying { .. } => stats.pending += 1, // retrystatepending
  }
  }
- 
+
  stats.total = self.tasks.len();
  stats
  }
 
- /// getfailuretasklist
+/// getfailuretasklist
  pub fn get_failed_tasks(&self) -> &HashMap<usize, String> {
  &self.failed_tasks
  }
 
- /// getskiptasklist
+/// getskiptasklist
  pub fn get_skipped_tasks(&self) -> &HashMap<usize, String> {
  &self.skipped_tasks
  }
@@ -204,7 +204,7 @@ impl BatchDecisionManager {
 
 /// batchstatisticsinformation
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub structure BatchStatistics {
+pub struct BatchStatistics {
  pub total: usize,
  pub pending: usize,
  pub running: usize,
@@ -214,7 +214,7 @@ pub structure BatchStatistics {
 }
 
 impl BatchStatistics {
- /// Calculate success rate
+/// Calculate success rate
  pub fn success_rate(&self) -> f64 {
  if self.total == 0 {
  return 0.0;
@@ -222,7 +222,7 @@ impl BatchStatistics {
  self.completed as f64 / self.total as f64
  }
 
- /// Calculate completion rate（including failed and skipped）
+/// Calculate completion rate（including failed and skipped）
  pub fn completion_rate(&self) -> f64 {
  if self.total == 0 {
  return 0.0;
@@ -238,8 +238,8 @@ mod tests {
  #[test]
  fn test_priority_scheduling() {
  let mut manager = BatchDecisionManager::new(BatchDecisionConfig::default());
- 
- // Add tasks with different priorities
+
+// Add tasks with different priorities
  manager.add_task(BatchTask {
  id: 1,
  input_path: PathBuf::from("test1.jpg"),
@@ -249,7 +249,7 @@ mod tests {
  file_size: 1000,
  estimated_time_ms: 100,
  });
- 
+
  manager.add_task(BatchTask {
  id: 2,
  input_path: PathBuf::from("test2.jpg"),
@@ -259,8 +259,8 @@ mod tests {
  file_size: 1000,
  estimated_time_ms: 100,
  });
- 
- // Should get high priority task first
+
+// Should get high priority task first
  let next = manager.next_task().unwrap();
  assert_eq!(next.id, 2);
  assert_eq!(next.priority, TaskPriority::High);
@@ -272,7 +272,7 @@ mod tests {
  max_retries: 2,
  ..Default::default()
  });
- 
+
  manager.add_task(BatchTask {
  id: 1,
  input_path: PathBuf::from("test.jpg"),
@@ -282,20 +282,20 @@ mod tests {
  file_size: 1000,
  estimated_time_ms: 100,
  });
- 
- // First failure (retry_count=0) - should retry
+
+// First failure (retry_count=0) - should retry
  let should_continue = manager.handle_failure(1, "Test error".to_string()).unwrap();
  assert!(should_continue);
- assert_eq!(manager.failed_tasks.len(), 0); // 还未达tomaximum重试次数
- 
- // Second failure (retry_count=1) - should retry
+ assert_eq!(manager.failed_tasks.len(), 0); // alsonot yettomaximumretrytimes
+
+// Second failure (retry_count=1) - should retry
  let should_continue = manager.handle_failure(1, "Test error".to_string()).unwrap();
  assert!(should_continue);
- assert_eq!(manager.failed_tasks.len(), 0); // 还未达tomaximum重试次数
- 
- // Third failure (retry_count=2) - Reached maximum retry count
+ assert_eq!(manager.failed_tasks.len(), 0); // alsonot yettomaximumretrytimes
+
+// Third failure (retry_count=2) - Reached maximum retry count
  let should_continue = manager.handle_failure(1, "Test error".to_string()).unwrap();
  assert!(should_continue); // continue_on_error = true
- assert_eq!(manager.failed_tasks.len(), 1); // 现应该加入failed_tasks
+ assert_eq!(manager.failed_tasks.len(), 1); // shouldfailed_tasks
  }
 }

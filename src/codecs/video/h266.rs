@@ -7,7 +7,7 @@ use std::process::Command;
 
 /// H.266/VVC encoder configuration
 #[derive(Debug, Clone)]
-pub structure H266Params {
+pub struct H266Params {
  /// CRF quality (0-51, lower is higher quality)
  pub crf: u8,
  /// encodingpreset (ultrafast, fast, medium, slow, veryslow)
@@ -54,7 +54,7 @@ impl H266Params {
 }
 
 /// H.266/VVC encoder
-pub structure H266Encoder;
+pub struct H266Encoder;
 
 impl H266Encoder {
  /// Check if VVC encoder is available

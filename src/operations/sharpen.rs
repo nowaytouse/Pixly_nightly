@@ -6,14 +6,14 @@ use tracing::{debug, info};
 
 /// sharpeningconfiguration
 #[derive(Debug, Clone)]
-pub structure SharpenConfig {
- /// sharpeningstrength (0.0-10.0)
+pub struct SharpenConfig {
+/// sharpeningstrength (0.0-10.0)
  pub strength: f32,
- /// sharpening半径 (1-5)
+/// sharpeninghalf (1-5)
  pub radius: u32,
- /// threshold（避免过度sharpening）
+/// threshold（degreesharpening）
  pub threshold: f32,
- /// is否use SIMDoptimization
+/// isnouse SIMDoptimization
  pub use_simd: bool,
 }
 
@@ -29,7 +29,7 @@ impl Default for SharpenConfig {
 }
 
 /// SIMDoptimizationsharpeninghandler
-pub structure SimdSharpener {
+pub struct SimdSharpener {
  config: SharpenConfig,
 }
 
@@ -38,7 +38,7 @@ impl SimdSharpener {
  Self { config }
  }
 
- /// executesharpening
+/// executesharpening
  pub fn sharpen(&self, image: &DynamicImage) -> Result<DynamicImage> {
  #[cfg(target_arch = "x86_64")]
  if self.config.use_simd && is_x86_feature_detected!("avx2") {
@@ -50,7 +50,7 @@ impl SimdSharpener {
  self.sharpen_standard(image)
  }
 
- /// SIMDoptimizationsharpeningimplementation
+/// SIMDoptimizationsharpeningimplementation
  #[cfg(target_arch = "x86_64")]
  #[target_feature(enable = "avx2")]
  unsafe fn sharpen_simd_impl(&self, pixels: &[u8], width: usize, height: usize) -> Vec<u8> {
@@ -61,7 +61,7 @@ impl SimdSharpener {
  let threshold = self.config.threshold.max(0.0);
  let strength = self.config.strength * radius_factor / (1.0 + threshold);
 
- // sharpening核（3x3）
+// sharpening（3x3）
  let kernel = [
  -strength,
  -strength,
@@ -74,16 +74,16 @@ impl SimdSharpener {
  -strength,
  ];
 
- // processinginternalpixel（skip边缘）
+// processinginternalpixel（skipedge）
  for y in 1..height - 1 {
  for x in 1..width - 1 {
  let idx = y * width + x;
 
- // use SIMDprocessing8pixel
+// use SIMDprocessing8pixel
  if x + 8 < width - 1 {
  let mut sum = _mm256_setzero_ps();
 
- // apply3x3核
+// apply3x3
  for ky in 0..3 {
  for kx in 0..3 {
  let pixel_idx = (y + ky - 1) * width + (x + kx - 1);
@@ -97,16 +97,16 @@ impl SimdSharpener {
  }
  }
 
- // extractionresult
+// extractionresult
  let mut result = [0f32; 8];
  _mm256_storeu_ps(result.as_mut_ptr(), sum);
 
- // cropto0-255range
+// cropto0-255range
  for i in 0..8 {
  output[idx + i] = result[i].max(0.0).min(255.0) as u8;
  }
  } else {
- // not SIMDprocessing剩余pixel
+// not SIMDprocessingpixel
  let mut sum = 0.0;
  for ky in 0..3 {
  for kx in 0..3 {
@@ -119,7 +119,7 @@ impl SimdSharpener {
  }
  }
 
- // copied边缘pixel
+// copiededgepixel
  for x in 0..width {
  output[x] = pixels[x];
  output[(height - 1) * width + x] = pixels[(height - 1) * width + x];
@@ -132,7 +132,7 @@ impl SimdSharpener {
  output
  }
 
- /// SIMDsharpening
+/// SIMDsharpening
  #[cfg(target_arch = "x86_64")]
  fn sharpen_simd(&self, image: &DynamicImage) -> Result<DynamicImage> {
  let gray = image.to_luma8();
@@ -145,7 +145,7 @@ impl SimdSharpener {
  let output = GrayImage::from_raw(width as u32, height as u32, sharpened)
  .ok_or_else(|| anyhow::anyhow!("Failed to create image from sharpened data"))?;
 
- // conversion回originalcolorempty间
+// conversionoriginalcolorempty
  let result = if image.color().has_color() {
  let sharp_gray = DynamicImage::ImageLuma8(output);
  self.apply_luminance_only(image, &sharp_gray)?
@@ -156,7 +156,7 @@ impl SimdSharpener {
  Ok(result)
  }
 
- /// standardsharpeningalgorithm
+/// standardsharpeningalgorithm
  fn sharpen_standard(&self, image: &DynamicImage) -> Result<DynamicImage> {
  use imageproc::filter;
 
@@ -182,7 +182,7 @@ impl SimdSharpener {
  Ok(DynamicImage::ImageRgba8(sharpened))
  }
 
- /// 仅applybrightnesssharpening（keepcolor）
+/// onlyapplybrightnesssharpening（keepcolor）
  #[cfg(target_arch = "x86_64")]
  fn apply_luminance_only(
  &self,
@@ -203,14 +203,14 @@ impl SimdSharpener {
  let orig_luma = orig_gray.get_pixel(x, y)[0] as f32;
  let sharp_luma = sharp_gray.get_pixel(x, y)[0] as f32;
 
- // calculationbrightness比例
+// calculationbrightness
  let ratio = if orig_luma > 0.0 {
  sharp_luma / orig_luma
  } else {
  1.0
  };
 
- // applytoRGBchannel
+// applytoRGBchannel
  let r = (orig_pixel[0] as f32 * ratio).min(255.0).max(0.0) as u8;
  let g = (orig_pixel[1] as f32 * ratio).min(255.0).max(0.0) as u8;
  let b = (orig_pixel[2] as f32 * ratio).min(255.0).max(0.0) as u8;
@@ -223,19 +223,19 @@ impl SimdSharpener {
  Ok(DynamicImage::ImageRgba8(output))
  }
 
- /// 自适应sharpening（based onimage内容adjusted）
+/// shouldsharpening（based onimageinsideadjusted）
  pub fn adaptive_sharpen(&self, image: &DynamicImage) -> Result<DynamicImage> {
- // detectionimage锐度
+// detectionimagesharpness
  let sharpness = self.measure_sharpness(image);
  debug!("Image sharpness score: {:.2}", sharpness);
 
- // based on锐度adjustedconfiguration
+// based onsharpnessadjustedconfiguration
  let mut config = self.config.clone();
  if sharpness < 0.3 {
- // imageblur，enhancedsharpening
+// imageblur，enhancedsharpening
  config.strength = (self.config.strength * 1.5).min(3.0);
  } else if sharpness > 0.7 {
- // image已经很锐利，减弱sharpening
+// imagealreadyvery，weaksharpening
  config.strength = (self.config.strength * 0.5).max(0.5);
  }
 
@@ -243,7 +243,7 @@ impl SimdSharpener {
  sharpener.sharpen(image)
  }
 
- /// 测量image锐度
+/// imagesharpness
  fn measure_sharpness(&self, image: &DynamicImage) -> f32 {
  let gray = image.to_luma8();
  let width = gray.width();
@@ -252,7 +252,7 @@ impl SimdSharpener {
  let mut total_gradient = 0.0;
  let mut count = 0u64;
 
- // calculation梯度
+// calculationgradient
  for y in 1..height - 1 {
  for x in 1..width - 1 {
  let center = gray.get_pixel(x, y)[0] as f32;
@@ -272,7 +272,7 @@ impl SimdSharpener {
  return 0.0;
  }
 
- // normalizeto0-1
+// normalizeto0-1
  let avg_gradient = total_gradient / count as f32;
  (avg_gradient / 255.0).min(1.0)
  }

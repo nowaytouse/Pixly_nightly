@@ -1,13 +1,13 @@
 //! 🔄 imagetransformmodule
 //!
-//! providecrop、rotation、flip etc imagetransform操作
+//! providecrop、rotation、flip etc imagetransform
 //!
-//! ## feature特性
+//! ## feature
 //!
-//! - **intelligentcrop**: based on内容感知autocrop
-//! - **multi种rotation**: 90°/180°/270°/custom角度
-//! - **flip操作**: 水平/垂直flip
-//! - **比例crop**: 按target宽high比autocrop
+//! - **intelligentcrop**: based oninsideautocrop
+//! - **multityperotation**: 90°/180°/270°/customcornerdegree
+//! - **flip**: /flip
+//! - **crop**: targetwidehighautocrop
 //!
 //! ## useexample
 //!
@@ -34,32 +34,32 @@ use std::f32::consts::PI;
 /// cropmode
 #[derive(Debug, Clone)]
 pub enum CropMode {
- /// 心crop
+/// centercrop
  Center(u32, u32),
- /// intelligentcrop（based on内容感知）
+/// intelligentcrop（based oninside）
  Smart(u32, u32),
- /// custom区域crop
+/// customcrop
  Custom { x: u32, y: u32, width: u32, height: u32 },
- /// 按比例crop
+/// crop
  AspectRatio(f32),
 }
 
 /// rotationmode
 #[derive(Debug, Clone)]
 pub enum RotateMode {
- /// 90度rotation
+/// 90degreerotation
  Rotate90,
- /// 180度rotation
+/// 180degreerotation
  Rotate180,
- /// 270度rotation
+/// 270degreerotation
  Rotate270,
- /// custom角度rotation
+/// customcornerdegreerotation
  Custom(f32),
 }
 
 /// imagetransformconfiguration
 #[derive(Debug, Clone, Default)]
-pub structure TransformConfig {
+pub struct TransformConfig {
  pub crop: Option<CropMode>,
  pub rotate: Option<RotateMode>,
  pub flip_horizontal: bool,
@@ -67,26 +67,26 @@ pub structure TransformConfig {
 }
 
 /// imagetransformhandler
-pub structure ImageTransformer {
+pub struct ImageTransformer {
  config: TransformConfig,
 }
 
 impl ImageTransformer {
- /// createnewtransformhandler
+/// createnewtransformhandler
  pub fn new(config: TransformConfig) -> Self {
  Self { config }
  }
 
- /// execute所 has transform
+/// execute has transform
  pub fn transform(&self, image: &DynamicImage) -> Result<DynamicImage> {
  let mut result = image.clone();
 
- // 1. rotation
+// 1. rotation
  if let Some(rotate) = &self.config.rotate {
  result = self.rotate_image(&result, rotate)?;
  }
 
- // 2. flip
+// 2. flip
  if self.config.flip_horizontal {
  result = result.fliph();
  }
@@ -94,7 +94,7 @@ impl ImageTransformer {
  result = result.flipv();
  }
 
- // 3. crop（最 after execute）
+// 3. crop（most after execute）
  if let Some(crop) = &self.config.crop {
  result = self.crop_image(&result, crop)?;
  }
@@ -102,7 +102,7 @@ impl ImageTransformer {
  Ok(result)
  }
 
- /// cropimage
+/// cropimage
  fn crop_image(&self, image: &DynamicImage, mode: &CropMode) -> Result<DynamicImage> {
  let (img_width, img_height) = image.dimensions();
 
@@ -131,7 +131,7 @@ impl ImageTransformer {
  }
  };
 
- // ensurecrop区域atimagerange内
+// ensurecropatimagerangeinside
  let x = x.min(img_width.saturating_sub(1));
  let y = y.min(img_height.saturating_sub(1));
  let width = width.min(img_width - x);
@@ -142,7 +142,7 @@ impl ImageTransformer {
  Ok(image.crop_imm(x, y, width, height))
  }
 
- /// rotationimage
+/// rotationimage
  fn rotate_image(&self, image: &DynamicImage, mode: &RotateMode) -> Result<DynamicImage> {
  let result = match mode {
  RotateMode::Rotate90 => {
@@ -166,12 +166,12 @@ impl ImageTransformer {
  Ok(result)
  }
 
- /// custom角度rotation
+/// customcornerdegreerotation
  fn rotate_custom(&self, image: &DynamicImage, angle: f32) -> Result<DynamicImage> {
  let rgba = image.to_rgba8();
  let (width, height) = rgba.dimensions();
 
- // calculationrotation after imagedimension
+// calculationrotation after imagedimension
  let radians = angle * PI / 180.0;
  let cos = radians.cos().abs();
  let sin = radians.sin().abs();
@@ -181,26 +181,26 @@ impl ImageTransformer {
 
  let mut output = RgbaImage::new(new_width, new_height);
 
- // calculation心点
+// calculationcenterpoint
  let cx = width as f32 / 2.0;
  let cy = height as f32 / 2.0;
  let new_cx = new_width as f32 / 2.0;
  let new_cy = new_height as f32 / 2.0;
 
- // rotation矩阵
+// rotation
  let cos = radians.cos();
  let sin = radians.sin();
 
  for y in 0..new_height {
  for x in 0..new_width {
- // 反向mapping
+// mapping
  let dx = x as f32 - new_cx;
  let dy = y as f32 - new_cy;
 
  let src_x = dx * cos + dy * sin + cx;
  let src_y = -dx * sin + dy * cos + cy;
 
- // 双线性interpolation
+// doublelineinterpolation
  if src_x >= 0.0
  && src_x < width as f32 - 1.0
  && src_y >= 0.0
@@ -228,7 +228,7 @@ impl ImageTransformer {
  Ok(DynamicImage::ImageRgba8(output))
  }
 
- /// 双线性interpolation
+/// doublelineinterpolation
  fn bilinear_interpolate(
  &self,
  p00: &Rgba<u8>,
@@ -256,7 +256,7 @@ impl ImageTransformer {
  Rgba(result)
  }
 
- /// findimageimportant区域（forintelligentcrop）
+/// findimageimportant（forintelligentcrop）
  fn find_interesting_region(
  &self,
  image: &DynamicImage,
@@ -265,13 +265,13 @@ impl ImageTransformer {
  ) -> (u32, u32) {
  let (width, height) = image.dimensions();
 
- // 简single边缘detection来findtoimportant区域
+// singleedgedetectionfindtoimportant
  let gray = image.to_luma8();
  let mut max_energy = 0.0;
  let mut best_x = 0;
  let mut best_y = 0;
 
- // 滑动窗口find能量highest区域
+// findablehighest
  let step = 10;
  for y in (0..height.saturating_sub(target_height)).step_by(step) {
  for x in (0..width.saturating_sub(target_width)).step_by(step) {
@@ -294,7 +294,7 @@ impl ImageTransformer {
  (best_x, best_y)
  }
 
- /// calculation区域能量（based on边缘strength）
+/// calculationable（based onedgestrength）
  fn calculate_region_energy(
  &self,
  gray: &image::GrayImage,
@@ -306,7 +306,7 @@ impl ImageTransformer {
  let mut energy = 0.0;
  let mut count = 0;
 
- // Sobel边缘detection简version
+// Sobeledgedetectionversion
  for dy in 1..height.saturating_sub(1) {
  for dx in 1..width.saturating_sub(1) {
  let px = x + dx;
@@ -339,43 +339,43 @@ impl ImageTransformer {
 }
 
 /// transformbuild
-pub structure TransformBuilder {
+pub struct TransformBuilder {
  config: TransformConfig,
 }
 
 impl TransformBuilder {
- /// createnewbuild
+/// createnewbuild
  pub fn new() -> Self {
  Self {
  config: TransformConfig::default(),
  }
  }
 
- /// settingcropmode
+/// settingcropmode
  pub fn crop(mut self, mode: CropMode) -> Self {
  self.config.crop = Some(mode);
  self
  }
 
- /// settingrotationmode
+/// settingrotationmode
  pub fn rotate(mut self, mode: RotateMode) -> Self {
  self.config.rotate = Some(mode);
  self
  }
 
- /// enabled水平flip
+/// enabledflip
  pub fn flip_horizontal(mut self) -> Self {
  self.config.flip_horizontal = true;
  self
  }
 
- /// enabled垂直flip
+/// enabledflip
  pub fn flip_vertical(mut self) -> Self {
  self.config.flip_vertical = true;
  self
  }
 
- /// buildtransformhandler
+/// buildtransformhandler
  pub fn build(self) -> ImageTransformer {
  ImageTransformer::new(self.config)
  }

@@ -1,11 +1,11 @@
 /// 🔥 configuration Manager - Phase 4
-/// 
-/// 架构原则：
+///
+/// originalthen：
 /// - supportconfigurationfile（TOMLformat）
 /// - supportpresetmode
-/// - commandlineparameterpriority级highest
-/// - environmentvariable次之
-/// - configurationfile最 after 
+/// - commandlineparameterprioritylevelhighest
+/// - environmentvariabletimes
+/// - configurationfilemost after
 use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
@@ -13,44 +13,44 @@ use serde::{Deserialize, Serialize};
 /// Configuration file structureure
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[derive(Default)]
-pub structure Config {
- /// Default settings
+pub struct Config {
+/// Default settings
  #[serde(default)]
  pub defaults: DefaultSettings,
- 
- /// Logging settings
+
+/// Logging settings
  #[serde(default)]
  pub logging: LoggingSettings,
- 
- /// Batch processing settings
+
+/// Batch processing settings
  #[serde(default)]
  pub batch: BatchSettings,
 }
 
 /// defaultsetting
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure DefaultSettings {
- /// defaultquality
+pub struct DefaultSettings {
+/// defaultquality
  #[serde(default = "default_quality")]
  pub quality: u8,
- 
- /// defaultspeed
+
+/// defaultspeed
  #[serde(default = "default_speed")]
  pub speed: u8,
- 
- /// defaultformat
+
+/// defaultformat
  #[serde(default = "default_format")]
  pub format: String,
- 
- /// 保留元data
+
+/// elementdata
  #[serde(default = "default_true")]
  pub preserve_metadata: bool,
- 
- /// keepanimation
+
+/// keepanimation
  #[serde(default = "default_true")]
  pub keep_animated: bool,
- 
- /// merged XMP
+
+/// merged XMP
  #[serde(default)]
  pub merge_xmp: bool,
 }
@@ -71,16 +71,16 @@ impl Default for DefaultSettings {
 
 /// loggingsetting
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure LoggingSettings {
- /// logginglevel
+pub struct LoggingSettings {
+/// logginglevel
  #[serde(default = "default_log_level")]
  pub level: String,
- 
- /// displaytime戳
+
+/// displaytime
  #[serde(default)]
  pub show_timestamp: bool,
- 
- /// displaycolor
+
+/// displaycolor
  #[serde(default = "default_true")]
  pub show_color: bool,
 }
@@ -96,24 +96,24 @@ impl Default for LoggingSettings {
 
 /// batchprocessingsetting
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure BatchSettings {
- /// defaultparalleltask数
+pub struct BatchSettings {
+/// defaultparalleltask
  #[serde(default = "default_parallel")]
  pub parallel: usize,
- 
- /// errorprocessingstrategy
+
+/// errorprocessingstrategy
  #[serde(default = "default_error_strategy")]
  pub on_error: String,
- 
- /// Maximum retry count
+
+/// Maximum retry count
  #[serde(default = "default_max_retries")]
  pub max_retries: usize,
- 
- /// displayprogress
+
+/// displayprogress
  #[serde(default = "default_true")]
  pub show_progress: bool,
- 
- /// defaultoverride
+
+/// defaultoverride
  #[serde(default)]
  pub overwrite: bool,
 }
@@ -140,98 +140,98 @@ fn default_error_strategy() -> String { "continue".to_string() }
 fn default_max_retries() -> usize { 3 }
 
 /// configuration Manager
-pub structure ConfigManager {
+pub struct ConfigManager {
  config: Config,
  #[allow(dead_code)]
  config_path: Option<PathBuf>,
 }
 impl ConfigManager {
- /// createnewconfiguration Manager
+/// createnewconfiguration Manager
  pub fn new() -> Self {
  Self {
  config: Config::default(),
  config_path: None,
  }
  }
- 
- /// fromfileloadconfiguration
+
+/// fromfileloadconfiguration
  pub fn load_from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
  let path = path.as_ref();
  let content = std::fs::read_to_string(path)
  .with_context(|| format!("Failed to read config file: {}", path.display()))?;
- 
+
  let config: Config = toml::from_str(&content)
  .with_context(|| format!("Failed to parse config file: {}", path.display()))?;
- 
+
  Ok(Self {
  config,
  config_path: Some(path.to_path_buf()),
  })
  }
- 
- /// tryfromdefaultpositionloadconfiguration
+
+/// tryfromdefaultpositionloadconfiguration
  pub fn load_default() -> Self {
- // tryloadsequential：
- // 1. currentdirectory .pixly.toml
- // 2. 用户主directory ~/.pixly/config.toml
- // 3. usedefaultconfiguration
- 
+// tryloadsequential：
+// 1. currentdirectory .pixly.toml
+// 2. maindirectory ~/.pixly/config.toml
+// 3. usedefaultconfiguration
+
  if let Ok(config) = Self::load_from_file(".pixly.toml") {
  return config;
  }
- 
+
  if let Some(home) = dirs::home_dir() {
  let config_path = home.join(".pixly").join("config.toml");
  if let Ok(config) = Self::load_from_file(&config_path) {
  return config;
  }
  }
- 
+
  Self::new()
  }
- 
- /// saveconfigurationtofile
+
+/// saveconfigurationtofile
  pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> Result<()> {
  let path = path.as_ref();
- 
- // create父directory
+
+// createdirectory
  if let Some(parent) = path.parent() {
  std::fs::create_dir_all(parent)?;
  }
- 
+
  let content = toml::to_string_pretty(&self.config)
  .context("Failed to serialize config")?;
- 
+
  std::fs::write(path, content)
  .with_context(|| format!("Failed to write config file: {}", path.display()))?;
- 
+
  Ok(())
  }
- 
- /// getconfiguration
+
+/// getconfiguration
  pub fn config(&self) -> &Config {
  &self.config
  }
- 
- /// Get mutable configuration
+
+/// Get mutable configuration
  pub fn config_mut(&mut self) -> &mut Config {
  &mut self.config
  }
- 
- /// Create default configuration file
+
+/// Create default configuration file
  pub fn create_default_config<P: AsRef<Path>>(path: P) -> Result<()> {
  let config = Config::default();
  let content = toml::to_string_pretty(&config)
  .context("Failed to serialize default config")?;
- 
+
  let path = path.as_ref();
  if let Some(parent) = path.parent() {
  std::fs::create_dir_all(parent)?;
  }
- 
+
  std::fs::write(path, content)
  .with_context(|| format!("Failed to write config file: {}", path.display()))?;
- 
+
  Ok(())
  }
 }
@@ -246,7 +246,7 @@ impl Default for ConfigManager {
 mod tests {
  use super::*;
  use tempfile::TempDir;
- 
+
  #[test]
  fn test_default_config() {
  let config = Config::default();
@@ -254,20 +254,20 @@ mod tests {
  assert_eq!(config.defaults.speed, 4);
  assert_eq!(config.defaults.format, "webp");
  }
- 
+
  #[test]
  fn test_save_and_load() {
  let temp_dir = TempDir::new().unwrap();
  let config_path = temp_dir.path().join("test.toml");
- 
- // savedefaultconfiguration
+
+// savedefaultconfiguration
  let manager = ConfigManager::new();
  manager.save_to_file(&config_path).unwrap();
- 
- // loadconfiguration
+
+// loadconfiguration
  let loaded = ConfigManager::load_from_file(&config_path).unwrap();
  assert_eq!(loaded.config.defaults.quality, 85);
  }
- 
+
 
 }

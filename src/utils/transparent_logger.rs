@@ -1,5 +1,5 @@
 // 🔍 transparencyloggingSystem
-// let 用户清楚解everya步操作Detailed information
+// let everyastepDetailed information
 
 use std::time::Instant;
 use serde::{Deserialize, Serialize};
@@ -7,11 +7,11 @@ use serde::{Deserialize, Serialize};
 /// logginglevel
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum LogLevel {
- Debug, // 调试information
- Info, // a般information
+ Debug, // debuginformation
+ Info, // ainformation
  Detail, // detailedinformation
- Warning, // 警告
- Error, // 错误
+ Warning, // warning
+ Error, // error
 }
 
 impl LogLevel {
@@ -24,7 +24,7 @@ impl LogLevel {
  LogLevel::Error => "❌",
  }
  }
- 
+
  pub fn color_code(&self) -> &'static str {
  match self {
  LogLevel::Debug => "\x1b[36m", // Cyan
@@ -37,7 +37,7 @@ impl LogLevel {
 }
 
 /// transparencylog
-pub structure TransparentLogger {
+pub struct TransparentLogger {
  enabled: bool,
  show_timestamps: bool,
  show_details: bool,
@@ -45,7 +45,7 @@ pub structure TransparentLogger {
 }
 
 impl TransparentLogger {
- /// createnewlog
+/// createnewlog
  pub fn new() -> Self {
  Self {
  enabled: true,
@@ -54,40 +54,40 @@ impl TransparentLogger {
  indent_level: 0,
  }
  }
- 
- /// settingis否enabled
+
+/// settingisnoenabled
  pub fn set_enabled(&mut self, enabled: bool) {
  self.enabled = enabled;
  }
- 
- /// settingis否displaytime戳
+
+/// settingisnodisplaytime
  pub fn set_show_timestamps(&mut self, show: bool) {
  self.show_timestamps = show;
  }
- 
- /// settingis否displayDetailed information
+
+/// settingisnodisplayDetailed information
  pub fn set_show_details(&mut self, show: bool) {
  self.show_details = show;
  }
- 
- /// add缩进
+
+/// add
  pub fn indent(&mut self) {
  self.indent_level += 1;
  }
- 
- /// reduce缩进
+
+/// reduce
  pub fn dedent(&mut self) {
  if self.indent_level > 0 {
  self.indent_level -= 1;
  }
  }
- 
- /// recordlogging
+
+/// recordlogging
  pub fn log(&self, level: LogLevel, message: &str) {
  if !self.enabled {
  return;
  }
- 
+
  let indent = " ".repeat(self.indent_level);
  let timestamp = if self.show_timestamps {
  use std::time::SystemTime;
@@ -98,7 +98,7 @@ impl TransparentLogger {
  } else {
  String::new()
  };
- 
+
  println!(
  "{}{}{} {} {}\x1b[0m",
  timestamp,
@@ -108,11 +108,11 @@ impl TransparentLogger {
  message // Reset color
  );
  }
- 
- /// record带Detailed informationlogging
+
+/// recordDetailed informationlogging
  pub fn log_with_details(&self, level: LogLevel, message: &str, details: &[(&str, String)]) {
  self.log(level, message);
- 
+
  if self.show_details && !details.is_empty() {
  let indent = " ".repeat(self.indent_level + 1);
  for (key, value) in details {
@@ -120,29 +120,29 @@ impl TransparentLogger {
  }
  }
  }
- 
- /// record操作start
+
+/// recordstart
  pub fn log_operation_start(&self, operation: &str) {
  self.log(LogLevel::Info, &format!("Starting: {}", operation));
  }
- 
- /// record操作completed
+
+/// recordcompleted
  pub fn log_operation_end(&self, operation: &str, duration: std::time::Duration) {
  self.log(
  LogLevel::Info,
  &format!("Completed: {} (elapsed: {:.2}s)", operation, duration.as_secs_f64())
  );
  }
- 
- /// record分隔线
+
+/// recordline
  pub fn log_separator(&self) {
  if self.enabled {
  let indent = " ".repeat(self.indent_level);
  println!("{}{}", indent, "─".repeat(60));
  }
  }
- 
- /// record标题
+
+/// record
  pub fn log_header(&self, title: &str) {
  if self.enabled {
  let indent = " ".repeat(self.indent_level);
@@ -170,55 +170,55 @@ impl Clone for TransparentLogger {
  }
 }
 
-/// 操作tracking
-pub structure OperationTracker {
+/// tracking
+pub struct OperationTracker {
  logger: TransparentLogger,
  operation_name: String,
  start_time: Instant,
 }
 
 impl OperationTracker {
- /// starttracking操作
+/// starttracking
  pub fn start(logger: TransparentLogger, operation_name: &str) -> Self {
  logger.log_operation_start(operation_name);
- 
+
  Self {
  logger,
  operation_name: operation_name.to_string(),
  start_time: Instant::now(),
  }
  }
- 
- /// recordstep
+
+/// recordstep
  pub fn log_step(&self, step: &str) {
  self.logger.log(LogLevel::Detail, &format!("→ {}", step));
  }
- 
- /// recordDetailed information
+
+/// recordDetailed information
  pub fn log_details(&self, details: &[(&str, String)]) {
  self.logger.log_with_details(LogLevel::Detail, "detailedinformation:", details);
  }
- 
- /// recordwarning
+
+/// recordwarning
  pub fn log_warning(&self, warning: &str) {
  self.logger.log(LogLevel::Warning, warning);
  }
- 
- /// recorderror
+
+/// recorderror
  pub fn log_error(&self, error: &str) {
  self.logger.log(LogLevel::Error, error);
  }
- 
- /// getlog
+
+/// getlog
  pub fn logger(&self) -> &TransparentLogger {
  &self.logger
  }
 }
 
 impl OperationTracker {
- /// completed操作
+/// completed
  pub fn finish(self) {
- // Drop will be called automatically
+// Drop will be called automatically
  }
 }
 
@@ -229,7 +229,7 @@ impl Drop for OperationTracker {
  }
 }
 
-/// globallogging宏
+/// globallogging
 #[macro_export]
 macro_rules! log_transparent {
  ($logger:expr, $level:expr, $($arg:tt)*) => {
@@ -268,7 +268,7 @@ macro_rules! log_error {
 #[cfg(test)]
 mod tests {
  use super::*;
- 
+
  #[test]
  fn test_logger_creation() {
  let logger = TransparentLogger::new();
@@ -276,7 +276,7 @@ mod tests {
  assert!(logger.show_timestamps);
  assert!(logger.show_details);
  }
- 
+
  #[test]
  fn test_log_levels() {
  let logger = TransparentLogger::new();
@@ -284,13 +284,13 @@ mod tests {
  logger.log(LogLevel::Warning, "Test warning");
  logger.log(LogLevel::Error, "Test error");
  }
- 
+
  #[test]
  fn test_operation_tracker() {
  let logger = TransparentLogger::new();
  let tracker = OperationTracker::start(logger, "Test Operation");
  tracker.log_step("Step 1");
  tracker.log_step("Step 2");
- // Drop will log completion
+// Drop will log completion
  }
 }

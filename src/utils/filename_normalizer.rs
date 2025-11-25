@@ -1,21 +1,21 @@
-//! 📝 file名规范
+//! 📝 file
 //!
-//! 间processing when use规范file名，completed after revertoriginalfile名
+//! processing when usefile，completed after revertoriginalfile
 //!
 //! ## Corefeature
 //!
-//! - **file名cleanup** - removed危险字符 and 特殊字符
-//! - **temporarynamegenerate** - generatesecuritytemporaryfile名
-//! - **原名recovery** - processingcompleted after revertoriginalfile名
-//! - **跨平台compatibility** - processingdifferent操作Systemfile名限制
-//! - **长度限制** - auto截断过长file名
-//! - **唯a性guarantee** - usehashensure唯a性
+//! - **filecleanup** - removed and 
+//! - **temporarynamegenerate** - generatesecuritytemporaryfile
+//! - **originalrecovery** - processingcompleted after revertoriginalfile
+//! - **compatibility** - processingdifferentSystemfilelimit
+//! - **lengthlimit** - autolongfile
+//! - **aguarantee** - usehashensurea
 //!
-//! ## use场景
+//! ## use
 //!
-//! - batchprocessingfile when 避免file名冲突
-//! - processingcontains特殊字符file名
-//! - 跨平台file传输
+//! - batchprocessingfile when file冲突
+//! - processingcontainsfile
+//! - file
 //! - temporaryfilemanagement
 
 use anyhow::{Context, Result};
@@ -25,78 +25,78 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
-/// 危险字符正则（needreplace）
+/// positivethen（needreplace）
 fn dangerous_chars() -> &'static Regex {
  static REGEX: OnceLock<Regex> = OnceLock::new();
  REGEX.get_or_init(|| Regex::new(r#"[<>:"/\\|?*\x00-\x1F]"#).unwrap())
 }
 
-/// empty白字符正则
+/// emptypositivethen
 fn whitespace() -> &'static Regex {
  static REGEX: OnceLock<Regex> = OnceLock::new();
  REGEX.get_or_init(|| Regex::new(r"\s+").unwrap())
 }
 
-/// multi连续下划线
+/// multidownline
 fn multiple_underscores() -> &'static Regex {
  static REGEX: OnceLock<Regex> = OnceLock::new();
  REGEX.get_or_init(|| Regex::new(r"_{2,}").unwrap())
 }
 
-/// file名mappingrecord
+/// filemappingrecord
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure FilenameMapping {
- /// originalfile名
+pub struct FilenameMapping {
+/// originalfile
  pub original: String,
- /// 规范 after file名
+///  after file
  pub normalized: String,
- /// originalpath
+/// originalpath
  pub original_path: PathBuf,
- /// temporarypath
+/// temporarypath
  pub temp_path: PathBuf,
 }
 
-/// file名规范
-pub structure FilenameNormalizer {
- /// file名mapping表（original -> 规范）
+/// file
+pub struct FilenameNormalizer {
+/// filemapping（original -> ）
  mappings: HashMap<String, FilenameMapping>,
- /// maximumfile名长度
+/// maximumfilelength
  max_length: usize,
- /// is否保留扩展名
+/// isnoextension
  preserve_extension: bool,
- /// is否use Magikaautodetection扩展名
+/// isnouse Magikaautodetectionextension
  use_magika: bool,
 }
 
 impl FilenameNormalizer {
- /// createnew规范
+/// createnew
  pub fn new() -> Self {
  Self {
  mappings: HashMap::new(),
- max_length: 200, // 大multi数file系统安全长度
+ max_length: 200, // largemultifilelength
  preserve_extension: true,
- use_magika: true, // default启用Magikaauto检测
+ use_magika: true, // defaultenabledMagikaauto
  }
  }
- 
- /// enabled/disabled Magikaautodetection
+
+/// enabled/disabled Magikaautodetection
  pub fn set_use_magika(&mut self, enabled: bool) {
  self.use_magika = enabled;
  }
 
- /// settingmaximumfile名长度
+/// settingmaximumfilelength
  pub fn set_max_length(&mut self, length: usize) {
  self.max_length = length;
  }
 
- /// 规范file名（间processing用）
- ///
- /// # 规则
- /// 1. replace危险字符for下划线
- /// 2. replaceempty白for下划线
- /// 3. removedmulti余下划线
- /// 4. 限制长度
- /// 5. usehashguarantee唯a性
+/// file（processing）
+///
+/// # then
+/// 1. replacefordownline
+/// 2. replaceemptyfordownline
+/// 3. removedmultidownline
+/// 4. limitlength
+/// 5. usehashguaranteea
  pub fn normalize(&mut self, path: &Path) -> Result<PathBuf> {
  let original_name = path
  .file_name()
@@ -104,7 +104,7 @@ impl FilenameNormalizer {
  .to_string_lossy()
  .to_string();
 
- // 分离file名 and 扩展名，anduse Magikavalidation
+// file and extension，anduse Magikavalidation
  let (base_name, extension) = if self.preserve_extension {
  if let Some(ext) = path.extension() {
  let ext_str = ext.to_string_lossy().to_string();
@@ -112,70 +112,70 @@ impl FilenameNormalizer {
  .ok_or_else(|| anyhow::anyhow!("Invalid filename: no stem"))?
  .to_string_lossy()
  .to_string();
- 
- // use Magikavalidation扩展名is否正确
+
+// use Magikavalidationextensionisnopositive
  let corrected_ext = if self.use_magika {
  self.detect_and_correct_extension(path, &ext_str)
  } else {
  ext_str
  };
- 
+
  (base, Some(corrected_ext))
  } else {
- // 没 has 扩展名，try用Magikadetection
+//  has extension，tryMagikadetection
  let detected_ext = if self.use_magika {
  self.detect_extension(path)
  } else {
  None
  };
- 
+
  (original_name.clone(), detected_ext)
  }
  } else {
  (original_name.clone(), None)
  };
 
- // 规范基础name
+// basicname
  let mut normalized = base_name.clone();
 
- // 1. replace危险字符
+// 1. replace
  normalized = dangerous_chars().replace_all(&normalized, "_").to_string();
 
- // 2. replaceempty白
+// 2. replaceempty
  normalized = whitespace().replace_all(&normalized, "_").to_string();
 
- // 3. removedmulti余下划线
+// 3. removedmultidownline
  normalized = multiple_underscores()
  .replace_all(&normalized, "_")
  .to_string();
 
- // 4. removed首尾下划线
+// 4. removedfirsttaildownline
  normalized = normalized.trim_matches('_').to_string();
 
- // 5. 限制长度（保留扩展名empty间）
+// 5. limitlength（extensionempty）
  let extension_length = extension.as_ref().map(|e| e.len() + 1).unwrap_or(0);
  let max_base_length = self.max_length.saturating_sub(extension_length);
 
  if normalized.len() > max_base_length {
- // 截断andaddhash以guarantee唯a性
+// andaddhashbyguaranteea
  let hash = format!("{:x}", md5::compute(&normalized));
- let hash_suffix = &hash[..8]; // 取before8位
- let truncate_len = max_base_length.saturating_sub(9); // 8位哈希 + 1下划线
+ let hash_suffix = &hash[..8]; // before8
+ let truncate_len = max_base_length.saturating_sub(9); // 8哈希 + 1downline
  normalized = format!("{}_{}", &normalized[..truncate_len], hash_suffix);
  }
 
- // 6. 重newadd扩展名
+// 6. heavynewaddextension
  let final_name = if let Some(ext) = extension {
  format!("{}.{}", normalized, ext)
  } else {
  normalized
  };
 
- // buildtemporarypath
+// buildtemporarypath
  let parent = path.parent().unwrap_or_else(|| Path::new(""));
  let temp_path = parent.join(&final_name);
 
- // savemapping
+// savemapping
  let mapping = FilenameMapping {
  original: original_name.clone(),
  normalized: final_name,
@@ -188,10 +188,10 @@ impl FilenameNormalizer {
  Ok(temp_path)
  }
 
- /// revertoriginalfile名
- ///
- /// # 用途
- /// processingcompleted after ， will temporaryfile名revertfororiginalname
+/// revertoriginalfile
+///
+/// # 途
+/// processingcompleted after ， will temporaryfilerevertfororiginalname
  pub fn restore(&self, temp_path: &Path) -> Result<PathBuf> {
  let temp_name = temp_path
  .file_name()
@@ -199,7 +199,7 @@ impl FilenameNormalizer {
  .to_string_lossy()
  .to_string();
 
- // findmapping
+// findmapping
  for mapping in self.mappings.values() {
  if mapping.normalized == temp_name {
  let parent = temp_path.parent().unwrap_or_else(|| Path::new(""));
@@ -210,7 +210,7 @@ impl FilenameNormalizer {
  anyhow::bail!("No mapping found for temp file: {}", temp_name)
  }
 
- /// getoriginalpath
+/// getoriginalpath
  pub fn get_original_path(&self, normalized_name: &str) -> Option<&PathBuf> {
  for mapping in self.mappings.values() {
  if mapping.normalized == normalized_name {
@@ -220,44 +220,44 @@ impl FilenameNormalizer {
  None
  }
 
- /// clear所 has mapping
+/// clear has mapping
  pub fn clear(&mut self) {
  self.mappings.clear();
  }
 
- /// exportmapping表（for持久）
+/// exportmapping（for）
  pub fn export_mappings(&self) -> Vec<FilenameMapping> {
  self.mappings.values().cloned().collect()
  }
 
- /// importmapping表
+/// importmapping
  pub fn import_mappings(&mut self, mappings: Vec<FilenameMapping>) {
  for mapping in mappings {
  self.mappings.insert(mapping.original.clone(), mapping);
  }
  }
 
- /// getmappingcount
+/// getmappingcount
  pub fn mapping_count(&self) -> usize {
  self.mappings.len()
  }
 
- /// checkis否 has mapping
+/// checkisno has mapping
  pub fn has_mapping(&self, original_name: &str) -> bool {
  self.mappings.contains_key(original_name)
  }
- 
- /// use Magikadetectionand修正扩展名
+
+/// use Magikadetectionandpositiveextension
  fn detect_and_correct_extension(&self, path: &Path, current_ext: &str) -> String {
  use crate::utils::magika_detector::MagikaDetector;
- 
+
  let detector = MagikaDetector::with_defaults();
  match detector.detect_file_type(path) {
  Ok(detection) => {
- // get Magikadetectionto扩展名
+// get Magikadetectiontoextension
  let detected_ext = &detection.detected_type;
- 
- // If detected extension differs from current, use detected one
+
+// If detected extension differs from current, use detected one
  if detected_ext != &current_ext.to_lowercase() {
  log::info!("Extension corrected: .{} → .{} (confidence: {:.2}%)",
  current_ext, detected_ext, detection.confidence * 100.0);
@@ -267,13 +267,13 @@ impl FilenameNormalizer {
  }
  }
  Err(_) => {
- // Magika detection failed, keep original extension
+// Magika detection failed, keep original extension
  current_ext.to_string()
  }
  }
  }
 
- /// Use Magika to detect extension (for files without extension)
+/// Use Magika to detect extension (for files without extension)
  fn detect_extension(&self, path: &Path) -> Option<String> {
  use crate::utils::magika_detector::MagikaDetector;
 

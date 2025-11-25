@@ -1,14 +1,14 @@
 /**
- * 🔥 multi级convert验证系统 (Multi-Level Conversion Validator)
- * 
- * from plugin/converter/js/plugin-modules/conversion-validator.js 移植
- * Phase 40.33: enhancedconvert可靠性
- * 
- * 验证层级:
- * - Level 1: 输入file验证 (file格式、大小、路径、权限)
- * - Level 2: convert参数验证 (quality、速度、格式匹配)
- * - Level 3: modea致性验证 (手动/智能mode参数匹配)
- * - Level 4: 输出验证 (filegenerate、大小、格式正确性)
+ * 🔥 multilevelconvertvalidate (Multi-Level Conversion Validator)
+ *
+ * from plugin/converter/js/plugin-modules/conversion-validator.js 
+ * Phase 40.33: enhancedconvertcan
+ *
+ * validatelayerlevel:
+ * - Level 1: inputfilevalidate (fileformat、size、path、)
+ * - Level 2: convertparametervalidate (quality、speed、formatmatch)
+ * - Level 3: modeavalidate (manual/intelligentmodeparametermatch)
+ * - Level 4: outputvalidate (filegenerate、size、formatpositive)
  */
 use std::path::{Path, PathBuf};
 use std::fs;
@@ -16,14 +16,14 @@ use serde::{Serialize, Deserialize};
 
 /// validationresult
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure ValidationResult {
- /// is否passvalidation
+pub struct ValidationResult {
+/// isnopassvalidation
  pub valid: bool,
- /// validationlevel (1-4)
+/// validationlevel (1-4)
  pub level: u8,
- /// errorlist
+/// errorlist
  pub errors: Vec<String>,
- /// warninglist
+/// warninglist
  pub warnings: Vec<String>,
 }
 
@@ -36,7 +36,7 @@ impl ValidationResult {
  warnings: Vec::new(),
  }
  }
- 
+
  pub fn failure(level: u8, errors: Vec<String>) -> Self {
  Self {
  valid: false,
@@ -45,7 +45,7 @@ impl ValidationResult {
  warnings: Vec::new(),
  }
  }
- 
+
  pub fn with_warnings(mut self, warnings: Vec<String>) -> Self {
  self.warnings = warnings;
  self
@@ -54,7 +54,7 @@ impl ValidationResult {
 
 /// inputfileinformation
 #[derive(Debug, Clone)]
-pub structure InputFile {
+pub struct InputFile {
  pub file_path: PathBuf,
  pub name: String,
  pub ext: String,
@@ -64,7 +64,7 @@ pub structure InputFile {
 
 /// conversionconfiguration
 #[derive(Debug, Clone)]
-pub structure ConversionConfig {
+pub struct ConversionConfig {
  pub format: String,
  pub quality: Option<u32>,
  pub speed: Option<u32>,
@@ -79,94 +79,94 @@ pub enum ConversionMode {
  AI,
 }
 
-/// multi级validation
-pub structure ConversionValidator;
+/// multilevelvalidation
+pub struct ConversionValidator;
 
 impl ConversionValidator {
- /// 🔍 Level 1: inputfilevalidation
+/// 🔍 Level 1: inputfilevalidation
  pub fn validate_input_files(files: &[InputFile]) -> ValidationResult {
- // 🔥 performanceoptimization：预分配容量
+// 🔥 performanceoptimization：
  let mut errors = Vec::with_capacity(files.len());
  let mut warnings = Vec::with_capacity(files.len());
- 
+
  if files.is_empty() {
  errors.push("❌ No files selected".to_string());
  return ValidationResult::failure(1, errors);
  }
- 
+
  for (index, file) in files.iter().enumerate() {
  let file_num = index + 1;
- 
- // validationfilepath
+
+// validationfilepath
  if file.file_path.as_os_str().is_empty() {
  errors.push(format!("❌ File #{}: Invalid file path", file_num));
  }
- 
- // validationfile扩展名
+
+// validationfileextension
  if file.ext.is_empty() {
  errors.push(format!("❌ File #{} ({}): Missing file extension", file_num, file.name));
  }
- 
- // validationfilesize
+
+// validationfilesize
  if file.size == 0 {
  warnings.push(format!("⚠️ File #{} ({}): File size is 0", file_num, file.name));
  } else if file.size > 1024 * 1024 * 1024 { // 1GB
  let size_gb = file.size as f64 / (1024.0 * 1024.0 * 1024.0);
  warnings.push(format!("⚠️ File #{} ({}): File too large ({:.2} GB)", file_num, file.name, size_gb));
  }
- 
- // validationfile名合法性
+
+// validationfile
  if file.name.chars().any(|c| matches!(c, '<' | '>' | ':' | '"' | '|' | '?' | '*')) {
  warnings.push(format!("⚠️ File #{} ({}): Filename contains illegal characters", file_num, file.name));
  }
- 
- // validationfileis否exists
+
+// validationfileisnoexists
  if !file.file_path.exists() {
  errors.push(format!("❌ File #{} ({}): File does not exist", file_num, file.name));
  }
- 
- // validationfileis否可读
+
+// validationfileisnocan
  if file.file_path.exists()
  && let Err(e) = fs::metadata(&file.file_path) {
  errors.push(format!("❌ File #{} ({}): Cannot read file metadata: {}", file_num, file.name, e));
  }
  }
- 
+
  if errors.is_empty() {
  ValidationResult::success(1).with_warnings(warnings)
  } else {
  ValidationResult::failure(1, errors).with_warnings(warnings)
  }
  }
- 
- /// 🔍 Level 2: conversionparametervalidation
+
+/// 🔍 Level 2: conversionparametervalidation
  pub fn validate_parameters(config: &ConversionConfig, files: &[InputFile]) -> ValidationResult {
- // 🔥 performanceoptimization：预分配容量
+// 🔥 performanceoptimization：
  let mut errors = Vec::with_capacity(4);
  let mut warnings = Vec::with_capacity(4);
- 
- // validationtargetformat
+
+// validationtargetformat
  let valid_formats = ["jxl", "avif", "webp", "heic", "png", "jpg", "jpeg"];
  let format_lower = config.format.to_lowercase();
  if !valid_formats.contains(&format_lower.as_str()) {
  errors.push(format!("❌ Invalid target format: {}", config.format));
  }
- 
- // validationqualityparameter
+
+// validationqualityparameter
  if let Some(quality) = config.quality
  && (!(1..=100).contains(&quality)) {
  errors.push(format!("❌ Invalid quality parameter: {} (should be 1-100)", quality));
  }
- 
- // validationspeedparameter
+
+// validationspeedparameter
  if let Some(speed) = config.speed
  && speed > 10 {
  errors.push(format!("❌ Invalid speed parameter: {} (should be 0-10)", speed));
  }
- 
- // validationformatcompatibility性
+
+// validationformatcompatibility
  if format_lower == "heic" {
- // detectiontransparency度
+// detectiontransparencydegree
  let has_transparency = files.iter().any(|f| {
  let ext = f.ext.to_lowercase();
  ext == ".png" || ext == ".gif" || ext == ".webp"
@@ -174,50 +174,50 @@ impl ConversionValidator {
  if has_transparency {
  warnings.push("⚠️ HEIC does not support transparency, transparent backgrounds may change color".to_string());
  }
- 
- // detectionanimation
+
+// detectionanimation
  let has_animation = files.iter().any(|f| f.is_animated);
  if has_animation {
  warnings.push("⚠️ HEIC does not support animation, animation effects will be lost".to_string());
  }
  }
- 
- // validationlosslessmodecompatibility性
+
+// validationlosslessmodecompatibility
  if config.lossless
  && (format_lower == "jpg" || format_lower == "jpeg") {
  errors.push("❌ JPEG format does not support lossless mode".to_string());
  }
- 
- // validation AVIF animationsupport
+
+// validation AVIF animationsupport
  if format_lower == "avif" {
  let has_animation = files.iter().any(|f| f.is_animated);
  if has_animation {
  warnings.push("⚠️ AVIF animation support is limited, may require special encoder".to_string());
  }
  }
- 
- // validation JXL parameter
+
+// validation JXL parameter
  if (format_lower == "jxl" || format_lower == "jpegxl")
  && let Some(quality) = config.quality
  && quality < 60 {
  warnings.push(format!("⚠️ JXL quality parameter is low ({}), may affect visual quality", quality));
  }
- 
+
  if errors.is_empty() {
  ValidationResult::success(2).with_warnings(warnings)
  } else {
  ValidationResult::failure(2, errors).with_warnings(warnings)
  }
  }
- 
- /// 🔍 Level 3: modeandparametermatchvalidation
+
+/// 🔍 Level 3: modeandparametermatchvalidation
  pub fn validate_mode_consistency(mode: ConversionMode, config: &ConversionConfig) -> ValidationResult {
  let mut errors = Vec::new();
  let mut warnings = Vec::new();
- 
+
  match mode {
  ConversionMode::Manual => {
- // manualmode：validation所 has requiredparameter已setting
+// manualmode：validation has requiredparameteralreadysetting
  if config.quality.is_none() {
  warnings.push("⚠️ Quality parameter not set in manual mode, will use default value".to_string());
  }
@@ -226,41 +226,41 @@ impl ConversionValidator {
  }
  }
  ConversionMode::Smart | ConversionMode::AI => {
- // intelligentmode：validation AI prediction必要性
- // note：this里canadd AI 服务available性check
+// intelligentmode：validation AI predictionwant
+// note：thiscanadd AI availablecheck
  warnings.push("⚠️ Smart mode will use AI predicted parameters".to_string());
  }
  }
- 
+
  if errors.is_empty() {
  ValidationResult::success(3).with_warnings(warnings)
  } else {
  ValidationResult::failure(3, errors).with_warnings(warnings)
  }
  }
- 
- /// 🔍 Level 4: outputvalidation（conversion after ）
+
+/// 🔍 Level 4: outputvalidation（conversion after ）
  pub fn validate_output(output_path: &Path, expected_size: Option<u64>) -> ValidationResult {
  let mut errors = Vec::new();
  let mut warnings = Vec::new();
- 
- // validationfileis否exists
+
+// validationfileisnoexists
  if !output_path.exists() {
  errors.push(format!("❌ Output file not generated: {}", output_path.display()));
  return ValidationResult::failure(4, errors);
  }
- 
- // validationfilesize
+
+// validationfilesize
  match fs::metadata(output_path) {
  Ok(metadata) => {
  let actual_size = metadata.len();
- 
- // validationfilesize not for0
+
+// validationfilesize not for0
  if actual_size == 0 {
  errors.push(format!("❌ Output file size is 0: {}", output_path.display()));
  }
- 
- // validationfilesize合理性
+
+// validationfilesize合理
  if let Some(expected) = expected_size
  && expected > 0 {
  let ratio = actual_size as f64 / expected as f64;
@@ -275,31 +275,31 @@ impl ConversionValidator {
  errors.push(format!("❌ Output validation failed: {}", e));
  }
  }
- 
+
  if errors.is_empty() {
  ValidationResult::success(4).with_warnings(warnings)
  } else {
  ValidationResult::failure(4, errors).with_warnings(warnings)
  }
  }
- 
- /// 🔍 fullvalidation流程
+
+/// 🔍 fullvalidation
  pub fn validate_full_conversion(
  files: &[InputFile],
  config: &ConversionConfig,
  mode: ConversionMode,
  ) -> ValidationResult {
  tracing::info!("🔍 Starting multi-level validation");
- 
- // Level 1: inputvalidation
+
+// Level 1: inputvalidation
  let input_validation = Self::validate_input_files(files);
  if !input_validation.valid {
  tracing::error!("❌ Level 1 failed: Input file validation failed");
  return input_validation;
  }
  tracing::info!("✅ Level 1 passed: Input file validation");
- 
- // Level 2: parametervalidation
+
+// Level 2: parametervalidation
  let param_validation = Self::validate_parameters(config, files);
  if !param_validation.valid {
  tracing::error!("❌ Level 2 failed: Parameter validation failed");
@@ -308,8 +308,8 @@ impl ConversionValidator {
  return result;
  }
  tracing::info!("✅ Level 2 passed: Parameter validation");
- 
- // Level 3: modea致性validation
+
+// Level 3: modeavalidation
  let mode_validation = Self::validate_mode_consistency(mode, config);
  if !mode_validation.valid {
  tracing::error!("❌ Level 3 failed: Mode consistency validation failed");
@@ -319,17 +319,17 @@ impl ConversionValidator {
  return result;
  }
  tracing::info!("✅ Level 3 passed: Mode consistency validation");
- 
- // 收集所 has warning
+
+// 收集 has warning
  let mut all_warnings = input_validation.warnings;
  all_warnings.extend(param_validation.warnings);
  all_warnings.extend(mode_validation.warnings);
- 
+
  tracing::info!("🎉 All validation levels passed");
  if !all_warnings.is_empty() {
  tracing::warn!("⚠️ Warnings: {:?}", all_warnings);
  }
- 
+
  ValidationResult::success(3).with_warnings(all_warnings)
  }
 }
@@ -340,7 +340,7 @@ mod tests {
  use std::fs::File;
  use std::io::Write;
  use tempfile::TempDir;
- 
+
  #[test]
  fn test_validate_empty_files() {
  let files = vec![];
@@ -349,13 +349,13 @@ mod tests {
  assert_eq!(result.level, 1);
  assert!(!result.errors.is_empty());
  }
- 
+
  #[test]
  fn test_validate_valid_files() {
  let temp_dir = TempDir::new().unwrap();
  let file_path = temp_dir.path().join("test.png");
  File::create(&file_path).unwrap();
- 
+
  let files = vec![InputFile {
  file_path: file_path.clone(),
  name: "test.png".to_string(),
@@ -363,12 +363,12 @@ mod tests {
  size: 1024,
  is_animated: false,
  }];
- 
+
  let result = ConversionValidator::validate_input_files(&files);
  assert!(result.valid);
  assert_eq!(result.level, 1);
  }
- 
+
  #[test]
  fn test_validate_invalid_format() {
  let config = ConversionConfig {
@@ -377,13 +377,13 @@ mod tests {
  speed: Some(4),
  lossless: false,
  };
- 
+
  let result = ConversionValidator::validate_parameters(&config, &[]);
  assert!(!result.valid);
  assert_eq!(result.level, 2);
  assert!(result.errors.iter().any(|e| e.contains("Invalid target format")));
  }
- 
+
  #[test]
  fn test_validate_quality_range() {
  let config = ConversionConfig {
@@ -392,12 +392,12 @@ mod tests {
  speed: Some(4),
  lossless: false,
  };
- 
+
  let result = ConversionValidator::validate_parameters(&config, &[]);
  assert!(!result.valid);
  assert!(result.errors.iter().any(|e| e.contains("Invalid quality parameter")));
  }
- 
+
  #[test]
  fn test_validate_jpeg_lossless() {
  let config = ConversionConfig {
@@ -406,18 +406,18 @@ mod tests {
  speed: Some(4),
  lossless: true,
  };
- 
+
  let result = ConversionValidator::validate_parameters(&config, &[]);
  assert!(!result.valid);
  assert!(result.errors.iter().any(|e| e.contains("JPEG format does not support lossless mode")));
  }
- 
+
  #[test]
  fn test_validate_heic_transparency_warning() {
  let temp_dir = TempDir::new().unwrap();
  let file_path = temp_dir.path().join("test.png");
  File::create(&file_path).unwrap();
- 
+
  let files = vec![InputFile {
  file_path,
  name: "test.png".to_string(),
@@ -425,19 +425,19 @@ mod tests {
  size: 1024,
  is_animated: false,
  }];
- 
+
  let config = ConversionConfig {
  format: "heic".to_string(),
  quality: Some(80),
  speed: Some(4),
  lossless: false,
  };
- 
+
  let result = ConversionValidator::validate_parameters(&config, &files);
  assert!(result.valid);
  assert!(result.warnings.iter().any(|w| w.contains("HEIC does not support transparency")));
  }
- 
+
  #[test]
  fn test_validate_output_missing_file() {
  let result = ConversionValidator::validate_output(Path::new("/nonexistent/file.webp"), None);
@@ -445,38 +445,38 @@ mod tests {
  assert_eq!(result.level, 4);
  assert!(result.errors.iter().any(|e| e.contains("Output file not generated")));
  }
- 
+
  #[test]
  fn test_validate_output_zero_size() {
  let temp_dir = TempDir::new().unwrap();
  let file_path = temp_dir.path().join("empty.webp");
- File::create(&file_path).unwrap(); // create空file
- 
+ File::create(&file_path).unwrap(); // createemptyfile
+
  let result = ConversionValidator::validate_output(&file_path, None);
  assert!(!result.valid);
  assert!(result.errors.iter().any(|e| e.contains("Output file size is 0")));
  }
- 
+
  #[test]
  fn test_validate_output_size_ratio() {
  let temp_dir = TempDir::new().unwrap();
  let file_path = temp_dir.path().join("test.webp");
  let mut file = File::create(&file_path).unwrap();
- file.write_all(&[0u8; 10]).unwrap(); // 写入10bytes
- 
- // 10 bytes vs 10,000 expected = 0.001 ratio (< 0.01)
+ file.write_all(&[0u8; 10]).unwrap(); // write10bytes
+
+// 10 bytes vs 10,000 expected = 0.001 ratio (< 0.01)
  let result = ConversionValidator::validate_output(&file_path, Some(10_000));
  assert!(result.valid);
- assert!(result.warnings.iter().any(|w| w.contains("Output file abnormally small")), 
+ assert!(result.warnings.iter().any(|w| w.contains("Output file abnormally small")),
  "Expected warning about small file, got: {:?}", result.warnings);
  }
- 
+
  #[test]
  fn test_full_validation_success() {
  let temp_dir = TempDir::new().unwrap();
  let file_path = temp_dir.path().join("test.png");
  File::create(&file_path).unwrap();
- 
+
  let files = vec![InputFile {
  file_path,
  name: "test.png".to_string(),
@@ -484,14 +484,14 @@ mod tests {
  size: 1024,
  is_animated: false,
  }];
- 
+
  let config = ConversionConfig {
  format: "webp".to_string(),
  quality: Some(80),
  speed: Some(4),
  lossless: false,
  };
- 
+
  let result = ConversionValidator::validate_full_conversion(&files, &config, ConversionMode::Manual);
  assert!(result.valid);
  assert_eq!(result.level, 3);

@@ -1,5 +1,5 @@
 // Phase 4: Smart Format Selector
-// 
+//
 // Goal: Solve the problem of JPEG→WebP potentially increasing file size
 // Principle: Intelligently determine the best target format based on input format characteristics
 
@@ -9,97 +9,97 @@ use super::format_knowledge::FormatKnowledgeBase;
 
 /// Format selection recommendation
 #[derive(Debug, Clone)]
-pub structure FormatRecommendation {
- /// Recommended target format
+pub struct FormatRecommendation {
+/// Recommended target format
  pub recommended_format: String,
- /// Confidence (0.0-1.0)
+/// Confidence (0.0-1.0)
  pub confidence: f64,
- /// Recommendation reason
+/// Recommendation reason
  pub reason: String,
- /// Alternative formats
+/// Alternative formats
  pub alternatives: Vec<String>,
- /// Estimated file size change (negative means reduction)
+/// Estimated file size change (negative means reduction)
  pub estimated_size_change: f64,
 }
 
 /// 🎬 video Encoderrecommended (2025-11-20added)
 #[derive(Debug, Clone)]
-pub structure VideoCodecRecommendation {
- /// recommended Encoder
+pub struct VideoCodecRecommendation {
+/// recommended Encoder
  pub recommended_codec: String,
- /// recommended容
+/// recommended
  pub recommended_container: String,
- /// 置信度 (0.0-1.0)
+/// confidence (0.0-1.0)
  pub confidence: f64,
- /// recommended理由
+/// recommendedreason
  pub reason: String,
- /// 备选Encoder
+/// Encoder
  pub alternative_codecs: Vec<String>,
- /// 备选容
+/// 
  pub alternative_containers: Vec<String>,
- /// 预估filesize变
+/// filesize
  pub estimated_size_change: f64,
 }
 
 /// Smart format selector
-pub structure FormatSelector {
- /// Enable aggressive mode (try more formats)
+pub struct FormatSelector {
+/// Enable aggressive mode (try more formats)
  #[allow(dead_code)] // Phase 4: Reserved for future expansion
  aggressive: bool,
- /// 🔥 Phase 3.3: format知识library
+/// 🔥 Phase 3.3: formatlibrary
  #[allow(dead_code)]
  format_knowledge: FormatKnowledgeBase,
 }
 
 impl FormatSelector {
  pub fn new(aggressive: bool) -> Self {
- Self { 
+ Self {
  aggressive,
  format_knowledge: FormatKnowledgeBase::new(),
  }
  }
- 
- /// select最佳targetformat
+
+/// selectmosttargetformat
  pub fn select_best_format(
  &self,
  input_path: &Path,
  user_target: Option<&str>,
  ) -> Result<FormatRecommendation> {
- // getinputformat
+// getinputformat
  let input_ext = input_path
  .extension()
  .and_then(|s| s.to_str())
  .unwrap_or("")
  .to_lowercase();
- 
- // if用户specifyformat，validationis否合理
+
+// ifspecifyformat，validationisno
  if let Some(target) = user_target {
  return self.validate_user_choice(&input_ext, target);
  }
- 
- // intelligentselect
+
+// intelligentselect
  self.auto_select_format(&input_ext, input_path)
  }
- 
- /// validation用户selectformatis否合理
+
+/// validationselectformatisno
  fn validate_user_choice(
  &self,
  input_format: &str,
  target_format: &str,
  ) -> Result<FormatRecommendation> {
  let target = target_format.to_lowercase();
- 
- // checkis否isknownissuecomposite
+
+// checkisnoisknownissuecomposite
  let (is_risky, reason) = self.check_risky_conversion(input_format, &target);
- 
+
  if is_risky {
- // warning但 not 阻止
+// warningbut not 
  Ok(FormatRecommendation {
  recommended_format: target.clone(),
  confidence: 0.5,
  reason: format!("⚠️ {}", reason),
  alternatives: self.suggest_alternatives(input_format),
- estimated_size_change: 0.1, // 可能增大10%
+ estimated_size_change: 0.1, // canablelarge10%
  })
  } else {
  Ok(FormatRecommendation {
@@ -111,59 +111,59 @@ impl FormatSelector {
  })
  }
  }
- 
- /// Check if this is a risky conversion
+
+/// Check if this is a risky conversion
  fn check_risky_conversion(&self, input: &str, target: &str) -> (bool, String) {
  match (input, target) {
- // JPEG → WebP: May increase size
+// JPEG → WebP: May increase size
  ("jpg" | "jpeg", "webp") => (
  true,
  "JPEG is already lossy compressed, converting to WebP may increase file size. Recommend keeping JPEG or converting to JXL".to_string()
  ),
- 
- // JPEG → AVIF: Usually OK, but needs high quality
+
+// JPEG → AVIF: Usually OK, but needs high quality
  ("jpg" | "jpeg", "avif") => (
  false,
  "JPEG→AVIF usually works well, but recommend using quality≥80".to_string()
  ),
- 
- // PNG → JPEG: Loses transparency
+
+// PNG → JPEG: Loses transparency
  ("png", "jpg" | "jpeg") if self.has_transparency_risk() => (
  true,
  "PNG may contain transparency, converting to JPEG will lose it. Recommend converting to WebP/AVIF/JXL".to_string()
  ),
- 
- // WebP → JPEG: May lose quality
+
+// WebP → JPEG: May lose quality
  ("webp", "jpg" | "jpeg") => (
  true,
  "WebP→JPEG may lose quality. Recommend keeping WebP or converting to AVIF/JXL".to_string()
  ),
- 
+
  _ => (false, String::new())
  }
  }
- 
- /// Check if there's transparency risk (simplified version)
+
+/// Check if there's transparency risk (simplified version)
  fn has_transparency_risk(&self) -> bool {
- // Simplified: assume PNG may have transparency
+// Simplified: assume PNG may have transparency
  true
  }
- 
- /// autoselect最佳format
- /// 
- /// ✅ 2025-11-20completed: implementationtransparency度 and animationdetection
+
+/// autoselectmostformat
+///
+/// ✅ 2025-11-20completed: implementationtransparencydegree and animationdetection
  fn auto_select_format(
  &self,
  input_format: &str,
- input_path: &Path, // for检测透明度/动画
+ input_path: &Path, // fortransparency/
  ) -> Result<FormatRecommendation> {
- // 🔍 detectionfile特性（transparency度、animation）
+// 🔍 detectionfile（transparencydegree、animation）
  let has_transparency = self.detect_transparency(input_path);
  let is_animated = self.detect_animation(input_path);
- 
- // based ondetectionresultadjustedrecommended
+
+// based ondetectionresultadjustedrecommended
  match input_format {
- // PNG: based ontransparency度selectformat
+// PNG: based ontransparencydegreeselectformat
  "png" => {
  let reason = if has_transparency {
  "PNG→AVIF: Best compression (60-80% reduction), preserves transparency".to_string()
@@ -175,29 +175,29 @@ impl FormatSelector {
  confidence: 0.95,
  reason,
  alternatives: vec!["webp".to_string(), "jxl".to_string()],
- estimated_size_change: -0.7, // 减小70%
+ estimated_size_change: -0.7, // small70%
  })
  }
- 
- // JPEG: priority JXL（lossless重newwrap）
+
+// JPEG: priority JXL（losslessheavynewwrap）
  "jpg" | "jpeg" => Ok(FormatRecommendation {
  recommended_format: "jxl".to_string(),
  confidence: 0.9,
  reason: "JPEG→JXL: Lossless repackaging (20-30% reduction), no quality loss".to_string(),
  alternatives: vec!["avif".to_string()],
- estimated_size_change: -0.25, // 减小25%
+ estimated_size_change: -0.25, // small25%
  }),
- 
- // Web P: priority AVIF（bettercompression）
+
+// Web P: priority AVIF（bettercompression）
  "webp" => Ok(FormatRecommendation {
  recommended_format: "avif".to_string(),
  confidence: 0.85,
  reason: "WebP→AVIF: Better compression (20-40% reduction)".to_string(),
  alternatives: vec!["jxl".to_string()],
- estimated_size_change: -0.3, // 减小30%
+ estimated_size_change: -0.3, // small30%
  }),
- 
- // GIF: based onanimationdetectionselectformat
+
+// GIF: based onanimationdetectionselectformat
  "gif" => {
  let (format, reason) = if is_animated {
  ("webp".to_string(), "GIF→WebP: Preserves animation, significant size reduction (70-90%)".to_string())
@@ -209,20 +209,20 @@ impl FormatSelector {
  confidence: 0.9,
  reason,
  alternatives: vec!["avif".to_string(), "mp4".to_string()],
- estimated_size_change: -0.8, // 减小80%
+ estimated_size_change: -0.8, // small80%
  })
  }
- 
- // AVIF: 已经is最佳format
+
+// AVIF: alreadyismostformat
  "avif" => Ok(FormatRecommendation {
  recommended_format: "avif".to_string(),
  confidence: 1.0,
  reason: "AVIF is already the best format, recommend keeping or optimizing parameters".to_string(),
  alternatives: vec![],
- estimated_size_change: -0.1, // 优化可能减小10%
+ estimated_size_change: -0.1, // optimizedcanablesmall10%
  }),
- 
- // JXL: 已经is最佳format
+
+// JXL: alreadyismostformat
  "jxl" => Ok(FormatRecommendation {
  recommended_format: "jxl".to_string(),
  confidence: 1.0,
@@ -230,8 +230,8 @@ impl FormatSelector {
  alternatives: vec![],
  estimated_size_change: -0.1,
  }),
- 
- // unknownformat: defaultAVIF
+
+// unknownformat: defaultAVIF
  _ => Ok(FormatRecommendation {
  recommended_format: "avif".to_string(),
  confidence: 0.7,
@@ -241,8 +241,8 @@ impl FormatSelector {
  }),
  }
  }
- 
- /// suggested备选format
+
+/// suggestedformat
  fn suggest_alternatives(&self, input_format: &str) -> Vec<String> {
  match input_format {
  "jpg" | "jpeg" => vec!["jxl".to_string(), "avif".to_string()],
@@ -252,64 +252,64 @@ impl FormatSelector {
  _ => vec!["avif".to_string(), "webp".to_string()],
  }
  }
- 
- /// 🔍 detectionimageis否containstransparency度
- /// 
- /// ✅ 2025-11-20completed: implementationrealtransparency度detection
+
+/// 🔍 detectionimageisnocontainstransparencydegree
+///
+/// ✅ 2025-11-20completed: implementationrealtransparencydegreedetection
  fn detect_transparency(&self, path: &Path) -> bool {
- // try打开image
+// tryopenimage
  if let Ok(img) = image::open(path) {
- // checkis否 has alphachannel
+// checkisno has alphachannel
  match img.color() {
- image::ColorType::Rgba8 | 
- image::ColorType::Rgba16 | 
+ image::ColorType::Rgba8 |
+ image::ColorType::Rgba16 |
  image::ColorType::Rgba32F |
  image::ColorType::La8 |
  image::ColorType::La16 => {
- // has alphachannel，进a步checkis否真usetransparency度
- // 简version：assume has alphachannel就 has transparency度
- // fullversioncan遍历pixelcheckalphavalue
+// has alphachannel，astepcheckisnotrueusetransparencydegree
+// version：assume has alphachanneljust has transparencydegree
+// fullversioncanpixelcheckalphavalue
  true
  }
  _ => false,
  }
  } else {
- // no法打开image，based on扩展名猜测
+// noopenimage，based onextension
  let ext = path.extension()
  .and_then(|e| e.to_str())
  .unwrap_or("");
  matches!(ext, "png" | "webp" | "gif")
  }
  }
- 
- /// 🎬 detectionis否foranimation
- /// 
- /// ✅ 2025-11-20completed: implementationanimationdetection
+
+/// 🎬 detectionisnoforanimation
+///
+/// ✅ 2025-11-20completed: implementationanimationdetection
  fn detect_animation(&self, path: &Path) -> bool {
  let ext = path.extension()
  .and_then(|e| e.to_str())
  .map(|e| e.to_lowercase())
  .unwrap_or_default();
- 
+
  match ext.as_str() {
  "gif" => {
- // GIFmayisanimation，needcheckframe数
- // 简version：assume所 has GIF都isanimation
- // fullversioncanuseimage cratecheckframe数
+// GIFmayisanimation，needcheckframe
+// version：assume has GIFallisanimation
+// fullversioncanuseimage cratecheckframe
  true
  }
  "webp" | "apng" => {
- // Web P and APNGmayisanimation
- // 简version：assumeisanimation
+// Web P and APNGmayisanimation
+// version：assumeisanimation
  true
  }
  _ => false,
  }
  }
- 
- /// 🎬 recommendedvideo Encoder and 容 (2025-11-20added)
- /// 
- /// based oninputvideofeatureintelligentrecommended最佳Encoder and 容composite
+
+/// 🎬 recommendedvideo Encoder and  (2025-11-20added)
+///
+/// based oninputvideofeatureintelligentrecommendedmostEncoder and composite
  pub fn recommend_video_codec(
  &self,
  input_path: &Path,
@@ -319,12 +319,12 @@ impl FormatSelector {
  .and_then(|e| e.to_str())
  .map(|e| e.to_lowercase())
  .unwrap_or_default();
- 
- // detectionis否foranimation图片（应转forvideo）
+
+// detectionisnoforanimation（shouldforvideo）
  let is_animated_image = matches!(input_ext.as_str(), "gif" | "apng" | "webp");
- 
+
  if is_animated_image {
- // animation图片 → video
+// animation → video
  return Ok(VideoCodecRecommendation {
  recommended_codec: "h265".to_string(),
  recommended_container: "mp4".to_string(),
@@ -335,11 +335,11 @@ impl FormatSelector {
  estimated_size_change: -0.8,
  });
  }
- 
- // video → video：based onqualitytargetrecommended
+
+// video → video：based onqualitytargetrecommended
  match target_quality {
  "size" => {
- // minimumfilesize：H.266 (VVC)
+// minimumfilesize：H.266 (VVC)
  Ok(VideoCodecRecommendation {
  recommended_codec: "h266".to_string(),
  recommended_container: "mp4".to_string(),
@@ -351,7 +351,7 @@ impl FormatSelector {
  })
  }
  "quality" => {
- // highest quality：H.265 (成熟stable)
+// highest quality：H.265 (stable)
  Ok(VideoCodecRecommendation {
  recommended_codec: "h265".to_string(),
  recommended_container: "mp4".to_string(),
@@ -363,7 +363,7 @@ impl FormatSelector {
  })
  }
  _ => {
- // balancedmode：H.265 (defaultrecommended)
+// balancedmode：H.265 (defaultrecommended)
  Ok(VideoCodecRecommendation {
  recommended_codec: "h265".to_string(),
  recommended_container: "mp4".to_string(),
@@ -378,29 +378,29 @@ impl FormatSelector {
  }
 }
 
-/// formatcompatibility性check
-pub structure FormatCompatibilityChecker;
+/// formatcompatibilitycheck
+pub struct FormatCompatibilityChecker;
 
 impl FormatCompatibilityChecker {
- /// checkformatis否supporttransparency度
+/// checkformatisnosupporttransparencydegree
  pub fn supports_transparency(format: &str) -> bool {
  matches!(format, "png" | "webp" | "avif" | "jxl")
  }
- 
- /// checkformatis否supportanimation
+
+/// checkformatisnosupportanimation
  pub fn supports_animation(format: &str) -> bool {
  matches!(format, "gif" | "webp" | "avif" | "jxl")
  }
- 
- /// checkformatis否supportlossless
+
+/// checkformatisnosupportlossless
  pub fn supports_lossless(format: &str) -> bool {
  matches!(format, "png" | "webp" | "avif" | "jxl")
  }
- 
- /// getformatcompressionefficiency评分 (0-10)
+
+/// getformatcompressionefficiency (0-10)
  pub fn compression_efficiency(format: &str) -> u8 {
  match format {
- "avif" => 10, // 最佳
+ "avif" => 10, // most
  "jxl" => 9,
  "webp" => 8,
  "heic" => 8,
@@ -411,16 +411,16 @@ impl FormatCompatibilityChecker {
  _ => 5,
  }
  }
- 
- /// getformatcompatibility性评分 (0-10)
+
+/// getformatcompatibility (0-10)
  pub fn compatibility_score(format: &str) -> u8 {
  match format {
- "jpg" | "jpeg" => 10, // 最广泛support
+ "jpg" | "jpeg" => 10, // mostsupport
  "png" => 10,
  "webp" => 8,
  "gif" => 9,
- "avif" => 6, // 较new，support度etc
- "jxl" => 4, // 很new，support度较低
+ "avif" => 6, // relativelynew，supportdegreeetc
+ "jxl" => 4, // verynew，supportdegreerelativelylow
  "heic" => 5,
  _ => 5,
  }
@@ -430,45 +430,45 @@ impl FormatCompatibilityChecker {
 #[cfg(test)]
 mod tests {
  use super::*;
- 
+
  #[test]
  fn test_png_to_avif() {
  let selector = FormatSelector::new(false);
  let path = Path::new("test.png");
  let result = selector.select_best_format(path, None).unwrap();
- 
+
  assert_eq!(result.recommended_format, "avif");
  assert!(result.confidence > 0.9);
- assert!(result.estimated_size_change < 0.0); // 应该减小
+ assert!(result.estimated_size_change < 0.0); // should该small
  }
- 
+
  #[test]
  fn test_jpeg_to_jxl() {
  let selector = FormatSelector::new(false);
  let path = Path::new("test.jpg");
  let result = selector.select_best_format(path, None).unwrap();
- 
+
  assert_eq!(result.recommended_format, "jxl");
  assert!(result.confidence > 0.8);
  }
- 
+
  #[test]
  fn test_risky_jpeg_to_webp() {
  let selector = FormatSelector::new(false);
  let path = Path::new("test.jpg");
  let result = selector.select_best_format(path, Some("webp")).unwrap();
- 
+
  assert_eq!(result.recommended_format, "webp");
- assert!(result.confidence < 0.7); // 低置信度
- assert!(result.reason.contains("⚠️")); // include警告
+ assert!(result.confidence < 0.7); // lowconfidence
+ assert!(result.reason.contains("⚠️")); // includewarning
  }
- 
+
  #[test]
  fn test_format_compatibility() {
  assert!(FormatCompatibilityChecker::supports_transparency("png"));
  assert!(FormatCompatibilityChecker::supports_transparency("webp"));
  assert!(!FormatCompatibilityChecker::supports_transparency("jpeg"));
- 
+
  assert_eq!(FormatCompatibilityChecker::compression_efficiency("avif"), 10);
  assert_eq!(FormatCompatibilityChecker::compatibility_score("jpeg"), 10);
  }

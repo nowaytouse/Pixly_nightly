@@ -1,15 +1,15 @@
-//! 📋 最全面元data保留System
-//! 
-//! implementation7大类元datafull保留：
-//! 1. 技术元data (Technical Metadata)
-//! 2. 描述性元data (Descriptive Metadata)
-//! 3. management元data (Administrative Metadata)
-//! 4. structure元data (Structural Metadata)
-//! 5. use元data (Usage Metadata)
-//! 6. 业务元data (Business Metadata)
-//! 7. 技术保障 (Technical Safeguards)
+//! 📋 mostsurfaceelementdataSystem
 //!
-//! 跨平台support：mac OS, Linux, Windows
+//! implementation7largeclasselementdatafull：
+//! 1. elementdata (Technical Metadata)
+//! 2. descriptionelementdata (Descriptive Metadata)
+//! 3. managementelementdata (Administrative Metadata)
+//! 4. structureelementdata (Structural Metadata)
+//! 5. useelementdata (Usage Metadata)
+//! 6. elementdata (Business Metadata)
+//! 7. 保障 (Technical Safeguards)
+//!
+//! support：mac OS, Linux, Windows
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -18,9 +18,9 @@ use std::time::SystemTime;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
-/// 1. 技术元data (Technical Metadata)
+/// 1. elementdata (Technical Metadata)
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure TechnicalMetadata {
+pub struct TechnicalMetadata {
  pub file_format: String,
  pub file_size: u64,
  pub creation_time: SystemTime,
@@ -35,9 +35,9 @@ pub structure TechnicalMetadata {
  pub bit_depth: Option<u8>,
 }
 
-/// 2. 描述性元data (Descriptive Metadata)
+/// 2. descriptionelementdata (Descriptive Metadata)
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure DescriptiveMetadata {
+pub struct DescriptiveMetadata {
  pub title: Option<String>,
  pub author: Option<String>,
  pub subject: Option<String>,
@@ -51,9 +51,9 @@ pub structure DescriptiveMetadata {
  pub license: Option<String>,
 }
 
-/// 3. management元data (Administrative Metadata)
+/// 3. managementelementdata (Administrative Metadata)
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure AdministrativeMetadata {
+pub struct AdministrativeMetadata {
  pub access_permissions: Vec<String>,
  pub usage_license: Option<String>,
  pub storage_location: PathBuf,
@@ -65,9 +65,9 @@ pub structure AdministrativeMetadata {
  pub cost_center: Option<String>,
 }
 
-/// 4. structure元data (Structural Metadata)
+/// 4. structureelementdata (Structural Metadata)
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure StructuralMetadata {
+pub struct StructuralMetadata {
  pub data_relationships: HashMap<String, String>,
  pub hierarchical_structureure: Vec<String>,
  pub index_information: HashMap<String, usize>,
@@ -78,9 +78,9 @@ pub structure StructuralMetadata {
  pub child_documents: Vec<PathBuf>,
 }
 
-/// 5. use元data (Usage Metadata)
+/// 5. useelementdata (Usage Metadata)
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure UsageMetadata {
+pub struct UsageMetadata {
  pub access_logs: Vec<AccessLog>,
  pub operation_records: Vec<OperationRecord>,
  pub usage_frequency: u64,
@@ -92,7 +92,7 @@ pub structure UsageMetadata {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure AccessLog {
+pub struct AccessLog {
  pub user: String,
  pub timestamp: SystemTime,
  pub location: String,
@@ -100,7 +100,7 @@ pub structure AccessLog {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure OperationRecord {
+pub struct OperationRecord {
  pub operation_type: OperationType,
  pub timestamp: SystemTime,
  pub user: String,
@@ -118,9 +118,9 @@ pub enum OperationType {
  Convert,
 }
 
-/// 6. 业务元data (Business Metadata)
+/// 6. elementdata (Business Metadata)
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure BusinessMetadata {
+pub struct BusinessMetadata {
  pub business_process: Option<String>,
  pub compliance_flags: Vec<String>,
  pub legal_retention: Option<String>,
@@ -131,9 +131,9 @@ pub structure BusinessMetadata {
  pub approval_status: Option<String>,
 }
 
-/// 7. 技术保障 (Technical Safeguards)
+/// 7. 保障 (Technical Safeguards)
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure TechnicalSafeguards {
+pub struct TechnicalSafeguards {
  pub integrity_verification: bool,
  pub checksum: Option<String>,
  pub encrypted: bool,
@@ -144,7 +144,7 @@ pub structure TechnicalSafeguards {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure AuditEntry {
+pub struct AuditEntry {
  pub timestamp: SystemTime,
  pub action: String,
  pub user: String,
@@ -159,9 +159,9 @@ pub enum BackupStatus {
  BackupInProgress,
 }
 
-/// full元dataset
+/// fullelementdataset
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure ComprehensiveMetadata {
+pub struct ComprehensiveMetadata {
  pub technical: TechnicalMetadata,
  pub descriptive: DescriptiveMetadata,
  pub administrative: AdministrativeMetadata,
@@ -169,8 +169,8 @@ pub structure ComprehensiveMetadata {
  pub usage: UsageMetadata,
  pub business: BusinessMetadata,
  pub safeguards: TechnicalSafeguards,
- 
- // 传统image元data
+
+// imageelementdata
  pub exif: HashMap<String, String>,
  pub iptc: HashMap<String, String>,
  pub xmp: HashMap<String, String>,
@@ -179,17 +179,17 @@ pub structure ComprehensiveMetadata {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure GpsData {
+pub struct GpsData {
  pub latitude: f64,
  pub longitude: f64,
  pub altitude: Option<f64>,
  pub timestamp: Option<SystemTime>,
 }
 
-/// 元data保留configuration
+/// elementdataconfiguration
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure MetadataPreservationConfig {
- // 7大类元data开关
+pub struct MetadataPreservationConfig {
+// 7largeclasselementdata
  pub preserve_technical: bool,
  pub preserve_descriptive: bool,
  pub preserve_administrative: bool,
@@ -197,8 +197,8 @@ pub structure MetadataPreservationConfig {
  pub preserve_usage: bool,
  pub preserve_business: bool,
  pub preserve_safeguards: bool,
- 
- // 传统元data开关
+
+// elementdata
  pub preserve_exif: bool,
  pub preserve_iptc: bool,
  pub preserve_xmp: bool,
@@ -206,13 +206,13 @@ pub structure MetadataPreservationConfig {
  pub preserve_gps: bool,
  pub preserve_thumbnail: bool,
  pub preserve_maker_notes: bool,
- 
- // 隐私setting
+
+// setting
  pub strip_location: bool,
  pub strip_camera_info: bool,
  pub strip_personal_info: bool,
- 
- // 跨平台setting
+
+// setting
  pub preserve_platform_specific: bool,
  pub preserve_extended_attributes: bool, // macOS xattr, Linux xattr
  pub preserve_alternate_data_streams: bool, // Windows ADS
@@ -222,7 +222,7 @@ pub structure MetadataPreservationConfig {
 impl Default for MetadataPreservationConfig {
  fn default() -> Self {
  Self {
- // default保留所 has 7大类
+// default has 7largeclass
  preserve_technical: true,
  preserve_descriptive: true,
  preserve_administrative: true,
@@ -230,8 +230,8 @@ impl Default for MetadataPreservationConfig {
  preserve_usage: true,
  preserve_business: true,
  preserve_safeguards: true,
- 
- // default保留传统元data
+
+// defaultelementdata
  preserve_exif: true,
  preserve_iptc: true,
  preserve_xmp: true,
@@ -239,13 +239,13 @@ impl Default for MetadataPreservationConfig {
  preserve_gps: true,
  preserve_thumbnail: true,
  preserve_maker_notes: true,
- 
- // default not removed隐私information
+
+// default not removedinformation
  strip_location: false,
  strip_camera_info: false,
  strip_personal_info: false,
- 
- // default保留跨平台元data
+
+// defaultelementdata
  preserve_platform_specific: true,
  preserve_extended_attributes: true,
  preserve_alternate_data_streams: true,
@@ -255,24 +255,24 @@ impl Default for MetadataPreservationConfig {
 }
 
 impl MetadataPreservationConfig {
- /// 最全面保留mode
+/// mostsurfacemode
  pub fn comprehensive() -> Self {
  Self::default()
  }
- 
- /// 隐私mode
+
+/// mode
  pub fn privacy_mode() -> Self {
  Self {
  preserve_gps: false,
  strip_location: true,
  strip_camera_info: true,
  strip_personal_info: true,
- preserve_usage: false, // not保留using记录
+ preserve_usage: false, // notusing
  ..Self::default()
  }
  }
- 
- /// minimummode
+
+/// minimummode
  pub fn minimal() -> Self {
  Self {
  preserve_technical: true,
@@ -300,9 +300,9 @@ impl MetadataPreservationConfig {
  }
 }
 
-/// 元datahandler
+/// elementdatahandler
 #[derive(Default)]
-pub structure MetadataProcessor {
+pub struct MetadataProcessor {
  #[allow(dead_code)]
  config: MetadataPreservationConfig,
 }
@@ -311,14 +311,14 @@ impl MetadataProcessor {
  pub fn new() -> Self {
  Self::default()
  }
- 
+
  pub fn with_config(config: MetadataPreservationConfig) -> Self {
  Self { config }
  }
 }
 
-/// 最全面元datahandler
-pub structure ComprehensiveMetadataProcessor {
+/// mostsurfaceelementdatahandler
+pub struct ComprehensiveMetadataProcessor {
  config: MetadataPreservationConfig,
 }
 
@@ -326,16 +326,16 @@ impl ComprehensiveMetadataProcessor {
  pub fn new(config: MetadataPreservationConfig) -> Self {
  Self { config }
  }
- 
+
  pub fn with_defaults() -> Self {
  Self::new(MetadataPreservationConfig::default())
  }
- 
- /// extractionfull元data
+
+/// extractionfullelementdata
  pub fn extract_all_metadata(&self, path: &Path) -> Result<ComprehensiveMetadata> {
  let metadata = std::fs::metadata(path)?;
- 
- // 1. 技术元data
+
+// 1. elementdata
  let technical = TechnicalMetadata {
  file_format: path.extension()
  .and_then(|s| s.to_str())
@@ -353,8 +353,8 @@ impl ComprehensiveMetadataProcessor {
  color_space: None,
  bit_depth: None,
  };
- 
- // 2-7. 其他元data（简implementation）
+
+// 2-7. itselementdata（implementation）
  let descriptive = DescriptiveMetadata {
  title: None,
  author: None,
@@ -368,7 +368,7 @@ impl ComprehensiveMetadataProcessor {
  copyright: None,
  license: None,
  };
- 
+
  let administrative = AdministrativeMetadata {
  access_permissions: Vec::new(),
  usage_license: None,
@@ -380,7 +380,7 @@ impl ComprehensiveMetadataProcessor {
  department: None,
  cost_center: None,
  };
- 
+
  let structureural = StructuralMetadata {
  data_relationships: HashMap::new(),
  hierarchical_structureure: Vec::new(),
@@ -391,7 +391,7 @@ impl ComprehensiveMetadataProcessor {
  parent_document: None,
  child_documents: Vec::new(),
  };
- 
+
  let usage = UsageMetadata {
  access_logs: Vec::new(),
  operation_records: Vec::new(),
@@ -402,7 +402,7 @@ impl ComprehensiveMetadataProcessor {
  view_count: 0,
  edit_count: 0,
  };
- 
+
  let business = BusinessMetadata {
  business_process: None,
  compliance_flags: Vec::new(),
@@ -413,7 +413,7 @@ impl ComprehensiveMetadataProcessor {
  workflow_status: None,
  approval_status: None,
  };
- 
+
  let safeguards = TechnicalSafeguards {
  integrity_verification: false,
  checksum: None,
@@ -423,7 +423,7 @@ impl ComprehensiveMetadataProcessor {
  backup_status: BackupStatus::NotBacked,
  last_verified: None,
  };
- 
+
  Ok(ComprehensiveMetadata {
  technical,
  descriptive,
@@ -439,56 +439,56 @@ impl ComprehensiveMetadataProcessor {
  gps: None,
  })
  }
- 
- /// savefull元data
+
+/// savefullelementdata
  pub fn save_metadata(&self, metadata: &ComprehensiveMetadata, path: &Path) -> Result<()> {
  let json = serde_json::to_string_pretty(metadata)?;
  let metadata_path = path.with_extension("metadata.json");
  std::fs::write(metadata_path, json)?;
  Ok(())
  }
- 
- /// loadfull元data
+
+/// loadfullelementdata
  pub fn load_metadata(&self, path: &Path) -> Result<ComprehensiveMetadata> {
  let metadata_path = path.with_extension("metadata.json");
  let json = std::fs::read_to_string(metadata_path)?;
  let metadata = serde_json::from_str(&json)?;
  Ok(metadata)
  }
- 
- /// copied所 has 元data（跨平台）
+
+/// copied has elementdata（）
  pub fn copy_all_metadata(&self, source: &Path, target: &Path) -> Result<()> {
- // extractionsourcefile元data
+// extractionsourcefileelementdata
  let metadata = self.extract_all_metadata(source)?;
- 
- // savetotargetfile
+
+// savetotargetfile
  self.save_metadata(&metadata, target)?;
- 
- // copied传统元data（useexiftool）
+
+// copiedelementdata（useexiftool）
  if self.is_exiftool_available() {
  self.copy_traditional_metadata(source, target)?;
  }
- 
- // copied平台specific元data
+
+// copiedspecificelementdata
  #[cfg(target_os = "macos")]
  if self.config.preserve_extended_attributes {
  self.copy_macos_xattr(source, target)?;
  }
- 
+
  #[cfg(target_os = "linux")]
  if self.config.preserve_extended_attributes {
  self.copy_linux_xattr(source, target)?;
  }
- 
+
  #[cfg(target_os = "windows")]
  if self.config.preserve_alternate_data_streams {
  self.copy_windows_ads(source, target)?;
  }
- 
+
  Ok(())
  }
- 
- /// copied传统元data
+
+/// copiedelementdata
  fn copy_traditional_metadata(&self, source: &Path, target: &Path) -> Result<()> {
  Command::new("exiftool")
  .arg("-TagsFromFile")
@@ -500,8 +500,8 @@ impl ComprehensiveMetadataProcessor {
  .context("Failed to execute exiftool")?;
  Ok(())
  }
- 
- /// copiedmac OS扩展property
+
+/// copiedmac OSextensionproperty
  #[cfg(target_os = "macos")]
  fn copy_macos_xattr(&self, source: &Path, target: &Path) -> Result<()> {
  Command::new("xattr")
@@ -512,8 +512,8 @@ impl ComprehensiveMetadataProcessor {
  .context("Failed to copy xattr")?;
  Ok(())
  }
- 
- /// copied Linux扩展property
+
+/// copied Linuxextensionproperty
  #[cfg(target_os = "linux")]
  fn copy_linux_xattr(&self, source: &Path, target: &Path) -> Result<()> {
  Command::new("getfattr")
@@ -523,23 +523,23 @@ impl ComprehensiveMetadataProcessor {
  .context("Failed to execute getfattr")?;
  Ok(())
  }
- 
- /// copied Windows备用data流
+
+/// copied Windowsdata
  #[cfg(target_os = "windows")]
  fn copy_windows_ads(&self, _source: &Path, _target: &Path) -> Result<()> {
- // Windows ADScopiedimplementation
+// Windows ADScopiedimplementation
  Ok(())
  }
- 
- /// checkexiftoolis否available
+
+/// checkexiftoolisnoavailable
  pub fn is_exiftool_available(&self) -> bool {
  Command::new("exiftool")
  .arg("-ver")
  .output()
  .is_ok()
  }
- 
- /// get元datastatistics
+
+/// getelementdatastatistics
  pub fn get_metadata_stats(&self, metadata: &ComprehensiveMetadata) -> MetadataStats {
  MetadataStats {
  total_fields: self.count_total_fields(metadata),
@@ -551,12 +551,12 @@ impl ComprehensiveMetadataProcessor {
  has_icc_profile: metadata.icc_profile.is_some(),
  }
  }
- 
+
  fn count_total_fields(&self, _metadata: &ComprehensiveMetadata) -> usize {
- // 简implementation
+// implementation
  100
  }
- 
+
  fn count_filled_fields(&self, metadata: &ComprehensiveMetadata) -> usize {
  let mut count = 0;
  count += metadata.exif.len();
@@ -569,7 +569,7 @@ impl ComprehensiveMetadataProcessor {
 }
 
 #[derive(Debug, Clone)]
-pub structure MetadataStats {
+pub struct MetadataStats {
  pub total_fields: usize,
  pub filled_fields: usize,
  pub exif_tags: usize,
@@ -582,7 +582,7 @@ pub structure MetadataStats {
 #[cfg(test)]
 mod tests {
  use super::*;
- 
+
  #[test]
  fn test_comprehensive_config() {
  let config = MetadataPreservationConfig::comprehensive();
@@ -594,7 +594,7 @@ mod tests {
  assert!(config.preserve_business);
  assert!(config.preserve_safeguards);
  }
- 
+
  #[test]
  fn test_privacy_mode() {
  let config = MetadataPreservationConfig::privacy_mode();
@@ -602,7 +602,7 @@ mod tests {
  assert!(config.strip_location);
  assert!(config.strip_personal_info);
  }
- 
+
  #[test]
  fn test_processor_creation() {
  let processor = ComprehensiveMetadataProcessor::with_defaults();

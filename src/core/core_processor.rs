@@ -1,11 +1,11 @@
 //! Coreimagehandler - from @archive/rust_v2_clean extractionandenhanced
-//! 
-//! provide基础imageconversionfeature
-//! 
+//!
+//! providebasicimageconversionfeature
+//!
 //! Enhancements：
 //! - integration AIprediction System
-//! - improvederrorprocessing（响亮报错）
-//! - addperformance监控
+//! - improvederrorprocessing（）
+//! - addperformance
 //! - supportmoreformat
 
 use anyhow::{Context, Result};
@@ -15,13 +15,13 @@ use std::time::Instant;
 
 /// imagehandler
 #[derive(Debug)]
-pub structure ImageProcessor {
+pub struct ImageProcessor {
  config: ProcessingConfig,
 }
 
 /// processingconfiguration
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure ProcessingConfig {
+pub struct ProcessingConfig {
  pub quality: u8,
  pub speed: u8,
  pub preserve_metadata: bool,
@@ -30,7 +30,7 @@ pub structure ProcessingConfig {
 
 /// processingresult
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure ProcessingResult {
+pub struct ProcessingResult {
  pub input_path: String,
  pub output_path: String,
  pub input_size: u64,
@@ -46,16 +46,16 @@ pub structure ProcessingResult {
 pub enum ProcessingError {
  #[error("Unsupported format: {format}")]
  UnsupportedFormat { format: String },
- 
+
  #[error("IO error: {source}")]
  Io {
  #[from]
  source: std::io::Error,
  },
- 
+
  #[error("Image processing error: {message}")]
  Processing { message: String },
- 
+
  #[error("Invalid configuration: {message}")]
  InvalidConfig { message: String },
 }
@@ -72,44 +72,44 @@ impl Default for ProcessingConfig {
 }
 
 impl ProcessingConfig {
- /// validationconfigurationvalid性
+/// validationconfigurationvalid
  pub fn validate(&self) -> Result<()> {
  if self.quality == 0 || self.quality > 100 {
  anyhow::bail!(ProcessingError::InvalidConfig {
  message: format!("Quality must be 1-100, got {}", self.quality)
  });
  }
- 
+
  if self.speed == 0 || self.speed > 10 {
  anyhow::bail!(ProcessingError::InvalidConfig {
  message: format!("Speed must be 1-10, got {}", self.speed)
  });
  }
- 
+
  Ok(())
  }
 }
 
 impl ImageProcessor {
- /// createnewhandler
+/// createnewhandler
  pub fn new(config: ProcessingConfig) -> Result<Self> {
  config.validate()?;
  Ok(Self { config })
  }
 
- /// usedefaultconfigurationcreatehandler
+/// usedefaultconfigurationcreatehandler
  pub fn with_defaults() -> Self {
  Self {
  config: ProcessingConfig::default(),
  }
  }
 
- /// getconfiguration
+/// getconfiguration
  pub fn config(&self) -> &ProcessingConfig {
  &self.config
  }
 
- /// processingimage
+/// processingimage
  pub fn process<P: AsRef<Path>>(
  &self,
  input: P,
@@ -120,7 +120,7 @@ impl ImageProcessor {
  let input_path = input.as_ref();
  let output_path = output.as_ref();
 
- // validationinputfileexists
+// validationinputfileexists
  if !input_path.exists() {
  anyhow::bail!(ProcessingError::Io {
  source: std::io::Error::new(
@@ -130,28 +130,28 @@ impl ImageProcessor {
  });
  }
 
- // getinputfileinformation
+// getinputfileinformation
  let input_metadata = std::fs::metadata(input_path)
  .context("Failed to read input file metadata")?;
  let input_size = input_metadata.len();
- 
+
  let input_ext = input_path
  .extension()
  .and_then(|ext| ext.to_str())
  .unwrap_or("")
  .to_lowercase();
 
- // executeactualprocessing
+// executeactualprocessing
  self.do_convert(input_path, output_path, &input_ext, target_format)
  .context("Image conversion failed")?;
 
- // getoutputfileinformation
+// getoutputfileinformation
  let output_metadata = std::fs::metadata(output_path)
  .context("Failed to read output file metadata")?;
  let output_size = output_metadata.len();
- 
+
  let processing_time = start_time.elapsed().as_millis() as u64;
- 
+
  let compression_ratio = if input_size > 0 {
  output_size as f64 / input_size as f64
  } else {
@@ -170,7 +170,7 @@ impl ImageProcessor {
  })
  }
 
- /// internalconversionimplementation
+/// internalconversionimplementation
  fn do_convert(
  &self,
  input: &Path,
@@ -178,13 +178,13 @@ impl ImageProcessor {
  _input_format: &str,
  output_format: &str,
  ) -> Result<()> {
- // useimage crate进line基础conversion
+// useimage cratelinebasicconversion
  let img = image::open(input)
  .map_err(|e| ProcessingError::Processing {
  message: format!("Failed to open image: {}", e),
  })?;
 
- // based ontargetformatselect Encoder
+// based ontargetformatselect Encoder
  match output_format.to_lowercase().as_str() {
  "jpg" | "jpeg" => {
  let mut encoder = image::codecs::jpeg::JpegEncoder::new_with_quality(
@@ -212,23 +212,23 @@ impl ImageProcessor {
 
  Ok(())
  }
- 
- /// getimageinformation（ not conversion）
+
+/// getimageinformation（ not conversion）
  pub fn get_image_info<P: AsRef<Path>>(&self, path: P) -> Result<ImageInfo> {
  let path = path.as_ref();
- 
+
  let img = image::open(path)
  .context("Failed to open image")?;
- 
+
  let metadata = std::fs::metadata(path)
  .context("Failed to read file metadata")?;
- 
+
  let format = path
  .extension()
  .and_then(|ext| ext.to_str())
  .unwrap_or("")
  .to_lowercase();
- 
+
  Ok(ImageInfo {
  width: img.width(),
  height: img.height(),
@@ -241,7 +241,7 @@ impl ImageProcessor {
 
 /// imageinformation
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure ImageInfo {
+pub struct ImageInfo {
  pub width: u32,
  pub height: u32,
  pub file_size: u64,
@@ -267,13 +267,13 @@ mod tests {
  ..ProcessingConfig::default()
  };
  assert!(invalid_config.validate().is_err());
- 
+
  let invalid_config2 = ProcessingConfig {
  quality: 101,
  ..ProcessingConfig::default()
  };
  assert!(invalid_config2.validate().is_err());
- 
+
  let valid_config = ProcessingConfig::default();
  assert!(valid_config.validate().is_ok());
  }
@@ -286,7 +286,7 @@ mod tests {
  assert_eq!(config.speed, 5);
  assert!(!config.enable_profiling);
  }
- 
+
  #[test]
  fn test_invalid_quality_rejected() {
  let result = ImageProcessor::new(ProcessingConfig {

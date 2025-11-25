@@ -1,27 +1,27 @@
 /**
- * Video Conversion Strategy - 视频convert策略module
- * 
- * 🔥 Phase 40.24: 视频convert策略enhanced
- * - supportmore格式 (HEVC/VP9/AV1)
- * - 硬件加速 (NVENC/VAAPI/VideoToolbox)
+ * Video Conversion Strategy - videoconvertpolicymodule
+ *
+ * 🔥 Phase 40.24: videoconvertpolicyenhanced
+ * - supportmoreformat (HEVC/VP9/AV1)
+ * - hard (NVENC/VAAPI/VideoToolbox)
  * - qualityassessment (VMAF)
  */
 use serde::{Deserialize, Serialize};
 /// video Encodertype
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum VideoCodec {
- /// H.264 (x264) - 通用compatibility性最好
+/// H.264 (x264) - compatibilitymost
  H264,
- /// H.265/HEVC (x265) - highcompression率
+/// H.265/HEVC (x265) - highcompression
  H265,
- /// VP9 - Weboptimization，开source
+/// VP9 - Weboptimization，source
  VP9,
- /// AV1 - lateststandard，highestcompression率
+/// AV1 - lateststandard，highestcompression
  AV1,
 }
 
 impl VideoCodec {
- /// get FFmpeg Encodername
+/// get FFmpeg Encodername
  pub fn ffmpeg_codec_name(&self) -> &str {
  match self {
  VideoCodec::H264 => "libx264",
@@ -30,16 +30,16 @@ impl VideoCodec {
  VideoCodec::AV1 => "libaom-av1",
  }
  }
- 
- /// getrecommended容format
+
+/// getrecommendedformat
  pub fn recommended_container(&self) -> &str {
  match self {
  VideoCodec::H264 | VideoCodec::H265 => "mp4",
  VideoCodec::VP9 | VideoCodec::AV1 => "webm",
  }
  }
- 
- /// get硬件加速Encoder（ifsupport）
+
+/// gethardEncoder（ifsupport）
  pub fn hw_encoder(&self, hw_type: &str) -> Option<String> {
  match (self, hw_type) {
  (VideoCodec::H264, "nvenc") => Some("h264_nvenc".to_string()),
@@ -56,20 +56,20 @@ impl VideoCodec {
 /// videoqualitytarget
 #[derive(Debug, Clone, PartialEq)]
 pub enum QualityTarget {
- /// highest quality（几乎lossless）
+/// highest quality（almostlossless）
  Highest,
- /// highquality
+/// highquality
  High,
- /// balancedquality and size
+/// balancedquality and size
  Balanced,
- /// priority小file
+/// prioritysmallfile
  Small,
- /// minimumfilesize
+/// minimumfilesize
  Smallest,
 }
 
 impl QualityTarget {
- /// getrecommended CRF value
+/// getrecommended CRF value
  pub fn recommended_crf(&self, codec: &VideoCodec) -> u8 {
  match codec {
  VideoCodec::H264 => match self {
@@ -105,34 +105,34 @@ impl QualityTarget {
 }
 
 /// videoconversionstrategy
-pub structure VideoConversionStrategy {
- /// Encoderselect
+pub struct VideoConversionStrategy {
+/// Encoderselect
  pub codec: VideoCodec,
- /// CRF qualityvalue
+/// CRF qualityvalue
  pub crf: u8,
- /// presetspeed
+/// presetspeed
  pub preset: String,
- /// 硬件加速
+/// hard
  pub hw_accel: Option<String>,
- /// 两遍encoding
+/// encoding
  pub two_pass: bool,
- /// recommended容
+/// recommended
  pub container: String,
 }
 
 impl VideoConversionStrategy {
- /// autoselect最佳strategy
- /// 
- /// based oninputvideofeature and target需求，autoselect最佳conversionstrategy。
- /// 
- /// # Arguments
- /// 
- /// * `width` - videowidth
- /// * `height` - videoheight
- /// * `duration` - video when 长（秒）
- /// * `target` - qualitytarget
- /// * `prefer_web` - is否priority Webcompatibility性
- /// 
+/// autoselectmoststrategy
+///
+/// based oninputvideofeature and targetneed，autoselectmostconversionstrategy。
+///
+/// # Arguments
+///
+/// * `width` - videowidth
+/// * `height` - videoheight
+/// * `duration` - video when long（）
+/// * `target` - qualitytarget
+/// * `prefer_web` - isnopriority Webcompatibility
+///
  pub fn auto_select(
  width: u32,
  height: u32,
@@ -140,47 +140,47 @@ impl VideoConversionStrategy {
  target: QualityTarget,
  prefer_web: bool,
  ) -> Self {
- // based onresolution and 用途select Encoder
+// based onresolution and select Encoder
  let codec = if prefer_web {
- // Web priorityuse VP9 or H.264
+// Web priorityuse VP9 or H.264
  if width * height > 1920 * 1080 {
  VideoCodec::VP9 // 4K+ using VP9
  } else {
- VideoCodec::H264 // 1080p 及以下using H.264
+ VideoCodec::H264 // 1080p andbydownusing H.264
  }
  } else {
- // not Web prioritycompression率
+// not Web prioritycompression
  if width * height > 1920 * 1080 {
  VideoCodec::H265 // 4K/8K using H.265
  } else {
- VideoCodec::H264 // 1080p 及以下using H.264
+ VideoCodec::H264 // 1080p andbydownusing H.264
  }
  };
- 
- // based onqualitytargetget CRF
+
+// based onqualitytargetget CRF
  let crf = target.recommended_crf(&codec);
- 
- // based onresolution and when 长selectpreset
+
+// based onresolution and when longselectpreset
  let preset = if width * height > 1920 * 1080 {
- // 4K+ use fast
+// 4K+ use fast
  "fast".to_string()
  } else if duration > 300.0 {
- // 长video（>5分钟）use medium
+// longvideo（>5）use medium
  "medium".to_string()
  } else {
- // 短videouse slow 获得betterquality
+// shortvideouse slow betterquality
  "slow".to_string()
  };
- 
- // detection硬件加速（暂 when disabled，needrun when detection）
+
+// detectionhard（ when disabled，needrun when detection）
  let hw_accel = None;
- 
- // highqualitytargetconsidering两遍encoding
- let two_pass = matches!(target, QualityTarget::Highest | QualityTarget::High) 
- && duration < 600.0; // 只对<10分钟视频启用
- 
+
+// highqualitytargetconsideringencoding
+ let two_pass = matches!(target, QualityTarget::Highest | QualityTarget::High)
+ && duration < 600.0; // onlypair<10videoenabled
+
  let container = codec.recommended_container().to_string();
- 
+
  Self {
  codec,
  crf,
@@ -190,50 +190,50 @@ impl VideoConversionStrategy {
  container,
  }
  }
- 
- /// for流媒体optimizationstrategy
+
+/// formediaoptimizationstrategy
  pub fn for_streaming(width: u32, height: u32) -> Self {
  let codec = if width * height > 1920 * 1080 {
  VideoCodec::H265
  } else {
  VideoCodec::H264
  };
- 
+
  Self {
  codec: codec.clone(),
- crf: 23, // 平衡quality
+ crf: 23, // quality
  preset: "veryfast".to_string(), // quickencode
  hw_accel: None,
  two_pass: false,
  container: codec.recommended_container().to_string(),
  }
  }
- 
- /// for存档optimizationstrategy
+
+/// foroptimizationstrategy
  pub fn for_archive(_width: u32, _height: u32) -> Self {
- let codec = VideoCodec::H265; // 存档优先压缩率
- 
+ let codec = VideoCodec::H265; // 优先compress
+
  Self {
  codec: codec.clone(),
- crf: 20, // 高quality
- preset: "slow".to_string(), // 慢速高quality
+ crf: 20, // highquality
+ preset: "slow".to_string(), // slowhighquality
  hw_accel: None,
- two_pass: true, // 两遍encode
+ two_pass: true, // encode
  container: codec.recommended_container().to_string(),
  }
  }
- 
- /// forWeboptimizationstrategy
+
+/// forWeboptimizationstrategy
  pub fn for_web(width: u32, height: u32) -> Self {
  let codec = if width * height > 1920 * 1080 {
  VideoCodec::VP9
  } else {
  VideoCodec::H264
  };
- 
+
  Self {
  codec: codec.clone(),
- crf: 28, // Web 优化大小
+ crf: 28, // Web optimizedsize
  preset: "medium".to_string(),
  hw_accel: None,
  two_pass: false,
@@ -244,23 +244,23 @@ impl VideoConversionStrategy {
 
 /// audioconversionstrategy
 #[derive(Debug, Clone)]
-pub structure AudioStrategy {
- /// audio Encoder
+pub struct AudioStrategy {
+/// audio Encoder
  pub codec: String,
- /// 比特率（kbps）
+/// bitrate（kbps）
  pub bitrate: u32,
- /// sampling率（Hz）
+/// sampling（Hz）
  pub sample_rate: Option<u32>,
- /// 声道数
+/// 
  pub channels: Option<u8>,
 }
 
 impl AudioStrategy {
- /// autoselectaudiostrategy
+/// autoselectaudiostrategy
  pub fn auto_select(video_codec: &VideoCodec, quality_target: &QualityTarget) -> Self {
  let (codec, bitrate) = match video_codec {
  VideoCodec::H264 | VideoCodec::H265 => {
- // MP4 容use AAC
+// MP4 use AAC
  let bitrate = match quality_target {
  QualityTarget::Highest => 256,
  QualityTarget::High => 192,
@@ -271,7 +271,7 @@ impl AudioStrategy {
  ("aac".to_string(), bitrate)
  }
  VideoCodec::VP9 | VideoCodec::AV1 => {
- // Web M 容use Opus
+// Web M use Opus
  let bitrate = match quality_target {
  QualityTarget::Highest => 192,
  QualityTarget::High => 128,
@@ -282,16 +282,16 @@ impl AudioStrategy {
  ("libopus".to_string(), bitrate)
  }
  };
- 
+
  Self {
  codec,
  bitrate,
- sample_rate: None, // 保持原样
- channels: None, // 保持原样
+ sample_rate: None, // original
+ channels: None, // original
  }
  }
- 
- /// copiedaudio流（ not 重newencoding）
+
+/// copiedaudio（ not heavynewencoding）
  pub fn copy() -> Self {
  Self {
  codec: "copy".to_string(),

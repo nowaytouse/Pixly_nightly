@@ -1,8 +1,8 @@
 // qualityreport - generatefullqualityanalysisreport
-// extraction自: @archive/go/quality/reporter.go
+// extraction: @archive/go/quality/reporter.go
 //
 // Phase 7refactored: usequality_analyzer Quality Metrics and Quality Distribution
-// 消除重复定义，keepsinglea职责原则
+// heavy，keepsingleaoriginalthen
 
 use crate::analysis::quality_analyzer::{QualityMetrics, QualityDistribution};
 use serde::{Deserialize, Serialize};
@@ -12,7 +12,7 @@ use std::path::Path;
 use std::time::{Duration, SystemTime};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure CompressionStats {
+pub struct CompressionStats {
  pub format: String,
  pub file_count: usize,
  pub avg_saving: f64,
@@ -24,7 +24,7 @@ pub structure CompressionStats {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure QualityReport {
+pub struct QualityReport {
  pub session_id: String,
  pub start_time: SystemTime,
  pub end_time: Option<SystemTime>,
@@ -40,12 +40,12 @@ pub structure QualityReport {
  pub quality_class_distribution: HashMap<String, usize>,
 }
 
-pub structure Reporter {
+pub struct Reporter {
  report: QualityReport,
 }
 
 impl Reporter {
- /// createnewqualityreport
+/// createnewqualityreport
  pub fn new(session_id: String) -> Self {
  Self {
  report: QualityReport {
@@ -73,32 +73,32 @@ impl Reporter {
  }
  }
 
- /// addquality指标
+/// addquality
  pub fn add_metrics(&mut self, metrics: &QualityMetrics) {
  self.report.total_files += 1;
 
- // Update quality distribution
+// Update quality distribution
  match metrics.quality_class.as_str() {
- "Extremely High" | "极高" => self.report.quality_distribution.extremely_high += 1,
- "High" | "高" => self.report.quality_distribution.high += 1,
+ "Extremely High" | "extremelyhigh" => self.report.quality_distribution.extremely_high += 1,
+ "High" | "high" => self.report.quality_distribution.high += 1,
  "Medium" | "" => self.report.quality_distribution.medium += 1,
- "Low" | "低" => self.report.quality_distribution.low += 1,
- "Extremely Low" | "极低" => self.report.quality_distribution.extremely_low += 1,
+ "Low" | "low" => self.report.quality_distribution.low += 1,
+ "Extremely Low" | "extremelylow" => self.report.quality_distribution.extremely_low += 1,
  _ => {}
  }
  self.report.quality_distribution.total += 1;
 
- // updateformat分布
+// updateformat
  *self.report.format_distribution_source.entry(metrics.format.clone()).or_insert(0) += 1;
 
- // update内容type分布
+// updateinsidetype
  *self.report.content_type_distribution.entry(metrics.content_type.clone()).or_insert(0) += 1;
 
- // updatequality类别分布
+// updatequalityclass别
  *self.report.quality_class_distribution.entry(metrics.quality_class.clone()).or_insert(0) += 1;
  }
 
- /// addconversionresult
+/// addconversionresult
  pub fn add_conversion_result(
  &mut self,
  format: String,
@@ -124,10 +124,10 @@ impl Reporter {
  stats.total_before += size_before;
  stats.total_after += size_after;
 
- // calculation节省率
+// calculation
  let saving = 1.0 - (size_after as f64 / size_before as f64);
 
- // updatestatistics
+// updatestatistics
  if stats.file_count == 1 {
  stats.avg_saving = saving;
  stats.best_saving = saving;
@@ -145,7 +145,7 @@ impl Reporter {
  }
  }
 
- /// completedreport
+/// completedreport
  pub fn finalize(&mut self) {
  self.report.end_time = Some(SystemTime::now());
  if let Some(end_time) = self.report.end_time
@@ -153,7 +153,7 @@ impl Reporter {
  self.report.duration = Some(duration);
  }
 
- // calculationaverageBytesPerPixel
+// calculationaverageBytesPerPixel
  let mut total_bpp = 0.0;
  let count = self.report.compression_effectiveness.len();
  for stats in self.report.compression_effectiveness.values() {
@@ -164,43 +164,43 @@ impl Reporter {
  }
  }
 
- /// saveforJSON
+/// saveforJSON
  pub fn save_json<P: AsRef<Path>>(&mut self, output_path: P) -> Result<(), Box<dyn std::error::Error>> {
  self.finalize();
 
- // createdirectory
+// createdirectory
  if let Some(parent) = output_path.as_ref().parent() {
  fs::create_dir_all(parent)?;
  }
 
- // serialize
+// serialize
  let json = serde_json::to_string_pretty(&self.report)?;
 
- // writefile
+// writefile
  fs::write(output_path, json)?;
 
  Ok(())
  }
 
- /// savefor文本
+/// savefor
  pub fn save_text<P: AsRef<Path>>(&mut self, output_path: P) -> Result<(), Box<dyn std::error::Error>> {
  self.finalize();
 
- // createdirectory
+// createdirectory
  if let Some(parent) = output_path.as_ref().parent() {
  fs::create_dir_all(parent)?;
  }
 
- // generate文本report
+// generatereport
  let text = self.generate_text_report();
 
- // writefile
+// writefile
  fs::write(output_path, text)?;
 
  Ok(())
  }
 
- /// generate文本report
+/// generatereport
  fn generate_text_report(&self) -> String {
  let mut text = String::new();
 
@@ -211,13 +211,13 @@ impl Reporter {
  text.push_str("╚═══════════════════════════════════════════════════════════════╝\n\n");
 
  text.push_str(&format!("Session ID: {}\n", self.report.session_id));
- 
+
  if let Some(duration) = self.report.duration {
  text.push_str(&format!("Total time: {:?}\n", duration));
  }
  text.push_str(&format!("Total files: {}\n\n", self.report.total_files));
 
- // quality分布
+// quality
  text.push_str("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
  text.push_str("Quality Distribution:\n");
  text.push_str("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
@@ -227,7 +227,7 @@ impl Reporter {
  text.push_str(&format!(" Low: {}\n", self.report.quality_distribution.low));
  text.push_str(&format!(" Extremely Low: {}\n\n", self.report.quality_distribution.extremely_low));
 
- // Compression Effectiveness
+// Compression Effectiveness
  text.push_str("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
  text.push_str("Compression Effectiveness:\n");
  text.push_str("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
@@ -240,7 +240,7 @@ impl Reporter {
  text.push_str(&format!(" Avg BPP: {:.2}\n\n", stats.avg_bpp));
  }
 
- // Format Distribution
+// Format Distribution
  text.push_str("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
  text.push_str("Format Distribution:\n");
  text.push_str("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
@@ -252,7 +252,7 @@ impl Reporter {
  text
  }
 
- /// getreport
+/// getreport
  pub fn get_report(&self) -> &QualityReport {
  &self.report
  }
@@ -265,9 +265,9 @@ mod tests {
  #[test]
  fn test_reporter_basic() {
  use std::path::PathBuf;
- 
+
  let mut reporter = Reporter::new("test-session".to_string());
- 
+
  let metrics = QualityMetrics {
  file_path: PathBuf::from("test.png"),
  file_size: 1024,
@@ -301,9 +301,9 @@ mod tests {
  #[test]
  fn test_compression_stats() {
  let mut reporter = Reporter::new("test-session".to_string());
- 
+
  reporter.add_conversion_result("jxl".to_string(), 1000, 500, 0.1, 0.05);
- 
+
  let stats = reporter.report.compression_effectiveness.get("jxl").unwrap();
  assert_eq!(stats.file_count, 1);
  assert_eq!(stats.avg_saving, 0.5);

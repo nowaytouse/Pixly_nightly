@@ -4,14 +4,14 @@
 //!
 //! ## validationlevel
 //!
-//! 1. **Basic** - 基础check(fileexists性)
+//! 1. **Basic** - basiccheck(fileexists)
 //! 2. **Format** - formatcheck
-//! 3. **Integrity** - full性check(file头/尾)
+//! 3. **Integrity** - fullcheck(filehead/tail)
 //! 4. **Deep** - depthcheck(fulldecoding)
 //! 5. **Security** - securitycheck
-//! 6. **Anti Cheat** - 防作弊check
-//! 7. **Dimensions** - dimensionvalidation(inputoutputa致性)
-//! 8. **Quality** - qualityvalidation(元data、SSIM)
+//! 6. **Anti Cheat** - check
+//! 7. **Dimensions** - dimensionvalidation(inputoutputa致)
+//! 8. **Quality** - qualityvalidation(elementdata、SSIM)
 
 use anyhow::Result;
 use image::GenericImageView;
@@ -21,73 +21,73 @@ use std::path::Path;
 /// validationlevel
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum ValidationLevel {
- /// Level 1: 基础check (exists性)
+/// Level 1: basiccheck (exists)
  Basic = 1,
- /// Level 2: formatcheck
+/// Level 2: formatcheck
  Format = 2,
- /// Level 3: full性check (file头/尾)
+/// Level 3: fullcheck (filehead/tail)
  Integrity = 3,
- /// Level 4: depthcheck (fulldecoding)
+/// Level 4: depthcheck (fulldecoding)
  Deep = 4,
- /// Level 5: securitycheck
+/// Level 5: securitycheck
  Security = 5,
- /// Level 6: 防作弊check
+/// Level 6: check
  AntiCheat = 6,
- /// Level 7: dimensionvalidation (inputoutputa致性)
+/// Level 7: dimensionvalidation (inputoutputa致)
  Dimensions = 7,
- /// Level 8: qualityvalidation (元data、SSIM)
+/// Level 8: qualityvalidation (elementdata、SSIM)
  Quality = 8,
 }
 
 /// validationresult
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[derive(Default)]
-pub structure ValidationResult {
- /// is否passvalidation
+pub struct ValidationResult {
+/// isnopassvalidation
  pub passed: bool,
- /// validationlevel
+/// validationlevel
  pub level: u8,
- /// detectiontoformat
+/// detectiontoformat
  pub detected_format: Option<String>,
- /// filesize
+/// filesize
  pub file_size: u64,
- /// imagedimension (width, height)
+/// imagedimension (width, height)
  pub dimensions: Option<(u32, u32)>,
- /// is否animation
+/// isnoanimation
  pub is_animated: Option<bool>,
 
- // Level 7 & 8: inputoutputcomparisonvalidation
- /// inputfiledimension
+// Level 7 & 8: inputoutputcomparisonvalidation
+/// inputfiledimension
  #[serde(skip_serializing_if = "Option::is_none")]
  pub input_dimensions: Option<(u32, u32)>,
- /// outputfiledimension
+/// outputfiledimension
  #[serde(skip_serializing_if = "Option::is_none")]
  pub output_dimensions: Option<(u32, u32)>,
- /// dimensionis否match
+/// dimensionisnomatch
  #[serde(skip_serializing_if = "Option::is_none")]
  pub dimensions_match: Option<bool>,
- /// 元datais否保留
+/// elementdataisno
  #[serde(skip_serializing_if = "Option::is_none")]
  pub metadata_preserved: Option<bool>,
- /// qualityscore (SSIM, 0.0-1.0)
+/// qualityscore (SSIM, 0.0-1.0)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub quality_score: Option<f64>,
- /// qualityis否可accept
+/// qualityisnocanaccept
  #[serde(skip_serializing_if = "Option::is_none")]
  pub quality_acceptable: Option<bool>,
 
- /// errorinformation
+/// errorinformation
  pub errors: Vec<String>,
- /// warninginformation
+/// warninginformation
  pub warnings: Vec<String>,
 }
 
 
 /// filevalidation
-pub structure FileValidator;
+pub struct FileValidator;
 
 impl FileValidator {
- /// validationfile - 基础level
+/// validationfile - basiclevel
  pub fn validate_basic<P: AsRef<Path>>(path: P) -> Result<ValidationResult> {
  let path = path.as_ref();
  let mut result = ValidationResult {
@@ -95,13 +95,13 @@ impl FileValidator {
  ..Default::default()
  };
 
- // Check if file exists
+// Check if file exists
  if !path.exists() {
  result.errors.push("File does not exist".to_string());
  return Ok(result);
  }
 
- // getfilesize
+// getfilesize
  let metadata = std::fs::metadata(path)?;
  result.file_size = metadata.len();
 
@@ -114,7 +114,7 @@ impl FileValidator {
  Ok(result)
  }
 
- /// validationfile - formatlevel
+/// validationfile - formatlevel
  pub fn validate_format<P: AsRef<Path>>(path: P) -> Result<ValidationResult> {
  let path = path.as_ref();
  let mut result = Self::validate_basic(path)?;
@@ -125,7 +125,7 @@ impl FileValidator {
 
  result.level = ValidationLevel::Format as u8;
 
- // detectionformat
+// detectionformat
  if let Some(ext) = path.extension() {
  result.detected_format = Some(ext.to_string_lossy().to_lowercase());
  } else {
@@ -136,7 +136,7 @@ impl FileValidator {
  Ok(result)
  }
 
- /// validationfile - depthlevel(fulldecoding)
+/// validationfile - depthlevel(fulldecoding)
  pub fn validate_deep<P: AsRef<Path>>(path: P) -> Result<ValidationResult> {
  let path = path.as_ref();
  let mut result = Self::validate_format(path)?;
@@ -147,7 +147,7 @@ impl FileValidator {
 
  result.level = ValidationLevel::Deep as u8;
 
- // tryfulldecoding
+// tryfulldecoding
  match image::open(path) {
  Ok(img) => {
  let (width, height) = img.dimensions();
@@ -163,7 +163,7 @@ impl FileValidator {
  Ok(result)
  }
 
- /// validationinputoutputa致性
+/// validationinputoutputa致
  pub fn validate_consistency<P: AsRef<Path>>(
  input_path: P,
  output_path: P,
@@ -179,13 +179,13 @@ impl FileValidator {
 
  result.level = ValidationLevel::Dimensions as u8;
 
- // getinputdimension
+// getinputdimension
  if let Ok(input_img) = image::open(input_path) {
  let (input_w, input_h) = input_img.dimensions();
  result.input_dimensions = Some((input_w, input_h));
  }
 
- // checkdimensionis否match
+// checkdimensionisnomatch
  if let (Some(input_dims), Some(output_dims)) =
  (result.input_dimensions, result.dimensions)
  {

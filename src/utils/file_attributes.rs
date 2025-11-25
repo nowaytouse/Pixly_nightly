@@ -1,9 +1,9 @@
-/// fileproperty保留module
-/// 
+/// filepropertymodule
+///
 /// feature：
-/// 1. 保留filetime戳（createtime、modifiedtime、访问time）
-/// 2. 保留 mac OS 扩展property（xattr）
-/// 3. 保留 Linux 扩展property
+/// 1. filetime（createtime、modifiedtime、time）
+/// 2.  mac OS extensionproperty（xattr）
+/// 3.  Linux extensionproperty
 /// 4. Windows ADS support（passfilecopied）
 use anyhow::{Context, Result};
 use std::path::Path;
@@ -12,20 +12,20 @@ use std::fs;
 #[cfg(unix)]
 use filetime::{FileTime, set_file_times};
 
-/// fileproperty快照
+/// filepropertyfast
 #[derive(Debug, Clone)]
-pub structure FileAttributes {
- /// modifiedtime
+pub struct FileAttributes {
+/// modifiedtime
  pub modified: Option<std::time::SystemTime>,
- /// 访问time
+/// time
  pub accessed: Option<std::time::SystemTime>,
- /// mac OS/Linux 扩展property
+/// mac OS/Linux extensionproperty
  #[cfg(any(target_os = "macos", target_os = "linux"))]
  pub xattrs: Vec<(String, Vec<u8>)>,
 }
 
 impl FileAttributes {
- /// catchfile所 has property
+/// catchfile has property
  pub fn capture(path: &Path) -> Result<Self> {
  let metadata = fs::metadata(path)
  .with_context(|| format!("Failed to read metadata: {:?}", path))?;
@@ -44,13 +44,13 @@ impl FileAttributes {
  })
  }
 
- /// catch扩展property（mac OS/Linux）
+/// catchextensionproperty（mac OS/Linux）
  #[cfg(any(target_os = "macos", target_os = "linux"))]
  fn capture_xattrs(path: &Path) -> Result<Vec<(String, Vec<u8>)>> {
  use xattr;
 
  let mut attrs = Vec::new();
- 
+
  match xattr::list(path) {
  Ok(names) => {
  for name in names {
@@ -61,7 +61,7 @@ impl FileAttributes {
  }
  }
  Err(e) => {
- // 扩展propertyreadfailure not 应阻止conversion
+// extensionpropertyreadfailure not shouldconversion
  log::warn!("Failed to read xattrs from {:?}: {}", path, e);
  }
  }
@@ -69,26 +69,26 @@ impl FileAttributes {
  Ok(attrs)
  }
 
- /// applypropertytotargetfile
+/// applypropertytotargetfile
  pub fn apply(&self, path: &Path) -> Result<()> {
- // 1. recoverytime戳
+// 1. recoverytime
  self.apply_timestamps(path)?;
 
- // 2. recovery扩展property
+// 2. recoveryextensionproperty
  #[cfg(any(target_os = "macos", target_os = "linux"))]
  self.apply_xattrs(path)?;
 
  Ok(())
  }
 
- /// applytime戳
+/// applytime
  fn apply_timestamps(&self, path: &Path) -> Result<()> {
  if let (Some(modified), Some(accessed)) = (self.modified, self.accessed) {
  #[cfg(unix)]
  {
  let mtime = FileTime::from_system_time(modified);
  let atime = FileTime::from_system_time(accessed);
- 
+
  set_file_times(path, atime, mtime)
  .with_context(|| format!("Failed to set file times: {:?}", path))?;
 
@@ -97,13 +97,13 @@ impl FileAttributes {
 
  #[cfg(windows)]
  {
- // Windows usedifferent API
+// Windows usedifferent API
  use std::os::windows::fs::MetadataExt;
  use std::os::windows::io::AsRawHandle;
  use std::fs::File;
- 
- // Windows time戳recoveryneeduse Win32 API
- // this里简processing，只recoverymodifiedtime
+
+// Windows timerecoveryneeduse Win32 API
+// thisprocessing，onlyrecoverymodifiedtime
  let file = File::options().write(true).open(path)?;
  file.set_modified(modified)?;
 
@@ -114,7 +114,7 @@ impl FileAttributes {
  Ok(())
  }
 
- /// apply扩展property（mac OS/Linux）
+/// applyextensionproperty（mac OS/Linux）
  #[cfg(any(target_os = "macos", target_os = "linux"))]
  fn apply_xattrs(&self, path: &Path) -> Result<()> {
  use xattr;
@@ -125,7 +125,7 @@ impl FileAttributes {
  log::debug!("Restored xattr '{}' for {:?}", name, path);
  }
  Err(e) => {
- // Some extended attributes may fail to set (permissions, unsupported filesystem, etc.)
+// Some extended attributes may fail to set (permissions, unsupported filesystem, etc.)
  log::warn!("Failed to set xattr '{}' for {:?}: {}", name, path, e);
  }
  }
@@ -139,9 +139,9 @@ impl FileAttributes {
  }
 }
 
-/// 便捷function：保留filepropertyconversion
+/// function：filepropertyconversion
 ///
-/// use方式：
+/// use：
 /// ```no_run
 /// use pixly_kernel::utils::file_attributes::FileAttributes;
 /// use std::path::Path;
@@ -158,13 +158,13 @@ pub fn preserve_attributes<F>(input: &Path, output: &Path, convert_fn: F) -> Res
 where
  F: FnOnce() -> Result<()>,
 {
- // 1. catchoriginalproperty
+// 1. catchoriginalproperty
  let attrs = FileAttributes::capture(input)?;
 
- // 2. executeconversion
+// 2. executeconversion
  convert_fn()?;
 
- // 3. recoveryproperty
+// 3. recoveryproperty
  attrs.apply(output)?;
 
  Ok(())
@@ -183,25 +183,25 @@ mod tests {
  let input = dir.path().join("input.txt");
  let output = dir.path().join("output.txt");
 
- // createtestfile
+// createtestfile
  File::create(&input).unwrap().write_all(b"test").unwrap();
- 
- // waita秒ensuretime戳different
+
+// waitaensuretimedifferent
  std::thread::sleep(std::time::Duration::from_secs(1));
- 
- // catchproperty
+
+// catchproperty
  let attrs = FileAttributes::capture(&input).unwrap();
- 
- // createoutputfile
+
+// createoutputfile
  File::create(&output).unwrap().write_all(b"converted").unwrap();
- 
- // applyproperty
+
+// applyproperty
  attrs.apply(&output).unwrap();
- 
- // validationtime戳
+
+// validationtime
  let input_meta = fs::metadata(&input).unwrap();
  let output_meta = fs::metadata(&output).unwrap();
- 
+
  assert_eq!(
  input_meta.modified().unwrap(),
  output_meta.modified().unwrap()
@@ -212,28 +212,28 @@ mod tests {
  #[cfg(any(target_os = "macos", target_os = "linux"))]
  fn test_capture_and_apply_xattrs() {
  use xattr;
- 
+
  let dir = tempdir().unwrap();
  let input = dir.path().join("input.txt");
  let output = dir.path().join("output.txt");
 
- // createtestfile
+// createtestfile
  File::create(&input).unwrap().write_all(b"test").unwrap();
- 
- // setting扩展property
+
+// settingextensionproperty
  xattr::set(&input, "user.test", b"test_value").unwrap();
- 
- // catchproperty
+
+// catchproperty
  let attrs = FileAttributes::capture(&input).unwrap();
  assert!(!attrs.xattrs.is_empty());
- 
- // createoutputfile
+
+// createoutputfile
  File::create(&output).unwrap().write_all(b"converted").unwrap();
- 
- // applyproperty
+
+// applyproperty
  attrs.apply(&output).unwrap();
- 
- // validation扩展property
+
+// validationextensionproperty
  let value = xattr::get(&output, "user.test").unwrap().unwrap();
  assert_eq!(value, b"test_value");
  }

@@ -1,5 +1,5 @@
 //! videoprocessingCoremodule
-//! 
+//!
 //! providevideoformatconversion、encodingparameteroptimization、qualityanalysis etc feature
 
 use anyhow::{Result, Context, bail};
@@ -11,7 +11,7 @@ use crate::errors::path_to_str;
 
 /// videoinformation
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure VideoInfo {
+pub struct VideoInfo {
  pub path: PathBuf,
  pub size: u64,
  pub codec: String,
@@ -26,7 +26,7 @@ pub structure VideoInfo {
 
 /// videoconversionconfiguration
 #[derive(Debug, Clone)]
-pub structure VideoConversionConfig {
+pub struct VideoConversionConfig {
  pub codec: String,
  pub container: String,
  pub crf: u8,
@@ -36,15 +36,15 @@ pub structure VideoConversionConfig {
  pub audio_mode: AudioMode,
  pub two_pass: bool,
  pub hw_accel: String,
- // 🔥 Advanced encoding parameters - REAL implementation!
+// 🔥 Advanced encoding parameters - REAL implementation!
  pub gop_size: Option<u32>, // GOP size (keyframe interval)
  pub bframes: Option<u8>, // Number of B-frames (0-16)
  pub ref_frames: Option<u8>, // Number of reference frames (1-16)
  pub me_method: Option<String>, // Motion estimation method (dia/hex/umh/esa)
  pub pix_fmt: Option<String>, // Pixel format (None = FFmpeg auto-select best format)
- // FFmpeg uses avcodec_find_best_pix_fmt_of_2() to minimize loss
- // Loss calculation: resolution > depth > colorspace > alpha > quantization > chroma
- // 🔥 Phase 3: videoparameter补充 (2025-11-19)
+// FFmpeg uses avcodec_find_best_pix_fmt_of_2() to minimize loss
+// Loss calculation: resolution > depth > colorspace > alpha > quantization > chroma
+// 🔥 Phase 3: videoparameter (2025-11-19)
  pub rate_control: Option<String>, // Rate control mode (cbr/vbr/crf)
 }
 
@@ -60,7 +60,7 @@ pub enum AudioMode {
 impl Default for VideoConversionConfig {
  fn default() -> Self {
  Self {
- codec: "h266".to_string(), // 🔥 defaultusing最newH.266/VVC
+ codec: "h266".to_string(), // 🔥 defaultusingmostnewH.266/VVC
  container: "mp4".to_string(),
  crf: 23,
  preset: "medium".to_string(),
@@ -74,14 +74,14 @@ impl Default for VideoConversionConfig {
  ref_frames: Some(3), // Default 3 reference frames
  me_method: Some("hex".to_string()), // Hexagon motion estimation
  pix_fmt: None, // Let FFmpeg auto-select best format
- rate_control: None, // 🔥 Phase 3: defaultNone，letFFmpegauto选择
+ rate_control: None, // 🔥 Phase 3: defaultNone，letFFmpegauto
  }
  }
 }
 
 /// videoconversionresult
 #[derive(Debug)]
-pub structure VideoConversionResult {
+pub struct VideoConversionResult {
  pub success: bool,
  pub output_path: PathBuf,
  pub original_size: u64,
@@ -92,7 +92,7 @@ pub structure VideoConversionResult {
 }
 
 /// videohandler
-pub structure VideoProcessor {
+pub struct VideoProcessor {
  ffmpeg_path: String,
  ffprobe_path: String,
 }
@@ -110,29 +110,29 @@ impl VideoProcessor {
  ffprobe_path: "ffprobe".to_string(),
  }
  }
- 
- /// check FFmpegis否available
+
+/// check FFmpegisnoavailable
  pub fn check_ffmpeg(&self) -> Result<bool> {
  let output = Command::new(&self.ffmpeg_path)
  .arg("-version")
  .output();
- 
+
  Ok(output.is_ok())
  }
- 
- /// select硬件加速Encoder
+
+/// selecthardEncoder
  fn select_encoder(&self, codec: &str, hw_accel: &str) -> String {
  if hw_accel == "none" {
  return self.get_software_encoder(codec);
  }
- 
+
  if hw_accel != "auto" {
  let hw_encoder = self.try_hardware_encoder(codec, hw_accel);
  if self.check_encoder_available(&hw_encoder) {
  return hw_encoder;
  }
  }
- 
+
  let hw_options = self.detect_available_hardware();
  for hw in hw_options {
  let hw_encoder = self.try_hardware_encoder(codec, &hw);
@@ -140,34 +140,34 @@ impl VideoProcessor {
  return hw_encoder;
  }
  }
- 
+
  self.get_software_encoder(codec)
  }
- 
+
  fn get_software_encoder(&self, codec: &str) -> String {
  match codec {
- // 🔥 H.266/VVC - fullimplementation (2025-11-20)
- // 
- // **real情况** (depth调查result):
- // - libvvenc Encoderexists且available
- // - need FFmpegcompile when enabled --enable-libvvenc
- // - Homebrewdefault FFmpeg not contains（needcustomcompile）
- // 
- // **implementationstrategy** (遵循quality宣言):
- // 1. ✅ tryuselibvvenc
- // 2. ✅ ifunavailable，FFmpeg will 明确报错
- // 3. ✅ 用户canselect安装support VVCFFmpeg
- // 4. ✅ provideclearerrorinformation and 解决方案
+// 🔥 H.266/VVC - fullimplementation (2025-11-20)
+//
+// **real** (depthresult):
+// - libvvenc Encoderexistsandavailable
+// - need FFmpegcompile when enabled --enable-libvvenc
+// - Homebrewdefault FFmpeg not contains（needcustomcompile）
+//
+// **implementationstrategy** (quality):
+// 1. ✅ tryuselibvvenc
+// 2. ✅ ifunavailable，FFmpeg will 
+// 3. ✅ canselectsupport VVCFFmpeg
+// 4. ✅ provideclearerrorinformation and 
  "h266" | "vvc" => {
- // 🔥 fullH.266support - use VVen C独立Encoder (2025-11-20)
- // 
- // **implementationstrategy** (遵循quality宣言):
- // 1. ✅ priorityuse VVen C独立Encoder（vvencapp）
- // 2. ✅ 备选using FFmpeg libvvenc（ifavailable）
- // 3. ✅ 响亮报错， not 静默downgrade
- // 4. ✅ providefull解决方案
- 
- // Check if vvencapp is available
+// 🔥 fullH.266support - use VVen CEncoder (2025-11-20)
+//
+// **implementationstrategy** (quality):
+// 1. ✅ priorityuse VVen CEncoder（vvencapp）
+// 2. ✅ using FFmpeg libvvenc（ifavailable）
+// 3. ✅ ， not downgrade
+// 4. ✅ providefull
+
+// Check if vvencapp is available
  if Command::new("vvencapp").arg("--version").output().is_ok() {
  log::info!("Using H.266/VVC encoder (vvencapp - standalone)");
  "vvencapp".to_string() // Use standalone encoder
@@ -175,7 +175,7 @@ impl VideoProcessor {
  log::info!("Using H.266/VVC encoder (libvvenc - FFmpeg)");
  "libvvenc".to_string() // Use FFmpeg integration
  } else {
- // Report error clearly
+// Report error clearly
  log::error!("H.266/VVC ENCODING FAILED: No VVC encoder available");
  log::error!("REASON: Neither vvencapp nor libvvenc found");
  log::error!("");
@@ -188,7 +188,7 @@ impl VideoProcessor {
  log::error!("");
  log::error!("DOCUMENTATION: docs/H266_VVC_SUPPORT.md");
 
- // Return error marker for convert_video method
+// Return error marker for convert_video method
  "ERROR_H266_NOT_AVAILABLE".to_string()
  }
  }
@@ -203,34 +203,34 @@ impl VideoProcessor {
  }
  }
  }
- 
- /// getProResconfigurationfile
- /// based onqualityparameterselect合适Pro Resconfigurationfile
+
+/// getProResconfigurationfile
+/// based onqualityparameterselectPro Resconfigurationfile
  fn get_prores_profile(&self, quality: u32) -> &str {
  match quality {
  0..=20 => "0", // Proxy (minimumfile)
- 21..=40 => "1", // LT (轻量级)
- 41..=60 => "2", // Standard (标准)
- 61..=80 => "3", // HQ (高quality)
+ 21..=40 => "1", // LT (lightlevel)
+ 41..=60 => "2", // Standard (standard)
+ 61..=80 => "3", // HQ (highquality)
  81..=95 => "4", // 4444 (4:4:4:4sampling)
- _ => "5", // 4444XQ (最高quality)
+ _ => "5", // 4444XQ (mosthighquality)
  }
  }
- 
+
  fn try_hardware_encoder(&self, codec: &str, hw_type: &str) -> String {
  match (codec, hw_type) {
- // 🔥 H.266/VVC 硬件加速 (2025-11-20depth调查)
- // 
- // **调查result**:
- // - 硬件加速：截至2025年11月，主流GPU尚未support VVC硬件encoding
- // - NVIDIA RTX 40系列：theoreticalsupport但驱动未enabled
- // - Intel Arc：部分support但FFmpegintegration not full
- // - Apple Video Toolbox： not support VVC
- // 
- // **implementationstrategy**:
- // 1. try硬件Encoder（for未来做准备）
- // 2. failure when autodowngradeto软件encoding
- // 3. 软件encodinguselibvvenc（ifavailable）
+// 🔥 H.266/VVC hard (2025-11-20depth)
+//
+// **result**:
+// - hard：202511，mainGPUnot yetsupport VVChardencoding
+// - NVIDIA RTX 40：theoreticalsupportbutnot yetenabled
+// - Intel Arc：partialsupportbutFFmpegintegration not full
+// - Apple Video Toolbox： not support VVC
+//
+// **implementationstrategy**:
+// 1. tryhardEncoder（fornot yet）
+// 2. failure when autodowngradetosoftencoding
+// 3. softencodinguselibvvenc（ifavailable）
  ("h266" | "vvc", "nvenc") => {
  log::info!("Trying H.266 NVENC (experimental, may not be available)");
  "vvc_nvenc".to_string()
@@ -243,33 +243,33 @@ impl VideoProcessor {
  log::info!("H.266 hardware acceleration not available, using software encoder");
  self.get_software_encoder(codec)
  }
- 
- // H.265/HEVC
+
+// H.265/HEVC
  ("h265" | "hevc", "nvenc") => "hevc_nvenc".to_string(),
  ("h265" | "hevc", "qsv") => "hevc_qsv".to_string(),
  ("h265" | "hevc", "videotoolbox") => "hevc_videotoolbox".to_string(),
  ("h265" | "hevc", "amf") => "hevc_amf".to_string(),
- 
- // H.264/AVC
+
+// H.264/AVC
  ("h264", "nvenc") => "h264_nvenc".to_string(),
  ("h264", "qsv") => "h264_qsv".to_string(),
  ("h264", "videotoolbox") => "h264_videotoolbox".to_string(),
  ("h264", "amf") => "h264_amf".to_string(),
- 
+
  _ => self.get_software_encoder(codec),
  }
  }
- 
+
  fn detect_available_hardware(&self) -> Vec<String> {
  let mut available = Vec::new();
- 
+
  #[cfg(target_os = "macos")]
  {
  if self.check_encoder_available("h264_videotoolbox") {
  available.push("videotoolbox".to_string());
  }
  }
- 
+
  #[cfg(not(target_os = "macos"))]
  {
  if self.check_encoder_available("h264_nvenc") {
@@ -282,16 +282,16 @@ impl VideoProcessor {
  available.push("amf".to_string());
  }
  }
- 
+
  available
  }
- 
+
  fn check_encoder_available(&self, encoder: &str) -> bool {
  let output = Command::new(&self.ffmpeg_path)
  .arg("-hide_banner")
  .arg("-encoders")
  .output();
- 
+
  if let Ok(output) = output {
  let encoders = String::from_utf8_lossy(&output.stdout);
  encoders.contains(encoder)
@@ -299,13 +299,13 @@ impl VideoProcessor {
  false
  }
  }
- 
- /// analysisvideoinformation
+
+/// analysisvideoinformation
  pub fn analyze_video(&self, video_path: &Path) -> Result<VideoInfo> {
  if !video_path.exists() {
  bail!("Video file not found: {:?}", video_path);
  }
- 
+
  let output = Command::new(&self.ffprobe_path)
  .args([
  "-v", "quiet",
@@ -316,27 +316,27 @@ impl VideoProcessor {
  ])
  .output()
  .context("Failed to run ffprobe")?;
- 
+
  if !output.status.success() {
  bail!("FFprobe failed: {}", String::from_utf8_lossy(&output.stderr));
  }
- 
+
  let json_str = String::from_utf8_lossy(&output.stdout);
  let probe_data: serde_json::Value = serde_json::from_str(&json_str)
  .context("Failed to parse ffprobe JSON")?;
- 
+
  let streams = probe_data["streams"].as_array()
  .context("No streams found")?;
- 
+
  let video_stream = streams.iter()
  .find(|s| s["codec_type"] == "video")
  .context("No video stream found")?;
- 
+
  let audio_stream = streams.iter()
  .find(|s| s["codec_type"] == "audio");
- 
+
  let format = &probe_data["format"];
- 
+
  Ok(VideoInfo {
  path: video_path.to_path_buf(),
  size: std::fs::metadata(video_path)?.len(),
@@ -355,14 +355,14 @@ impl VideoProcessor {
  duration: format["duration"].as_str()
  .and_then(|s| s.parse::<f32>().ok())
  .unwrap_or(0.0),
- audio_codec: audio_stream.map(|s| 
+ audio_codec: audio_stream.map(|s|
  s["codec_name"].as_str().unwrap_or("unknown").to_string()
  ),
  has_audio: audio_stream.is_some(),
  })
  }
- 
- /// conversionvideo
+
+/// conversionvideo
  pub fn convert_video<F>(
  &self,
  input: &Path,
@@ -375,76 +375,76 @@ impl VideoProcessor {
  {
  let start_time = std::time::Instant::now();
  let original_size = std::fs::metadata(input)?.len();
- 
+
  let input_info = self.analyze_video(input)?;
- 
+
  let mut cmd = Command::new(&self.ffmpeg_path);
  cmd.arg("-i").arg(input)
  .arg("-y")
  .arg("-hide_banner")
  .arg("-loglevel").arg("info")
  .arg("-progress").arg("pipe:2");
- 
+
  let encoder = self.select_encoder(&config.codec, &config.hw_accel);
- 
- // 🔥 H.266/VVC特殊processing - use VVen C独立Encoder (2025-11-20)
+
+// 🔥 H.266/VVCprocessing - use VVen CEncoder (2025-11-20)
  if encoder == "vvencapp" {
  return self.convert_with_vvenc(input, output, config, progress_callback);
  } else if encoder == "ERROR_H266_NOT_AVAILABLE" {
  bail!("H.266/VVC encoder not available. Install vvenc (brew install vvenc) or use alternative codec (--codec h265 or --codec av1)");
  }
- 
+
  cmd.arg("-c:v").arg(&encoder);
- 
- // 🔥 Pro Res特殊processing
+
+// 🔥 Pro Resprocessing
  if config.codec == "prores" {
- // Pro Resuseprofile而 not is CRF
+// Pro Resuseprofilewhile not is CRF
  let profile = self.get_prores_profile(config.crf as u32);
  cmd.arg("-profile:v").arg(profile);
  cmd.arg("-vendor").arg("apl0"); // Apple vendor code
- // Pro Res not usepreset
+// Pro Res not usepreset
  } else {
- // 其他Encoderusestandardparameter
+// itsEncoderusestandardparameter
  cmd.arg("-crf").arg(config.crf.to_string());
  cmd.arg("-preset").arg(&config.preset);
  }
- 
- // 🔥 Pixel format - optionalparameter，None when let FFmpegautoselect最佳format
- // FFmpeg will useavcodec_find_best_pix_fmt_of_2()calculation损失minimumformat
+
+// 🔥 Pixel format - optionalparameter，None when let FFmpegautoselectmostformat
+// FFmpeg will useavcodec_find_best_pix_fmt_of_2()calculationlossminimumformat
  if let Some(ref pix_fmt) = config.pix_fmt {
  cmd.arg("-pix_fmt").arg(pix_fmt);
  }
- // if not specify，FFmpeg will based on：
- // 1. Encodersupportformatlist
- // 2. sourceformatfeature
- // 3. 损失calculation（resolution/depth/Color space/Alpha/quantization/色度）
- // autoselect损失minimumformat
- 
- // 🔥 Advanced encoding parameters - REAL implementation!
+// if not specify，FFmpeg will based on：
+// 1. Encodersupportformatlist
+// 2. sourceformatfeature
+// 3. losscalculation（resolution/depth/Color space/Alpha/quantization/degree）
+// autoselectlossminimumformat
+
+// 🔥 Advanced encoding parameters - REAL implementation!
  if let Some(gop) = config.gop_size {
  cmd.arg("-g").arg(gop.to_string());
  }
- 
+
  if let Some(bf) = config.bframes {
  cmd.arg("-bf").arg(bf.to_string());
  }
- 
+
  if let Some(refs) = config.ref_frames {
  cmd.arg("-refs").arg(refs.to_string());
  }
- 
+
  if let Some(ref me) = config.me_method {
  cmd.arg("-me_method").arg(me);
  }
- 
+
  if let Some((width, height)) = config.target_resolution {
  cmd.arg("-s").arg(format!("{}x{}", width, height));
  }
- 
+
  if let Some(fps) = config.target_fps {
  cmd.arg("-r").arg(fps.to_string());
  }
- 
+
  match &config.audio_mode {
  AudioMode::Copy => {
  cmd.arg("-c:a").arg("copy");
@@ -461,16 +461,16 @@ impl VideoProcessor {
  cmd.arg("-an");
  }
  }
- 
+
  cmd.arg("-f").arg(&config.container);
  cmd.arg(output);
- 
+
  cmd.stdout(Stdio::piped())
  .stderr(Stdio::piped());
- 
+
  let mut child = cmd.spawn()
  .context("Failed to spawn ffmpeg")?;
- 
+
  if let (Some(callback), Some(stderr)) = (progress_callback, child.stderr.take()) {
  let duration = input_info.duration;
  std::thread::spawn(move || {
@@ -487,10 +487,10 @@ impl VideoProcessor {
  }
  });
  }
- 
+
  let status = child.wait()
  .context("Failed to wait for ffmpeg")?;
- 
+
  if !status.success() {
  return Ok(VideoConversionResult {
  success: false,
@@ -502,10 +502,10 @@ impl VideoProcessor {
  error: Some("FFmpeg conversion failed".to_string()),
  });
  }
- 
+
  let converted_size = std::fs::metadata(output)?.len();
  let compression_ratio = original_size as f32 / converted_size as f32;
- 
+
  Ok(VideoConversionResult {
  success: true,
  output_path: output.to_path_buf(),
@@ -516,15 +516,15 @@ impl VideoProcessor {
  error: None,
  })
  }
- 
- /// 🔥 use VVen C独立Encoder进line H.266/VVCconversion (2025-11-20)
- /// 
- /// VVen Cis Fraunhofer HHIdevelopment开source VVCEncoder，performanceExcellent
- /// 
- /// **implementationstrategy**:
- /// 1. using FFmpegextraction YUVoriginalvideo
- /// 2. usevvencappencodingfor VVC
- /// 3. using FFmpegencapsulationfor MP4容
+
+/// 🔥 use VVen CEncoderline H.266/VVCconversion (2025-11-20)
+///
+/// VVen Cis Fraunhofer HHIdevelopmentsource VVCEncoder，performanceExcellent
+///
+/// **implementationstrategy**:
+/// 1. using FFmpegextraction YUVoriginalvideo
+/// 2. usevvencappencodingfor VVC
+/// 3. using FFmpegencapsulationfor MP4
  fn convert_with_vvenc<F>(
  &self,
  input: &Path,
@@ -537,19 +537,19 @@ impl VideoProcessor {
  {
  let start_time = std::time::Instant::now();
  let original_size = std::fs::metadata(input)?.len();
- 
+
  log::info!("H.266/VVC encoding with VVenC");
 
- // Analyze input video
+// Analyze input video
  let input_info = self.analyze_video(input)?;
  let (width, height) = input_info.resolution;
  let fps = input_info.fps;
 
- // Temporary files
+// Temporary files
  let yuv_file = output.with_extension("yuv");
  let vvc_file = output.with_extension("266");
 
- // Step 1: Extract YUV with FFmpeg
+// Step 1: Extract YUV with FFmpeg
  log::info!("Step 1/3: Extracting YUV...");
  let mut cmd = Command::new(&self.ffmpeg_path);
  cmd.arg("-i").arg(input)
@@ -557,15 +557,15 @@ impl VideoProcessor {
  .arg("-pix_fmt").arg("yuv420p")
  .arg("-y")
  .arg(&yuv_file);
- 
+
  let output_extract = cmd.output()
  .context("Failed to extract YUV")?;
- 
+
  if !output_extract.status.success() {
  bail!("YUV extraction failed: {}", String::from_utf8_lossy(&output_extract.stderr));
  }
- 
- // Step 2: Encode with VVenC
+
+// Step 2: Encode with VVenC
  log::info!("Step 2/3: Encoding with VVenC...");
  let mut cmd = Command::new("vvencapp");
  cmd.arg("-i").arg(&yuv_file)
@@ -575,17 +575,17 @@ impl VideoProcessor {
  .arg("--preset").arg(&config.preset)
  .arg("-q").arg(config.crf.to_string())
  .arg("-o").arg(&vvc_file);
- 
+
  let output_encode = cmd.output()
  .context("Failed to run vvencapp")?;
- 
+
  if !output_encode.status.success() {
- // Clean up temporary files
+// Clean up temporary files
  let _ = std::fs::remove_file(&yuv_file);
  bail!("VVenC encoding failed: {}", String::from_utf8_lossy(&output_encode.stderr));
  }
 
- // Step 3: Mux to MP4 with FFmpeg
+// Step 3: Mux to MP4 with FFmpeg
  log::info!("Step 3/3: Muxing to MP4...");
  let mut cmd = Command::new(&self.ffmpeg_path);
  cmd.arg("-i").arg(&vvc_file)
@@ -600,7 +600,7 @@ impl VideoProcessor {
  let output_mux = cmd.output()
  .context("Failed to mux MP4")?;
 
- // Clean up temporary files
+// Clean up temporary files
  let _ = std::fs::remove_file(&yuv_file);
  let _ = std::fs::remove_file(&vvc_file);
 
@@ -615,7 +615,7 @@ impl VideoProcessor {
  log::info!("Original: {:.2} MB", original_size as f32 / 1_048_576.0);
  log::info!("Converted: {:.2} MB", converted_size as f32 / 1_048_576.0);
  log::info!("Compression: {:.2}x", compression_ratio);
- 
+
  Ok(VideoConversionResult {
  success: true,
  output_path: output.to_path_buf(),

@@ -7,13 +7,13 @@ use crate::operations::sharpen::{SharpenConfig, SimdSharpener};
 use crate::types::{ImageFeatures, PredictionRequest, PredictionResult, PredictionWithConfidence, QualityMode};
 
 /// Unified AIprediction - standardizealgorithm
-pub structure UnifiedAIPredictor {
+pub struct UnifiedAIPredictor {
  version: String,
  algorithm_version: String,
 }
 
 impl UnifiedAIPredictor {
- /// createnewpredictioninstance
+/// createnewpredictioninstance
  pub fn new() -> Self {
  Self {
  version: "3.0.0-unified".to_string(),
@@ -21,7 +21,7 @@ impl UnifiedAIPredictor {
  }
  }
 
- /// Unifiedparameterpredictionalgorithm
+/// Unifiedparameterpredictionalgorithm
  pub fn predict_parameters(
  &self,
  features: &ImageFeatures,
@@ -40,7 +40,7 @@ impl UnifiedAIPredictor {
  }
  }
 
- /// Unified AVIFpredictionalgorithm
+/// Unified AVIFpredictionalgorithm
  fn predict_avif(
  &self,
  features: &ImageFeatures,
@@ -115,7 +115,7 @@ impl UnifiedAIPredictor {
  (final_quality, speed, lossless, format_options)
  }
 
- /// Unified JXLpredictionalgorithm
+/// Unified JXLpredictionalgorithm
  fn predict_jxl(
  &self,
  features: &ImageFeatures,
@@ -175,7 +175,7 @@ impl UnifiedAIPredictor {
  (final_quality, effort, lossless, format_options)
  }
 
- /// Unified Web Ppredictionalgorithm（带quality下限protected）
+/// Unified Web Ppredictionalgorithm（qualitydownprotected）
  fn predict_webp(
  &self,
  features: &ImageFeatures,
@@ -200,12 +200,12 @@ impl UnifiedAIPredictor {
  }
 
  let mut final_quality = (base_quality + quality_adjustment).clamp(60, 100) as u32;
- 
- // quality下限protected
+
+// qualitydownprotected
  final_quality = match mode {
  QualityMode::Quality => final_quality.max(85), // qualitymodelowest85
- QualityMode::Balanced => final_quality.max(75), // 平衡modelowest75
- QualityMode::Speed => final_quality.max(70), // 速度modelowest70
+ QualityMode::Balanced => final_quality.max(75), // modelowest75
+ QualityMode::Speed => final_quality.max(70), // speedmodelowest70
  QualityMode::Lossless => 100,
  };
 
@@ -232,7 +232,7 @@ impl UnifiedAIPredictor {
  (final_quality, method, lossless, format_options)
  }
 
- /// Unified PNGpredictionalgorithm
+/// Unified PNGpredictionalgorithm
  fn predict_png(
  &self,
  features: &ImageFeatures,
@@ -268,7 +268,7 @@ impl UnifiedAIPredictor {
  (quality, compression, lossless, format_options)
  }
 
- /// Unified JPEGpredictionalgorithm
+/// Unified JPEGpredictionalgorithm
  fn predict_jpeg(
  &self,
  features: &ImageFeatures,
@@ -307,7 +307,7 @@ impl UnifiedAIPredictor {
  (final_quality, optimization, false, format_options)
  }
 
- /// defaultpredictionalgorithm
+/// defaultpredictionalgorithm
  fn predict_default(
  &self,
  _features: &ImageFeatures,
@@ -332,12 +332,12 @@ impl UnifiedAIPredictor {
  }
  }
 
- /// 归档heuristic：based oninput/targetformat决定is否enabledlosslessmode
- ///
- /// 规则来source（精炼自 ai_parameter_provider.rs::decide_lossless_heuristic）：
- /// - JPEG/JPG → JXL: prioritylossless（利用 JXL 对 JPEG lossless重newpack能力）
- /// - PNG input → 只要targetformatsupportlossless（JXL/PNG/Web P/AVIF），则enabledlossless
- /// - 其他composite： not forcelossless，由各formatinternalstrategy决定
+/// heuristic：based oninput/targetformatisnoenabledlosslessmode
+///
+/// thensource（ ai_parameter_provider.rs::decide_lossless_heuristic）：
+/// - JPEG/JPG → JXL: prioritylossless（exploitation JXL pair JPEG losslessheavynewpackcapability）
+/// - PNG input → onlywanttargetformatsupportlossless（JXL/PNG/Web P/AVIF），thenenabledlossless
+/// - itscomposite： not forcelossless，eachformatinternalstrategy
  fn decide_lossless_heuristic(input_format: &str, target_format: &str) -> bool {
  let input_lower = input_format.to_lowercase();
  let target_lower = target_format.to_lowercase();
@@ -360,7 +360,7 @@ impl UnifiedAIPredictor {
  false
  }
 
- /// Unifiedfilesize估算
+/// Unifiedfilesize
  pub fn estimate_output_size(
  &self,
  features: &ImageFeatures,
@@ -424,7 +424,7 @@ impl UnifiedAIPredictor {
  confidence.clamp(0.3, 0.95)
  }
 
- /// fullpredictioninterface
+/// fullpredictioninterface
  pub fn predict(
  &self,
  features: &ImageFeatures,
@@ -434,7 +434,7 @@ impl UnifiedAIPredictor {
  let (quality, speed, mut lossless, format_options) =
  self.predict_parameters(features, target_format, quality_mode);
 
- // 叠加归档losslessheuristic（只 will will lossless from false overridefor true）
+// 叠加losslessheuristic（only will will lossless from false overridefor true）
  if !lossless
  && Self::decide_lossless_heuristic(&features.format, target_format)
  {
@@ -469,14 +469,14 @@ impl UnifiedAIPredictor {
  let core = self.predict(features, target_format, quality_mode);
  let confidence = self.calculate_confidence(features, target_format);
 
- PredictionWithConfidence { 
- core, 
+ PredictionWithConfidence {
+ core,
  confidence,
  method: format!("unified-ai-v{}", self.algorithm_version)
  }
  }
 
- /// fromstandardrequeststructureexecuteprediction（适合跨语言bridge）
+/// fromstandardrequeststructureexecuteprediction（bridge）
  pub fn predict_from_request(&self, request: &PredictionRequest) -> PredictionWithConfidence {
  self.predict_with_confidence(
  &request.features,
@@ -485,7 +485,7 @@ impl UnifiedAIPredictor {
  )
  }
 
- /// imagesharpening（based on SIMD / standardalgorithm）
+/// imagesharpening（based on SIMD / standardalgorithm）
  pub fn sharpen_image(
  &self,
  image: &DynamicImage,
@@ -495,7 +495,7 @@ impl UnifiedAIPredictor {
  sharpener.sharpen(image)
  }
 
- /// 自适应imagesharpening
+/// shouldimagesharpening
  pub fn adaptive_sharpen_image(
  &self,
  image: &DynamicImage,
@@ -684,11 +684,11 @@ mod tests {
  complexity: 0.5,
  };
 
- // 基本情况下，effective_complexity equalsoriginal复杂度
+// down，effective_complexity equalsoriginalcomplexity
  let base_eff = base.effective_complexity();
  assert!((base_eff - 0.5).abs() < 1e-6);
 
- // 大图 + highresolution + animation + alpha 应显著放大复杂度，但 not will exceeds 1.0
+// large + highresolution + animation + alpha shouldlargecomplexity，but not will exceeds 1.0
  let boosted = ImageFeatures {
  width: 4000,
  height: 3000,
@@ -756,12 +756,12 @@ mod tests {
 
  #[test]
  fn test_confidence_matches_python_logic_for_complex_animated_avif() {
- // 该场景对应 Python unified_ai_prediction_logic.py 逻辑：
- // base 0.8
- // + avif: -0.05 => 0.75
- // + large image: -0.05 => 0.70
- // + animated: -0.10 => 0.60
- // + high complexity (>0.8): -0.05 => 0.55
+// pairshould Python unified_ai_prediction_logic.py ：
+// base 0.8
+// + avif: -0.05 => 0.75
+// + large image: -0.05 => 0.70
+// + animated: -0.10 => 0.60
+// + high complexity (>0.8): -0.05 => 0.55
  let predictor = UnifiedAIPredictor::new();
  let features = ImageFeatures {
  width: 4000,

@@ -4,18 +4,18 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-/// 规范videofeature
+/// videofeature
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure VideoFeatures {
+pub struct VideoFeatures {
  pub width: u32,
  pub height: u32,
  pub fps: f32,
  pub bitrate_kbps: u32,
  pub duration_secs: f32,
  pub has_audio: bool,
- /// Source video codec (e.g. h264/h265/vp9/av1)
+/// Source video codec (e.g. h264/h265/vp9/av1)
  pub codec: String,
- /// Source container (e.g. mp4/mov/webm/mkv)
+/// Source container (e.g. mp4/mov/webm/mkv)
  pub container: String,
 }
 
@@ -37,7 +37,7 @@ pub enum VideoAudioMode {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure VideoEncodingPlan {
+pub struct VideoEncodingPlan {
  pub target_codec: VideoCodec,
  pub target_container: String,
  pub crf: u8,
@@ -46,16 +46,16 @@ pub structure VideoEncodingPlan {
  pub audio_mode: VideoAudioMode,
 }
 
-/// videopredictionrequest，for CLI / 跨语言call
+/// videopredictionrequest，for CLI / call
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure VideoPredictionRequest {
+pub struct VideoPredictionRequest {
  pub features: VideoFeatures,
  pub quality_mode: QualityMode,
 }
 
 /// videohandlerconfiguration
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure VideoProcessorConfig {
+pub struct VideoProcessorConfig {
  pub quality: u8,
  pub codec: VideoCodec,
  pub hardware_acceleration: bool,
@@ -73,22 +73,22 @@ impl Default for VideoProcessorConfig {
 
 /// videohandler - actualexecuteFFmpegconversion
 #[derive(Debug)]
-pub structure VideoProcessor {
+pub struct VideoProcessor {
  config: VideoProcessorConfig,
 }
 
 impl VideoProcessor {
- /// createnewvideohandler
+/// createnewvideohandler
  pub fn new(config: VideoProcessorConfig) -> Self {
  Self { config }
  }
 
- /// usedefaultconfigurationcreate
+/// usedefaultconfigurationcreate
  pub fn with_defaults() -> Self {
  Self::new(VideoProcessorConfig::default())
  }
 
- /// check FFmpegis否available
+/// check FFmpegisnoavailable
  pub fn check_ffmpeg() -> Result<bool> {
  match Command::new("ffmpeg")
  .arg("-version")
@@ -101,7 +101,7 @@ impl VideoProcessor {
  }
  }
 
- /// conversionvideofile
+/// conversionvideofile
  pub fn convert<P: AsRef<Path>>(
  &self,
  input: P,
@@ -124,20 +124,20 @@ impl VideoProcessor {
  let start_time = std::time::Instant::now();
  let input_size = std::fs::metadata(input_path)?.len();
 
- // buildFFmpegcommand
+// buildFFmpegcommand
  let mut cmd = Command::new("ffmpeg");
  cmd.arg("-i").arg(input_path);
 
- // add编decodingparameter
+// adddecodingparameter
  self.add_codec_args(&mut cmd, plan)?;
 
- // addqualityparameter
+// addqualityparameter
  cmd.arg("-crf").arg(plan.crf.to_string());
 
- // preset
+// preset
  cmd.arg("-preset").arg(plan.preset);
 
- // audioprocessing
+// audioprocessing
  match plan.audio_mode {
  VideoAudioMode::Copy => {
  cmd.arg("-c:a").arg("copy");
@@ -153,11 +153,11 @@ impl VideoProcessor {
  }
  }
 
- // outputfile
+// outputfile
  cmd.arg(output_path);
  cmd.arg("-y");
 
- // executeconversion
+// executeconversion
  let output = cmd.output()?;
 
  if !output.status.success() {
@@ -178,7 +178,7 @@ impl VideoProcessor {
  })
  }
 
- /// add编decodingparameter
+/// adddecodingparameter
  fn add_codec_args(&self, cmd: &mut Command, plan: &VideoEncodingPlan) -> Result<()> {
  match plan.target_codec {
  VideoCodec::H264 => {
@@ -194,10 +194,10 @@ impl VideoProcessor {
  }
  }
  VideoCodec::H266 => {
- // H.266/VVC support via libvvenc or libvvdec
- // Note: Requires FFmpeg compiled with VVC support
+// H.266/VVC support via libvvenc or libvvdec
+// Note: Requires FFmpeg compiled with VVC support
  cmd.arg("-c:v").arg("libvvenc");
- // VVC-specific optimizations
+// VVC-specific optimizations
  cmd.arg("-vvenc-params").arg("preset=medium");
  if self.config.hardware_acceleration {
  cmd.arg("-hwaccel").arg("auto");
@@ -214,7 +214,7 @@ impl VideoProcessor {
  Ok(())
  }
 
- /// getvideoinformation
+/// getvideoinformation
  pub fn get_info<P: AsRef<Path>>(input: P) -> Result<VideoInfo> {
  let input_path = input.as_ref();
 
@@ -248,7 +248,7 @@ impl VideoProcessor {
 
 /// videoconversionresult
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure VideoConversionResult {
+pub struct VideoConversionResult {
  pub input_path: String,
  pub output_path: String,
  pub input_size: u64,
@@ -259,7 +259,7 @@ pub structure VideoConversionResult {
 
 /// videoinformation
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure VideoInfo {
+pub struct VideoInfo {
  pub path: std::path::PathBuf,
  pub size_bytes: u64,
  pub duration_seconds: f64,
@@ -269,9 +269,9 @@ pub structure VideoInfo {
  pub codec: String,
 }
 
-/// video AI prediction（纯localstrategy， not 做 IO/子process）
+/// video AI prediction（localstrategy， not  IO/subprocess）
 #[derive(Default)]
-pub structure VideoAIPredictor;
+pub struct VideoAIPredictor;
 
 impl VideoAIPredictor {
  pub fn new() -> Self {
@@ -287,12 +287,12 @@ impl VideoAIPredictor {
  let is_8k = features.width >= 7680 || features.height >= 4320;
  let is_hd = features.width >= 1920 || features.height >= 1080;
 
- // Select target codec
+// Select target codec
  let target_codec = if is_8k {
- // 8K video prioritizes H.266 for best compression ratio
+// 8K video prioritizes H.266 for best compression ratio
  VideoCodec::H266
  } else if is_uhd && matches!(quality_mode, QualityMode::Quality | QualityMode::Lossless) {
- // 4Khighqualitymodeoptional H.266
+// 4Khighqualitymodeoptional H.266
  VideoCodec::H266
  } else if is_uhd {
  VideoCodec::H265
@@ -308,7 +308,7 @@ impl VideoAIPredictor {
  "mp4".to_string()
  };
 
- // 基础 CRF 按qualitymode and resolutionadjusted
+// basic CRF qualitymode and resolutionadjusted
  let base_crf: u8 = match quality_mode {
  QualityMode::Speed => 28,
  QualityMode::Balanced => 24,
@@ -318,28 +318,28 @@ impl VideoAIPredictor {
 
  let mut crf = base_crf;
  if is_uhd {
- crf = crf.saturating_add(2); // higher分辨率略微放宽 CRF
+ crf = crf.saturating_add(2); // higherresolutionwide CRF
  } else if !is_hd {
- crf = crf.saturating_sub(2); // 小分辨率可以tomorequality
+ crf = crf.saturating_sub(2); // smallresolutioncanbytomorequality
  }
 
- // Shorter videos can be more aggressive
+// Shorter videos can be more aggressive
  if features.duration_secs < 60.0 {
  crf = crf.saturating_sub(1);
  }
 
- // presetspeed
+// presetspeed
  let preset = match quality_mode {
  QualityMode::Speed => "veryfast",
  QualityMode::Balanced => "medium",
  QualityMode::Quality | QualityMode::Lossless => "slow",
  };
 
- // Two-pass encoding: enabled for long videos + quality priority
+// Two-pass encoding: enabled for long videos + quality priority
  let two_pass = matches!(quality_mode, QualityMode::Quality | QualityMode::Lossless)
  && features.duration_secs > 120.0;
 
- // audiostrategy
+// audiostrategy
  let audio_mode = if !features.has_audio {
  VideoAudioMode::Remove
  } else if target_container == "webm" {
@@ -418,7 +418,7 @@ mod tests {
 
  let plan = predictor.predict_video_plan(&features, QualityMode::Quality);
 
- // 4K Quality mode now uses H.266 for better compression ratio
+// 4K Quality mode now uses H.266 for better compression ratio
  assert!(
  matches!(plan.target_codec, VideoCodec::H266),
  "expected H266 for UHD video in Quality mode, got {:?}",
@@ -475,8 +475,8 @@ mod tests {
  };
 
  let plan = predictor.predict_video_plan(&features, QualityMode::Quality);
- 
- // 8K video should use H.266 for best compression ratio
+
+// 8K video should use H.266 for best compression ratio
  assert!(matches!(plan.target_codec, VideoCodec::H266));
  assert_eq!(plan.target_container, "mp4");
  }
@@ -496,8 +496,8 @@ mod tests {
  };
 
  let plan = predictor.predict_video_plan(&features, QualityMode::Quality);
- 
- // 4Khighqualitymodeshoulduse H.266
+
+// 4Khighqualitymodeshoulduse H.266
  assert!(matches!(plan.target_codec, VideoCodec::H266));
  }
 }

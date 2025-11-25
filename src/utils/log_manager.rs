@@ -1,25 +1,25 @@
 /// 🔥 UnifiedloggingmanagementSystem
-/// 
-/// 架构原则：
-/// - 所 has loggingmustpass此Manager
-/// - supportdevelopment/productionmode切换
-/// - logginglevel可configuration
-/// - removed所 has 硬encodingprintln!
+///
+/// originalthen：
+/// -  has loggingmustpassthisManager
+/// - supportdevelopment/productionmode
+/// - logginglevelcanconfiguration
+/// - removed has hardencodingprintln!
 use std::sync::{Arc, Mutex, OnceLock};
 use std::fmt;
 
 /// logginglevel
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum LogLevel {
- /// debuginformation - 仅developmentmode
+/// debuginformation - onlydevelopmentmode
  Debug = 0,
- /// Detailed information - developmentmode and verbosemode
+/// Detailed information - developmentmode and verbosemode
  Verbose = 1,
- /// a般information - 总isdisplay
+/// ainformation - isdisplay
  Info = 2,
- /// warninginformation - 总isdisplay
+/// warninginformation - isdisplay
  Warning = 3,
- /// errorinformation - 总isdisplay
+/// errorinformation - isdisplay
  Error = 4,
 }
 impl LogLevel {
@@ -32,7 +32,7 @@ impl LogLevel {
  LogLevel::Error => "❌",
  }
  }
- 
+
  pub fn color_code(&self) -> &'static str {
  match self {
  LogLevel::Debug => "\x1b[36m", // Cyan
@@ -58,16 +58,16 @@ impl fmt::Display for LogLevel {
 
 /// loggingconfiguration
 #[derive(Debug, Clone)]
-pub structure LogConfig {
- /// minimumlogginglevel
+pub struct LogConfig {
+/// minimumlogginglevel
  pub min_level: LogLevel,
- /// is否displaytime戳
+/// isnodisplaytime
  pub show_timestamp: bool,
- /// is否displaycolor
+/// isnodisplaycolor
  pub show_color: bool,
- /// is否displaylevellabel
+/// isnodisplaylevellabel
  pub show_level: bool,
- /// developmentmode（display所 has logging）
+/// developmentmode（display has logging）
  pub dev_mode: bool,
 }
 impl Default for LogConfig {
@@ -83,7 +83,7 @@ impl Default for LogConfig {
 }
 
 impl LogConfig {
- /// productionmodeconfiguration
+/// productionmodeconfiguration
  pub fn production() -> Self {
  Self {
  min_level: LogLevel::Info,
@@ -93,8 +93,8 @@ impl LogConfig {
  dev_mode: false,
  }
  }
- 
- /// developmentmodeconfiguration
+
+/// developmentmodeconfiguration
  pub fn development() -> Self {
  Self {
  min_level: LogLevel::Debug,
@@ -104,8 +104,8 @@ impl LogConfig {
  dev_mode: true,
  }
  }
- 
- /// Verbosemodeconfiguration
+
+/// Verbosemodeconfiguration
  pub fn verbose() -> Self {
  Self {
  min_level: LogLevel::Verbose,
@@ -118,7 +118,7 @@ impl LogConfig {
 }
 
 /// globallogging Manager
-pub structure LogManager {
+pub struct LogManager {
  config: Arc<Mutex<LogConfig>>,
 }
 impl LogManager {
@@ -127,42 +127,42 @@ impl LogManager {
  config: Arc::new(Mutex::new(LogConfig::default())),
  }
  }
- 
- /// getglobalinstance
+
+/// getglobalinstance
  pub fn global() -> &'static LogManager {
  static INSTANCE: OnceLock<LogManager> = OnceLock::new();
  INSTANCE.get_or_init(LogManager::new)
  }
- 
- /// settingconfiguration
+
+/// settingconfiguration
  pub fn set_config(&self, config: LogConfig) {
  *self.config.lock().expect("Mutex poisoned") = config;
  }
- 
- /// getconfiguration
- /// 🔥 Performance: Explicit scope for lock
+
+/// getconfiguration
+/// 🔥 Performance: Explicit scope for lock
  pub fn get_config(&self) -> LogConfig {
  let guard = self.config.lock().expect("Mutex poisoned");
  guard.clone()
  }
- 
- /// recordlogging
- /// 🔥 Performance: Clone outside of lock
+
+/// recordlogging
+/// 🔥 Performance: Clone outside of lock
  pub fn log(&self, level: LogLevel, message: &str) {
  let config = {
  let guard = self.config.lock().expect("Mutex poisoned");
  guard.clone()
  };
- 
- // checklogginglevel
+
+// checklogginglevel
  if level < config.min_level {
  return;
  }
- 
- // buildloggingmessage
+
+// buildloggingmessage
  let mut output = String::new();
- 
- // time戳
+
+// time
  if config.show_timestamp {
  use std::time::SystemTime;
  let now = SystemTime::now()
@@ -170,31 +170,31 @@ impl LogManager {
  .unwrap_or_default();
  output.push_str(&format!("[{:.3}s] ", now.as_secs_f64() % 1000.0));
  }
- 
- // levellabel
+
+// levellabel
  if config.show_level {
  output.push_str(&format!("[{}] ", level));
  }
- 
- // Emoji and color
+
+// Emoji and color
  if config.show_color {
- output.push_str(&format!("{} {}{}\x1b[0m", 
- level.emoji(), 
- level.color_code(), 
+ output.push_str(&format!("{} {}{}\x1b[0m",
+ level.emoji(),
+ level.color_code(),
  message
  ));
  } else {
  output.push_str(&format!("{} {}", level.emoji(), message));
  }
- 
+
  println!("{}", output);
  }
- 
- /// record带Detailed informationlogging
- /// 🔥 Performance: Clone outside of lock
+
+/// recordDetailed informationlogging
+/// 🔥 Performance: Clone outside of lock
  pub fn log_with_details(&self, level: LogLevel, message: &str, details: &[(&str, &str)]) {
  self.log(level, message);
- 
+
  let config = {
  let guard = self.config.lock().expect("Mutex poisoned");
  guard.clone()
@@ -205,9 +205,9 @@ impl LogManager {
  }
  }
  }
- 
- /// record分隔线
- /// 🔥 Performance: Clone outside of lock
+
+/// recordline
+/// 🔥 Performance: Clone outside of lock
  pub fn separator(&self) {
  let config = {
  let guard = self.config.lock().expect("Mutex poisoned");
@@ -217,9 +217,9 @@ impl LogManager {
  println!("{}", "─".repeat(60));
  }
  }
- 
- /// record标题
- /// 🔥 Performance: Clone outside of lock
+
+/// record
+/// 🔥 Performance: Clone outside of lock
  pub fn header(&self, title: &str) {
  let config = {
  let guard = self.config.lock().expect("Mutex poisoned");
@@ -233,7 +233,7 @@ impl LogManager {
  }
 }
 
-/// 便捷宏
+/// 
 #[macro_export]
 macro_rules! log_mgr_debug {
  ($($arg:tt)*) => {
@@ -286,35 +286,35 @@ macro_rules! log_mgr_error {
 #[cfg(test)]
 mod tests {
  use super::*;
- 
+
  #[test]
  fn test_log_levels() {
  let manager = LogManager::global();
- 
- // testdifferentlevel
+
+// testdifferentlevel
  manager.log(LogLevel::Debug, "Debug message");
  manager.log(LogLevel::Info, "Info message");
  manager.log(LogLevel::Warning, "Warning message");
  manager.log(LogLevel::Error, "Error message");
  }
- 
+
  #[test]
  fn test_config_modes() {
  let manager = LogManager::global();
- 
- // productionmode
+
+// productionmode
  manager.set_config(LogConfig::production());
  let config = manager.get_config();
  assert_eq!(config.min_level, LogLevel::Info);
  assert!(!config.dev_mode);
- 
- // developmentmode
+
+// developmentmode
  manager.set_config(LogConfig::development());
  let config = manager.get_config();
  assert_eq!(config.min_level, LogLevel::Debug);
  assert!(config.dev_mode);
  }
- 
+
  #[test]
  fn test_macros() {
  log_mgr_debug!("Debug: {}", "test");

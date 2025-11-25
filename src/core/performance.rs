@@ -1,13 +1,13 @@
 //! 🚀 highperformanceprocessing Core
 //!
-//! provide SIMDoptimization、memorymanagement and parallelprocessing能力
+//! provide SIMDoptimization、memorymanagement and parallelprocessingcapability
 //!
-//! ## feature特性
+//! ## feature
 //!
-//! - **SIMDoptimization**: autodetectionanduse AVX2/AVX512/NEON指令集
-//! - **memorymanagement**: 零拷贝memory池，cache友好memory布局
-//! - **parallelprocessing**: based on Rayonhigh效thread池
-//! - **performance监控**: real-timestatistics and performanceanalysis
+//! - **SIMDoptimization**: autodetectionanduse AVX2/AVX512/NEON
+//! - **memorymanagement**: memorypool，cachememory
+//! - **parallelprocessing**: based on Rayonhighthreadpool
+//! - **performance**: real-timestatistics and performanceanalysis
 //!
 //! ## useexample
 //!
@@ -31,14 +31,14 @@ use std::time::Instant;
 
 /// performanceconfiguration
 #[derive(Debug, Clone)]
-pub structure PerformanceConfig {
- /// enabledSIMDoptimization
+pub struct PerformanceConfig {
+/// enabledSIMDoptimization
  pub enable_simd: bool,
- /// workthread数 (0 = autodetection)
+/// workthread (0 = autodetection)
  pub worker_threads: usize,
- /// memory池size (MB)
+/// memorypoolsize (MB)
  pub memory_pool_size_mb: usize,
- /// enabledperformance监控
+/// enabledperformance
  pub enable_profiling: bool,
 }
 
@@ -55,24 +55,24 @@ impl Default for PerformanceConfig {
 
 /// performancestatistics
 #[derive(Debug, Clone, Default)]
-pub structure PerformanceStats {
- /// 总processingtask数
+pub struct PerformanceStats {
+/// processingtask
  pub total_tasks: u64,
- /// successtask数
+/// successtask
  pub successful_tasks: u64,
- /// 总processingtime (纳秒)
+/// processingtime ()
  pub total_processing_time_ns: u64,
- /// averagedelay (纳秒)
+/// averagedelay ()
  pub avg_latency_ns: u64,
- /// SIMDusecount
+/// SIMDusecount
  pub simd_usage_count: u64,
- /// memory分配count
+/// memorycount
  pub memory_allocations: u64,
 }
 
 /// CPUinformation
 #[derive(Debug, Clone)]
-pub structure CpuInfo {
+pub struct CpuInfo {
  pub cores: usize,
  pub logical_cores: usize,
  pub supports_avx2: bool,
@@ -81,7 +81,7 @@ pub structure CpuInfo {
  pub cache_line_size: usize,
 }
 
-/// image操作type
+/// imagetype
 #[derive(Debug, Clone)]
 pub enum ImageOperation {
  Resize { width: u32, height: u32 },
@@ -90,7 +90,7 @@ pub enum ImageOperation {
 }
 
 /// 🚀 highperformanceprocessing Core
-pub structure PerformanceCore {
+pub struct PerformanceCore {
  config: PerformanceConfig,
  stats: Arc<RwLock<PerformanceStats>>, // 🔥 Performance: RwLock for read-heavy access
  cpu_info: CpuInfo,
@@ -98,13 +98,13 @@ pub structure PerformanceCore {
 }
 
 impl PerformanceCore {
- /// createnewperformance Coreinstance
+/// createnewperformance Coreinstance
  pub async fn new(config: PerformanceConfig) -> Result<Self> {
  tracing::info!("🚀 Initializing high-performance processing core...");
 
  let start_time = Instant::now();
 
- // detection CPU能力
+// detection CPUcapability
  let cpu_info = Self::detect_cpu_info();
  tracing::info!(
  "💻 CPU detected: {} cores, AVX2: {}, AVX512: {}, NEON: {}",
@@ -114,7 +114,7 @@ impl PerformanceCore {
  cpu_info.supports_neon
  );
 
- // settingthread池
+// settingthreadpool
  let worker_threads = if config.worker_threads == 0 {
  num_cpus::get()
  } else {
@@ -139,12 +139,12 @@ impl PerformanceCore {
  })
  }
 
- /// detection CPUinformation and 能力
+/// detection CPUinformation and capability
  fn detect_cpu_info() -> CpuInfo {
  let cores = num_cpus::get_physical();
  let logical_cores = num_cpus::get();
 
- // detectionSIMDsupport
+// detectionSIMDsupport
  #[cfg(target_arch = "x86_64")]
  let (supports_avx2, supports_avx512) = {
  (
@@ -172,7 +172,7 @@ impl PerformanceCore {
  }
  }
 
- /// processingimagedata (autoselectoptimalpath)
+/// processingimagedata (autoselectoptimalpath)
  pub async fn process_image(
  &self,
  image_data: &[u8],
@@ -180,18 +180,18 @@ impl PerformanceCore {
  ) -> Result<Vec<u8>> {
  let start = Instant::now();
 
- // updatestatistics
- // 🔥 Performance: Use write lock for mutation
+// updatestatistics
+// 🔥 Performance: Use write lock for mutation
  if let Ok(mut stats) = self.stats.write() {
  stats.total_tasks += 1;
  }
 
- // selectprocessingpath
+// selectprocessingpath
  let result = self.choose_processing_path(image_data, &operation).await;
 
- // updateperformancestatistics
+// updateperformancestatistics
  let duration = start.elapsed();
- // 🔥 Performance: Use write lock for mutation
+// 🔥 Performance: Use write lock for mutation
  if let Ok(mut stats) = self.stats.write() {
  stats.total_processing_time_ns += duration.as_nanos() as u64;
  if stats.total_tasks > 0 {
@@ -206,7 +206,7 @@ impl PerformanceCore {
  result
  }
 
- /// intelligentselectprocessingpath
+/// intelligentselectprocessingpath
  async fn choose_processing_path(
  &self,
  image_data: &[u8],
@@ -214,11 +214,11 @@ impl PerformanceCore {
  ) -> Result<Vec<u8>> {
  let data_size = image_data.len();
 
- // etc data + SIMDavailable → SIMDoptimization
+// etc data + SIMDavailable → SIMDoptimization
  if data_size > 100_000 && self.config.enable_simd {
  tracing::debug!("Selecting SIMD optimization path: {} KB", data_size / 1024);
 
- // 🔥 Performance: Use write lock for mutation
+// 🔥 Performance: Use write lock for mutation
  if let Ok(mut stats) = self.stats.write() {
  stats.simd_usage_count += 1;
  }
@@ -226,12 +226,12 @@ impl PerformanceCore {
  return self.process_image_simd(image_data, operation);
  }
 
- // defaultpath → 标量processing
+// defaultpath → processing
  tracing::debug!("Selecting scalar processing path: {} bytes", data_size);
  self.process_image_scalar(image_data, operation)
  }
 
- /// SIMDoptimizationprocessing
+/// SIMDoptimizationprocessing
  fn process_image_simd(&self, image_data: &[u8], operation: &ImageOperation) -> Result<Vec<u8>> {
  use image::GenericImageView;
 
@@ -240,7 +240,7 @@ impl PerformanceCore {
  let img = image::load_from_memory(image_data).context("Failed to decode image")?;
  let (src_width, src_height) = img.dimensions();
 
- // 对于小image，usestandardlibrary
+// pairatsmallimage，usestandardlibrary
  if src_width.saturating_mul(src_height) < 1_000_000 {
  let resized = img.resize(
  *width,
@@ -257,7 +257,7 @@ impl PerformanceCore {
  return Ok(output);
  }
 
- // 对于大image，usefast_image_resize (内置SIMDoptimization)
+// pairatlargeimage，usefast_image_resize (insideSIMDoptimization)
  let src_rgba = img.to_rgba8();
 
  let mut resizer = fast_image_resize::Resizer::new();
@@ -325,7 +325,7 @@ impl PerformanceCore {
  ImageOperation::Enhance => {
  let img = image::load_from_memory(image_data).context("Failed to decode image")?;
 
- // useimageproc向quantization操作
+// useimageprocquantization
  let gray = img.to_luma8();
  let enhanced = imageproc::contrast::stretch_contrast(&gray, 5, 250, 0, 255);
 
@@ -347,7 +347,7 @@ impl PerformanceCore {
  }
  }
 
- /// 标量processing (回退方案)
+/// processing ()
  fn process_image_scalar(&self, image_data: &[u8], operation: &ImageOperation) -> Result<Vec<u8>> {
  let img = image::load_from_memory(image_data).context("Failed to load image")?;
 
@@ -370,25 +370,25 @@ impl PerformanceCore {
  Ok(output)
  }
 
- /// getperformancestatistics
- /// 🔥 Performance: Use read lock for read-only access
+/// getperformancestatistics
+/// 🔥 Performance: Use read lock for read-only access
  pub fn get_stats(&self) -> PerformanceStats {
  self.stats.read()
  .map(|s| s.clone())
  .unwrap_or_default()
  }
 
- /// getCPUinformation
+/// getCPUinformation
  pub fn get_cpu_info(&self) -> &CpuInfo {
  &self.cpu_info
  }
 
- /// getruntime
+/// getruntime
  pub fn uptime(&self) -> std::time::Duration {
  self.start_time.elapsed()
  }
 
- /// estimated SIMD加速倍数
+/// estimated SIMD加速倍
  pub fn estimate_speedup(&self) -> f32 {
  if self.cpu_info.supports_avx512 {
  16.0
@@ -438,14 +438,14 @@ mod tests {
  memory_pool_size_mb: 128,
  enable_profiling: false,
  };
- 
- // trycreate，ifthread池已initialization也算success
+
+// trycreate，ifthreadpoolalreadyinitializationalsosuccess
  match PerformanceCore::new(config).await {
  Ok(_) => {
- // successcreate
+// successcreate
  }
  Err(e) => {
- // ifisthread池已initializationerror，也算testpass
+// ifisthreadpoolalreadyinitializationerror，alsotestpass
  let err_msg = e.to_string();
  assert!(err_msg.contains("thread pool"));
  }
@@ -456,20 +456,20 @@ mod tests {
  async fn test_estimate_speedup() {
  let config = PerformanceConfig {
  enable_simd: true,
- worker_threads: 2, // using固定线程数避免冲突
+ worker_threads: 2, // usingthread避免冲突
  memory_pool_size_mb: 128,
  enable_profiling: false,
  };
- 
- // trycreate，ifthread池已initialization则skip
+
+// trycreate，ifthreadpoolalreadyinitializationthenskip
  match PerformanceCore::new(config).await {
  Ok(core) => {
  let speedup = core.estimate_speedup();
  assert!(speedup >= 1.0);
  }
  Err(_) => {
- // thread池已initialization，skiptest
- // 直接test估算逻辑
+// threadpoolalreadyinitialization，skiptest
+// test估逻辑
  let cpu_info = PerformanceCore::detect_cpu_info();
  let speedup = if cpu_info.supports_avx512 {
  16.0

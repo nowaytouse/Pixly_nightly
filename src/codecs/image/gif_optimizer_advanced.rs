@@ -1,12 +1,12 @@
-//! high级GIFoptimization
-//! 
-//! providemulti阶段iterationoptimization、frameoptimization、色彩optimization etc feature
+//! highlevelGIFoptimization
+//!
+//! providemultisegmentiterationoptimization、frameoptimization、optimization etc feature
 
 use serde::{Deserialize, Serialize};
 
 /// GIFoptimizationconfiguration
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure GifOptimizationConfig {
+pub struct GifOptimizationConfig {
  pub color_optimization: u8,
  pub frame_optimization: FrameOptimization,
  pub lossy_compression: bool,
@@ -40,7 +40,7 @@ pub enum FrameOptimization {
 }
 
 /// GIFoptimization
-pub structure GifOptimizer {
+pub struct GifOptimizer {
  #[allow(dead_code)]
  config: GifOptimizationConfig,
 }
@@ -49,7 +49,7 @@ impl GifOptimizer {
  pub fn new(config: GifOptimizationConfig) -> Self {
  Self { config }
  }
- 
+
  pub fn with_defaults() -> Self {
  Self::new(GifOptimizationConfig::default())
  }
@@ -57,7 +57,7 @@ impl GifOptimizer {
 
 /// optimizationresult
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure OptimizationResult {
+pub struct OptimizationResult {
  pub original_size: u64,
  pub optimized_size: u64,
  pub reduction_percent: f64,

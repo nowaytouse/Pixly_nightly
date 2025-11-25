@@ -7,7 +7,7 @@ use std::process::{Command, Stdio};
 use serde::{Deserialize, Serialize};
 
 /// 🔥 Safe path conversion helper function
-/// 
+///
 /// Convert Path to&str，if fails return clear error information
 fn path_to_str(path: &Path) -> Result<&str> {
  path.to_str()
@@ -20,36 +20,36 @@ fn path_to_str(path: &Path) -> Result<&str> {
 }
 
 /// Modern format converter
-pub structure ModernFormatConverter {
+pub struct ModernFormatConverter {
  ffmpeg_path: String,
  cjxl_path: Option<String>,
 }
 
 impl ModernFormatConverter {
- /// Create new converter
+/// Create new converter
  pub fn new() -> Self {
  Self {
  ffmpeg_path: "ffmpeg".to_string(),
  cjxl_path: which::which("cjxl").ok().map(|p| p.to_string_lossy().to_string()),
  }
  }
- 
- /// Check format support
+
+/// Check format support
  pub fn check_format_support(&self) -> FormatSupport {
  FormatSupport {
  avif: self.check_avif_support(),
  jxl_ffmpeg: self.check_jxl_ffmpeg_support(),
  jxl_native: self.cjxl_path.is_some(),
- webp: true, // FFmpeg总issupportWebP
+ webp: true, // FFmpegissupportWebP
  }
  }
- 
- /// Check AVIF support
+
+/// Check AVIF support
  fn check_avif_support(&self) -> bool {
  let output = Command::new(&self.ffmpeg_path)
  .args(["-encoders"])
  .output();
- 
+
  if let Ok(output) = output {
  let stdout = String::from_utf8_lossy(&output.stdout);
  stdout.contains("libaom-av1") || stdout.contains("libsvtav1")
@@ -57,13 +57,13 @@ impl ModernFormatConverter {
  false
  }
  }
- 
- /// Check JXL FFmpeg support
+
+/// Check JXL FFmpeg support
  fn check_jxl_ffmpeg_support(&self) -> bool {
  let output = Command::new(&self.ffmpeg_path)
  .args(["-encoders"])
  .output();
- 
+
  if let Ok(output) = output {
  let stdout = String::from_utf8_lossy(&output.stdout);
  stdout.contains("libjxl")
@@ -71,8 +71,8 @@ impl ModernFormatConverter {
  false
  }
  }
- 
- /// conversionforAVIF
+
+/// conversionforAVIF
  pub fn convert_to_avif<P: AsRef<Path>>(
  &self,
  input: P,
@@ -81,33 +81,33 @@ impl ModernFormatConverter {
  ) -> Result<ConversionResult> {
  let input = input.as_ref();
  let output = output.as_ref();
- 
+
  if !self.check_avif_support() {
  bail!("FFmpeg does not support AVIF encoding, please install libaom-av1 or libsvtav1");
  }
- 
+
  let input_size = std::fs::metadata(input)?.len();
- 
- // buildFFmpegcommand
+
+// buildFFmpegcommand
  let mut cmd = Command::new(&self.ffmpeg_path);
  cmd.args([
  "-i", path_to_str(input)?,
  "-c:v", &params.encoder,
  ]);
- 
- // Add parameters based on encoder
+
+// Add parameters based on encoder
  match params.encoder.as_str() {
  "libaom-av1" => {
  cmd.args([
  "-crf", &params.crf.to_string(),
  "-cpu-used", &params.speed.to_string(),
  ]);
- 
- // 🔥 Quantizer parameters
+
+// 🔥 Quantizer parameters
  cmd.args(["-qmin", &params.min_quantizer.to_string()]);
  cmd.args(["-qmax", &params.max_quantizer.to_string()]);
- 
- // 🔥 Tilesparallelencoding
+
+// 🔥 Tilesparallelencoding
  if params.tiles_rows > 1 || params.tiles_cols > 1 {
  cmd.args(["-tiles", &format!("{}x{}", params.tiles_cols, params.tiles_rows)]);
  }
@@ -117,17 +117,17 @@ impl ModernFormatConverter {
  "-crf", &params.crf.to_string(),
  "-preset", &params.speed.to_string(),
  ]);
- 
- // 🔥 Quantizer parameters
+
+// 🔥 Quantizer parameters
  cmd.args(["-qmin", &params.min_quantizer.to_string()]);
  cmd.args(["-qmax", &params.max_quantizer.to_string()]);
  }
  _ => {}
  }
- 
- // 🔥 Pixel format - Based on user selected bit_depth and chroma_subsampling
- // If user explicitly specified these parameters，we pass them to FFmpeg
- // otherwise let FFmpeg auto-select best format
+
+// 🔥 Pixel format - Based on user selected bit_depth and chroma_subsampling
+// If user explicitly specified these parameters，we pass them to FFmpeg
+// otherwise let FFmpeg auto-select best format
  if !params.chroma_subsampling.is_empty() {
  let pix_fmt = match (params.bit_depth, params.chroma_subsampling.as_str()) {
  (10, "420") => "yuv420p10le",
@@ -140,7 +140,7 @@ impl ModernFormatConverter {
  (_, "422") => "yuv422p",
  (_, "444") => "yuv444p",
  _ => {
- // Not specified, let FFmpeg auto-select
+// Not specified, let FFmpeg auto-select
  ""
  }
  };
@@ -148,27 +148,27 @@ impl ModernFormatConverter {
  cmd.args(["-pix_fmt", pix_fmt]);
  }
  }
- // If pix_fmt not specified，FFmpeg will auto-select format with minimum loss
- 
+// If pix_fmt not specified，FFmpeg will auto-select format with minimum loss
+
  cmd.args([
  "-y",
  path_to_str(output)?,
  ]);
- 
- // executeconversion
+
+// executeconversion
  let result = cmd
  .stdout(Stdio::null())
  .stderr(Stdio::piped())
  .output()
  .context("Failed to execute FFmpeg")?;
- 
+
  if !result.status.success() {
  let stderr = String::from_utf8_lossy(&result.stderr);
  bail!("AVIF conversion failed: {}", stderr);
  }
- 
+
  let output_size = std::fs::metadata(output)?.len();
- 
+
  Ok(ConversionResult {
  input_size,
  output_size,
@@ -176,8 +176,8 @@ impl ModernFormatConverter {
  format: "avif".to_string(),
  })
  }
- 
- /// Convert to JXL (using FFmpeg)
+
+/// Convert to JXL (using FFmpeg)
  pub fn convert_to_jxl_ffmpeg<P: AsRef<Path>>(
  &self,
  input: P,
@@ -186,13 +186,13 @@ impl ModernFormatConverter {
  ) -> Result<ConversionResult> {
  let input = input.as_ref();
  let output = output.as_ref();
- 
+
  if !self.check_jxl_ffmpeg_support() {
  bail!("FFmpeg does not support JXL encoding, please use native cjxl tool");
  }
- 
+
  let input_size = std::fs::metadata(input)?.len();
- 
+
  let mut cmd = Command::new(&self.ffmpeg_path);
  cmd.args([
  "-i", path_to_str(input)?,
@@ -200,29 +200,29 @@ impl ModernFormatConverter {
  "-q:v", &params.quality.to_string(),
  "-effort", &params.effort.to_string(),
  ]);
- 
+
  if params.lossless {
  cmd.args(["-lossless", "1"]);
  }
- 
+
  cmd.args([
  "-y",
  path_to_str(output)?,
  ]);
- 
+
  let result = cmd
  .stdout(Stdio::null())
  .stderr(Stdio::piped())
  .output()
  .context("Failed to execute FFmpeg")?;
- 
+
  if !result.status.success() {
  let stderr = String::from_utf8_lossy(&result.stderr);
  bail!("JXL conversion failed: {}", stderr);
  }
- 
+
  let output_size = std::fs::metadata(output)?.len();
- 
+
  Ok(ConversionResult {
  input_size,
  output_size,
@@ -230,8 +230,8 @@ impl ModernFormatConverter {
  format: "jxl".to_string(),
  })
  }
- 
- /// Convert to JXL (using native cjxl)
+
+/// Convert to JXL (using native cjxl)
  pub fn convert_to_jxl_native<P: AsRef<Path>>(
  &self,
  input: P,
@@ -240,62 +240,62 @@ impl ModernFormatConverter {
  ) -> Result<ConversionResult> {
  let input = input.as_ref();
  let output = output.as_ref();
- 
+
  let cjxl_path = self.cjxl_path.as_ref()
  .ok_or_else(|| anyhow::anyhow!("cjxl tool not installed"))?;
- 
+
  let input_size = std::fs::metadata(input)?.len();
- 
+
  let mut cmd = Command::new(cjxl_path);
  cmd.arg(path_to_str(input)?);
  cmd.arg(path_to_str(output)?);
- 
- // qualityparameter
+
+// qualityparameter
  if params.lossless {
  cmd.arg("--lossless");
  } else {
  cmd.args(["--quality", &params.quality.to_string()]);
  }
- 
- // Effort level
+
+// Effort level
  cmd.args(["--effort", &params.effort.to_string()]);
- 
- // 🔥 Advanced JXL parameters - REAL implementation!
+
+// 🔥 Advanced JXL parameters - REAL implementation!
  if params.modular {
  cmd.arg("--modular");
  }
- 
+
  if params.progressive {
  cmd.arg("--progressive");
  }
- 
+
  if params.responsive {
  cmd.args(["--responsive", "1"]);
  }
- 
+
  if params.gaborish {
  cmd.arg("--gaborish=1");
  } else {
  cmd.arg("--gaborish=0");
  }
- 
+
  if params.photon_noise > 0 {
  cmd.args(["--photon_noise", &params.photon_noise.to_string()]);
  }
- 
+
  if params.decoding_speed > 0 {
  cmd.args(["--decoding_speed", &params.decoding_speed.to_string()]);
  }
- 
- // 🔥 Phase 2: Additional critical parameters
- // Detect if input is JPEG
+
+// 🔥 Phase 2: Additional critical parameters
+// Detect if input is JPEG
  let is_jpeg_input = input.extension()
  .and_then(|e| e.to_str())
  .map(|e| e.to_lowercase())
  .map(|e| e == "jpg" || e == "jpeg")
  .unwrap_or(false);
- 
- // Distance parameter handling (lossy compression control)
+
+// Distance parameter handling (lossy compression control)
  log::debug!("DEBUG JXL params:");
  log::debug!("is_jpeg_input: {}", is_jpeg_input);
  log::debug!("params.distance: {}", params.distance);
@@ -303,10 +303,10 @@ impl ModernFormatConverter {
 
  if params.distance > 0.0 && !params.lossless {
  if is_jpeg_input {
- // For JPEG input, need to explicitly disable lossless_jpeg to use distance
- // This allows users to choose:
- // - Lossless repack (default, don't pass distance)
- // - Lossy conversion (pass --lossless_jpeg=0 + --distance)
+// For JPEG input, need to explicitly disable lossless_jpeg to use distance
+// This allows users to choose:
+// - Lossless repack (default, don't pass distance)
+// - Lossy conversion (pass --lossless_jpeg=0 + --distance)
  log::debug!("Adding --lossless_jpeg 0");
  cmd.args(["--lossless_jpeg", "0"]);
  }
@@ -315,39 +315,39 @@ impl ModernFormatConverter {
  } else {
  log::debug!("Skipping distance (lossless or distance=0)");
  }
- 
- // 🔥 Bit depth - Only pass when not default and not 0，let cjxl auto-process
+
+// 🔥 Bit depth - Only pass when not default and not 0，let cjxl auto-process
  if params.bit_depth != 8 && params.bit_depth != 0 {
  cmd.args(["--bits_per_sample", &params.bit_depth.to_string()]);
  }
- // Don't pass when bit_depth=0 or 8，let cjxl auto-select based on source file
- 
- // 🔥 Color space - Only pass when not default and non-empty，let cjxl auto-process
- if !params.color_space.is_empty() 
- && params.color_space != "sRGB" 
+// Don't pass when bit_depth=0 or 8，let cjxl auto-select based on source file
+
+// 🔥 Color space - Only pass when not default and non-empty，let cjxl auto-process
+ if !params.color_space.is_empty()
+ && params.color_space != "sRGB"
  && params.color_space != "auto" {
  cmd.args(["--color_space", &params.color_space]);
  }
- // color_space is empty、"s RGB"or"auto" when not pass，let cjxl keep source color space
- 
+// color_space is empty、"s RGB"or"auto" when not pass，let cjxl keep source color space
+
  if params.patches > 0 {
  cmd.args(["--patches", &params.patches.to_string()]);
  }
- 
- // executeconversion
+
+// executeconversion
  let result = cmd
  .stdout(Stdio::null())
  .stderr(Stdio::piped())
  .output()
  .context("Failed to execute cjxl")?;
- 
+
  if !result.status.success() {
  let stderr = String::from_utf8_lossy(&result.stderr);
  bail!("JXL conversion failed: {}", stderr);
  }
- 
+
  let output_size = std::fs::metadata(output)?.len();
- 
+
  Ok(ConversionResult {
  input_size,
  output_size,
@@ -355,15 +355,15 @@ impl ModernFormatConverter {
  format: "jxl".to_string(),
  })
  }
- 
- /// intelligentselectJXLconversionmethod
+
+/// intelligentselectJXLconversionmethod
  pub fn convert_to_jxl<P: AsRef<Path>>(
  &self,
  input: P,
  output: P,
  params: &JXLParams,
  ) -> Result<ConversionResult> {
- // Prioritize native cjxl（faster and better）
+// Prioritize native cjxl（faster and better）
  if self.cjxl_path.is_some() {
  self.convert_to_jxl_native(input, output, params)
  } else if self.check_jxl_ffmpeg_support() {
@@ -372,8 +372,8 @@ impl ModernFormatConverter {
  bail!("JXL encoder not available, please install cjxl or FFmpeg with JXL support")
  }
  }
- 
- /// Convert to Web P (using cwebp)
+
+/// Convert to Web P (using cwebp)
  pub fn convert_to_webp<P: AsRef<Path>>(
  &self,
  input: P,
@@ -382,46 +382,46 @@ impl ModernFormatConverter {
  ) -> Result<ConversionResult> {
  let input = input.as_ref();
  let output = output.as_ref();
- 
+
  let cwebp_path = which::which("cwebp")
  .context("cwebp tool not installed")?;
- 
+
  let input_size = std::fs::metadata(input)?.len();
- 
+
  let mut cmd = Command::new(cwebp_path);
  cmd.arg(path_to_str(input)?);
  cmd.arg("-o").arg(path_to_str(output)?);
- 
- // 🔥 Complete WebP parameters - REAL implementation!
+
+// 🔥 Complete WebP parameters - REAL implementation!
  if params.lossless {
  cmd.arg("-lossless");
  } else {
  cmd.args(["-q", &params.quality.to_string()]);
  }
- 
- // compressionmethod (0-6)
+
+// compressionmethod (0-6)
  cmd.args(["-m", &params.method.to_string()]);
- 
- // Filter strength (0-100)
+
+// Filter strength (0-100)
  cmd.args(["-f", &params.filter_strength.to_string()]);
- 
- // sharpeninglevel (0-7)
+
+// sharpeninglevel (0-7)
  cmd.args(["-sharpness", &params.sharpness.to_string()]);
- 
- // executeconversion
+
+// executeconversion
  let result = cmd
  .stdout(Stdio::null())
  .stderr(Stdio::piped())
  .output()
  .context("Failed to execute cwebp")?;
- 
+
  if !result.status.success() {
  let stderr = String::from_utf8_lossy(&result.stderr);
  bail!("WebP conversion failed: {}", stderr);
  }
- 
+
  let output_size = std::fs::metadata(output)?.len();
- 
+
  Ok(ConversionResult {
  input_size,
  output_size,
@@ -429,8 +429,8 @@ impl ModernFormatConverter {
  format: "webp".to_string(),
  })
  }
- 
- /// conversionfor HEIC (using FFmpeg + x265/libheif)
+
+/// conversionfor HEIC (using FFmpeg + x265/libheif)
  pub fn convert_to_heic<P: AsRef<Path>>(
  &self,
  input: P,
@@ -439,18 +439,18 @@ impl ModernFormatConverter {
  ) -> Result<ConversionResult> {
  let input = input.as_ref();
  let output = output.as_ref();
- 
+
  let input_size = std::fs::metadata(input)?.len();
- 
+
  let mut cmd = Command::new(&self.ffmpeg_path);
  cmd.args(["-i", path_to_str(input)?]);
- 
- // 🔥 Complete HEIC parameters - REAL implementation!
+
+// 🔥 Complete HEIC parameters - REAL implementation!
  match params.encoder.as_str() {
  "x265" => {
  cmd.args(["-c:v", "libx265"]);
  cmd.args(["-tag:v", "hvc1"]); // HEIC tag
- 
+
  if params.lossless {
  cmd.args(["-x265-params", "lossless=1"]);
  } else {
@@ -459,7 +459,7 @@ impl ModernFormatConverter {
  }
  }
  "libheif" => {
- // libheif encoder (if available)
+// libheif encoder (if available)
  cmd.args(["-c:v", "libheif"]);
  cmd.args(["-q:v", &params.quality.to_string()]);
  }
@@ -467,37 +467,37 @@ impl ModernFormatConverter {
  bail!("Unsupported HEIC encoder: {}", params.encoder);
  }
  }
- 
- // 🔥 Pixel format - based on用户selectchroma_subsampling
- // if用户明确specify，就pass；otherwise let FFmpegautoselect
+
+// 🔥 Pixel format - based onselectchroma_subsampling
+// if明确specify，justpass；otherwise let FFmpegautoselect
  if !params.chroma_subsampling.is_empty() {
  let pix_fmt = match params.chroma_subsampling.as_str() {
  "444" => "yuv444p",
  "420" => "yuv420p",
- _ => "", // letFFmpegauto选择
+ _ => "", // letFFmpegauto
  };
  if !pix_fmt.is_empty() {
  cmd.args(["-pix_fmt", pix_fmt]);
  }
  }
- // if not specify，FFmpeg will auto-select format with minimum loss
- 
+// if not specify，FFmpeg will auto-select format with minimum loss
+
  cmd.args(["-y", path_to_str(output)?]);
- 
- // executeconversion
+
+// executeconversion
  let result = cmd
  .stdout(Stdio::null())
  .stderr(Stdio::piped())
  .output()
  .context("Failed to execute FFmpeg")?;
- 
+
  if !result.status.success() {
  let stderr = String::from_utf8_lossy(&result.stderr);
  bail!("HEIC conversion failed: {}", stderr);
  }
- 
+
  let output_size = std::fs::metadata(output)?.len();
- 
+
  Ok(ConversionResult {
  input_size,
  output_size,
@@ -515,7 +515,7 @@ impl Default for ModernFormatConverter {
 
 /// formatsupportinformation
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure FormatSupport {
+pub struct FormatSupport {
  pub avif: bool,
  pub jxl_ffmpeg: bool,
  pub jxl_native: bool,
@@ -523,22 +523,22 @@ pub structure FormatSupport {
 }
 
 impl FormatSupport {
- /// getsupportformatlist
+/// getsupportformatlist
  pub fn supported_formats(&self) -> Vec<String> {
  let mut formats = vec!["webp".to_string()];
- 
+
  if self.avif {
  formats.push("avif".to_string());
  }
- 
+
  if self.jxl_ffmpeg || self.jxl_native {
  formats.push("jxl".to_string());
  }
- 
+
  formats
  }
- 
- /// checkis否supportspecifyformat
+
+/// checkisnosupportspecifyformat
  pub fn supports(&self, format: &str) -> bool {
  match format.to_lowercase().as_str() {
  "webp" => self.webp,
@@ -551,12 +551,12 @@ impl FormatSupport {
 
 /// AVIFconversionparameter
 #[derive(Debug, Clone)]
-pub structure AVIFParams {
- pub encoder: String, // "libaom-av1" 或 "libsvtav1"
- pub crf: u8, // 0-63, 越小qualityhigher
- pub speed: u8, // 0-8 (libaom) 或 0-13 (svt)
- pub bit_depth: u8, // 8, 10, 或 12
- // 🔥 Complete AVIF parameters - NO MORE FAKE UI!
+pub struct AVIFParams {
+ pub encoder: String, // "libaom-av1" or "libsvtav1"
+ pub crf: u8, // 0-63, smallqualityhigher
+ pub speed: u8, // 0-8 (libaom) or 0-13 (svt)
+ pub bit_depth: u8, // 8, 10, or 12
+// 🔥 Complete AVIF parameters - NO MORE FAKE UI!
  pub min_quantizer: u8, // 0-63, minimum quantizer
  pub max_quantizer: u8, // 0-63, maximum quantizer
  pub chroma_subsampling: String, // "420", "422", "444"
@@ -583,21 +583,21 @@ impl Default for AVIFParams {
 }
 
 impl AVIFParams {
- /// fromqualityvaluecreate (0-100)
+/// fromqualityvaluecreate (0-100)
  pub fn from_quality(quality: u8) -> Self {
  let crf = ((100 - quality) as f64 * 0.63) as u8; // mapto0-63
  let speed = if quality >= 90 {
- 6 // 高quality用慢速
+ 6 // highqualityslow
  } else if quality >= 70 {
- 4 // etcquality用平衡
+ 4 // etcquality平衡
  } else {
- 2 // 低quality用quick
+ 2 // lowqualityquick
  };
- 
- // Calculate min/max quantizers based on quality
+
+// Calculate min/max quantizers based on quality
  let min_q = if quality > 90 { 0 } else if quality > 70 { 5 } else { 10 };
  let max_q = if quality > 90 { 20 } else if quality > 70 { 35 } else { 50 };
- 
+
  Self {
  encoder: "libaom-av1".to_string(),
  crf,
@@ -615,18 +615,18 @@ impl AVIFParams {
 
 /// JXLconversionparameter
 #[derive(Debug, Clone)]
-pub structure JXLParams {
+pub struct JXLParams {
  pub quality: u8, // 0-100
  pub effort: u8, // 1-9
  pub lossless: bool,
- // 🔥 Advanced JXL parameters - REAL implementation!
+// 🔥 Advanced JXL parameters - REAL implementation!
  pub modular: bool, // Use modular mode (better for synthetic images)
  pub progressive: bool, // Enable progressive decoding
  pub responsive: bool, // Enable responsive by default
  pub gaborish: bool, // Enable Gaborish filter (reduces ringing artifacts)
  pub photon_noise: u8, // Photon noise level (0-100)
  pub decoding_speed: u8, // Decoding speed tier (0-4)
- // 🔥 Phase 2: Additional critical parameters
+// 🔥 Phase 2: Additional critical parameters
  pub distance: f32, // Psychovisual distance (0.0=lossless, higher=more compression)
  pub bit_depth: u8, // Bit depth: 8, 10, 12, or 16
  pub color_space: String, // Color space: sRGB, Display P3, Adobe RGB, ProPhoto RGB
@@ -654,16 +654,16 @@ impl Default for JXLParams {
 }
 
 impl JXLParams {
- /// fromqualityvaluecreate
+/// fromqualityvaluecreate
  pub fn from_quality(quality: u8) -> Self {
  let effort = if quality >= 90 {
- 9 // 高quality用maximum努力
+ 9 // highqualitymaximumeffort
  } else if quality >= 70 {
- 7 // etcquality用平衡
+ 7 // etcquality平衡
  } else {
- 5 // 低quality用quick
+ 5 // lowqualityquick
  };
- 
+
  Self {
  quality,
  effort,
@@ -684,7 +684,7 @@ impl JXLParams {
 
 /// WebPconversionparameter
 #[derive(Debug, Clone)]
-pub structure WebPParams {
+pub struct WebPParams {
  pub quality: u8, // 0-100
  pub method: u8, // 0-6, compression method
  pub filter_strength: u8, // 0-100, deblocking filter strength
@@ -694,7 +694,7 @@ pub structure WebPParams {
 
 /// HEICconversionparameter
 #[derive(Debug, Clone)]
-pub structure HEICParams {
+pub struct HEICParams {
  pub quality: u8, // 0-100
  pub encoder: String, // "x265" or "libheif"
  pub chroma_subsampling: String, // "420" or "444"
@@ -753,7 +753,7 @@ impl HEICParams {
 
 /// conversionresult
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub structure ConversionResult {
+pub struct ConversionResult {
  pub input_size: u64,
  pub output_size: u64,
  pub compression_ratio: f64,
@@ -761,7 +761,7 @@ pub structure ConversionResult {
 }
 
 impl ConversionResult {
- /// getempty间节省percentage
+/// getemptypercentage
  pub fn space_saving_percent(&self) -> f64 {
  (1.0 - self.compression_ratio) * 100.0
  }
@@ -770,33 +770,33 @@ impl ConversionResult {
 #[cfg(test)]
 mod tests {
  use super::*;
- 
+
  #[test]
  fn test_format_support_check() {
  let converter = ModernFormatConverter::new();
  let support = converter.check_format_support();
- 
- // Web Pshould总issupport
+
+// Web Pshouldissupport
  assert!(support.webp);
- 
- // printsupportformat
+
+// printsupportformat
  log::debug!("Supported formats: {:?}", support.supported_formats());
  }
- 
+
  #[test]
  fn test_avif_params_from_quality() {
  let params = AVIFParams::from_quality(85);
- assert!(params.crf < 20); // 高quality应该has低CRF
+ assert!(params.crf < 20); // highqualityshouldhaslowCRF
  assert!(params.speed >= 2);
  }
- 
+
  #[test]
  fn test_jxl_params_from_quality() {
  let params = JXLParams::from_quality(90);
  assert_eq!(params.quality, 90);
  assert!(params.effort >= 7);
  }
- 
+
  #[test]
  fn test_format_support_query() {
  let support = FormatSupport {
@@ -805,7 +805,7 @@ mod tests {
  jxl_native: true,
  webp: true,
  };
- 
+
  assert!(support.supports("webp"));
  assert!(support.supports("avif"));
  assert!(support.supports("jxl"));
