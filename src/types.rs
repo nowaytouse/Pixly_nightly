@@ -1,17 +1,17 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// 质量模式枚举
+/// Quality mode enumeration
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum QualityMode {
-    /// 速度优先
+    /// Speed priority
     Speed,
-    /// 平衡模式
+    /// Balanced mode
     Balanced,
-    /// 质量优先
+    /// Quality priority
     Quality,
-    /// 无损模式
+    /// Lossless mode
     Lossless,
 }
 
@@ -36,7 +36,7 @@ impl QualityMode {
     }
 }
 
-/// 图像特征数据 (标准化结构)
+/// Image feature data (standardized structure)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ImageFeatures {
     pub width: u32,
@@ -49,17 +49,17 @@ pub struct ImageFeatures {
 }
 
 impl ImageFeatures {
-    /// 像素总数
+    /// Total pixel count
     pub fn pixels(&self) -> u64 {
         (self.width as u64) * (self.height as u64)
     }
 
-    /// 文件大小(MB)
+    /// File size in MB
     pub fn size_mb(&self) -> f64 {
         self.file_size as f64 / (1024.0 * 1024.0)
     }
 
-    /// 宽高比
+    /// Aspect ratio
     pub fn aspect_ratio(&self) -> f64 {
         if self.height > 0 {
             self.width as f64 / self.height as f64
@@ -68,28 +68,28 @@ impl ImageFeatures {
         }
     }
 
-    /// 是否为高分辨率图像 (>= 2K)
+    /// Whether this is a high resolution image (>= 2K)
     pub fn is_high_resolution(&self) -> bool {
         self.width >= 2048 || self.height >= 2048
     }
 
-    /// 是否为大图像 (>4MP)
+    /// Whether this is a large image (>4MP)
     pub fn is_large_image(&self) -> bool {
         self.pixels() > 4_000_000
     }
 
-    /// 是否为中等图像 (1MP-4MP)
+    /// Whether this is a medium image (1MP-4MP)
     pub fn is_medium_image(&self) -> bool {
         let pixels = self.pixels();
         (1_000_000..=4_000_000).contains(&pixels)
     }
 
-    /// 是否为小图像 (<1MP)
+    /// Whether this is a small image (<1MP)
     pub fn is_small_image(&self) -> bool {
         self.pixels() < 1_000_000
     }
 
-    /// 归一化后的压缩复杂度（从 Python ExtendedImageFeatures.compression_complexity 迁移）
+    /// Normalized compression complexity (migrated from Python ExtendedImageFeatures.compression_complexity)
     pub fn effective_complexity(&self) -> f64 {
         let mut base = self.complexity;
 
@@ -113,7 +113,7 @@ impl ImageFeatures {
     }
 }
 
-/// 预测结果
+/// Prediction result
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PredictionResult {
     pub quality: u32,
@@ -126,7 +126,7 @@ pub struct PredictionResult {
     pub predictor_version: String,
 }
 
-/// 预测请求（方便跨语言调用）
+/// Prediction request (for cross-language invocation)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PredictionRequest {
     pub features: ImageFeatures,

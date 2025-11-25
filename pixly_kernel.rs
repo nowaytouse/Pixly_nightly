@@ -171,11 +171,11 @@ impl SimdSharpener {
     pub fn sharpen(&self, image: &DynamicImage) -> Result<DynamicImage> {
         #[cfg(target_arch = "x86_64")]
         if self.config.use_simd && is_x86_feature_detected!("avx2") {
-            info!("使用SIMD优化锐化");
+            info!("Using SIMD optimized sharpening");
             return self.sharpen_simd(image);
         }
 
-        info!("使用标准锐化算法");
+        info!("Using standard sharpening algorithm");
         self.sharpen_standard(image)
     }
 
@@ -353,7 +353,7 @@ impl SimdSharpener {
     pub fn adaptive_sharpen(&self, image: &DynamicImage) -> Result<DynamicImage> {
         // 检测图像锐度
         let sharpness = self.measure_sharpness(image);
-        debug!("图像锐度评分: {:.2}", sharpness);
+        debug!("Image sharpness score: {:.2}", sharpness);
 
         // 根据锐度调整配置
         let mut config = self.config.clone();
@@ -462,23 +462,23 @@ impl UnifiedAIPredictor {
     ) -> (u32, u32, bool, HashMap<String, String>) {
         let target_format = target_format.to_lowercase();
 
-        // 🔥 Step 1: 尝试Python ML预测（使用完整特征）
+        // Step 1: Try Python ML prediction with full features
         if let Ok(ml_result) = self.try_python_ml_predict_with_full_features(
-            features, 
-            &target_format, 
+            features,
+            &target_format,
             quality_mode,
             full_features
         ) {
             if full_features.is_some() {
-                info!("✅ Using Python ML prediction with REAL features");
+                info!("Using Python ML prediction with REAL features");
             } else {
-                info!("✅ Using Python ML prediction with simplified features");
+                info!("Using Python ML prediction with simplified features");
             }
             return ml_result;
         }
 
-        // 🔥 Step 2: 使用Rust智能规则引擎（备用AI实现）
-        info!("🦀 Using Rust intelligent rule engine (feature-based adaptive)");
+        // Step 2: Use Rust intelligent rule engine (backup AI implementation)
+        info!("Using Rust intelligent rule engine (feature-based adaptive)");
         
         match target_format.as_str() {
             "avif" => self.predict_avif(features, quality_mode),
@@ -538,12 +538,12 @@ impl UnifiedAIPredictor {
 
         // 2. 获取特征向量
         let feature_vector = if let Some(features_128d) = full_features {
-            // 🔥 使用真实的完整特征
-            info!("✅ Using REAL 128D features (Color/Texture/Quality extracted from image)");
+            // Use real complete features
+            info!("Using REAL 128D features (Color/Texture/Quality extracted from image)");
             features_128d.clone()
         } else {
-            // ⚠️ Fallback到简化特征
-            warn!("⚠️ Using simplified features (no image data available)");
+            // Fallback to simplified features
+            warn!("Using simplified features (no image data available)");
             self.extract_128d_features(features)
         };
 
@@ -569,7 +569,7 @@ impl UnifiedAIPredictor {
             }
         }
 
-        info!("🤖 Python ML: model={}, confidence={:.2}", 
+        info!("Python ML: model={}, confidence={:.2}",
             response.model_version, response.confidence);
 
         Ok((

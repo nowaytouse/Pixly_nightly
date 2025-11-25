@@ -1,18 +1,18 @@
-//! ML驱动的转换时间估算器
+//! ML-driven conversion time estimator
 //! 
-//! 结合文件特征和历史数据预测转换时间
+//! Predict conversion time using file features and historical data
 
 use std::collections::HashMap;
 use std::time::Duration;
 
-/// ML驱动的转换时间估算器
+/// ML-driven conversion time estimator
 pub struct TimeEstimator {
     historical_records: HashMap<String, Vec<ConversionRecord>>,
     format_factors: HashMap<String, f64>,
     learning_enabled: bool,
 }
 
-/// 文件特征结构
+/// filefeaturestruct
 #[derive(Debug, Clone)]
 pub struct FileFeatures {
     pub file_path: String,
@@ -24,7 +24,7 @@ pub struct FileFeatures {
     pub frame_count: u32,
 }
 
-/// 转换参数
+/// conversionparameter
 #[derive(Debug, Clone)]
 pub struct ConversionParams {
     pub target_format: String,
@@ -35,7 +35,7 @@ pub struct ConversionParams {
     pub threads: u32,
 }
 
-/// 转换记录
+/// Conversion record
 #[derive(Debug, Clone)]
 pub struct ConversionRecord {
     pub file_size: u64,
@@ -49,7 +49,7 @@ pub struct ConversionRecord {
     pub lossless: bool,
 }
 
-/// 时间估算结果
+/// Time estimation result
 #[derive(Debug, Clone)]
 pub struct TimeEstimate {
     pub estimated_time: Duration,
@@ -59,7 +59,7 @@ pub struct TimeEstimate {
     pub estimation_method: EstimationMethod,
 }
 
-/// 估算方法
+/// Estimation method
 #[derive(Debug, Clone, PartialEq)]
 pub enum EstimationMethod {
     Theoretical,

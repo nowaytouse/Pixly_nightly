@@ -1,12 +1,12 @@
-// 🚀 统一进度追踪系统
-// 从 @archive/rust_broken/src/converter/unified_progress.rs 提取并增强
+// Unified Progress Tracking System
+// Extracted and enhanced from @archive/rust_broken/src/converter/unified_progress.rs
 //
-// 核心功能:
-// - 多级进度追踪 (Task -> Batch -> File -> Operation)
-// - 可取消操作支持
-// - 吞吐量计算
-// - 预计剩余时间
-// - 进度回调机制
+// Core features:
+// - Multi-level progress tracking (Task -> Batch -> File -> Operation)
+// - Cancellable operation support
+// - Throughput calculation
+// - Estimated remaining time
+// - Progress callback mechanism
 
 use anyhow::{Result, bail};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -15,7 +15,7 @@ use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// 进度级别
+/// Progress level
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ProgressLevel {
     Task,
@@ -25,7 +25,7 @@ pub enum ProgressLevel {
     AIPrediction,
 }
 
-/// 进度状态
+/// Progress state
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ProgressState {
     Preparing,
@@ -38,7 +38,7 @@ pub enum ProgressState {
     Retrying,
 }
 
-/// 进度信息
+/// Progress information
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProgressInfo {
     pub level: ProgressLevel,
@@ -108,13 +108,13 @@ impl ProgressInfo {
     }
 }
 
-/// 进度回调trait
+/// Progress callback trait
 pub trait ProgressCallback: Send + Sync {
     fn on_progress(&self, info: &ProgressInfo);
     fn on_state_change(&self, old_state: &ProgressState, new_state: &ProgressState, info: &ProgressInfo);
 }
 
-/// 控制台进度回调
+/// Console progress callback
 pub struct ConsoleProgressCallback {
     verbose: bool,
     last_update: Arc<Mutex<Instant>>,
@@ -187,7 +187,7 @@ impl ProgressCallback for ConsoleProgressCallback {
         );
 
         if self.verbose {
-            // 详细模式：显示吞吐量和ETA
+            // Verbose mode: display throughput and ETA
             if let Some(throughput) = info.throughput {
                 output.push_str(&format!(" ({:.1}/s)", throughput));
             }
@@ -201,11 +201,11 @@ impl ProgressCallback for ConsoleProgressCallback {
     }
 
     fn on_state_change(&self, _old_state: &ProgressState, _new_state: &ProgressState, _info: &ProgressInfo) {
-        // 可选实现
+        // Optional implementation
     }
 }
 
-/// 进度追踪器
+/// Progress tracker
 #[derive(Clone)]
 pub struct ProgressTracker {
     info: Arc<Mutex<ProgressInfo>>,
@@ -287,7 +287,7 @@ impl ProgressTracker {
     }
 }
 
-/// 进度管理器
+/// Progress manager
 pub struct ProgressManager {
     trackers: Arc<Mutex<HashMap<String, ProgressTracker>>>,
 }

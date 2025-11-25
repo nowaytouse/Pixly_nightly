@@ -1,19 +1,19 @@
 // src/errors.rs
-//! 🚨 统一错误处理模块
-//! 
-//! 使用thiserror提供结构化的错误类型，
-//! 包含上下文信息和错误链追踪。
+//! Unified Error Handling Module
 //!
-//! ## 设计原则
-//! 1. 所有错误都包含足够的上下文信息用于调试
-//! 2. 使用 `#[from]` 自动转换常见错误类型
-//! 3. 支持错误链追踪 (`#[source]`)
-//! 4. 提供清晰的错误消息
+//! Uses thiserror to provide structured error types with
+//! context information and error chain tracing.
+//!
+//! ## Design Principles
+//! 1. All errors contain sufficient context information for debugging
+//! 2. Use `#[from]` for automatic conversion of common error types
+//! 3. Support error chain tracing (`#[source]`)
+//! 4. Provide clear error messages
 
 use thiserror::Error;
 use std::path::PathBuf;
 
-/// 在线学习相关错误
+/// Online learning related errors
 #[derive(Error, Debug)]
 pub enum OnlineLearningError {
     #[error("Failed to acquire lock for {operation}: {source}")]
@@ -54,7 +54,7 @@ pub enum OnlineLearningError {
     },
 }
 
-/// 转换相关错误
+/// Conversion related errors
 #[derive(Error, Debug)]
 pub enum ConversionError {
     #[error("Input file not found: {path}")]
@@ -85,7 +85,7 @@ pub enum ConversionError {
     ArrayConversion { expected: usize, actual: usize },
 }
 
-/// IO相关错误
+/// IO related errors
 #[derive(Error, Debug)]
 pub enum IOError {
     #[error("File read failed: {path}")]
@@ -110,10 +110,10 @@ pub enum IOError {
     },
 }
 
-/// 统一的Result类型
+/// Unified Result type
 pub type PixlyResult<T> = Result<T, PixlyError>;
 
-/// 顶层错误类型
+/// Top-level error type
 #[derive(Error, Debug)]
 pub enum PixlyError {
     #[error(transparent)]
@@ -132,17 +132,17 @@ pub enum PixlyError {
     Custom(String),
 }
 
-// 便捷的错误构造函数
+// Convenience error constructors
 impl PixlyError {
     pub fn custom(msg: impl Into<String>) -> Self {
         PixlyError::Custom(msg.into())
     }
 }
 
-/// 🔥 安全的路径转换辅助函数
-/// 
-/// 将Path转换为&str，如果失败则返回清晰的错误信息
-/// 这个函数可以在整个项目中使用
+/// Safe path conversion helper function
+///
+/// Converts Path to &str, returning a clear error message if it fails
+/// This function can be used throughout the project
 pub fn path_to_str(path: &std::path::Path) -> anyhow::Result<&str> {
     path.to_str()
         .ok_or_else(|| {

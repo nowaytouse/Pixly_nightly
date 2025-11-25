@@ -1,18 +1,18 @@
-//! 🎨 增强型命令行进度条 UI
+//! 🎨 Enhanced command-line progress bar UI
 //! 
-//! 基于 indicatif 库实现的现代化、美观的进度条系统。
-//! 提供：
-//! - 🌈 彩色进度条和状态指示
-//! - 🔄 动态 Spinner 动画
-//! - 📊 实时吞吐量和 ETA 显示
-//! - 💅 针对不同任务类型的定制样式
+//! Modern implementation based on indicatif library、beautiful progress bar system。
+//! provide：
+//! - 🌈 Colorful progress bar and status indicators
+//! - 🔄 dynamic Spinner animation
+//! - 📊 Real-time throughput and ETA display
+//! - 💅 Custom styles for different task types
 
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use crate::cli::progress::{ProgressCallback, ProgressInfo, ProgressLevel, ProgressState};
 
-/// 增强型控制台进度回调
+/// Enhanced console progress callback
 pub struct RichProgressCallback {
     multi_progress: Arc<MultiProgress>,
     progress_bars: Arc<Mutex<Option<ProgressBar>>>,
@@ -28,7 +28,7 @@ impl RichProgressCallback {
         }
     }
 
-    /// 获取特定级别的样式模板
+ /// Get style template for specific level
     fn get_style_template(level: &ProgressLevel) -> (&'static str, &'static str) {
         match level {
             ProgressLevel::Batch => (
@@ -50,7 +50,7 @@ impl RichProgressCallback {
         }
     }
 
-    /// 创建或更新进度条
+ /// Create or update progress bar
     fn ensure_progress_bar(&self, info: &ProgressInfo) {
         let mut pb_guard = self.progress_bars.lock().unwrap();
         
@@ -83,12 +83,12 @@ impl ProgressCallback for RichProgressCallback {
         self.ensure_progress_bar(info);
         
         if let Some(pb) = self.progress_bars.lock().unwrap().as_ref() {
-            // 更新进度
+            // updateprogress
             if info.total > 0 {
                 pb.set_position(info.completed);
             }
             
-            // 更新消息
+ // Update message
             let (_, emoji) = Self::get_style_template(&info.level);
             let state_icon = match info.state {
                 ProgressState::Running => "",
@@ -99,7 +99,7 @@ impl ProgressCallback for RichProgressCallback {
             
             pb.set_message(format!("{}{} {}", state_icon, emoji, info.current_operation));
 
-            // 完成状态处理
+            // completedstatusprocessing
             match info.state {
                 ProgressState::Completed => {
                     pb.finish_with_message(format!("✅ {} Completed", info.current_operation));

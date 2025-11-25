@@ -1,9 +1,9 @@
-//! 同格式优化策略
+//! 同formatoptimizationstrategy
 //! 
-//! 在不改变格式的情况下优化图像：
-//! - PNG: oxipng/optipng (无损)
-//! - JPEG: mozjpeg/jpegtran (可配置质量)
-//! - WebP: cwebp重压缩
+//! at not 改变format情况下optimizationimage：
+//! - PNG: oxipng/optipng (lossless)
+//! - JPEG: mozjpeg/jpegtran (可configurationquality)
+//! - Web P: cwebp重compression
 
 use anyhow::{Context, Result};
 use std::path::Path;
@@ -15,248 +15,248 @@ use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-// 🚀 性能优化: 缓存工具检测结果
+// 🚀 performanceoptimization: cache工具detectionresult
 static TOOL_CACHE: Lazy<Mutex<HashMap<String, Option<String>>>> = Lazy::new(|| {
-    Mutex::new(HashMap::new())
+ Mutex::new(HashMap::new())
 });
 
-/// 同格式优化器
-pub struct SameFormatOptimizer {
-    preserve_metadata: bool,
+/// 同formatoptimization
+pub structure SameFormatOptimizer {
+ preserve_metadata: bool,
 }
 
 impl SameFormatOptimizer {
-    pub fn new(preserve_metadata: bool) -> Self {
-        Self { preserve_metadata }
-    }
-    
-    /// 检查特定格式的工具是否可用
-    /// 🚀 性能优化: 缓存检测结果，避免重复调用
-    pub fn check_tools_for_format(format: &str) -> Result<String> {
-        // 检查缓存
-        {
-            let cache = TOOL_CACHE.lock()
-                .map_err(|e| anyhow::anyhow!("Tool cache lock poisoned: {}", e))?;
-            if let Some(cached) = cache.get(format) {
-                return cached.clone()
-                    .ok_or_else(|| anyhow::anyhow!("No optimizer found for {}", format));
-            }
-        }
-        
-        // 执行检测
-        let tool = match format {
-            "png" => {
-                if Command::new("oxipng").arg("--version").output().is_ok() {
-                    Some(String::from("oxipng"))
-                } else if Command::new("optipng").arg("-v").output().is_ok() {
-                    Some(String::from("optipng"))
-                } else {
-                    None
-                }
-            }
-            "jpg" | "jpeg" => {
-                if Command::new("mozjpeg").arg("--version").output().is_ok() {
-                    Some(String::from("mozjpeg"))
-                } else if Command::new("jpegtran").arg("-version").output().is_ok() {
-                    Some(String::from("jpegtran"))
-                } else {
-                    None
-                }
-            }
-            "webp" => {
-                if Command::new("cwebp").arg("-version").output().is_ok() {
-                    Some(String::from("cwebp"))
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        };
-        
-        // 缓存结果
-        {
-            let mut cache = TOOL_CACHE.lock()
-                .map_err(|e| anyhow::anyhow!("Tool cache lock poisoned: {}", e))?;
-            cache.insert(format.to_string(), tool.clone());
-        }
-        
-        tool.ok_or_else(|| anyhow::anyhow!("No optimizer found for {}", format))
-    }
-    
-    /// 优化PNG
-    pub fn optimize_png(&self, input: &Path, output: &Path, tool: &str) -> Result<()> {
-        let mut cmd = Command::new(tool);
-        
-        match tool {
-            "oxipng" => {
-                cmd.arg("-o3")           // 优化级别3
-                    .arg("--strip")      // 移除元数据（安全）
-                    .arg("--preserve")   // 保留文件属性
-                    .arg(input)
-                    .arg("-out")
-                    .arg(output);
-            }
-            "optipng" => {
-                cmd.arg("-o3")           // 优化级别3
-                    .arg("-preserve")    // 保留文件属性
-                    .arg("-out")
-                    .arg(output)
-                    .arg(input);
-            }
-            _ => anyhow::bail!("Unknown PNG tool: {}", tool),
-        }
-        
-        let output_result = cmd.output()
-            .with_context(|| format!("Failed to execute {}", tool))?;
-        
-        if !output_result.status.success() {
-            anyhow::bail!(
-                "{} failed: {}",
-                tool,
-                String::from_utf8_lossy(&output_result.stderr)
-            );
-        }
-        
-        Ok(())
-    }
-    
-    /// 优化JPEG
-    pub fn optimize_jpeg(&self, input: &Path, output: &Path, quality: u8, tool: &str) -> Result<()> {
-        let mut cmd = Command::new(tool);
-        
-        match tool {
-            "mozjpeg" => {
-                cmd.arg("-quality")
-                    .arg(quality.to_string())
-                    .arg("-progressive")
-                    .arg("-outfile")
-                    .arg(output)
-                    .arg(input);
-            }
-            "jpegtran" => {
-                cmd.arg("-copy")
-                    .arg(if self.preserve_metadata { "all" } else { "none" })
-                    .arg("-optimize")
-                    .arg("-progressive")
-                    .arg("-outfile")
-                    .arg(output)
-                    .arg(input);
-            }
-            _ => anyhow::bail!("Unknown JPEG tool: {}", tool),
-        }
-        
-        let output_result = cmd.output()
-            .with_context(|| format!("Failed to execute {}", tool))?;
-        
-        if !output_result.status.success() {
-            anyhow::bail!(
-                "{} failed: {}",
-                tool,
-                String::from_utf8_lossy(&output_result.stderr)
-            );
-        }
-        
-        Ok(())
-    }
-    
-    /// 优化WebP
-    pub fn optimize_webp(&self, input: &Path, output: &Path, quality: u8) -> Result<()> {
-        let mut cmd = Command::new("cwebp");
-        
-        cmd.arg(input)
-            .arg("-o")
-            .arg(output)
-            .arg("-q")
-            .arg(quality.to_string())
-            .arg("-m")
-            .arg("6")  // 最大努力
-            .arg("-mt"); // 多线程
-        
-        if self.preserve_metadata {
-            cmd.arg("-metadata").arg("all");
-        }
-        
-        let output_result = cmd.output()
-            .with_context(|| "Failed to execute cwebp")?;
-        
-        if !output_result.status.success() {
-            anyhow::bail!(
-                "cwebp failed: {}",
-                String::from_utf8_lossy(&output_result.stderr)
-            );
-        }
-        
-        Ok(())
-    }
-    
-    /// 执行同格式优化
-    pub fn optimize(&self, input: &Path, output: &Path, format: &str, quality: u8) -> Result<OptimizationResult> {
-        let start = Instant::now();
-        let input_size = fs::metadata(input)?.len();
-        
-        let tool = Self::check_tools_for_format(format)?;
-        
-        match format {
-            "png" => self.optimize_png(input, output, &tool)?,
-            "jpg" | "jpeg" => self.optimize_jpeg(input, output, quality, &tool)?,
-            "webp" => self.optimize_webp(input, output, quality)?,
-            _ => anyhow::bail!("Unsupported format: {}", format),
-        }
-        
-        let output_size = fs::metadata(output)?.len();
-        let processing_time = start.elapsed();
-        
-        Ok(OptimizationResult {
-            input_size,
-            output_size,
-            compression_ratio: output_size as f64 / input_size as f64,
-            processing_time_ms: processing_time.as_millis() as u64,
-            tool_used: tool,
-        })
-    }
+ pub fn new(preserve_metadata: bool) -> Self {
+ Self { preserve_metadata }
+ }
+ 
+ /// checkspecificformat工具is否available
+ /// 🚀 performanceoptimization: cachedetectionresult，避免重复call
+ pub fn check_tools_for_format(format: &str) -> Result<String> {
+ // checkcache
+ {
+ let cache = TOOL_CACHE.lock()
+ .map_err(|e| anyhow::anyhow!("Tool cache lock poisoned: {}", e))?;
+ if let Some(cached) = cache.get(format) {
+ return cached.clone()
+ .ok_or_else(|| anyhow::anyhow!("No optimizer found for {}", format));
+ }
+ }
+ 
+ // executedetection
+ let tool = match format {
+ "png" => {
+ if Command::new("oxipng").arg("--version").output().is_ok() {
+ Some(String::from("oxipng"))
+ } else if Command::new("optipng").arg("-v").output().is_ok() {
+ Some(String::from("optipng"))
+ } else {
+ None
+ }
+ }
+ "jpg" | "jpeg" => {
+ if Command::new("mozjpeg").arg("--version").output().is_ok() {
+ Some(String::from("mozjpeg"))
+ } else if Command::new("jpegtran").arg("-version").output().is_ok() {
+ Some(String::from("jpegtran"))
+ } else {
+ None
+ }
+ }
+ "webp" => {
+ if Command::new("cwebp").arg("-version").output().is_ok() {
+ Some(String::from("cwebp"))
+ } else {
+ None
+ }
+ }
+ _ => None,
+ };
+ 
+ // cacheresult
+ {
+ let mut cache = TOOL_CACHE.lock()
+ .map_err(|e| anyhow::anyhow!("Tool cache lock poisoned: {}", e))?;
+ cache.insert(format.to_string(), tool.clone());
+ }
+ 
+ tool.ok_or_else(|| anyhow::anyhow!("No optimizer found for {}", format))
+ }
+ 
+ /// optimizationPNG
+ pub fn optimize_png(&self, input: &Path, output: &Path, tool: &str) -> Result<()> {
+ let mut cmd = Command::new(tool);
+ 
+ match tool {
+ "oxipng" => {
+ cmd.arg("-o3") // 优化级别3
+ .arg("--strip") // 移除元data（安全）
+ .arg("--preserve") // 保留file属性
+ .arg(input)
+ .arg("-out")
+ .arg(output);
+ }
+ "optipng" => {
+ cmd.arg("-o3") // 优化级别3
+ .arg("-preserve") // 保留file属性
+ .arg("-out")
+ .arg(output)
+ .arg(input);
+ }
+ _ => anyhow::bail!("Unknown PNG tool: {}", tool),
+ }
+ 
+ let output_result = cmd.output()
+ .with_context(|| format!("Failed to execute {}", tool))?;
+ 
+ if !output_result.status.success() {
+ anyhow::bail!(
+ "{} failed: {}",
+ tool,
+ String::from_utf8_lossy(&output_result.stderr)
+ );
+ }
+ 
+ Ok(())
+ }
+ 
+ /// optimizationJPEG
+ pub fn optimize_jpeg(&self, input: &Path, output: &Path, quality: u8, tool: &str) -> Result<()> {
+ let mut cmd = Command::new(tool);
+ 
+ match tool {
+ "mozjpeg" => {
+ cmd.arg("-quality")
+ .arg(quality.to_string())
+ .arg("-progressive")
+ .arg("-outfile")
+ .arg(output)
+ .arg(input);
+ }
+ "jpegtran" => {
+ cmd.arg("-copy")
+ .arg(if self.preserve_metadata { "all" } else { "none" })
+ .arg("-optimize")
+ .arg("-progressive")
+ .arg("-outfile")
+ .arg(output)
+ .arg(input);
+ }
+ _ => anyhow::bail!("Unknown JPEG tool: {}", tool),
+ }
+ 
+ let output_result = cmd.output()
+ .with_context(|| format!("Failed to execute {}", tool))?;
+ 
+ if !output_result.status.success() {
+ anyhow::bail!(
+ "{} failed: {}",
+ tool,
+ String::from_utf8_lossy(&output_result.stderr)
+ );
+ }
+ 
+ Ok(())
+ }
+ 
+ /// optimizationWebP
+ pub fn optimize_webp(&self, input: &Path, output: &Path, quality: u8) -> Result<()> {
+ let mut cmd = Command::new("cwebp");
+ 
+ cmd.arg(input)
+ .arg("-o")
+ .arg(output)
+ .arg("-q")
+ .arg(quality.to_string())
+ .arg("-m")
+ .arg("6") // maximum努力
+ .arg("-mt"); // multi线程
+ 
+ if self.preserve_metadata {
+ cmd.arg("-metadata").arg("all");
+ }
+ 
+ let output_result = cmd.output()
+ .with_context(|| "Failed to execute cwebp")?;
+ 
+ if !output_result.status.success() {
+ anyhow::bail!(
+ "cwebp failed: {}",
+ String::from_utf8_lossy(&output_result.stderr)
+ );
+ }
+ 
+ Ok(())
+ }
+ 
+ /// execute同formatoptimization
+ pub fn optimize(&self, input: &Path, output: &Path, format: &str, quality: u8) -> Result<OptimizationResult> {
+ let start = Instant::now();
+ let input_size = fs::metadata(input)?.len();
+ 
+ let tool = Self::check_tools_for_format(format)?;
+ 
+ match format {
+ "png" => self.optimize_png(input, output, &tool)?,
+ "jpg" | "jpeg" => self.optimize_jpeg(input, output, quality, &tool)?,
+ "webp" => self.optimize_webp(input, output, quality)?,
+ _ => anyhow::bail!("Unsupported format: {}", format),
+ }
+ 
+ let output_size = fs::metadata(output)?.len();
+ let processing_time = start.elapsed();
+ 
+ Ok(OptimizationResult {
+ input_size,
+ output_size,
+ compression_ratio: output_size as f64 / input_size as f64,
+ processing_time_ms: processing_time.as_millis() as u64,
+ tool_used: tool,
+ })
+ }
 }
 
-/// 优化结果
+/// optimizationresult
 #[derive(Debug, Clone)]
-pub struct OptimizationResult {
-    pub input_size: u64,
-    pub output_size: u64,
-    pub compression_ratio: f64,
-    pub processing_time_ms: u64,
-    pub tool_used: String,
+pub structure OptimizationResult {
+ pub input_size: u64,
+ pub output_size: u64,
+ pub compression_ratio: f64,
+ pub processing_time_ms: u64,
+ pub tool_used: String,
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_tool_detection() {
-        // 测试PNG工具检测
-        let png_result = SameFormatOptimizer::check_tools_for_format("png");
-        if png_result.is_ok() {
-            log::debug!("PNG tool available: {:?}", png_result.unwrap());
-        }
-        
-        // 测试JPEG工具检测
-        let jpeg_result = SameFormatOptimizer::check_tools_for_format("jpeg");
-        if jpeg_result.is_ok() {
-            log::debug!("JPEG tool available: {:?}", jpeg_result.unwrap());
-        }
-        
-        // 测试WebP工具检测
-        let webp_result = SameFormatOptimizer::check_tools_for_format("webp");
-        if webp_result.is_ok() {
-            log::debug!("WebP tool available: {:?}", webp_result.unwrap());
-        }
-    }
-    
-    #[test]
-    fn test_optimizer_creation() {
-        let optimizer = SameFormatOptimizer::new(true);
-        assert!(optimizer.preserve_metadata);
-        
-        let optimizer2 = SameFormatOptimizer::new(false);
-        assert!(!optimizer2.preserve_metadata);
-    }
+ use super::*;
+ 
+ #[test]
+ fn test_tool_detection() {
+ // test PNG工具detection
+ let png_result = SameFormatOptimizer::check_tools_for_format("png");
+ if png_result.is_ok() {
+ log::debug!("PNG tool available: {:?}", png_result.unwrap());
+ }
+ 
+ // test JPEG工具detection
+ let jpeg_result = SameFormatOptimizer::check_tools_for_format("jpeg");
+ if jpeg_result.is_ok() {
+ log::debug!("JPEG tool available: {:?}", jpeg_result.unwrap());
+ }
+ 
+ // test Web P工具detection
+ let webp_result = SameFormatOptimizer::check_tools_for_format("webp");
+ if webp_result.is_ok() {
+ log::debug!("WebP tool available: {:?}", webp_result.unwrap());
+ }
+ }
+ 
+ #[test]
+ fn test_optimizer_creation() {
+ let optimizer = SameFormatOptimizer::new(true);
+ assert!(optimizer.preserve_metadata);
+ 
+ let optimizer2 = SameFormatOptimizer::new(false);
+ assert!(!optimizer2.preserve_metadata);
+ }
 }

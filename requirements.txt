@@ -1,25 +1,15 @@
 # Pixly AI Optimizer Python Dependencies
-# 用于Go服务调用的Python推理模块
 
-# ===== 核心依赖（必需）=====
-numpy>=1.24.0
-Pillow>=10.0.0
-PyWavelets>=1.4.1
-lightgbm>=4.0.0
+# Core dependencies (required)
+numpy>=1.26.0
+Pillow>=11.0.0
+PyWavelets>=1.7.0
+lightgbm>=4.5.0
 ffmpeg-python>=0.2.0
 
-# ===== PPO强化学习（推荐，提升5-10%精度）=====
-torch>=2.0.0
-# 注意: Mac需要在虚拟环境中安装
-#   python3 -m venv myenv && source myenv/bin/activate
-#   pip install torch
+# PPO reinforcement learning (recommended, +5-10% accuracy)
+torch>=2.5.0
 
-# ===== 可选依赖 =====
-# scikit-learn>=1.3.0  # 仅用于旧模型的scaler，已有fallback实现
-# magika>=0.5.0  # AI文件类型检测，Python 3.14暂不支持onnxruntime
-
-# ===== 虚拟环境安装说明 =====
-# Mac系统建议使用虚拟环境：
-#   python3 -m venv myenv
-#   source myenv/bin/activate  # Mac/Linux
-#   pip install numpy Pillow PyWavelets lightgbm torch ffmpeg-python
+# Optional dependencies
+# scikit-learn>=1.5.0  # Only for legacy model scalers
+# magika>=0.6.0        # AI file type detection

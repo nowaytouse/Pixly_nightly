@@ -1,25 +1,25 @@
-//! 🌐 国际化错误消息系统
+//! 🌐 国际errormessage System
 //! 
-//! 提供多语言错误和警告消息支持
+//! provide多语言error and warningmessagesupport
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// 支持的语言
+/// support语言
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Language {
-    /// 英语
+ /// 英语
     English,
-    /// 简体中文
+ /// 简体文
     SimplifiedChinese,
-    /// 繁体中文
+ /// 繁体文
     TraditionalChinese,
-    /// 日语
+ /// 日语
     Japanese,
 }
 
 impl Language {
-    /// 从语言代码创建
+ /// from语言代码create
     pub fn from_code(code: &str) -> Option<Self> {
         match code.to_lowercase().as_str() {
             "en" | "en-us" | "en-gb" => Some(Self::English),
@@ -30,7 +30,7 @@ impl Language {
         }
     }
     
-    /// 获取语言代码
+ /// get语言代码
     pub fn code(&self) -> &'static str {
         match self {
             Self::English => "en",
@@ -47,10 +47,10 @@ impl Default for Language {
     }
 }
 
-/// 错误消息键
+/// errormessage键
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum MessageKey {
-    // 文件验证错误
+    // filevalidationerror
     FileNotExist,
     FileSizeZero,
     FileExtensionMissing,
@@ -59,51 +59,51 @@ pub enum MessageKey {
     FileTooLarge,
     FilenameIllegalChars,
     
-    // 格式验证错误  
+    // formatvalidationerror  
     FormatInvalid,
     FormatNotDetected,
     
-    // 参数验证错误
+    // parametervalidationerror
     QualityInvalid,
     SpeedInvalid,
     
-    // 格式兼容性警告
+ // formatcompatibility性warning
     HeicNoTransparency,
     HeicNoAnimation,
     AvifAnimationLimited,
     JpegNoLossless,
     JxlQualityLow,
     
-    // 模式验证
+ // 模式validation
     ManualModeNoFormat,
     ManualModeNoQuality,
     SmartModeAiPredict,
     
-    // 输出验证
+    // outputvalidation
     OutputNotGenerated,
     OutputSizeZero,
     OutputSizeAbnormalSmall,
     OutputSizeAbnormalLarge,
     
-    // 通用消息
+ // 通用message
     NoFilesSelected,
     ValidationLevelPassed,
     ValidationLevelFailed,
     AllValidationPassed,
 }
 
-/// 国际化消息管理器
+/// 国际message Manager
 pub struct I18nMessages {
     messages: HashMap<(Language, MessageKey), String>,
     current_language: Language,
 }
 
 impl I18nMessages {
-    /// 创建新的消息管理器
+ /// create新message Manager
     pub fn new() -> Self {
         let mut messages = HashMap::new();
         
-        // 初始化所有语言的消息
+ // initialization所 has 语言message
         Self::init_english(&mut messages);
         Self::init_simplified_chinese(&mut messages);
         Self::init_traditional_chinese(&mut messages);
@@ -115,18 +115,18 @@ impl I18nMessages {
         }
     }
     
-    /// 设置当前语言
+ /// settingcurrent语言
     pub fn set_language(&mut self, lang: Language) {
         self.current_language = lang;
     }
     
-    /// 获取消息
+ /// 获cancel息
     pub fn get(&self, key: MessageKey) -> String {
         self.messages
             .get(&(self.current_language, key))
             .cloned()
             .unwrap_or_else(|| {
-                // 回退到英语
+ // 回退to英语
                 self.messages
                     .get(&(Language::English, key))
                     .cloned()
@@ -134,7 +134,7 @@ impl I18nMessages {
             })
     }
     
-    /// 格式化消息（支持参数）
+ /// formatmessage（supportparameter）
     pub fn format(&self, key: MessageKey, args: &[(&str, &str)]) -> String {
         let mut msg = self.get(key);
         
@@ -146,12 +146,12 @@ impl I18nMessages {
     }
     
     // ========================================
-    // 英语消息
+ // 英语message
     // ========================================
     fn init_english(msgs: &mut HashMap<(Language, MessageKey), String>) {
         let lang = Language::English;
         
-        // 文件验证
+        // filevalidation
         msgs.insert((lang, MessageKey::FileNotExist), "❌ File #{num} ({name}): File does not exist".to_string());
         msgs.insert((lang, MessageKey::FileSizeZero), "⚠️ File #{num} ({name}): File size is 0".to_string());
         msgs.insert((lang, MessageKey::FileExtensionMissing), "❌ File #{num} ({name}): Missing file extension".to_string());
@@ -160,33 +160,33 @@ impl I18nMessages {
         msgs.insert((lang, MessageKey::FileTooLarge), "⚠️ File #{num} ({name}): File too large ({size} GB)".to_string());
         msgs.insert((lang, MessageKey::FilenameIllegalChars), "⚠️ File #{num} ({name}): Filename contains illegal characters".to_string());
         
-        // 格式验证
+        // formatvalidation
         msgs.insert((lang, MessageKey::FormatInvalid), "❌ Invalid target format: {format}".to_string());
         msgs.insert((lang, MessageKey::FormatNotDetected), "Unable to detect file format".to_string());
         
-        // 参数验证
+        // parametervalidation
         msgs.insert((lang, MessageKey::QualityInvalid), "❌ Invalid quality parameter: {quality} (should be 1-100)".to_string());
         msgs.insert((lang, MessageKey::SpeedInvalid), "❌ Invalid speed parameter: {speed} (should be 0-10)".to_string());
         
-        // 兼容性警告
+ // compatibility性warning
         msgs.insert((lang, MessageKey::HeicNoTransparency), "⚠️ HEIC does not support transparency, transparent backgrounds may change color".to_string());
         msgs.insert((lang, MessageKey::HeicNoAnimation), "⚠️ HEIC does not support animation, animation effects will be lost".to_string());
         msgs.insert((lang, MessageKey::AvifAnimationLimited), "⚠️ AVIF animation support is limited, may require special encoder".to_string());
         msgs.insert((lang, MessageKey::JpegNoLossless), "❌ JPEG format does not support lossless mode".to_string());
         msgs.insert((lang, MessageKey::JxlQualityLow), "⚠️ JXL quality parameter is low ({quality}), may affect visual quality".to_string());
         
-        // 模式验证
+ // 模式validation
         msgs.insert((lang, MessageKey::ManualModeNoFormat), "❌ Target format must be specified in manual mode".to_string());
         msgs.insert((lang, MessageKey::ManualModeNoQuality), "⚠️ Quality parameter not set in manual mode, will use default value".to_string());
         msgs.insert((lang, MessageKey::SmartModeAiPredict), "ℹ️ Smart mode will use AI predicted parameters".to_string());
         
-        // 输出验证
+        // outputvalidation
         msgs.insert((lang, MessageKey::OutputNotGenerated), "❌ Output file not generated: {path}".to_string());
         msgs.insert((lang, MessageKey::OutputSizeZero), "❌ Output file size is 0: {path}".to_string());
         msgs.insert((lang, MessageKey::OutputSizeAbnormalSmall), "⚠️ Output file abnormally small ({percent}% of original)".to_string());
         msgs.insert((lang, MessageKey::OutputSizeAbnormalLarge), "⚠️ Output file abnormally large ({ratio}x of original)".to_string());
         
-        // 通用
+ // 通用
         msgs.insert((lang, MessageKey::NoFilesSelected), "❌ No files selected".to_string());
         msgs.insert((lang, MessageKey::ValidationLevelPassed), "✅ Level {level} passed: {name}".to_string());
         msgs.insert((lang, MessageKey::ValidationLevelFailed), "❌ Level {level} failed: {name}".to_string());
@@ -194,12 +194,12 @@ impl I18nMessages {
     }
     
     // ========================================
-    // 简体中文消息
+ // 简体文message
     // ========================================
     fn init_simplified_chinese(msgs: &mut HashMap<(Language, MessageKey), String>) {
         let lang = Language::SimplifiedChinese;
         
-        // 文件验证
+        // filevalidation
         msgs.insert((lang, MessageKey::FileNotExist), "❌ 文件 #{num} ({name}): 文件不存在".to_string());
         msgs.insert((lang, MessageKey::FileSizeZero), "⚠️  文件 #{num} ({name}): 文件大小为0".to_string());
         msgs.insert((lang, MessageKey::FileExtensionMissing), "❌ 文件 #{num} ({name}): 缺少文件扩展名".to_string());
@@ -208,33 +208,33 @@ impl I18nMessages {
         msgs.insert((lang, MessageKey::FileTooLarge), "⚠️ 文件 #{num} ({name}): 文件过大 ({size} GB)".to_string());
         msgs.insert((lang, MessageKey::FilenameIllegalChars), "⚠️ 文件 #{num} ({name}): 文件名包含非法字符".to_string());
         
-        // 格式验证
+        // formatvalidation
         msgs.insert((lang, MessageKey::FormatInvalid), "❌ 无效的目标格式: {format}".to_string());
         msgs.insert((lang, MessageKey::FormatNotDetected), "无法检测文件格式".to_string());
         
-        // 参数验证
+        // parametervalidation
         msgs.insert((lang, MessageKey::QualityInvalid), "❌ 无效的质量参数: {quality} (应为1-100)".to_string());
         msgs.insert((lang, MessageKey::SpeedInvalid), "❌ 无效的速度参数: {speed} (应为0-10)".to_string());
         
-        // 兼容性警告
+ // compatibility性warning
         msgs.insert((lang, MessageKey::HeicNoTransparency), "⚠️ HEIC 不支持透明度，透明背景可能会改变颜色".to_string());
         msgs.insert((lang, MessageKey::HeicNoAnimation), "⚠️ HEIC 不支持动画，动画效果将丢失".to_string());
         msgs.insert((lang, MessageKey::AvifAnimationLimited), "⚠️ AVIF 动画支持有限，可能需要特殊编码器".to_string());
         msgs.insert((lang, MessageKey::JpegNoLossless), "❌ JPEG 格式不支持无损模式".to_string());
         msgs.insert((lang, MessageKey::JxlQualityLow), "⚠️ JXL 质量参数较低 ({quality})，可能影响视觉质量".to_string());
         
-        // 模式验证
+ // 模式validation
         msgs.insert((lang, MessageKey::ManualModeNoFormat), "❌ 手动模式必须指定目标格式".to_string());
         msgs.insert((lang, MessageKey::ManualModeNoQuality), "⚠️ 手动模式未设置质量参数，将使用默认值".to_string());
         msgs.insert((lang, MessageKey::SmartModeAiPredict), "ℹ️ 智能模式将使用AI预测参数".to_string());
         
-        // 输出验证
+        // outputvalidation
         msgs.insert((lang, MessageKey::OutputNotGenerated), "❌ 输出文件未生成: {path}".to_string());
         msgs.insert((lang, MessageKey::OutputSizeZero), "❌ 输出文件大小为0: {path}".to_string());
         msgs.insert((lang, MessageKey::OutputSizeAbnormalSmall), "⚠️ 输出文件异常小 (原始文件的{percent}%)".to_string());
         msgs.insert((lang, MessageKey::OutputSizeAbnormalLarge), "⚠️ 输出文件异常大 (原始文件的{ratio}倍)".to_string());
         
-        // 通用
+ // 通用
         msgs.insert((lang, MessageKey::NoFilesSelected), "❌ 未选择文件".to_string());
         msgs.insert((lang, MessageKey::ValidationLevelPassed), "✅ 级别 {level} 通过: {name}".to_string());
         msgs.insert((lang, MessageKey::ValidationLevelFailed), "❌ 级别 {level} 失败: {name}".to_string());
@@ -242,12 +242,12 @@ impl I18nMessages {
     }
     
     // ========================================
-    // 繁体中文消息
+ // 繁体文message
     // ========================================
     fn init_traditional_chinese(msgs: &mut HashMap<(Language, MessageKey), String>) {
         let lang = Language::TraditionalChinese;
         
-        // 文件验证
+        // filevalidation
         msgs.insert((lang, MessageKey::FileNotExist), "❌ 檔案 #{num} ({name}): 檔案不存在".to_string());
         msgs.insert((lang, MessageKey::FileSizeZero), "⚠️ 檔案 #{num} ({name}): 檔案大小為0".to_string());
         msgs.insert((lang, MessageKey::FileExtensionMissing), "❌ 檔案 #{num} ({name}): 缺少檔案副檔名".to_string());
@@ -256,33 +256,33 @@ impl I18nMessages {
         msgs.insert((lang, MessageKey::FileTooLarge), "⚠️ 檔案 #{num} ({name}): 檔案過大 ({size} GB)".to_string());
         msgs.insert((lang, MessageKey::FilenameIllegalChars), "⚠️ 檔案 #{num} ({name}): 檔案名稱包含非法字元".to_string());
         
-        // 格式验证
+        // formatvalidation
         msgs.insert((lang, MessageKey::FormatInvalid), "❌ 無效的目標格式: {format}".to_string());
         msgs.insert((lang, MessageKey::FormatNotDetected), "無法檢測檔案格式".to_string());
         
-        // 参数验证
+        // parametervalidation
         msgs.insert((lang, MessageKey::QualityInvalid), "❌ 無效的質量參數: {quality} (應為1-100)".to_string());
        msgs.insert((lang, MessageKey::SpeedInvalid), "❌ 無效的速度參數: {speed} (應為0-10)".to_string());
         
-        // 兼容性警告
+ // compatibility性warning
         msgs.insert((lang, MessageKey::HeicNoTransparency), "⚠️ HEIC 不支援透明度，透明背景可能會改變顏色".to_string());
         msgs.insert((lang, MessageKey::HeicNoAnimation), "⚠️ HEIC 不支援動畫，動畫效果將遺失".to_string());
         msgs.insert((lang, MessageKey::AvifAnimationLimited), "⚠️ AVIF 動畫支援有限，可能需要特殊編碼器".to_string());
         msgs.insert((lang, MessageKey::JpegNoLossless), "❌ JPEG 格式不支援無損模式".to_string());
         msgs.insert((lang, MessageKey::JxlQualityLow), "⚠️ JXL 質量參數較低 ({quality})，可能影響視覺質量".to_string());
         
-        // 模式验证
+ // 模式validation
         msgs.insert((lang, MessageKey::ManualModeNoFormat), "❌ 手動模式必須指定目標格式".to_string());
         msgs.insert((lang, MessageKey::ManualModeNoQuality), "⚠️ 手動模式未設定質量參數，將使用預設值".to_string());
         msgs.insert((lang, MessageKey::SmartModeAiPredict), "ℹ️ 智能模式將使用AI預測參數".to_string());
         
-        // 输出验证
+        // outputvalidation
         msgs.insert((lang, MessageKey::OutputNotGenerated), "❌ 輸出檔案未產生: {path}".to_string());
         msgs.insert((lang, MessageKey::OutputSizeZero), "❌ 輸出檔案大小為0: {path}".to_string());
         msgs.insert((lang, MessageKey::OutputSizeAbnormalSmall), "⚠️ 輸出檔案異常小 (原始檔案的{percent}%)".to_string());
         msgs.insert((lang, MessageKey::OutputSizeAbnormalLarge), "⚠️ 輸出檔案異常大 (原始檔案的{ratio}倍)".to_string());
         
-        // 通用
+ // 通用
         msgs.insert((lang, MessageKey::NoFilesSelected), "❌ 未選擇檔案".to_string());
         msgs.insert((lang, MessageKey::ValidationLevelPassed), "✅ 級別 {level} 通過: {name}".to_string());
         msgs.insert((lang, MessageKey::ValidationLevelFailed), "❌ 級別 {level} 失敗: {name}".to_string());
@@ -290,12 +290,12 @@ impl I18nMessages {
     }
     
     // ========================================
-    // 日语消息
+ // 日语message
     // ========================================
     fn init_japanese(msgs: &mut HashMap<(Language, MessageKey), String>) {
         let lang = Language::Japanese;
         
-        // 文件验证
+        // filevalidation
         msgs.insert((lang, MessageKey::FileNotExist), "❌ ファイル #{num} ({name}): ファイルが存在しません".to_string());
         msgs.insert((lang, MessageKey::FileSizeZero), "⚠️ ファイル #{num} ({name}): ファイルサイズが0です".to_string());
         msgs.insert((lang, MessageKey::FileExtensionMissing), "❌ ファイル #{num} ({name}): ファイル拡張子がありません".to_string());
@@ -304,33 +304,33 @@ impl I18nMessages {
         msgs.insert((lang, MessageKey::FileTooLarge), "⚠️ ファイル #{num} ({name}): ファイルサイズが大きすぎます ({size} GB)".to_string());
         msgs.insert((lang, MessageKey::FilenameIllegalChars), "⚠️ ファイル #{num} ({name}): ファイル名に不正な文字が含まれています".to_string());
         
-        // 格式验证
+        // formatvalidation
         msgs.insert((lang, MessageKey::FormatInvalid), "❌ 無効なターゲットフォーマット: {format}".to_string());
         msgs.insert((lang, MessageKey::FormatNotDetected), "ファイルフォーマットを検出できません".to_string());
         
-        // 参数验证
+        // parametervalidation
         msgs.insert((lang, MessageKey::QualityInvalid), "❌ 無効な品質パラメータ: {quality} (1-100であるべき)".to_string());
         msgs.insert((lang, MessageKey::SpeedInvalid), "❌ 無効な速度パラメータ: {speed} (0-10であるべき)".to_string());
         
-        // 兼容性警告
+ // compatibility性warning
         msgs.insert((lang, MessageKey::HeicNoTransparency), "⚠️ HEICは透明度をサポートしていません。透明な背景は色が変わる可能性があります".to_string());
         msgs.insert((lang, MessageKey::HeicNoAnimation), "⚠️ HEICはアニメーションをサポートしていません。アニメーション効果は失われます".to_string());
         msgs.insert((lang, MessageKey::AvifAnimationLimited), "⚠️ AVIFのアニメーションサポートは限定的で、特別なエンコーダーが必要な場合があります".to_string());
         msgs.insert((lang, MessageKey::JpegNoLossless), "❌ JPEG形式はロスレスモードをサポートしていません".to_string());
         msgs.insert((lang, MessageKey::JxlQualityLow), "⚠️ JXL品質パラメータが低い ({quality})、視覚品質に影響する可能性があります".to_string());
         
-        // 模式验证
+ // 模式validation
         msgs.insert((lang, MessageKey::ManualModeNoFormat), "❌ 手動モードではターゲットフォーマットを指定する必要があります".to_string());
         msgs.insert((lang, MessageKey::ManualModeNoQuality), "⚠️ 手動モードで品質パラメータが設定されていません。デフォルト値を使用します".to_string());
         msgs.insert((lang, MessageKey::SmartModeAiPredict), "ℹ️ スマートモードはAI予測パラメータを使用します".to_string());
         
-        // 输出验证
+        // outputvalidation
         msgs.insert((lang, MessageKey::OutputNotGenerated), "❌ 出力ファイルが生成されていません: {path}".to_string());
         msgs.insert((lang, MessageKey::OutputSizeZero), "❌ 出力ファイルのサイズが0です: {path}".to_string());
         msgs.insert((lang, MessageKey::OutputSizeAbnormalSmall), "⚠️ 出力ファイルが異常に小さい (元のファイルの{percent}%)".to_string());
         msgs.insert((lang, MessageKey::OutputSizeAbnormalLarge), "⚠️ 出力ファイルが異常に大きい (元のファイルの{ratio}倍)".to_string());
         
-        // 通用
+ // 通用
         msgs.insert((lang, MessageKey::NoFilesSelected), "❌ ファイルが選択されていません".to_string());
         msgs.insert((lang, MessageKey::ValidationLevelPassed), "✅ レベル {level} 合格: {name}".to_string());
         msgs.insert((lang, MessageKey::ValidationLevelFailed), "❌ レベル {level} 失敗: {name}".to_string());

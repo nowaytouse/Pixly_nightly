@@ -51,8 +51,8 @@ struct Cli {
     command: Commands,
 }
 
-// 允许大的enum variant：CLI参数解析不在热路径，性能影响可忽略
-// Convert variant (421 bytes) 包含所有转换参数，boxing会增加复杂度
+// Allow large enum variant: CLI parameter parsing is not in hot path, performance impact is negligible
+// Convert variant (421 bytes) contains all conversion parameters, boxing would increase complexity
 #[allow(clippy::large_enum_variant)]
 #[derive(Subcommand)]
 enum Commands {
@@ -333,11 +333,11 @@ enum Commands {
     },
 }
 
-/// 🎞️ 场景检测 - 优化GOP大小
+/// Scene detection - Optimize GOP size
 fn detect_scenes(input: &Path, config: &mut pixly_kernel::codecs::video::video_processor::VideoConversionConfig) -> Result<()> {
     use std::process::Command;
-    
-    // 使用ffmpeg的场景检测
+
+    // Use ffmpeg scene detection
     let output = Command::new("ffmpeg")
         .arg("-i")
         .arg(input)
@@ -350,23 +350,23 @@ fn detect_scenes(input: &Path, config: &mut pixly_kernel::codecs::video::video_p
         .context("Failed to run scene detection")?;
     
     let stderr = String::from_utf8_lossy(&output.stderr);
-    
-    // 统计场景变化次数
+
+    // Count scene changes
     let scene_count = stderr.matches("Parsed_showinfo").count();
     
     if scene_count > 0 {
         println!("   ✅ Detected {} scene changes", scene_count);
         
-        // 根据场景变化调整GOP大小
-        // 更多场景变化 = 更小的GOP
+        // Adjust GOP size based on scene changes
+        // More scene changes = smaller GOP
         let recommended_gop = if scene_count > 100 {
-            50  // 频繁场景变化
+            50  // Frequent scene changes
         } else if scene_count > 50 {
             100
         } else {
-            250  // 默认值
+            250  // Default value
         };
-        
+
         let current_gop = config.gop_size.unwrap_or(250);
         if config.gop_size.is_none() || current_gop > recommended_gop {
             println!("   💡 Adjusting GOP size: {} → {}", current_gop, recommended_gop);
@@ -379,13 +379,13 @@ fn detect_scenes(input: &Path, config: &mut pixly_kernel::codecs::video::video_p
     Ok(())
 }
 
-/// 📊 VMAF质量验证
+/// VMAF quality validation
 fn validate_vmaf(original: &Path, converted: &Path) -> Result<()> {
     use std::process::Command;
-    
+
     println!("   🔍 Calculating VMAF score (this may take a while)...");
-    
-    // 使用ffmpeg的libvmaf过滤器
+
+    // Use ffmpeg's libvmaf filter
     let output = Command::new("ffmpeg")
         .arg("-i")
         .arg(converted)
@@ -401,8 +401,8 @@ fn validate_vmaf(original: &Path, converted: &Path) -> Result<()> {
     match output {
         Ok(result) => {
             let stdout = String::from_utf8_lossy(&result.stdout);
-            
-            // 解析VMAF分数
+
+            // Parse VMAF score
             if let Some(vmaf_line) = stdout.lines().find(|l| l.contains("\"vmaf\""))
                 && let Some(score_str) = vmaf_line.split(':').nth(1)
                     && let Ok(score) = score_str.trim().trim_end_matches(',').parse::<f64>() {
@@ -506,10 +506,10 @@ fn run(cli: Cli) -> Result<()> {
             println!("   Codec: {}", codec);
             println!("   Container: {}", container);
             
-            // 🎛️ 构建功能开关
+            // Build feature toggles
             let feature_toggles = FeatureToggles {
                 enable_ai_prediction: ai,
-                enable_file_validation: false,  // 视频不需要Magika验证
+                enable_file_validation: false,  // Video doesn't need Magika validation
                 enable_ssim: false,
                 enable_gpu: gpu,
                 enable_preprocess: false,
@@ -521,13 +521,13 @@ fn run(cli: Cli) -> Result<()> {
             };
             
             println!("   Features: {}", feature_toggles.summary());
-            
-            // 🤖 AI参数预测
+
+            // AI parameter prediction
             let (final_crf, final_preset, final_codec, final_two_pass) = if ai {
                 println!("🤖 AI Smart Mode: Analyzing video features...");
                 println!("   🎯 Optimize mode: {}", optimize_mode);
-                
-                // 🔥 提取视频特征
+
+                // Extract video features
                 use pixly_kernel::codecs::video::video_features::{extract_video_features, video_features_to_128d};
                 use pixly_kernel::ai::python_ml_caller::{call_python_ml, MLPredictRequest};
                 
@@ -541,11 +541,11 @@ fn run(cli: Cli) -> Result<()> {
                         println!("   📦 Size: {:.2} MB, Codec: {}", 
                             video_features.size_mb(),
                             video_features.codec);
-                        
-                        // 转换为128维特征
+
+                        // Convert to 128D features
                         let feature_vector = video_features_to_128d(&video_features);
-                        
-                        // 调用Python ML
+
+                        // Call Python ML
                         let ml_request = MLPredictRequest {
                             features: feature_vector,
                             target_format: "video".to_string(),
@@ -555,8 +555,8 @@ fn run(cli: Cli) -> Result<()> {
                         match call_python_ml(&ml_request) {
                             Ok(ml_response) => {
                                 println!("✅ Python ML video prediction received:");
-                                
-                                // 解析format_options
+
+                                // Parse format_options
                                 let mut ml_codec = codec.clone();
                                 let mut ml_preset = preset.clone();
                                 let mut ml_two_pass = false;
@@ -600,33 +600,33 @@ fn run(cli: Cli) -> Result<()> {
             } else {
                 (Some(crf as u32), Some(preset.clone()), codec.clone(), false)
             };
-            
-            // 构建视频转换配置
+
+            // Build video conversion config
             let mut config = VideoConversionConfig {
-                codec: final_codec,  // 🔥 使用ML预测的codec
+                codec: final_codec,  // Use ML predicted codec
                 container: container.clone(),
-                crf: final_crf.unwrap_or(crf as u32) as u8,  // 🔥 使用ML预测的CRF
-                preset: final_preset.unwrap_or(preset.clone()),  // 🔥 使用ML预测的preset
+                crf: final_crf.unwrap_or(crf as u32) as u8,  // Use ML predicted CRF
+                preset: final_preset.unwrap_or(preset.clone()),  // Use ML predicted preset
                 target_resolution: None,
                 target_fps: None,
                 audio_mode: AudioMode::Copy,
-                two_pass: if ai { final_two_pass } else { feature_toggles.enable_two_pass },  // 🔥 使用ML预测的two_pass
+                two_pass: if ai { final_two_pass } else { feature_toggles.enable_two_pass },  // Use ML predicted two_pass
                 hw_accel: if gpu { "auto".to_string() } else { "none".to_string() },
                 gop_size: gop,
                 bframes,
                 ref_frames: refs,
                 me_method,
                 pix_fmt,
-                rate_control: None,  // 🔥 Phase 3: 添加rate_control字段
+                rate_control: None,  // Phase 3: Add rate_control field
             };
-            
-            // 🎞️ 场景检测
+
+            // Scene detection
             if feature_toggles.enable_scene_detection {
                 println!("🎞️ Running scene detection...");
                 detect_scenes(&input, &mut config)?;
             }
-            
-            // 执行转换
+
+            // Execute conversion
             let processor = VideoProcessor::new();
             let result = processor.convert_video(&input, &output, &config, Some(|progress| {
                 println!("   Progress: {:.1}%", progress * 100.0);
@@ -638,8 +638,8 @@ fn run(cli: Cli) -> Result<()> {
                 println!("   Converted size: {:.2} MB", result.converted_size as f64 / 1024.0 / 1024.0);
                 println!("   Compression ratio: {:.1}%", result.compression_ratio * 100.0);
                 println!("   Duration: {:.2}s", result.duration);
-                
-                // 📊 VMAF质量验证
+
+                // VMAF quality validation
                 if feature_toggles.enable_vmaf {
                     println!("📊 Running VMAF quality validation...");
                     validate_vmaf(&input, &output)?;
@@ -658,7 +658,7 @@ fn run(cli: Cli) -> Result<()> {
             json,
             format,
         } => {
-            // 🔍 调用analyze模块
+            // Call analyze module
             use pixly_kernel::cli::cli_analyze::{handle_analyze, AnalyzeOptions};
             
             let options = AnalyzeOptions {
@@ -679,7 +679,7 @@ fn run(cli: Cli) -> Result<()> {
             input,
             format,
             quality,
-            preset,  // 🎯 CLI-001: 质量预设
+            preset,  // CLI-001: Quality preset
             output,
             // JXL
             jpeg_lossless,
@@ -728,15 +728,15 @@ fn run(cli: Cli) -> Result<()> {
             format_correction,
             online_learning,
         } => {
-            // 🎓 Phase 11: Online learning enabled
+            // Phase 11: Online learning enabled
             if online_learning {
                 println!("🎓 Online learning enabled - Conversion experiences will be recorded for model improvement");
-                // 🔥 启用全局在线学习器
+                // Enable global online learner
                 pixly_kernel::ai::online_learner_manager::OnlineLearnerManager::enable();
             }
-            // 🎯 Phase 8: 智能格式选择
+            // Phase 8: Smart format selection
             let target_format = if let Some(user_format) = format {
-                // 用户指定格式，使用格式选择器验证
+                // User specified format, validate with format selector
                 use pixly_kernel::utils::format_selector::FormatSelector;
                 let selector = FormatSelector::new(false);
                 match selector.select_best_format(&input, Some(&user_format)) {
@@ -749,7 +749,7 @@ fn run(cli: Cli) -> Result<()> {
                     Err(_) => user_format,
                 }
             } else {
-                // 自动选择最佳格式
+                // Automatically select best format
                 use pixly_kernel::utils::format_selector::FormatSelector;
                 let selector = FormatSelector::new(false);
                 match selector.select_best_format(&input, None) {
@@ -763,13 +763,13 @@ fn run(cli: Cli) -> Result<()> {
                         recommendation.recommended_format
                     }
                     Err(_) => {
-                        // Fallback到默认
+                        // Fallback to default
                         "jxl".to_string()
                     }
                 }
             };
             
-            // 🎯 CLI-001: 应用质量预设
+            // CLI-001: Apply quality preset
             let (mut final_quality, preset_effort) = if let Some(preset_str) = preset {
                 use pixly_kernel::utils::quality_presets::QualityPreset;
                 
@@ -787,21 +787,21 @@ fn run(cli: Cli) -> Result<()> {
                     }
                 }
             } else {
-                // 创建可变的参数变量（用于AI覆盖）
+                // Create mutable parameter variables (for AI override)
                 (quality, effort)
             };
-            
-            // 合并预设effort和用户指定的effort（用户指定优先）
+
+            // Merge preset effort and user-specified effort (user-specified takes priority)
             let final_effort = effort.or(preset_effort);
-            
-            let final_speed = speed;  // 目前AI不推荐speed参数
-            
-            // 🤖 AI参数预测
+
+            let final_speed = speed;  // Currently AI does not recommend speed parameter
+
+            // AI parameter prediction
             if ai {
                 println!("🤖 AI Smart Mode: Analyzing image features...");
                 println!("   🎯 Optimize mode: {}", optimize_mode);
-                
-                // 🔥 Real ML Integration: Check if Python ML is available
+
+                // Real ML Integration: Check if Python ML is available
                 use pixly_kernel::ai::python_ml_caller::is_python_ml_available;
                 if is_python_ml_available() {
                     println!("   ✅ Python ML service available - Using REAL machine learning");
@@ -812,39 +812,39 @@ fn run(cli: Cli) -> Result<()> {
                 
                 use pixly_kernel::{MediaAnalyzer, ImageFeatures, QualityMode};
                 use pixly_kernel::utils::format_recommender::{AIFormatRecommender, UserPreferences};
-                
-                // 解析优化模式
+
+                // Parse optimization mode
                 let quality_mode = match optimize_mode.as_str() {
                     "quality" => QualityMode::Quality,
-                    "size" => QualityMode::Speed,  // 速度模式 = 体积优先
+                    "size" => QualityMode::Speed,  // Speed mode = size priority
                     _ => QualityMode::Balanced,
                 };
-                
-                // 1. 分析媒体文件（启用AI检测以提取完整特征）
-                let analyzer = MediaAnalyzer::new(); // 默认启用AI检测
+
+                // 1. Analyze media file (enable AI detection to extract complete features)
+                let analyzer = MediaAnalyzer::new(); // AI detection enabled by default
                 match analyzer.analyze(&input) {
                     Ok(media_info) => {
-                        // 🔥 检查是否有真实特征
+                        // Check if real features exist
                         if media_info.features_128d.is_some() {
                             println!("   ✅ Extracted REAL 128D features (Color/Texture/Quality from image)");
                         } else {
                             println!("   ⚠️  Using simplified features (no image data)");
                         }
-                        
-                        // 2. 转换为ImageFeatures
+
+                        // 2. Convert to ImageFeatures
                         let image_features = ImageFeatures {
                             width: media_info.resolution.0,
                             height: media_info.resolution.1,
                             file_size: media_info.size,
                             format: media_info.format.clone(),
-                            // 从media_info推断alpha和动画
-                            has_alpha: media_info.format.to_lowercase() == "png" || 
+                            // Infer alpha and animation from media_info
+                            has_alpha: media_info.format.to_lowercase() == "png" ||
                                       media_info.format.to_lowercase() == "webp",
                             is_animated: media_info.frame_count.unwrap_or(1) > 1,
-                            complexity: 0.75,  // 将被真实特征覆盖
+                            complexity: 0.75,  // Will be overridden by real features
                         };
-                        
-                        // 3. 使用AI推荐器（传递完整特征）
+
+                        // 3. Use AI recommender (pass complete features)
                         let recommender = AIFormatRecommender::new();
                         let user_prefs = UserPreferences::default();
                         
@@ -854,15 +854,15 @@ fn run(cli: Cli) -> Result<()> {
                             &user_prefs
                         ) {
                             Some(recommendation) => {
-                                println!("   ✅ AI recommendation: {} (confidence: {:.0}%)", 
+                                println!("   ✅ AI recommendation: {} (confidence: {:.0}%)",
                                          recommendation.format.to_uppercase(),
                                          recommendation.confidence * 100.0);
-                                
-                                // 应用AI推荐的参数
+
+                                // Apply AI recommended parameters
                                 final_quality = recommendation.quality_score;
                                 println!("   📊 AI recommended quality: {}", final_quality);
-                                
-                                // 如果AI推荐的格式与用户指定不同，给出提示
+
+                                // If AI recommended format differs from user specified, provide hint
                                 if recommendation.format != target_format {
                                     println!("   💡 AI suggests {} instead of {}", 
                                              recommendation.format.to_uppercase(),
@@ -871,7 +871,7 @@ fn run(cli: Cli) -> Result<()> {
                                 }
                             }
                             None => {
-                                // 🔥 质量宣言：AI失败就响亮报错！
+                                // Quality manifesto: AI failure should fail loudly!
                                 eprintln!("❌ AI prediction FAILED: No recommendation available");
                                 eprintln!("   Without AI, conversion will use default parameters");
                                 eprintln!("   This is NOT optimal! Please check AI system.");
@@ -885,35 +885,35 @@ fn run(cli: Cli) -> Result<()> {
                     }
                 }
             }
-            
-            // 确定输出路径
+
+            // Determine output path
             let output_path = if let Some(out) = output {
-                // 🔥 修复：检查output是文件还是目录
+                // Check if output is file or directory
                 if out.extension().is_some() {
-                    // output有扩展名，视为完整文件路径
+                    // output has extension, treat as complete file path
                     out
                 } else {
-                    // output无扩展名，视为目录，在其中创建同名文件
+                    // output has no extension, treat as directory, create same-name file in it
                     let filename = input.file_stem()
                         .ok_or_else(|| anyhow::anyhow!("Invalid input filename"))?;
                     out.join(format!("{}.{}", filename.to_string_lossy(), target_format))
                 }
             } else {
-                // 默认在输入文件同目录创建（原地替换）
+                // Default: create in same directory as input file (in-place replacement)
                 let parent = input.parent().unwrap_or(Path::new("."));
                 let filename = input.file_stem()
                     .ok_or_else(|| anyhow::anyhow!("Invalid input filename"))?;
                 parent.join(format!("{}.{}", filename.to_string_lossy(), target_format))
             };
             
-            // 🔥 文件名规范化处理（如果启用）
+            // Filename normalization (if enabled)
             let (actual_input, temp_normalized) = if normalize_filenames {
                 normalize_filename_if_needed(&input)?
             } else {
                 (input.clone(), None)
             };
-            
-            // 🎨 视觉质量评分（如果未使用AI预测和预设）
+
+            // Visual quality scoring (if not using AI prediction and preset)
             if !ai && preset_effort.is_none() {
                 use pixly_kernel::analysis::visual_quality_scorer::VisualQualityScorer;
                 
@@ -926,9 +926,9 @@ fn run(cli: Cli) -> Result<()> {
                     println!("      Color complexity: {:.2}", features.color_complexity);
                     println!("      Edge density: {:.2}", features.edge_density);
                     println!("      Estimated quality: {}", features.estimated_quality);
-                    
-                    // 如果用户使用默认quality，使用推荐值
-                    if quality == 90 && speed.is_none() {  // 默认值
+
+                    // If user uses default quality, use recommended value
+                    if quality == 90 && speed.is_none() {  // Default value
                         final_quality = features.recommended_quality;
                         println!("   ✨ Using recommended quality: {}", final_quality);
                     }
@@ -939,8 +939,8 @@ fn run(cli: Cli) -> Result<()> {
             println!("📦 Format: {}", target_format);
             println!("🎯 Quality: {}", final_quality);
             println!("📁 Output: {:?}", output_path);
-            
-            // 🔥 修复：只在输出目录不存在时创建，避免在Eagle .info目录中创建子目录
+
+            // Only create output directory if it doesn't exist, avoid creating subdirectories in Eagle .info
             if let Some(parent) = output_path.parent() {
                 if !parent.exists() {
                     println!("📂 Creating output directory: {:?}", parent);
@@ -952,7 +952,7 @@ fn run(cli: Cli) -> Result<()> {
                 }
             }
             
-            // 🎛️ 构建功能开关配置
+            // Build feature toggles configuration
             use pixly_kernel::FeatureToggles;
             let feature_toggles = FeatureToggles {
                 enable_ai_prediction: ai,
@@ -961,13 +961,13 @@ fn run(cli: Cli) -> Result<()> {
                 enable_gpu: gpu,
                 enable_preprocess: preprocess,
                 enable_format_correction: format_correction,
-                enable_video_for_animation: true,  // 🎬 检测大型动图，推荐转视频
+                enable_video_for_animation: true,  // Detect large animations, recommend video conversion
                 enable_scene_detection: false,
                 enable_vmaf: false,
                 enable_two_pass: false,
             };
-            
-            // 构建转换配置
+
+            // Build conversion configuration
             let mut config = ConversionConfig {
                 quality: final_quality,
                 feature_toggles: Some(feature_toggles),
@@ -975,15 +975,15 @@ fn run(cli: Cli) -> Result<()> {
                 ..Default::default()
             };
             
-            // 根据格式设置参数（AI推荐的参数优先）
+            // Set parameters according to format (AI recommended parameters take priority)
             match target_format.as_str() {
                 "jxl" => {
                     if jpeg_lossless {
                         config.lossless = true;
                     }
-                    // 使用合并后的effort
+                    // Use merged effort
                     config.effort = final_effort;
-                    // 🔥 Phase: JXL高级参数（修复空壳功能）
+                    // Phase: JXL advanced parameters (fix hollow features)
                     config.jxl_modular = modular;
                     config.jxl_progressive = progressive;
                     config.jxl_responsive = responsive;
@@ -999,7 +999,7 @@ fn run(cli: Cli) -> Result<()> {
                 }
                 "webp" => {
                     if let Some(m) = method {
-                        config.speed = m; // WebP method映射到speed
+                        config.speed = m; // WebP method maps to speed
                     }
                 }
                 "heic" => {
@@ -1013,12 +1013,12 @@ fn run(cli: Cli) -> Result<()> {
                 _ => {}
             }
             
-            // 🔥 Phase X.0: 格式自动修正
+            // Phase X.0: Format auto-correction
             let corrected_input = if format_correction {
                 println!("🔧 Checking file format...");
                 use pixly_kernel::utils::format_corrector::FormatCorrector;
                 
-                let corrector = FormatCorrector::new(false); // 不自动重命名，只检测
+                let corrector = FormatCorrector::new(false); // No auto-rename, detect only
                 match corrector.check_and_correct(&input) {
                     Ok(result) => {
                         if result.needs_correction {
@@ -1026,8 +1026,8 @@ fn run(cli: Cli) -> Result<()> {
                             println!("   Extension: .{}", result.original_extension);
                             println!("   Actual format: {}", result.detected_format);
                             println!("   💡 Recommendation: Rename to .{}", result.detected_format);
-                            
-                            // 创建修正后的路径（不实际重命名）
+
+                            // Create corrected path (don't actually rename)
                             if let Some(corrected) = result.corrected_path {
                                 println!("   Suggested path: {:?}", corrected);
                             }
@@ -1045,10 +1045,10 @@ fn run(cli: Cli) -> Result<()> {
                 input.clone()
             };
             
-            // 使用修正后的路径
+            // Use corrected path
             let input = corrected_input;
-            
-            // 🔥 Phase X.1: 动图转视频推荐
+
+            // Phase X.1: Animation to video recommendation
             let ext = input.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
             if matches!(ext.as_str(), "gif" | "apng" | "webp")
                 && let Ok(metadata) = std::fs::metadata(&input) {
@@ -1068,7 +1068,7 @@ fn run(cli: Cli) -> Result<()> {
                     }
                 }
             
-            // 🔥 Phase X.1: Magika AI 文件验证
+            // Phase X.1: Magika AI file validation
             if validate_files {
                 println!("🔒 Validating file with Magika AI...");
                 use pixly_kernel::utils::magika_detector::MagikaDetector;
@@ -1076,10 +1076,10 @@ fn run(cli: Cli) -> Result<()> {
                 let detector = MagikaDetector::with_defaults();
                 match detector.detect_file_type(&actual_input) {
                     Ok(detection) => {
-                        println!("   ✅ Detected type: {} (confidence: {:.1}%)", 
+                        println!("   ✅ Detected type: {} (confidence: {:.1}%)",
                                  detection.detected_type, detection.confidence * 100.0);
-                        
-                        // 验证扩展名匹配
+
+                        // Verify extension matches
                         if let Some(ext) = actual_input.extension().and_then(|e| e.to_str())
                             && !detector.extension_matches_type(ext, &detection.detected_type) {
                                 println!("   ⚠️  Warning: Extension '{}' doesn't match detected type '{}'", 
@@ -1092,21 +1092,21 @@ fn run(cli: Cli) -> Result<()> {
                 }
             }
             
-            // 🔥 Phase X.2: 智能预处理
+            // Phase X.2: Intelligent preprocessing
             let preprocessed_input = if preprocess {
                 println!("🔗 Applying intelligent preprocessing...");
                 use pixly_kernel::operations::preprocessing::{PreprocessPipeline, PreprocessStep};
-                
-                // 加载图像
+
+                // Load image
                 match image::open(&actual_input) {
                     Ok(img) => {
-                        // 创建自动增强管道
+                        // Create auto-enhancement pipeline
                         let pipeline = PreprocessPipeline::new()
                             .add_step(PreprocessStep::Auto);
                         
                         match pipeline.process(img) {
                             Ok(processed_img) => {
-                                // 保存预处理后的图像到临时文件
+                                // Save preprocessed image to temp file
                                 let temp_path = actual_input.with_extension("preprocessed.tmp");
                                 if let Err(e) = processed_img.save(&temp_path) {
                                     println!("   ⚠️  Failed to save preprocessed image: {}", e);
@@ -1131,16 +1131,16 @@ fn run(cli: Cli) -> Result<()> {
                 actual_input.clone()
             };
             
-            // 更新 actual_input 为预处理后的路径
+            // Update actual_input to preprocessed path
             let actual_input = preprocessed_input;
-            
-            // 🔥 Phase X.3: 捕获原始文件属性（时间戳 + 扩展属性）
+
+            // Phase X.3: Capture original file attributes (timestamps + extended attributes)
             use pixly_kernel::utils::file_attributes::FileAttributes;
             println!("📦 Capturing file attributes...");
             let file_attrs = FileAttributes::capture(&input)
                 .unwrap_or_else(|e| {
                     println!("   ⚠️  Failed to capture attributes: {}", e);
-                    // 返回空属性，不阻止转换
+                    // Return empty attributes, don't block conversion
                     FileAttributes {
                         modified: None,
                         accessed: None,
@@ -1149,7 +1149,7 @@ fn run(cli: Cli) -> Result<()> {
                     }
                 });
             
-            // 执行转换
+            // Execute conversion
             let result = execute_conversion(
                 &actual_input,
                 &output_path,
@@ -1157,13 +1157,13 @@ fn run(cli: Cli) -> Result<()> {
                 &config,
             )?;
             
-            // 🔥 清理临时规范化文件
+            // Clean up temporary normalized file
             if let Some(temp_path) = temp_normalized {
                 let _ = std::fs::remove_file(&temp_path);
                 println!("   🧹 Cleaned up temporary normalized file");
             }
-            
-            // 🔥 清理预处理临时文件
+
+            // Clean up preprocessing temporary file
             if preprocess && actual_input.extension().and_then(|e| e.to_str()) == Some("tmp") {
                 let _ = std::fs::remove_file(&actual_input);
                 println!("   🧹 Cleaned up preprocessed temporary file");
@@ -1175,8 +1175,8 @@ fn run(cli: Cli) -> Result<()> {
             println!("   Compression ratio: {:.2}%", result.compression_ratio * 100.0);
             println!("   Processing time: {:.2}s", result.duration.as_secs_f64());
             println!("   Strategy: {}", result.strategy_used);
-            
-            // 🔥 XMP Sidecar 合并处理（使用原始输入路径）
+
+            // XMP Sidecar merge processing (using original input path)
             println!("\n🔍 Post-conversion processing...");
             println!("   Input: {:?}", input);
             println!("   Output: {:?}", output_path);
@@ -1188,34 +1188,34 @@ fn run(cli: Cli) -> Result<()> {
                 }
             }
             
-            // 🔥 Eagle 原地替换处理（使用原始输入路径）
+            // Eagle in-place replacement processing (using original input path)
             println!("   📦 Checking for Eagle .info directory...");
             if let Err(e) = handle_eagle_in_place_replacement(&input, &output_path) {
                 println!("   ⚠️  Eagle update failed: {}", e);
             }
             
-            // 🎓 Phase 3.2: 在线学习 - 记录转换经验
+            // Phase 3.2: Online learning - Record conversion experience
             if online_learning {
                 println!("   🎓 Recording conversion experience...");
-                
-                // 提取特征（使用MediaAnalyzer）
+
+                // Extract features (using MediaAnalyzer)
                 use pixly_kernel::analysis::media_analyzer::MediaAnalyzer;
                 let analyzer = MediaAnalyzer::new();
                 
                 if let Ok(media_info) = analyzer.analyze(&input) {
-                    // 使用128维真实特征
+                    // Use 128D real features
                     let features = if let Some(features_128d) = media_info.features_128d {
                         features_128d
                     } else {
-                        // Fallback: 使用基础特征构建简化向量
+                        // Fallback: Build simplified vector using basic features
                         let mut features = vec![0.0; 128];
                         features[0] = media_info.resolution.0 as f64 / 10000.0;
                         features[1] = media_info.resolution.1 as f64 / 10000.0;
                         features[2] = media_info.size as f64 / 10000000.0;
                         features
                     };
-                    
-                    // 记录经验
+
+                    // Record experience
                     use pixly_kernel::ai::online_learner_manager::OnlineLearnerManager;
                     use pixly_kernel::ai::reward_calculator::ConversionResult as RewardResult;
                     
@@ -1242,7 +1242,7 @@ fn run(cli: Cli) -> Result<()> {
                 }
             }
             
-            // 🔥 Phase X.4: SSIM 质量验证
+            // Phase X.4: SSIM quality validation
             if check_quality {
                 println!("   📊 Checking quality with SSIM...");
                 use pixly_kernel::analysis::quality_checker::QualityChecker;
@@ -1255,8 +1255,8 @@ fn run(cli: Cli) -> Result<()> {
                                  quality_result.quality_grade.emoji(),
                                  quality_result.ssim_score,
                                  quality_result.quality_grade.as_str());
-                        
-                        // 🎓 更新在线学习的SSIM值
+
+                        // Update online learning SSIM value
                         if online_learning
                             && let Err(e) = OnlineLearnerManager::update_last_experience_ssim(quality_result.ssim_score) {
                                 println!("   ⚠️  Failed to update SSIM: {}", e);
@@ -1273,7 +1273,7 @@ fn run(cli: Cli) -> Result<()> {
                 }
             }
             
-            // 🔥 Phase X.5: 恢复文件属性（时间戳 + 扩展属性）
+            // Phase X.5: Restore file attributes (timestamps + extended attributes)
             println!("   ⏰ Restoring file attributes...");
             if let Err(e) = file_attrs.apply(&output_path) {
                 println!("   ⚠️  Failed to restore attributes: {}", e);
@@ -1303,18 +1303,18 @@ fn run(cli: Cli) -> Result<()> {
 }
 
 /// Merge XMP sidecar file into the output file
-/// 
-/// XMP Sidecar处理规则:
-/// 1. 仅使用插件/用户提供的 XMP 路径
-/// 2. 不做任何自动查找或扫描
-/// 3. 使用exiftool合并XMP到目标文件
-/// 4. 验证合并成功
-/// 5. 删除原XMP sidecar
+///
+/// XMP Sidecar processing rules:
+/// 1. Only use plugin/user provided XMP path
+/// 2. No automatic searching or scanning
+/// 3. Use exiftool to merge XMP to target file
+/// 4. Verify merge success
+/// 5. Delete original XMP sidecar
 fn merge_xmp_sidecar(_input_path: &Path, output_path: &Path, provided_xmp_path: Option<&Path>) -> Result<()> {
     use std::process::Command;
     use std::fs;
     
-    // 🔥 仅使用提供的 XMP 路径，不做任何自动查找
+    // Only use provided XMP path, no automatic searching
     let xmp_path = if let Some(provided) = provided_xmp_path {
         if provided.exists() {
             println!("   📎 Using provided XMP path: {:?}", provided);
@@ -1324,14 +1324,14 @@ fn merge_xmp_sidecar(_input_path: &Path, output_path: &Path, provided_xmp_path: 
             return Ok(());
         }
     } else {
-        // 🔥 没有提供 XMP 路径，直接返回（不查找）
+        // No XMP path provided, return directly (no searching)
         println!("   ℹ️  No XMP path provided, skipping XMP merge");
         return Ok(());
     };
     
     println!("📎 Found XMP sidecar: {:?}", xmp_path);
-    
-    // 2. 检查exiftool是否可用
+
+    // 2. Check if exiftool is available
     let exiftool_check = Command::new("exiftool")
         .arg("-ver")
         .output();
@@ -1342,14 +1342,14 @@ fn merge_xmp_sidecar(_input_path: &Path, output_path: &Path, provided_xmp_path: 
         return Ok(());
     }
     
-    // 3. 清理exiftool临时文件（如果存在）
+    // 3. Clean up exiftool temp file (if exists)
     let tmp_file = format!("{}_exiftool_tmp", output_path.display());
     if Path::new(&tmp_file).exists() {
         println!("   🧹 Cleaning old exiftool temp file: {}", tmp_file);
         let _ = fs::remove_file(&tmp_file);
     }
-    
-    // 4. 使用exiftool合并XMP到目标文件
+
+    // 4. Merge XMP to target file using exiftool
     println!("   🔄 Merging XMP metadata to output file...");
     let merge_result = Command::new("exiftool")
         .arg("-tagsFromFile")
@@ -1362,20 +1362,20 @@ fn merge_xmp_sidecar(_input_path: &Path, output_path: &Path, provided_xmp_path: 
     match merge_result {
         Ok(merge_output) => {
             let stderr_str = String::from_utf8_lossy(&merge_output.stderr);
-            
-            // 判断是否成功：
-            // 1. exit code = 0，或
-            // 2. 包含[minor]警告（即使有"Error:"前缀，只要是[minor]就认为成功）
+
+            // Check if successful:
+            // 1. exit code = 0, or
+            // 2. Contains [minor] warning (even with "Error:" prefix, [minor] means success)
             let is_success = merge_output.status.success() || stderr_str.contains("[minor]");
-            
+
             if !is_success {
-                // 真正的失败
+                // Real failure
                 println!("   ❌ XMP merge failed: {}", stderr_str);
                 println!("   Keeping XMP sidecar");
                 return Ok(());
             }
-            
-            // 成功或minor警告，记录警告但继续
+
+            // Success or minor warning, log warning but continue
             if stderr_str.contains("[minor]") {
                 let warning = stderr_str.lines()
                     .find(|line| line.contains("[minor]"))
@@ -1383,7 +1383,7 @@ fn merge_xmp_sidecar(_input_path: &Path, output_path: &Path, provided_xmp_path: 
                 println!("   ℹ️  exiftool warning (ignored): {}", warning);
             }
             
-            // 5. 验证合并成功（至少2个XMP标签）
+            // 5. Verify merge success (at least 2 XMP tags)
             let verify_result = Command::new("exiftool")
                 .arg("-XMP:all")
                 .arg(output_path)
@@ -1395,26 +1395,26 @@ fn merge_xmp_sidecar(_input_path: &Path, output_path: &Path, provided_xmp_path: 
                     let xmp_tag_count = output_str.lines()
                         .filter(|line| line.contains("XMP") || line.contains("xmp"))
                         .count();
-                    
-                    // 🔥 降低验证标准：只要有XMP标签就认为成功
-                    // JXL等格式可能只有1个XMP标签，但仍然是有效的
+
+                    // Lower verification standard: success if any XMP tags present
+                    // Some formats like JXL may have only 1 XMP tag, which is still valid
                     if xmp_tag_count >= 1 {
                         println!("   ✅ XMP merge verified ({} tags found)", xmp_tag_count);
-                        
-                        // 6. 删除原XMP sidecar
-                        // 如果是Eagle XMP资源，删除整个.info目录
+
+                        // 6. Delete original XMP sidecar
+                        // If Eagle XMP resource, delete entire .info directory
                         if let Some(parent) = xmp_path.parent() {
                             if parent.file_name()
                                 .and_then(|n| n.to_str())
                                 .is_some_and(|n| n.ends_with(".info")) {
-                                // Eagle XMP资源，删除整个.info目录
+                                // Eagle XMP resource, delete entire .info directory
                                 if let Err(e) = fs::remove_dir_all(parent) {
                                     println!("   ⚠️  Failed to delete Eagle XMP resource directory: {}", e);
                                 } else {
                                     println!("   🗑️  Eagle XMP resource deleted: {:?}", parent);
                                 }
                             } else {
-                                // 标准XMP sidecar，只删除文件
+                                // Standard XMP sidecar, delete file only
                                 if let Err(e) = fs::remove_file(&xmp_path) {
                                     println!("   ⚠️  Failed to delete XMP sidecar: {}", e);
                                 } else {
@@ -1442,8 +1442,8 @@ fn merge_xmp_sidecar(_input_path: &Path, output_path: &Path, provided_xmp_path: 
     Ok(())
 }
 
-// 🔥 已删除 find_eagle_xmp_resource 函数
-// 原因：不再自动查找 XMP，仅使用用户/插件提供的路径
+// find_eagle_xmp_resource function has been removed
+// Reason: No longer automatically search for XMP, only use user/plugin provided paths
 
 /// Normalize filename if it contains special characters
 /// Returns (actual_input_path, optional_temp_path)
@@ -1454,19 +1454,19 @@ fn normalize_filename_if_needed(input: &Path) -> Result<(PathBuf, Option<PathBuf
         .and_then(|n| n.to_str())
         .context("Invalid filename")?;
     
-    // 检查是否需要规范化（包含特殊字符、空格等）
+    // Check if normalization is needed (contains special characters, spaces, etc.)
     let needs_normalization = filename.chars().any(|c| {
         !c.is_ascii_alphanumeric() && c != '.' && c != '-' && c != '_'
     });
-    
+
     if !needs_normalization {
-        // 不需要规范化，直接返回原路径
+        // No normalization needed, return original path
         return Ok((input.to_path_buf(), None));
     }
-    
+
     println!("📝 Normalizing filename: {}", filename);
-    
-    // 生成规范化的文件名
+
+    // Generate normalized filename
     let normalized_name = filename
         .chars()
         .map(|c| {
@@ -1478,11 +1478,11 @@ fn normalize_filename_if_needed(input: &Path) -> Result<(PathBuf, Option<PathBuf
         })
         .collect::<String>();
     
-    // 创建临时规范化文件
+    // Create temporary normalized file
     let parent = input.parent().unwrap_or(Path::new("."));
     let temp_path = parent.join(&normalized_name);
-    
-    // 复制文件到临时规范化路径
+
+    // Copy file to temporary normalized path
     fs::copy(input, &temp_path)
         .context("Failed to create normalized temp file")?;
     
@@ -1492,12 +1492,12 @@ fn normalize_filename_if_needed(input: &Path) -> Result<(PathBuf, Option<PathBuf
 }
 
 /// Handle Eagle in-place replacement
-/// 
-/// Eagle 原地替换规则:
-/// 1. 检测是否在 Eagle .info 目录中
-/// 2. 更新 metadata.json (ext, size, mtime)
-/// 3. 删除原文件
-/// 4. 保留缩略图（Eagle会自动重新生成）
+///
+/// Eagle in-place replacement rules:
+/// 1. Detect if in Eagle .info directory
+/// 2. Update metadata.json (ext, size, mtime)
+/// 3. Delete original file
+/// 4. Keep thumbnails (Eagle will regenerate automatically)
 fn handle_eagle_in_place_replacement(input: &Path, output: &Path) -> Result<()> {
     use std::fs;
     use serde_json::{json, Value};
@@ -1505,7 +1505,7 @@ fn handle_eagle_in_place_replacement(input: &Path, output: &Path) -> Result<()> 
     println!("   🔍 Eagle check - Input: {:?}", input);
     println!("   🔍 Eagle check - Output: {:?}", output);
     
-    // 🔥 修复：检查INPUT的parent，因为input在.info目录中
+    // Check INPUT's parent, since input is in .info directory
     let parent = match input.parent() {
         Some(p) => {
             println!("   🔍 Input parent: {:?}", p);
@@ -1534,8 +1534,8 @@ fn handle_eagle_in_place_replacement(input: &Path, output: &Path) -> Result<()> 
     }
     
     println!("   ✅ Detected Eagle .info directory: {}", parent_name);
-    
-    // 2. 更新 metadata.json
+
+    // 2. Update metadata.json
     let metadata_path = parent.join("metadata.json");
     if !metadata_path.exists() {
         println!("   ⚠️  metadata.json not found, skipping Eagle update");
@@ -1543,15 +1543,15 @@ fn handle_eagle_in_place_replacement(input: &Path, output: &Path) -> Result<()> 
     }
     
     println!("   📝 Updating Eagle metadata.json...");
-    
-    // 读取现有 metadata
+
+    // Read existing metadata
     let metadata_content = fs::read_to_string(&metadata_path)
         .context("Failed to read metadata.json")?;
     
     let mut metadata: Value = serde_json::from_str(&metadata_content)
         .context("Failed to parse metadata.json")?;
     
-    // 获取新文件信息
+    // Get new file information
     let output_metadata = fs::metadata(output)?;
     let new_ext = output.extension()
         .and_then(|e| e.to_str())
@@ -1561,20 +1561,20 @@ fn handle_eagle_in_place_replacement(input: &Path, output: &Path) -> Result<()> 
     let new_mtime = output_metadata.modified()?
         .duration_since(std::time::UNIX_EPOCH)?
         .as_millis() as u64;
-    
-    // 更新字段
+
+    // Update fields
     if let Some(obj) = metadata.as_object_mut() {
-        // 更新扩展名
+        // Update extension
         obj.insert("ext".to_string(), json!(new_ext));
-        
-        // 更新文件大小
+
+        // Update file size
         obj.insert("size".to_string(), json!(new_size));
-        
-        // 更新修改时间
+
+        // Update modification time
         obj.insert("mtime".to_string(), json!(new_mtime));
         obj.insert("lastModified".to_string(), json!(new_mtime));
-        
-        // 更新文件名（去掉扩展名）
+
+        // Update filename (without extension)
         if let Some(stem) = output.file_stem().and_then(|s| s.to_str()) {
             obj.insert("name".to_string(), json!(stem));
         }
@@ -1585,14 +1585,14 @@ fn handle_eagle_in_place_replacement(input: &Path, output: &Path) -> Result<()> 
         println!("      name: {}", output.file_stem().and_then(|s| s.to_str()).unwrap_or(""));
     }
     
-    // 写回 metadata.json
+    // Write back metadata.json
     let updated_content = serde_json::to_string_pretty(&metadata)?;
     fs::write(&metadata_path, updated_content)
         .context("Failed to write metadata.json")?;
-    
+
     println!("   ✅ Eagle metadata updated");
-    
-    // 3. 删除原文件（如果与输出文件不同）
+
+    // 3. Delete original file (if different from output)
     println!("   🔍 Checking if original file should be deleted...");
     println!("      Input: {:?}", input);
     println!("      Output: {:?}", output);

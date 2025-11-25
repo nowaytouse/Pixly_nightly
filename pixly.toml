@@ -1,15 +1,11 @@
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Pixly 统一配置文件 (TOML格式)
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# 
-# Phase UC-003: 代码统一 - 跨语言配置文件
-# 
-# 此文件被Rust和Python两端共同使用
-# 格式: TOML (Rust原生支持，Python通过toml库支持)
-# 
-# 环境变量覆盖规则:
-# - 配置键 "app.debug_mode" -> 环境变量 "PIXLY_APP_DEBUG_MODE"
-# - 配置键 "ai.enabled" -> 环境变量 "PIXLY_AI_ENABLED"
+# Pixly Configuration File (TOML)
+#
+# This file is used by both Rust and Python components.
+# Format: TOML (native Rust support, Python via toml library)
+#
+# Environment variable override rules:
+# - Config key "app.debug_mode" -> env var "PIXLY_APP_DEBUG_MODE"
+# - Config key "ai.enabled" -> env var "PIXLY_AI_ENABLED"
 
 [app]
 name = "Pixly"
@@ -17,7 +13,7 @@ version = "3.0.0"
 environment = "production"  # development, staging, production
 debug_mode = false
 data_dir = "./data"
-cache_dir = "./cache" 
+cache_dir = "./cache"
 temp_dir = "/tmp/pixly"
 
 [ai]
@@ -37,38 +33,37 @@ temp_cleanup = true
 preserve_metadata = true
 supported_formats = ["avif", "jxl", "webp", "png", "jpeg", "gif"]
 
-# 质量预设配置
 [converter.quality_presets.fast]
 name = "Fast"
-description = "快速转换，较低质量"
+description = "Fast conversion, lower quality"
 quality = 70
 speed = 2
 lossless = false
 
 [converter.quality_presets.balanced]
-name = "Balanced" 
-description = "平衡质量和速度"
+name = "Balanced"
+description = "Balance between quality and speed"
 quality = 80
 speed = 4
 lossless = false
 
 [converter.quality_presets.high_quality]
 name = "High Quality"
-description = "高质量，较慢速度"
+description = "High quality, slower speed"
 quality = 90
 speed = 6
 lossless = false
 
 [converter.quality_presets.lossless]
 name = "Lossless"
-description = "无损压缩"
+description = "Lossless compression"
 quality = 100
 speed = 8
 lossless = true
 
 [performance]
 simd_enabled = true
-gpu_acceleration = false  # 需要手动启用
+gpu_acceleration = false
 thread_pool_size = 0  # 0 = auto-detect
 memory_pool_size_mb = 512
 io_buffer_size_kb = 64
@@ -82,10 +77,5 @@ file_path = "./logs/pixly.log"
 max_file_size_mb = 100
 max_files = 5
 
-# 用户自定义配置区域
 [custom]
-# 用户可以在这里添加任意自定义配置
-# 示例:
-# user_name = "developer"
-# favorite_format = "avif"
-# batch_size = 50
+# User-defined custom configuration area
