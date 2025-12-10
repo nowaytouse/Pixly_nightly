@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-11-19 13:49:15",
+  "results": {
+    "quality": {
+      "mae": 10.0,
+      "training_time": 0.08787775039672852,
+      "best_iteration": 1,
+      "model_path": "models/lightgbm_all_quality_v2.txt"
+    },
+    "effort": {
+      "mae": 1.335146202798844,
+      "training_time": 0.08267593383789062,
+      "best_iteration": 2,
+      "model_path": "models/lightgbm_all_effort_v2.txt"
+    }
+  }
+}

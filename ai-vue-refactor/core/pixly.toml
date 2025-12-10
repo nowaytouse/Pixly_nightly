@@ -1,0 +1,81 @@
+# Pixly Configuration File (TOML)
+#
+# This file is used by both Rust and Python components.
+# Format: TOML (native Rust support, Python via toml library)
+#
+# Environment variable override rules:
+# - Config key "app.debug_mode" -> env var "PIXLY_APP_DEBUG_MODE"
+# - Config key "ai.enabled" -> env var "PIXLY_AI_ENABLED"
+
+[app]
+name = "Pixly"
+version = "3.0.0"
+environment = "production"  # development, staging, production
+debug_mode = false
+data_dir = "./data"
+cache_dir = "./cache"
+temp_dir = "/tmp/pixly"
+
+[ai]
+enabled = true
+predictor_type = "local"  # local, remote, hybrid
+model_version = "3.0.0"
+timeout_ms = 5000
+retry_count = 3
+confidence_threshold = 0.8
+fallback_enabled = true
+cache_predictions = true
+
+[converter]
+max_parallel_tasks = 8  # 0 = auto-detect CPU cores
+memory_limit_mb = 2048
+temp_cleanup = true
+preserve_metadata = true
+supported_formats = ["avif", "jxl", "webp", "png", "jpeg", "gif"]
+
+[converter.quality_presets.fast]
+name = "Fast"
+description = "Fast conversion, lower quality"
+quality = 70
+speed = 2
+lossless = false
+
+[converter.quality_presets.balanced]
+name = "Balanced"
+description = "Balance between quality and speed"
+quality = 80
+speed = 4
+lossless = false
+
+[converter.quality_presets.high_quality]
+name = "High Quality"
+description = "High quality, slower speed"
+quality = 90
+speed = 6
+lossless = false
+
+[converter.quality_presets.lossless]
+name = "Lossless"
+description = "Lossless compression"
+quality = 100
+speed = 8
+lossless = true
+
+[performance]
+simd_enabled = true
+gpu_acceleration = false
+thread_pool_size = 0  # 0 = auto-detect
+memory_pool_size_mb = 512
+io_buffer_size_kb = 64
+benchmark_mode = false
+
+[logging]
+level = "INFO"  # TRACE, DEBUG, INFO, WARN, ERROR
+json_format = false
+file_output = false
+file_path = "./logs/pixly.log"
+max_file_size_mb = 100
+max_files = 5
+
+[custom]
+# User-defined custom configuration area

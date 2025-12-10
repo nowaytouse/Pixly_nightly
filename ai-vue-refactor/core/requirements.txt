@@ -1,0 +1,15 @@
+# Pixly AI Optimizer Python Dependencies
+
+# Core dependencies (required)
+numpy>=1.26.0
+Pillow>=11.0.0
+PyWavelets>=1.7.0
+lightgbm>=4.5.0
+ffmpeg-python>=0.2.0
+
+# PPO reinforcement learning (recommended, +5-10% accuracy)
+torch>=2.5.0
+
+# Optional dependencies
+# scikit-learn>=1.5.0  # Only for legacy model scalers
+# magika>=0.6.0        # AI file type detection

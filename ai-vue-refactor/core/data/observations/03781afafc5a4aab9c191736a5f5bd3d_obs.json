@@ -1,0 +1,21 @@
+{
+  "image_path": "/Users/nyamiiko/Downloads/\u53c2\u8003/3/03781afafc5a4aab9c191736a5f5bd3d.jpg",
+  "image_type": ".jpg",
+  "width": 550,
+  "height": 800,
+  "pixel_count": 440000,
+  "has_alpha": false,
+  "input_size": 23842,
+  "tool": "jxl",
+  "optimize_mode": "balanced",
+  "params": {
+    "quality": 90,
+    "confidence": 0.5,
+    "effort": 7,
+    "lossless_jpeg": true,
+    "ppo_optimized": false,
+    "ppo_unavailable": true
+  },
+  "reward": 0.6361111111111112,
+  "timestamp": "1761495509.1466024"
+}

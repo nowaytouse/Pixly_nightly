@@ -1,0 +1,21 @@
+{
+  "image_path": "/Users/nyamiiko/Downloads/\u53c2\u8003/3/EcsMJmmVcAA3wIv.png",
+  "image_type": ".png",
+  "width": 2223,
+  "height": 2399,
+  "pixel_count": 5332977,
+  "has_alpha": false,
+  "input_size": 743498,
+  "tool": "webp",
+  "optimize_mode": "balanced",
+  "params": {
+    "quality": 90,
+    "confidence": 0.5,
+    "distance": 0.5,
+    "method": 6,
+    "ppo_optimized": false,
+    "ppo_unavailable": true
+  },
+  "reward": 0.5281111111111111,
+  "timestamp": "1761495649.0872393"
+}

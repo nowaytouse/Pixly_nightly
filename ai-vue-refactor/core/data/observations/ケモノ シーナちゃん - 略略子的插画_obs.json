@@ -1,0 +1,21 @@
+{
+  "image_path": "/Users/nyamiiko/Downloads/\u53c2\u8003/1/\u30b1\u30e2\u30ce \u30b7\u30fc\u30ca\u3061\u3083\u3093 - \u7565\u7565\u5b50\u7684\u63d2\u753b.jpg",
+  "image_type": ".jpg",
+  "width": 2894,
+  "height": 4093,
+  "pixel_count": 11845142,
+  "has_alpha": false,
+  "input_size": 393767,
+  "tool": "jxl",
+  "optimize_mode": "balanced",
+  "params": {
+    "quality": 90,
+    "confidence": 0.5,
+    "effort": 5,
+    "lossless_jpeg": true,
+    "ppo_optimized": false,
+    "ppo_unavailable": true
+  },
+  "reward": 0.6472222222222224,
+  "timestamp": "1761455756.5805025"
+}

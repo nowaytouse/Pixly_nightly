@@ -1,0 +1,18 @@
+{
+  "name": "pixly-ai-vue",
+  "version": "3.0.0",
+  "type": "module",
+  "scripts": {
+    "setup": "bash setup-bin.sh",
+    "dev": "vite",
+    "build": "vite build",
+    "release": "bash ../shared/build.sh && mkdir -p bin && cp ../shared/bin/pixly-eagle-core bin/ && npm run build && echo '✅ Release package ready in dist/'"
+  },
+  "dependencies": {
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "vite": "^5.0.0"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "id": "com.pixly.static-converter",
+  "version": "3.0.0",
+  "platform": "all",
+  "arch": "all",
+  "name": "{{manifest.app.name}}",
+  "logo": "./logo.png",
+  "keywords": [
+    "jpeg",
+    "png",
+    "bmp",
+    "tiff",
+    "tga",
+    "gif",
+    "webp",
+    "jxl",
+    "avif",
+    "converter",
+    "image",
+    "lossless",
+    "compression",
+    "sticker",
+    "meme"
+  ],
+  "fallbackLanguage": "en",
+  "languages": [
+    "en",
+    "zh_CN",
+    "zh_TW",
+    "ja_JP"
+  ],
+  "devTools": false,
+  "main": {
+    "url": "index.html",
+    "width": 560,
+    "height": 700,
+    "minWidth": 520,
+    "minHeight": 600,
+    "frame": false,
+    "vibrancy": true
+  }
+}

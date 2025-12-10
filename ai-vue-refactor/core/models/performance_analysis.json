@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-11-19T21:18:57.508351",
+  "evaluation_results": {
+    "timestamp": "2025-11-19 14:46:21",
+    "models": {
+      "lightgbm": {
+        "mae_quality": 10.18,
+        "mae_effort": 1.68,
+        "accuracy_quality": 0.24,
+        "accuracy_effort": 0.66,
+        "avg_confidence": 0.8499999999999995,
+        "inference_time_ms": 13.668689727783203,
+        "total_samples": 100
+      },
+      "ppo": {
+        "mae_quality": 9.98,
+        "mae_effort": 1.68,
+        "accuracy_quality": 0.34,
+        "accuracy_effort": 0.66,
+        "avg_confidence": 0.6500000000000001,
+        "inference_time_ms": 9.478085041046143,
+        "total_samples": 100
+      },
+      "ensemble": {
+        "mae_quality": 10.06,
+        "mae_effort": 1.68,
+        "accuracy_quality": 0.25,
+        "accuracy_effort": 0.66,
+        "avg_confidence": 0.75,
+        "inference_time_ms": 0.7470417022705078,
+        "total_samples": 100
+      }
+    }
+  },
+  "analysis": {
+    "best_quality_model": "ppo",
+    "best_effort_model": "lightgbm",
+    "fastest_model": "ensemble",
+    "recommendations": [
+      {
+        "level": "warning",
+        "message": "Quality accuracy is low (34.0%). Consider retraining with more diverse data."
+      }
+    ]
+  }
+}

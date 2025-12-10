@@ -1,0 +1,7 @@
+{
+  "version": 0,
+  "timestamp": 1763567556,
+  "num_experiences": 10,
+  "avg_reward": 0.15183246073298431,
+  "path": "models/ppo/actor_online.pth"
+}

@@ -1,0 +1,21 @@
+{
+  "image_path": "/Users/nyamiiko/Downloads/\u53c2\u8003/3/EpbWS1BUYAA2WJc 747\u00d7996.jpg",
+  "image_type": ".jpg",
+  "width": 747,
+  "height": 996,
+  "pixel_count": 744012,
+  "has_alpha": false,
+  "input_size": 109717,
+  "tool": "jxl",
+  "optimize_mode": "balanced",
+  "params": {
+    "quality": 90,
+    "confidence": 0.5,
+    "effort": 7,
+    "lossless_jpeg": true,
+    "ppo_optimized": false,
+    "ppo_unavailable": true
+  },
+  "reward": 0.6361111111111111,
+  "timestamp": "1761177170.2962928"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "com.pixly.ai.filter",
+  "version": "3.1.0",
+  "platform": "all",
+  "arch": "all",
+  "name": "PIXLY AI Filter",
+  "logo": "./logo.png",
+  "keywords": ["AI", "filter", "optimization", "quality", "vue"],
+  "devTools": false,
+  "main": {
+    "url": "dist/index.html",
+    "width": 1280,
+    "height": 720,
+    "minWidth": 800,
+    "minHeight": 600,
+    "frameless": true,
+    "frame": false,
+    "titleBarStyle": "hidden"
+  }
+}

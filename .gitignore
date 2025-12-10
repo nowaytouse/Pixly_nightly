@@ -1,0 +1,82 @@
+# Rust
+target/
+**/target/
+Cargo.lock
+*.rlib
+*.rmeta
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.so
+.Python
+venv/
+ENV/
+env/
+.venv
+
+# Test reports and temporary files
+*_TEST_REPORT.json
+*_test_report.json
+*_verification_results.json
+ai_verification_results.json
+complete_media_test_report.json
+feature_verification_report.json
+real_world_test_report.json
+FUNCTION_TEST_REPORT.json
+REAL_TEST_REPORT.json
+STRESS_TEST_REPORT.json
+
+# Database files
+*.db
+logs/*.db
+data/*.db
+data/test_feedback.db
+
+# Cache directories
+cache/
+data/cache/
+
+# Observation data (training data, not source code)
+data/observations/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Build outputs
+*.pth
+
+# Logs
+*.log
+
+# Environment
+.env
+
+# Test outputs
+test_output/
+!test_output/.gitkeep
+
+# ML model outputs
+models/ppo/*.pth
+models/ppo/experience_buffer.json
+models/ppo/batch_training_history.json
+models/ppo/online_training_history.json
+models/evaluation_results_*.json
+
+# Backup files
+*.backup.json

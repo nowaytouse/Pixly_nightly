@@ -1,0 +1,21 @@
+{
+  "image_path": "/Users/nyamiiko/Downloads/\u53c2\u8003/3/EqmoP-YVEAAok1Bformat=jpgname=orig.jpg",
+  "image_type": ".jpg",
+  "width": 1800,
+  "height": 1200,
+  "pixel_count": 2160000,
+  "has_alpha": false,
+  "input_size": 137842,
+  "tool": "jxl",
+  "optimize_mode": "balanced",
+  "params": {
+    "quality": 90,
+    "confidence": 0.5,
+    "effort": 5,
+    "lossless_jpeg": true,
+    "ppo_optimized": false,
+    "ppo_unavailable": true
+  },
+  "reward": 0.6472222222222224,
+  "timestamp": "1761495727.496553"
+}
