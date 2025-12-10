@@ -903,9 +903,10 @@ const startConvert = async () => {
               outputPath: file.path,  // 滤镜模式：原地优化
               codec: null,  // 滤镜模式：保持原编码
               container: videoExt,  // 滤镜模式：保持原容器
-              useAI: enableAIPrediction.value,
+              isFilterMode: true,  // 🔮 明确标记滤镜模式
+              useAI: enableVideoCodecRecommendation.value,  // 🔮 使用视频AI选项
               optimizeMode: optimizeMode.value,
-              enableGPU: enableGPU.value,
+              enableGPU: true,  // 默认启用GPU
               enableVideoForAnimation: false,  // 滤镜模式：不转换
               enableSceneDetection: enableSceneDetection.value,
               enableVMAF: enableVMAF.value,
@@ -923,7 +924,7 @@ const startConvert = async () => {
     }
     // 🎬 纯视频模式
     else if (isVideoMode.value) {
-      logger.info(LOG_KEYS.CONVERT_START, 'Video conversion mode', {})
+      logger.info(LOG_KEYS.CONVERT_START, 'Video filter mode', {})
       
       for (let i = 0; i < selected.length; i++) {
         const file = selected[i]
@@ -939,9 +940,10 @@ const startConvert = async () => {
             outputPath: file.path,  // 滤镜模式：原地优化
             codec: null,  // 滤镜模式：保持原编码
             container: videoExt,  // 滤镜模式：保持原容器
-            useAI: enableAIPrediction.value,
+            isFilterMode: true,  // 🔮 明确标记滤镜模式
+            useAI: enableVideoCodecRecommendation.value,  // 🔮 使用视频AI选项
             optimizeMode: optimizeMode.value,
-            enableGPU: enableGPU.value,
+            enableGPU: true,  // 默认启用GPU
             enableVideoForAnimation: false,  // 滤镜模式：不转换
             enableSceneDetection: enableSceneDetection.value,
             enableVMAF: enableVMAF.value,

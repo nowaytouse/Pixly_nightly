@@ -224,18 +224,32 @@ export function useRustCLI() {
           throw new Error(`File path is undefined for: ${file.name}`)
         }
 
-        // 🔧 Bug Fix: 彻底清理格式字符串
-        // Eagle有时返回：`"jxl"`, `."jxl"`, 或其他奇怪格式
-        let cleanFormat = (options.format || 'avif')
-        if (typeof cleanFormat === 'string') {
-          cleanFormat = cleanFormat
-            .replace(/['"`.]/g, '')  // 移除所有引号和点号
-            .trim()
-            .toLowerCase()
-        }
+        // 🔮 滤镜模式：如果 format 为 null，使用文件原格式
+        let cleanFormat
+        if (options.format === null || options.isFilterMode) {
+          // 🔮 滤镜模式：保持原格式
+          cleanFormat = (file.ext || '').toLowerCase().replace(/['"`.]/g, '').trim()
+          if (!cleanFormat || cleanFormat.length === 0) {
+            cleanFormat = 'avif'  // fallback
+          }
+          logger.info(LOG_KEYS.RUST_CLI_EXEC, '🔮 Filter mode: using original format', {
+            file: file.name,
+            originalFormat: cleanFormat
+          })
+        } else {
+          // 🔧 Bug Fix: 彻底清理格式字符串
+          // Eagle有时返回：`"jxl"`, `."jxl"`, 或其他奇怪格式
+          cleanFormat = (options.format || 'avif')
+          if (typeof cleanFormat === 'string') {
+            cleanFormat = cleanFormat
+              .replace(/['"`.]/g, '')  // 移除所有引号和点号
+              .trim()
+              .toLowerCase()
+          }
 
-        if (!cleanFormat || cleanFormat.length === 0) {
-          cleanFormat = 'avif'  // 默认格式
+          if (!cleanFormat || cleanFormat.length === 0) {
+            cleanFormat = 'avif'  // 默认格式
+          }
         }
 
         // 🔥 生成输出路径（原地替换：同目录，新扩展名）
@@ -469,7 +483,7 @@ export function useRustCLI() {
 
   /**
    * 执行视频转换
-   * 🔥 修复：正确的命令格式和参数传递
+   * 🔮 滤镜模式：当 codec=null 时，保持原编码器只优化质量
    */
   const convertVideos = async (files, options) => {
     isConverting.value = true
@@ -480,6 +494,14 @@ export function useRustCLI() {
       const results = []
       const path = require('path')
 
+      // 🔮 检测滤镜模式
+      const isFilterMode = options.codec === null || options.isFilterMode
+      if (isFilterMode) {
+        logger.info(LOG_KEYS.RUST_CLI_EXEC, '🔮 Video filter mode: optimizing without codec change', {
+          fileCount: files.length
+        })
+      }
+
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
         currentFile.value = file.name
@@ -487,32 +509,44 @@ export function useRustCLI() {
 
         // 🔥 生成输出路径
         const inputPath = file.path
-        const container = options.container || 'mp4'
-        const outputPath = path.join(
-          path.dirname(inputPath),
-          `${path.basename(inputPath, path.extname(inputPath))}.${container}`
-        )
+        
+        // 🔮 滤镜模式：保持原容器格式
+        const originalExt = (file.ext || path.extname(inputPath).slice(1) || '').toLowerCase()
+        const container = isFilterMode ? originalExt : (options.container || 'mp4')
+        
+        // 🔮 滤镜模式：输出到同一文件（原地优化）
+        const outputPath = isFilterMode 
+          ? inputPath  // 原地优化
+          : path.join(
+              path.dirname(inputPath),
+              `${path.basename(inputPath, path.extname(inputPath))}.${container}`
+            )
 
         logger.info(LOG_KEYS.CONVERT_START, 'Converting video', {
           input: inputPath,
           output: outputPath,
-          container
+          container,
+          isFilterMode
         })
 
         // 🔥 使用 video 子命令（不是 convert）
         const args = [
           'video',
           inputPath,
-          outputPath,
-          '--codec', options.codec || 'h265',
-          '--container', container
+          outputPath
         ]
+
+        // 🔮 滤镜模式：不指定 codec，让后端自动检测并保持原编码
+        if (!isFilterMode && options.codec) {
+          args.push('--codec', options.codec)
+        }
+        args.push('--container', container)
 
         // 🔥 视频编码参数
         if (options.crf !== undefined) args.push('--crf', options.crf.toString())
         if (options.preset) args.push('--preset', options.preset)
 
-        // 🔥 AI 智能参数 - 确保前端选项正确传递
+        // 🔥 AI 智能参数 - 滤镜模式下也启用AI优化
         if (options.useAI) {
           args.push('--ai')
           if (options.optimizeMode) {
@@ -525,8 +559,8 @@ export function useRustCLI() {
           args.push('--gpu')
         }
 
-        // 🔥 动画转视频推荐
-        if (options.enableVideoForAnimation) {
+        // 🔮 滤镜模式：禁用动画转视频（保持原格式）
+        if (!isFilterMode && options.enableVideoForAnimation) {
           args.push('--video-for-animation')
         }
 
@@ -682,7 +716,7 @@ export function useRustCLI() {
 
   /**
    * 单文件转换（图像）
-   * 🔥 修复：App.vue 调用 convert，实际调用 convertImages
+   * 🔮 滤镜模式：当 disableFormatChange=true 时，保持原格式只优化质量
    */
   const convert = async (options) => {
     // 将单文件选项转换为批量格式
@@ -692,8 +726,20 @@ export function useRustCLI() {
       ext: options.inputPath.split('.').pop()
     }
 
+    // 🔮 滤镜模式核心：如果禁用格式转换，使用原文件格式
+    let targetFormat = options.format
+    if (options.disableFormatChange || options.format === null) {
+      // 从文件扩展名获取原格式
+      const originalExt = (file.ext || '').toLowerCase()
+      targetFormat = originalExt || 'avif'  // fallback to avif if no extension
+      logger.info(LOG_KEYS.RUST_CLI_EXEC, '🔮 Filter mode: keeping original format', {
+        originalFormat: targetFormat,
+        disableFormatChange: options.disableFormatChange
+      })
+    }
+
     const result = await convertImages([file], {
-      format: options.format || 'avif',
+      format: targetFormat,
       quality: options.quality || 85,
       quickTools: {
         autoMergeXmp: true,
@@ -716,12 +762,22 @@ export function useRustCLI() {
 
   /**
    * 批量转换（图像）
-   * 🔥 修复：App.vue 调用 batchConvert，实际是 convertImages 的别名
+   * 🔮 滤镜模式：当 disableFormatChange=true 时，每个文件保持原格式
    */
   const batchConvert = async (files, options, onProgress) => {
+    // 🔮 滤镜模式：检测是否禁用格式转换
+    const isFilterMode = options.disableFormatChange || options.format === null
+    
+    if (isFilterMode) {
+      logger.info(LOG_KEYS.RUST_CLI_EXEC, '🔮 Filter mode: batch converting with original formats', {
+        fileCount: files.length
+      })
+    }
+
     // 转换选项格式
     const convertOptions = {
-      format: options.format || 'avif',
+      // 🔮 滤镜模式：format 设为 null，在 convertImages 中根据每个文件的扩展名决定
+      format: isFilterMode ? null : (options.format || 'avif'),
       quality: options.quality || 85,
       quickTools: {
         autoMergeXmp: true,
@@ -736,7 +792,9 @@ export function useRustCLI() {
         smartPreprocess: options.enablePreprocess,
         gpuAccel: options.enableGPU
       },
-      optimizeMode: options.optimizeMode || 'balanced'
+      optimizeMode: options.optimizeMode || 'balanced',
+      // 🔮 传递滤镜模式标志
+      isFilterMode: isFilterMode
     }
 
     let result
@@ -925,6 +983,39 @@ export function useRustCLI() {
     }
   }
 
+  /**
+   * 单文件视频转换
+   * 🔮 滤镜模式：当 codec=null 时，保持原编码器只优化质量
+   */
+  const convertVideo = async (options) => {
+    // 将单文件选项转换为批量格式
+    const file = {
+      path: options.inputPath,
+      name: options.inputPath.split('/').pop(),
+      ext: options.inputPath.split('.').pop()
+    }
+
+    // 🔮 检测滤镜模式
+    const isFilterMode = options.codec === null || options.isFilterMode
+
+    const result = await convertVideos([file], {
+      codec: options.codec,
+      container: options.container,
+      crf: options.crf,
+      preset: options.preset,
+      useAI: options.useAI,
+      optimizeMode: options.optimizeMode,
+      enableGPU: options.enableGPU,
+      enableVideoForAnimation: options.enableVideoForAnimation,
+      enableSceneDetection: options.enableSceneDetection,
+      enableVMAF: options.enableVMAF,
+      enableTwoPass: options.enableTwoPass,
+      isFilterMode: isFilterMode
+    })
+
+    return result.results?.[0] || result
+  }
+
   return {
     isConverting,
     progress,
@@ -933,8 +1024,8 @@ export function useRustCLI() {
     convert,           // 🔥 单文件转换
     batchConvert,      // 🔥 批量转换（别名）
     convertImages,     // 原始方法
-    convertVideos,     // 视频转换
-    convertVideo: convertVideos,  // 🔥 别名，兼容 App.vue 调用
+    convertVideos,     // 视频批量转换
+    convertVideo,      // 🔮 单文件视频转换（滤镜模式支持）
     analyzeOptimizationStatus,  // 🆕 导出新函数
   }
 }
