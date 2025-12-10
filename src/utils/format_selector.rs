@@ -6,6 +6,7 @@
 use anyhow::Result;
 use std::path::Path;
 use super::format_knowledge::FormatKnowledgeBase;
+use super::modern_format_loader;
 
 /// Format selection recommendation
 #[derive(Debug, Clone)]
@@ -257,8 +258,8 @@ impl FormatSelector {
 ///
 /// ✅ 2025-11-20completed: implementationrealtransparencydegreedetection
  fn detect_transparency(&self, path: &Path) -> bool {
-// tryopenimage
- if let Ok(img) = image::open(path) {
+// tryopenimage (支持 AVIF/JXL/HEIC 等现代格式)
+ if let Ok(img) = modern_format_loader::load_image(path) {
 // checkisno has alphachannel
  match img.color() {
  image::ColorType::Rgba8 |

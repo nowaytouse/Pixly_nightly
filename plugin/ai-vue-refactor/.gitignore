@@ -1,0 +1,23 @@
+# Vue build outputs
+dist/
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IMPORTANT: DO NOT ignore bin/ directory
+# The pixly-converter binary is part of the plugin distribution
+# !bin/
+# !bin/pixly-converter

@@ -1,0 +1,302 @@
+{
+  "manifest": {
+    "app": {
+      "name": "自定义导出"
+    }
+  },
+  "main": {
+    "taskList": {
+      "processing": "处理中",
+      "completed": "已完成",
+      "failed": "失败",
+      "status": "状态",
+      "clickToOpen": "点击打开文件夹",
+      "remove": "从列表删除",
+      "statusLabels": {
+        "waiting": "等待中",
+        "processing": "处理中",
+        "success": "已完成",
+        "failed": "失败"
+      },
+      "emptyText": "请先从Eagle中选取图片"
+    },
+    "dropzone": {
+      "title": "拖拽或选择图片",
+      "subtitle": "请使用 Eagle 内的图片"
+    },
+    "SettingSidebar": {
+      "header": {
+        "iconAlt": "插件图标",
+        "close": "关闭"
+      },
+      "operationMode": {
+        "title": "操作模式",
+        "export": "导出",
+        "replace": "替换"
+      },
+      "format": {
+        "label": "格式",
+        "searchPlaceholder": "搜索...",
+        "format-options": {
+          "original": "原格式",
+          "jpg": "JPG",
+          "png": "PNG",
+          "webp": "WebP",
+          "bmp": "BMP",
+          "heic": "HEIC",
+          "gif": "GIF",
+          "tif": "TIF",
+          "avif": "AVIF",
+          "jxl": "JXL",
+          "ico": "ICO",
+          "exr": "EXR",
+          "hdr": "HDR",
+          "tga": "TGA",
+          "mp4": "MP4",
+          "webm": "WebM",
+          "noResults": "无结果"
+        }
+      },
+      "quality": {
+        "label": "质量",
+        "searchPlaceholder": "搜索..."
+      },
+      "fps": {
+        "label": "帧率",
+        "searchPlaceholder": "搜索...",
+        "fps-options": {
+          "sameAsSource": "与原视频相同",
+          "5": "5",
+          "10": "10",
+          "12": "12",
+          "15": "15",
+          "20": "20",
+          "23.976": "23.976 (NTSC Film)",
+          "24": "24",
+          "25": "25 (PAL Film/Video)",
+          "29.97": "29.97 (NTSC Video)",
+          "30": "30",
+          "48": "48",
+          "50": "50",
+          "59.94": "59.94",
+          "60": "60"
+        }
+      },
+      "codec": {
+        "label": "编码",
+        "searchPlaceholder": "搜索...",
+        "codec-options": {
+          "h264": "H.264",
+          "h265": "H.265",
+          "vp8": "VP8",
+          "vp9": "VP9",
+          "noResults": "无结果"
+        }
+      },
+      "size": {
+        "label": "尺寸",
+        "searchPlaceholder": "搜索...",
+        "size-options": {
+          "original": "原始尺寸",
+          "maxWidth": "最大宽度",
+          "maxHeight": "最大高度",
+          "minWidth": "最小宽度",
+          "minHeight": "最小高度",
+          "maxSide": "最大长边",
+          "minSide": "最小短边"
+        }
+      },
+      "namingSettings": {
+        "title": "命名设置",
+        "nameType": {
+          "label": "文件名",
+          "original": "原文件名",
+          "custom": "重命名",
+          "searchPlaceholder": "搜索..."
+        },
+        "customName": {
+          "label": "新名称",
+          "placeholder": "输入文件名称"
+        },
+        "startNumber": {
+          "label": "起始编号",
+          "tooltip": "序列命名的起始编号"
+        }
+      },
+      "progressDialog": {
+        "title": "正在导出...",
+        "cancel": "取消"
+      },
+      "footer": {
+        "exportButton": {
+          "export": "导出",
+          "replace": "替换",
+          "count": "({{count}})"
+        },
+        "closeButton": "关闭"
+      },
+      "dialogs": {
+        "error": {
+          "title": "导出错误",
+          "unknownError": "发生未知错误",
+          "close": "关闭"
+        },
+        "fileDuplication": {
+          "title": "文件已存在",
+          "description": "发现 {{count}} 个文件已存在，要使用正在导出的文件进行替换吗？",
+          "cancel": "取消",
+          "replace": "替换",
+          "keepBoth": "保留两者"
+        }
+      },
+      "notifications": {
+        "exportSuccess": {
+          "title": "导出成功",
+          "message": "{{successCount}}/{{totalCount}} 个文件导出成功",
+          "action": "打开文件夹"
+        }
+      },
+      "combobox": {
+        "noResults": "无结果",
+        "searchPlaceholder": "搜索..."
+      },
+      "preset": {
+        "error": {
+          "saveFailed": "储存失败，可能是储存空间不足"
+        },
+        "command": {
+          "searchPlaceholder": "搜索...",
+          "noResults": "没有找到结果",
+          "applyPreset": "套用预设",
+          "edit": "修改",
+          "clone": "克隆",
+          "remove": "移除",
+          "createPreset": "建立预设参数"
+        },
+        "settings": {
+          "title": "预设参数",
+          "nameLabel": "名称",
+          "namePlaceholder": "请输入",
+          "selectPlaceholder": "请选择",
+          "pixelUnit": "px",
+          "updatePreset": "更新预设",
+          "createPreset": "建立预设"
+        },
+        "dialog": {
+          "tooltipTitle": "导出参数预设",
+          "emptyTitle": "预设参数",
+          "emptyDescription": "预设导出参数，之后导出时可直接选择预设方案，无需重复调整参数，提高效率。",
+          "createButton": "建立预设参数"
+        }
+      }
+    },
+    "status": {
+      "processing": "处理中，请稍候…",
+      "success": "导出成功",
+      "fail": "导出失败",
+      "retry": "重试",
+      "cancel": "取消",
+      "unsupportedFormat": "不支持的格式",
+      "imageTooLarge": "图片尺寸超过限制 (16384x16384)"
+    },
+    "notification": {
+      "exportSuccess": "导出成功",
+      "exportPartialSuccess": "{{successCount}}/{{totalCount}} 个文件导出成功",
+      "openFolder": "打开文件夹"
+    },
+    "progressDialog": {
+      "title": "正在处理...",
+      "cancel": "取消"
+    },
+    "error": "图片错误"
+  },
+  "search": "搜索...",
+  "footer": {
+    "dialog": {
+      "error": {
+        "outputPathCouldNotOpen": {
+          "title": "输出路径无法被打开",
+          "description": "请检查输出路径是否正确，或是否具有写入权限。"
+        },
+        "unknownError": {
+          "title": "未知错误"
+        },
+        "close": "关闭"
+      }
+    }
+  },
+  "error": {
+    "equalExtension": "文件扩展名相同",
+    "imageLoadError": "图片加载失败",
+    "fileNotSupported": "不支持的文件格式",
+    "fileSizeNotSupported": "文件大小不支持，目前支持的最大尺寸为 50MB",
+    "resolutionNotSupported": "图像超出最大尺寸限制，目前支持的最大像素为 10000",
+    "fileResolutionIsNotEqual": "转换失败，输出结果异常 (ERROR_RESOLUTION)",
+    "fileHistogramsAbnormality": "转换失败，输出结果异常 (ERROR_HISTOGRAMS)",
+    "fileSizeAbnormality": "转换失败，输出结果异常 (ERROR_SIZE)",
+    "noItemsSelected": "未选择任何项目",
+    "userCanceled": "用户已取消",
+    "cannotDetermineSourcePath": "无法确定源文件路径",
+    "unsupportedFormat": "不支持 {{format}} 格式",
+    "sourceMissing": "源文件缺失",
+    "outputMissing": "输出路径缺失",
+    "formatMissing": "未指定格式",
+    "fileNameMissing": "未指定文件名",
+    "formatNotSupported": "不支持该格式",
+    "heicMacOSOnly": "HEIC/HEIF 转换目前仅在 macOS 上支持",
+    "canvasRendererRequired": "此转换器需要在渲染进程中运行",
+    "formFieldContext": "useFormField 应该在 <FormField> 内使用",
+    "invalidInputString": "无效的输入字符串",
+    "canvasDoesNotSupport": "Canvas 不支持 {{format}} 格式，请使用 FFmpeg 转换器",
+    "failedToLoadImage": "图片加载失败：{{error}}",
+    "failedToConvertImage": "图片转换失败：{{error}}",
+    "failedToGetImageDimensions": "获取图片尺寸失败：{{error}}",
+    "noItemsSelectedForExport": "未选择要导出的项目",
+    "cannotDetermineSourcePathForReplacement": "无法确定替换的源文件路径",
+    "fileSizeBelowMin": "文件大小 {{size}} 字节低于最小值 {{minSize}} 字节",
+    "fileSizeExceedsMax": "文件大小 {{size}} 字节超过最大值 {{maxSize}} 字节",
+    "outputFileNotFound": "未找到输出文件：{{filePath}}"
+  },
+  "console": {
+    "warnings": {
+      "noUndosAvailable": "没有可撤销的操作",
+      "noRedosAvailable": "没有可重做的操作",
+      "unsupportedFormatDetected": "检测到不支持的格式：文件 {{name}} 的 {{ext}}",
+      "taskAlreadyExists": "任务已存在：{{id}}",
+      "failedToGetDimensions": "获取原始尺寸失败",
+      "failedToGetExportInfo": "获取导出信息失败",
+      "memoryPressureDetected": "检测到内存压力过高，触发清理",
+      "canvasConverterFailed": "Canvas 转换器失败，尝试 FFmpeg 后备方案",
+      "ffmpegConverterFailed": "FFmpeg 转换器失败，尝试 Canvas 后备方案"
+    },
+    "info": {
+      "taskLoadingCancelled": "用户取消了任务加载",
+      "memoryCleanupCompleted": "内存清理完成",
+      "conversionCancelled": "转换已取消",
+      "progressLoaderCancelled": "进度加载器已取消"
+    },
+    "errors": {
+      "taskComplete": "[Main.onTaskComplete] 任务失败：{{message}}",
+      "taskCompleteError": "[Main.onTaskComplete] 错误：{{error}}",
+      "gettingImageDimensions": "获取图片尺寸时出错：{{error}}",
+      "progressiveLoading": "TaskManager：渐进式加载期间出错：{{error}}",
+      "taskNotFound": "未找到任务 {{taskId}} 进行状态更新"
+    }
+  },
+  "validation": {
+    "selectLanguage": "请选择一种语言"
+  },
+  "units": {
+    "fileSize": {
+      "bytes": "B",
+      "kilobytes": "KB",
+      "megabytes": "MB",
+      "gigabytes": "GB",
+      "terabytes": "TB",
+      "petabytes": "PB",
+      "exabytes": "EB",
+      "zettabytes": "ZB",
+      "yottabytes": "YB"
+    }
+  }
+}

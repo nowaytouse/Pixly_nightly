@@ -861,6 +861,7 @@ onMounted(async () => {
 }
 
 .left-panel {
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;

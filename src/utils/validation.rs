@@ -17,6 +17,7 @@ use anyhow::Result;
 use image::GenericImageView;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+use super::modern_format_loader;
 
 /// validationlevel
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -147,8 +148,8 @@ impl FileValidator {
 
  result.level = ValidationLevel::Deep as u8;
 
-// tryfulldecoding
- match image::open(path) {
+// tryfulldecoding (支持 AVIF/JXL/HEIC 等现代格式)
+ match modern_format_loader::load_image(path) {
  Ok(img) => {
  let (width, height) = img.dimensions();
  result.dimensions = Some((width, height));
@@ -179,8 +180,8 @@ impl FileValidator {
 
  result.level = ValidationLevel::Dimensions as u8;
 
-// getinputdimension
- if let Ok(input_img) = image::open(input_path) {
+// getinputdimension (支持现代格式)
+ if let Ok(input_img) = modern_format_loader::load_image(input_path) {
  let (input_w, input_h) = input_img.dimensions();
  result.input_dimensions = Some((input_w, input_h));
  }

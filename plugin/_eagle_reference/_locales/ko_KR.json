@@ -1,0 +1,302 @@
+{
+  "manifest": {
+    "app": {
+      "name": "커스텀 내보내기"
+    }
+  },
+  "main": {
+    "taskList": {
+      "processing": "처리 중",
+      "completed": "완료됨",
+      "failed": "실패",
+      "status": "상태",
+      "clickToOpen": "클릭하여 폴더 열기",
+      "remove": "목록에서 삭제",
+      "statusLabels": {
+        "waiting": "대기 중",
+        "processing": "처리 중",
+        "success": "완료됨",
+        "failed": "실패"
+      },
+      "emptyText": "먼저 Eagle에서 이미지를 선택해주세요"
+    },
+    "dropzone": {
+      "title": "이미지를 드래그하거나 선택하세요",
+      "subtitle": "Eagle 내의 이미지를 사용해 주세요"
+    },
+    "SettingSidebar": {
+      "header": {
+        "iconAlt": "플러그인 아이콘",
+        "close": "닫기"
+      },
+      "operationMode": {
+        "title": "작업 모드",
+        "export": "내보내기",
+        "replace": "교체"
+      },
+      "format": {
+        "label": "형식",
+        "searchPlaceholder": "검색...",
+        "format-options": {
+          "original": "원본",
+          "jpg": "JPG",
+          "png": "PNG",
+          "webp": "WebP",
+          "bmp": "BMP",
+          "heic": "HEIC",
+          "gif": "GIF",
+          "tif": "TIF",
+          "avif": "AVIF",
+          "jxl": "JXL",
+          "ico": "ICO",
+          "exr": "EXR",
+          "hdr": "HDR",
+          "tga": "TGA",
+          "mp4": "MP4",
+          "webm": "WebM",
+          "noResults": "결과 없음"
+        }
+      },
+      "quality": {
+        "label": "품질",
+        "searchPlaceholder": "검색..."
+      },
+      "fps": {
+        "label": "프레임 속도",
+        "searchPlaceholder": "검색...",
+        "fps-options": {
+          "sameAsSource": "원본과 동일",
+          "5": "5",
+          "10": "10",
+          "12": "12",
+          "15": "15",
+          "20": "20",
+          "23.976": "23.976 (NTSC Film)",
+          "24": "24",
+          "25": "25 (PAL Film/Video)",
+          "29.97": "29.97 (NTSC Video)",
+          "30": "30",
+          "48": "48",
+          "50": "50",
+          "59.94": "59.94",
+          "60": "60"
+        }
+      },
+      "codec": {
+        "label": "코덱",
+        "searchPlaceholder": "검색...",
+        "codec-options": {
+          "h264": "H.264",
+          "h265": "H.265",
+          "vp8": "VP8",
+          "vp9": "VP9",
+          "noResults": "결과 없음"
+        }
+      },
+      "size": {
+        "label": "크기",
+        "searchPlaceholder": "검색...",
+        "size-options": {
+          "original": "원본",
+          "maxWidth": "최대 너비",
+          "maxHeight": "최대 높이",
+          "minWidth": "최소 너비",
+          "minHeight": "최소 높이",
+          "maxSide": "최대 긴 변",
+          "minSide": "최소 짧은 변"
+        }
+      },
+      "namingSettings": {
+        "title": "명명 설정",
+        "nameType": {
+          "label": "파일 이름",
+          "original": "원본 이름",
+          "custom": "이름 바꾸기",
+          "searchPlaceholder": "검색..."
+        },
+        "customName": {
+          "label": "새 이름",
+          "placeholder": "파일 이름 입력"
+        },
+        "startNumber": {
+          "label": "시작 번호",
+          "tooltip": "순차 명명의 시작 번호"
+        }
+      },
+      "progressDialog": {
+        "title": "내보내는 중...",
+        "cancel": "취소"
+      },
+      "footer": {
+        "exportButton": {
+          "export": "내보내기",
+          "replace": "교체",
+          "count": "({{count}})"
+        },
+        "closeButton": "닫기"
+      },
+      "dialogs": {
+        "error": {
+          "title": "내보내기 오류",
+          "unknownError": "알 수 없는 오류가 발생했습니다",
+          "close": "닫기"
+        },
+        "fileDuplication": {
+          "title": "파일이 이미 존재합니다",
+          "description": "{{count}}개의 파일이 이미 존재합니다. 내보내고 있는 파일로 교체하시겠습니까?",
+          "cancel": "취소",
+          "replace": "교체",
+          "keepBoth": "모두 유지"
+        }
+      },
+      "notifications": {
+        "exportSuccess": {
+          "title": "내보내기 성공",
+          "message": "{{successCount}}/{{totalCount}}개 파일 내보내기 완료",
+          "action": "폴더 열기"
+        }
+      },
+      "combobox": {
+        "noResults": "결과 없음",
+        "searchPlaceholder": "검색..."
+      },
+      "preset": {
+        "error": {
+          "saveFailed": "저장 실패, 저장 공간이 부족할 수 있습니다"
+        },
+        "command": {
+          "searchPlaceholder": "검색...",
+          "noResults": "검색 결과가 없습니다",
+          "applyPreset": "프리셋 적용",
+          "edit": "편집",
+          "clone": "복제",
+          "remove": "제거",
+          "createPreset": "프리셋 생성"
+        },
+        "settings": {
+          "title": "프리셋 매개변수",
+          "nameLabel": "이름",
+          "namePlaceholder": "입력하세요",
+          "selectPlaceholder": "선택하세요",
+          "pixelUnit": "px",
+          "updatePreset": "프리셋 업데이트",
+          "createPreset": "프리셋 생성"
+        },
+        "dialog": {
+          "tooltipTitle": "내보내기 사전설정",
+          "emptyTitle": "프리셋 매개변수",
+          "emptyDescription": "내보내기 매개변수를 프리셋으로 저장하여 나중에 직접 선택할 수 있도록 하고, 반복적인 조정을 제거하여 효율성을 향상시킵니다.",
+          "createButton": "프리셋 생성"
+        }
+      }
+    },
+    "status": {
+      "processing": "처리 중, 잠시 기다려 주세요…",
+      "success": "내보내기 성공",
+      "fail": "내보내기 실패",
+      "retry": "재시도",
+      "cancel": "취소",
+      "unsupportedFormat": "지원되지 않는 형식",
+      "imageTooLarge": "Image size exceeds limit (16384x16384)"
+    },
+    "notification": {
+      "exportSuccess": "내보내기 성공",
+      "exportPartialSuccess": "{{successCount}}/{{totalCount}}개 파일 내보내기 완료",
+      "openFolder": "폴더 열기"
+    },
+    "progressDialog": {
+      "title": "처리 중...",
+      "cancel": "취소"
+    },
+    "error": "이미지 오류"
+  },
+  "search": "검색...",
+  "footer": {
+    "dialog": {
+      "error": {
+        "outputPathCouldNotOpen": {
+          "title": "출력 경로를 열 수 없습니다",
+          "description": "출력 경로가 올바른지 또는 쓰기 권한이 있는지 확인하세요."
+        },
+        "unknownError": {
+          "title": "알 수 없는 오류"
+        },
+        "close": "닫기"
+      }
+    }
+  },
+  "error": {
+    "equalExtension": "파일 확장자가 동일합니다",
+    "imageLoadError": "이미지 로드 실패",
+    "fileNotSupported": "지원되지 않는 파일 형식입니다",
+    "fileSizeNotSupported": "파일 크기를 지원하지 않습니다. 현재 최대 크기는 50MB입니다",
+    "resolutionNotSupported": "이미지가 최대 크기 제한을 초과했습니다. 현재 최대 픽셀은 10000입니다",
+    "fileResolutionIsNotEqual": "변환 실패, 출력 결과 이상 (ERROR_RESOLUTION)",
+    "fileHistogramsAbnormality": "변환 실패, 출력 결과 이상 (ERROR_HISTOGRAMS)",
+    "fileSizeAbnormality": "변환 실패, 출력 결과 이상 (ERROR_SIZE)",
+    "noItemsSelected": "선택한 항목이 없습니다",
+    "userCanceled": "사용자가 취소함",
+    "cannotDetermineSourcePath": "소스 파일 경로를 확인할 수 없습니다",
+    "unsupportedFormat": "{{format}} 형식이 지원되지 않습니다",
+    "sourceMissing": "소스 파일 누락",
+    "outputMissing": "출력 경로 누락",
+    "formatMissing": "형식이 지정되지 않음",
+    "fileNameMissing": "파일 이름이 지정되지 않음",
+    "formatNotSupported": "형식이 지원되지 않음",
+    "heicMacOSOnly": "HEIC/HEIF 변환은 현재 macOS에서만 지원됩니다",
+    "canvasRendererRequired": "이 변환기는 렌더러 프로세스에서 실행되어야 합니다",
+    "formFieldContext": "useFormField는 <FormField> 내에서 사용해야 합니다",
+    "invalidInputString": "잘못된 입력 문자열",
+    "canvasDoesNotSupport": "Canvas는 {{format}} 형식을 지원하지 않습니다. FFmpeg 변환기를 사용하세요",
+    "failedToLoadImage": "이미지 로드 실패: {{error}}",
+    "failedToConvertImage": "이미지 변환 실패: {{error}}",
+    "failedToGetImageDimensions": "이미지 크기 가져오기 실패: {{error}}",
+    "noItemsSelectedForExport": "내보낼 항목이 선택되지 않음",
+    "cannotDetermineSourcePathForReplacement": "교체를 위한 소스 파일 경로를 확인할 수 없습니다",
+    "fileSizeBelowMin": "파일 크기 {{size}} 바이트가 최소값 {{minSize}} 바이트보다 작습니다",
+    "fileSizeExceedsMax": "파일 크기 {{size}} 바이트가 최대값 {{maxSize}} 바이트를 초과합니다",
+    "outputFileNotFound": "출력 파일을 찾을 수 없음: {{filePath}}"
+  },
+  "console": {
+    "warnings": {
+      "noUndosAvailable": "더 이상 실행 취소할 수 없습니다",
+      "noRedosAvailable": "더 이상 다시 실행할 수 없습니다",
+      "unsupportedFormatDetected": "지원되지 않는 형식 감지: 파일 {{name}}의 {{ext}}",
+      "taskAlreadyExists": "작업이 이미 존재함: {{id}}",
+      "failedToGetDimensions": "원본 크기를 가져오지 못함",
+      "failedToGetExportInfo": "내보내기 정보를 가져오지 못함",
+      "memoryPressureDetected": "높은 메모리 압박이 감지됨, 정리를 시작합니다",
+      "canvasConverterFailed": "Canvas 변환기 실패, FFmpeg 대안을 시도합니다",
+      "ffmpegConverterFailed": "FFmpeg 변환기 실패, Canvas 대안을 시도합니다"
+    },
+    "info": {
+      "taskLoadingCancelled": "사용자가 작업 로딩을 취소함",
+      "memoryCleanupCompleted": "메모리 정리 완료",
+      "conversionCancelled": "변환 취소됨",
+      "progressLoaderCancelled": "진행률 로더 취소됨"
+    },
+    "errors": {
+      "taskComplete": "[Main.onTaskComplete] 작업 실패: {{message}}",
+      "taskCompleteError": "[Main.onTaskComplete] 오류: {{error}}",
+      "gettingImageDimensions": "이미지 크기 가져오기 오류: {{error}}",
+      "progressiveLoading": "TaskManager: 점진적 로딩 중 오류: {{error}}",
+      "taskNotFound": "상태 업데이트를 위한 작업 {{taskId}}를 찾을 수 없음"
+    }
+  },
+  "validation": {
+    "selectLanguage": "언어를 선택해 주세요"
+  },
+  "units": {
+    "fileSize": {
+      "bytes": "B",
+      "kilobytes": "KB",
+      "megabytes": "MB",
+      "gigabytes": "GB",
+      "terabytes": "TB",
+      "petabytes": "PB",
+      "exabytes": "EB",
+      "zettabytes": "ZB",
+      "yottabytes": "YB"
+    }
+  }
+}

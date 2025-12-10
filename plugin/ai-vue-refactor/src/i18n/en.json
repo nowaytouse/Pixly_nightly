@@ -12,7 +12,12 @@
   "empty": {
     "title": "No Files Selected",
     "subtitle": "Select images or videos in Eagle",
-    "loadButton": "Load Files"
+    "loadButton": "Load Files",
+    "selectTitle": "Select Files",
+    "selectSubtitle": "Choose files from the list to start conversion",
+    "filesAvailable": "files available",
+    "selectImages": "Images Only",
+    "selectVideos": "Videos Only"
   },
   "controls": {
     "title": "🤖 AI Smart Options",
@@ -114,11 +119,27 @@
   },
   "common": {
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "experimental": "Exp"
   },
   "log": {
     "aiLog": "🔍 AI Log",
-    "features": "📋 Features"
+    "features": "📋 Features",
+    "startProcessing": "Starting to process {count} files",
+    "optimizeMode": "Optimization mode: {mode}",
+    "fileInfo": "File: {name} ({size})",
+    "dimensions": "Dimensions: {width}×{height}",
+    "processing": "[{current}/{total}] Processing: {file}",
+    "success": "✓ {file}",
+    "error": "✗ {file}: {error}",
+    "allComplete": "✅ All complete! Success: {success}/{total}",
+    "partialComplete": "⚠️ Partially complete! Success: {success}, Failed: {failed}",
+    "allFailed": "❌ All failed! Failed: {failed}/{total}",
+    "compression": "Compression: {input} → {output} ({ratio}%)",
+    "targetFormat": "Target format: {format}",
+    "aiPrediction": "AI parameter prediction: {status}",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
   },
   "image": {
     "title": "🖼️ Image Options",
@@ -192,6 +213,11 @@
     "icc": "ICC",
     "timestamps": "Timestamps",
     "extendedAttr": "Extended Attributes"
+  },
+  "xmp": {
+    "autoMerge": "XMP Auto-Merge",
+    "description": "Detected {count} XMP metadata file(s)",
+    "hint": "💡 XMP metadata will be automatically merged into corresponding media files using exiftool"
   },
   "help": {
     "title": "Help",

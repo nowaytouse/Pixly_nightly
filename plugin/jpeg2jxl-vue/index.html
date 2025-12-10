@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Static to JXL</title>
+<style>
+:root{--primary:#3297ff;--text-1:rgba(255,255,255,.95);--text-2:rgba(255,255,255,.75);--text-3:rgba(255,255,255,.55);--bg-1:#1e1e1e;--bg-2:#2a2a2a;--border:rgba(255,255,255,.12);--success:#34c759;--warning:#ff9500;--error:#ff3b30}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-1);color:var(--text-1);display:flex;flex-direction:column;font-size:14px}
+.titlebar{height:40px;background:var(--bg-2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 14px;-webkit-app-region:drag;user-select:none}
+.titlebar-title{flex:1;text-align:center;font-size:14px;font-weight:500;color:var(--text-2)}
+.titlebar-btns{display:flex;gap:8px;-webkit-app-region:no-drag}
+.titlebar-btn{width:32px;height:32px;border:none;background:0 0;border-radius:6px;cursor:pointer;color:var(--text-3);font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.titlebar-btn:hover{background:rgba(255,255,255,.08);color:var(--text-1);transform:scale(1.05)}
+.titlebar-btn.close:hover{background:var(--error);color:#fff}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.header{padding:16px 20px;background:var(--bg-2);border-bottom:1px solid var(--border)}
+.header-title{font-size:18px;font-weight:600;margin-bottom:4px}
+.header-subtitle{font-size:13px;color:var(--text-3)}
+.tech-badge{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:6px 10px;background:rgba(52,199,89,.1);border:1px solid rgba(52,199,89,.2);border-radius:6px;font-size:12px;color:var(--success)}
+/* 设置面板 */
+.settings{padding:14px 20px;background:var(--bg-2);border-bottom:1px solid var(--border)}
+.settings-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.settings-row:last-child{margin-bottom:0}
+.settings-label{font-size:14px;color:var(--text-2);min-width:90px}
+.settings-input{display:flex;align-items:center;gap:8px}
+.settings-input input{width:70px;height:34px;padding:0 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-1);color:var(--text-1);font-size:14px;text-align:center}
+.settings-input input:focus{outline:none;border-color:var(--primary)}
+.settings-input select{height:34px;padding:0 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-1);color:var(--text-1);font-size:14px;cursor:pointer}
+.settings-hint{font-size:12px;color:var(--text-3);padding:10px 12px;background:rgba(50,151,255,.08);border-radius:6px;line-height:1.5}
+.settings-hint code{background:rgba(0,0,0,.3);padding:2px 6px;border-radius:3px;font-family:monospace}
+/* 统计 */
+.stats{display:flex;gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+.stat{flex:1;padding:12px 16px;background:var(--bg-2);transition:background .2s}
+.stat:hover{background:rgba(50,151,255,.05)}
+.stat-label{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin-bottom:4px}
+.stat-value{font-size:20px;font-weight:700;color:var(--primary)}
+/* 文件列表 */
+.file-section{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.section-header{padding:10px 16px;background:var(--bg-2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.section-title{font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase}
+.badge{background:rgba(50,151,255,.2);color:var(--primary);padding:4px 10px;border-radius:10px;font-size:12px;font-weight:600}
+.file-list{flex:1;overflow-y:auto;padding:8px;min-height:0}
+.file-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-2);border:1px solid rgba(255,255,255,.08);border-radius:8px;margin-bottom:6px;transition:all .2s;animation:fadeIn .3s ease}
+.file-item:hover{background:rgba(50,151,255,.08);border-color:rgba(50,151,255,.3)}
+.file-item.skipped{opacity:.5}
+.file-item .skip-reason{font-size:11px;color:var(--warning)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.file-icon{width:36px;height:36px;background:rgba(50,151,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.file-name{flex:1;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-ext{font-size:12px;color:var(--text-3)}
+.file-size{font-size:12px;color:var(--text-3)}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.3}
+.empty-title{font-size:16px;font-weight:600;margin-bottom:6px}
+.empty-desc{font-size:14px;color:var(--text-3);line-height:1.5}
+/* 底部 */
+.footer{padding:14px 16px;background:var(--bg-2);border-top:1px solid var(--border)}
+.footer-row{display:flex;gap:12px;align-items:center}
+.btn-s{height:40px;padding:0 16px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;background:var(--bg-1);color:var(--text-2);transition:all .2s;display:flex;align-items:center;gap:6px}
+.btn-s:hover:not(:disabled){background:rgba(255,255,255,.05);color:var(--text-1);border-color:var(--primary)}
+.btn-s:disabled{opacity:.4;cursor:not-allowed}
+.btn-p{flex:1;height:44px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;background:var(--primary);color:#fff;transition:all .2s;position:relative;overflow:hidden}
+.btn-p:hover:not(:disabled){background:#1a87ff;transform:translateY(-1px);box-shadow:0 4px 12px rgba(50,151,255,.3)}
+.btn-p:disabled{opacity:.4;cursor:not-allowed}
+.btn-p.loading::after{content:'';position:absolute;width:20px;height:20px;border:2px solid transparent;border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;right:16px;top:50%;margin-top:-10px}
+.status{margin-top:10px;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.5}
+.status-ok{background:rgba(52,199,89,.1);color:var(--success);border:1px solid rgba(52,199,89,.2)}
+.status-warn{background:rgba(255,149,0,.1);color:var(--warning);border:1px solid rgba(255,149,0,.2)}
+.status-err{background:rgba(255,59,48,.1);color:var(--error);border:1px solid rgba(255,59,48,.2)}
+.progress{height:4px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden}
+.progress-bar{height:100%;background:var(--primary);border-radius:2px;transition:width .3s ease;width:0}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+/* 帮助模态框 */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:1000;animation:fadeIn .2s ease;pointer-events:none}
+.modal-overlay.show{display:flex;pointer-events:auto}
+.modal{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;width:90%;max-width:420px;max-height:80vh;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.4);animation:slideUp .3s ease;pointer-events:auto}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.modal-header{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px}
+.modal-close{width:28px;height:28px;border:none;background:0 0;border-radius:6px;cursor:pointer;color:var(--text-3);font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{background:var(--error);color:#fff}
+.modal-body{padding:18px;overflow-y:auto;max-height:calc(80vh - 70px)}
+.help-section{margin-bottom:16px}
+.help-section:last-child{margin-bottom:0}
+.help-title{font-size:14px;font-weight:600;color:var(--primary);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.help-content{font-size:13px;color:var(--text-2);line-height:1.7;padding:12px;background:var(--bg-1);border-radius:8px;border:1px solid var(--border)}
+.help-content code{background:rgba(50,151,255,.15);color:var(--primary);padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px}
+.help-tip{font-size:12px;color:var(--warning);margin-top:10px;padding:10px;background:rgba(255,149,0,.1);border-radius:6px;border:1px solid rgba(255,149,0,.2)}
+</style>
+</head>
+<body>
+<div class="titlebar">
+<div class="titlebar-btns"><button class="titlebar-btn" id="langBtn">🌐</button><button class="titlebar-btn" id="helpBtn">?</button></div>
+<div class="titlebar-title" id="titleText">Static → JXL</div>
+<div class="titlebar-btns">
+<button class="titlebar-btn" id="minBtn">−</button>
+<button class="titlebar-btn" id="maxBtn">□</button>
+<button class="titlebar-btn close" id="closeBtn">×</button>
+</div>
+</div>
+<div class="main">
+<div class="header">
+<div class="header-title" id="hTitle">Static to JXL</div>
+<div class="header-subtitle" id="hSub">Smart lossless conversion</div>
+<div class="tech-badge"><span>🔒</span><span id="techText">JPEG Reversible + Lossless</span></div>
+</div>
+<!-- 设置面板 -->
+<div class="settings">
+<div class="settings-row">
+<span class="settings-label" id="lThreshold">Size Filter</span>
+<div class="settings-input">
+<input type="number" id="thresholdVal" min="0" step="0.25" value="1.25">
+<select id="thresholdUnit"><option value="mb">MB</option><option value="kb">KB</option></select>
+</div>
+<span style="font-size:13px;color:var(--text-3)" id="thresholdStatus">≥1.25MB</span>
+</div>
+<div class="settings-hint" id="settingsHint">
+💡 <span id="hintJpeg">JPEG</span>: <span id="hintJpegDesc">Always convert (reversible)</span><br>
+📦 <span id="hintOther">PNG/BMP/TIFF</span>: <span id="hintOtherDesc">Only convert if ≥ threshold (set 0 to disable filter)</span>
+</div>
+</div>
+<div class="stats">
+<div class="stat"><div class="stat-label" id="lFiles">Files</div><div class="stat-value" id="vFiles">0</div></div>
+<div class="stat"><div class="stat-label" id="lSkip">Skip</div><div class="stat-value" id="vSkip">0</div></div>
+<div class="stat"><div class="stat-label" id="lTool">Tool</div><div class="stat-value" id="vTool" style="font-size:12px">-</div></div>
+</div>
+<div class="file-section">
+<div class="section-header"><span class="section-title" id="secTitle">Images</span><span class="badge" id="fCount">0</span></div>
+<div class="file-list" id="fList"></div>
+</div>
+<div class="footer">
+<div class="footer-row">
+<button class="btn-s" id="refBtn"><span>↻</span><span id="refTxt">Refresh</span></button>
+<button class="btn-p" id="cvtBtn" disabled id="cvtTxt">Convert</button>
+</div>
+<div id="status"></div>
+</div>
+</div>
+<!-- 帮助模态框 -->
+<div class="modal-overlay" id="helpModal">
+<div class="modal">
+<div class="modal-header">
+<div class="modal-title"><span>📖</span><span id="modalTitle">使用说明</span></div>
+<button class="modal-close" id="modalClose">×</button>
+</div>
+<div class="modal-body">
+<div class="help-section">
+<div class="help-title">📷 JPEG</div>
+<div class="help-content" id="helpJpeg">使用 <code>--lossless_jpeg=1</code> 可逆转码，DCT 系数完整保留。<br>✅ 无论文件大小，始终转换<br>✅ 可完美还原为原始 JPEG</div>
+</div>
+<div class="help-section">
+<div class="help-title">🖼️ PNG / BMP / TIFF / TGA</div>
+<div class="help-content" id="helpOther">使用 <code>-d 0</code> 数学无损压缩。<br>⚠️ 仅当文件 ≥ 阈值时转换<br>💡 小文件压缩收益有限，建议保持原格式</div>
+</div>
+<div class="help-section">
+<div class="help-title">⚙️ 阈值设置</div>
+<div class="help-content" id="helpThreshold">默认 <code>1.25 MB</code>，可自定义。<br>设为 <code>0</code> 关闭过滤，转换所有文件。<br>建议：大图 ≥1MB 转换效果最佳</div>
+</div>
+<div class="help-tip" id="helpTip">💡 提示：JXL 对大文件压缩效果更好，小文件可能反而变大（会自动回退）</div>
+</div>
+</div>
+</div>
+</body>
+</html>
+
+<script>
+'use strict';
+const LOG={DEBUG:0,INFO:1,WARN:2,ERROR:3};
+const K={INIT:'s2j.init',TOOL:'s2j.tool',FILE:'s2j.file',CVT:'s2j.cvt',EAGLE:'s2j.eagle'};
+let logLvl=LOG.INFO;
+const log={
+  _f:(k,m,d)=>{const t=new Date().toISOString().slice(11,23);return d?['['+t+']['+k+']',m,d]:['['+t+']['+k+']',m];},
+  i:(k,m,d)=>{if(logLvl<=LOG.INFO)console.log(...log._f(k,m,d));},
+  w:(k,m,d)=>{if(logLvl<=LOG.WARN)console.warn(...log._f(k,m,d));},
+  e:(k,m,d)=>{if(logLvl<=LOG.ERROR)console.error(...log._f(k,m,d));}
+};
+
+const FORMATS={
+  jpeg:{exts:['jpg','jpeg','jpe','jfif'],icon:'📷',lossless:false},
+  png:{exts:['png'],icon:'🖼️',lossless:true},
+  bmp:{exts:['bmp'],icon:'🎨',lossless:true},
+  tiff:{exts:['tif','tiff'],icon:'📄',lossless:true},
+  tga:{exts:['tga'],icon:'🎮',lossless:true},
+  ppm:{exts:['ppm','pbm','pgm'],icon:'📊',lossless:true}
+};
+const ALL_EXTS=Object.values(FORMATS).flatMap(f=>f.exts);
+
+const I18N={
+  en:{
+    title:'Static → JXL',hTitle:'Static to JXL',hSub:'Smart lossless conversion',
+    lFiles:'Files',lSkip:'Skip',lTool:'Tool',secTitle:'Images',refTxt:'Refresh',cvtTxt:'Convert',cvting:'Converting...',
+    emptyT:'No images selected',emptyD:'Select images in Eagle (JPEG/PNG/BMP/TIFF/TGA)',
+    okAll:'Converted {n} files',okPart:'{ok} ok, {fail} failed, {skip} skipped',hint:'Click Refresh for next batch',
+    noTool:'cjxl not found',techText:'JPEG Reversible + Lossless',skipSmall:'< threshold',skipLarger:'JXL larger',
+    lThreshold:'Size Filter',hintJpeg:'JPEG',hintJpegDesc:'Always convert (reversible)',
+    hintOther:'PNG/BMP/TIFF',hintOtherDesc:'Only ≥ threshold (0=no filter)',
+    helpTitle:'Usage Guide',helpContent:'<b>JPEG</b>: Uses --lossless_jpeg=1 for reversible transcoding, always converts regardless of size.<br><br><b>PNG/BMP/TIFF/TGA</b>: Uses -d 0 for mathematical lossless. Recommended to only convert large files (≥1MB) as small files may not benefit from JXL.<br><br><b>Threshold</b>: Set to 0 to disable size filtering and convert all files.'
+  },
+  zh_CN:{
+    title:'静态图 → JXL',hTitle:'静态图转 JXL',hSub:'智能无损转换',
+    lFiles:'文件',lSkip:'跳过',lTool:'工具',secTitle:'图像',refTxt:'刷新',cvtTxt:'转换',cvting:'转换中...',
+    emptyT:'未选择图像',emptyD:'在 Eagle 中选择图像',
+    okAll:'已转换 {n} 个文件',okPart:'{ok} 成功，{fail} 失败，{skip} 跳过',hint:'点击刷新继续',
+    noTool:'未找到 cjxl',techText:'JPEG可逆 + 无损',skipSmall:'< 阈值',skipLarger:'JXL更大',
+    lThreshold:'大小过滤',hintJpeg:'JPEG',hintJpegDesc:'始终转换（可逆）',
+    hintOther:'PNG/BMP/TIFF',hintOtherDesc:'仅 ≥ 阈值时转换（0=关闭过滤）',
+    helpTitle:'使用说明',helpContent:'<b>JPEG</b>：使用 --lossless_jpeg=1 可逆转码，无论大小始终转换。<br><br><b>PNG/BMP/TIFF/TGA</b>：使用 -d 0 数学无损。建议仅对大文件（≥1MB）进行转换，小文件可能无法从 JXL 中获益。<br><br><b>阈值设置</b>：设为 0 可关闭大小过滤，转换所有文件。'
+  },
+  zh_TW:{
+    title:'靜態圖 → JXL',hTitle:'靜態圖轉 JXL',hSub:'智能無損轉換',
+    lFiles:'檔案',lSkip:'跳過',lTool:'工具',secTitle:'圖像',refTxt:'重新整理',cvtTxt:'轉換',cvting:'轉換中...',
+    emptyT:'未選擇圖像',emptyD:'在 Eagle 中選擇圖像',
+    okAll:'已轉換 {n} 個檔案',okPart:'{ok} 成功，{fail} 失敗，{skip} 跳過',hint:'點擊重新整理繼續',
+    noTool:'未找到 cjxl',techText:'JPEG可逆 + 無損',skipSmall:'< 閾值',skipLarger:'JXL更大',
+    lThreshold:'大小過濾',hintJpeg:'JPEG',hintJpegDesc:'始終轉換（可逆）',
+    hintOther:'PNG/BMP/TIFF',hintOtherDesc:'僅 ≥ 閾值時轉換（0=關閉過濾）',
+    helpTitle:'使用說明',helpContent:'<b>JPEG</b>：使用可逆轉碼，無論大小始終轉換。<br><br><b>PNG/BMP/TIFF/TGA</b>：使用數學無損。建議僅對大檔案進行轉換。<br><br><b>閾值設置</b>：設為 0 可關閉大小過濾。'
+  },
+  ja_JP:{
+    title:'静的画像 → JXL',hTitle:'静的画像 to JXL',hSub:'スマート変換',
+    lFiles:'ファイル',lSkip:'スキップ',lTool:'ツール',secTitle:'画像',refTxt:'更新',cvtTxt:'変換',cvting:'変換中...',
+    emptyT:'未選択',emptyD:'Eagleで画像を選択',
+    okAll:'{n}件変換完了',okPart:'{ok}成功 {fail}失敗 {skip}スキップ',hint:'更新で次へ',
+    noTool:'cjxl未検出',techText:'JPEG可逆 + ロスレス',skipSmall:'< 閾値',skipLarger:'JXL大きい',
+    lThreshold:'サイズフィルタ',hintJpeg:'JPEG',hintJpegDesc:'常に変換（可逆）',
+    hintOther:'PNG/BMP/TIFF',hintOtherDesc:'閾値以上のみ（0=フィルタ無効）',
+    helpTitle:'使用ガイド',helpContent:'<b>JPEG</b>：可逆トランスコード。<br><br><b>PNG/BMP/TIFF</b>：数学的ロスレス。大きいファイルのみ推奨。<br><br><b>閾値</b>：0でフィルタ無効。'
+  }
+};
+
+let locale=localStorage.getItem('s2j_locale')||'zh_CN';
+let files=[],cjxl=null,exiftool=null,loading=false,converting=false,done=new Set();
+let thresholdBytes=1.25*1024*1024; // 默认 1.25MB
+
+const $=id=>document.getElementById(id);
+const t=k=>I18N[locale]?.[k]||I18N.en[k]||k;
+const {spawn}=require('child_process');
+const fs=require('fs').promises;
+const fss=require('fs');
+const path=require('path');
+
+function getFormatInfo(ext){
+  if(!ext)return null;
+  ext=ext.toLowerCase();
+  for(const[k,v]of Object.entries(FORMATS)){
+    if(v.exts.includes(ext))return{type:k,...v};
+  }
+  return null;
+}
+
+function getThresholdBytes(){
+  const val=parseFloat($('thresholdVal').value)||0;
+  const unit=$('thresholdUnit').value;
+  return unit==='kb'?val*1024:val*1024*1024;
+}
+
+function updateThresholdStatus(){
+  thresholdBytes=getThresholdBytes();
+  const val=parseFloat($('thresholdVal').value)||0;
+  const unit=$('thresholdUnit').value.toUpperCase();
+  $('thresholdStatus').textContent=val===0?'(disabled)':`≥${val}${unit}`;
+  localStorage.setItem('s2j_threshold',val);
+  localStorage.setItem('s2j_unit',$('thresholdUnit').value);
+  render();
+}
+
+function loadSettings(){
+  const savedVal=localStorage.getItem('s2j_threshold');
+  const savedUnit=localStorage.getItem('s2j_unit');
+  if(savedVal!==null)$('thresholdVal').value=savedVal;
+  if(savedUnit)$('thresholdUnit').value=savedUnit;
+  updateThresholdStatus();
+}
+
+function updateUI(){
+  const m={titleText:'title',hTitle:'hTitle',hSub:'hSub',lFiles:'lFiles',lSkip:'lSkip',lTool:'lTool',secTitle:'secTitle',refTxt:'refTxt',techText:'techText',lThreshold:'lThreshold',hintJpeg:'hintJpeg',hintOther:'hintOther'};
+  Object.entries(m).forEach(([id,key])=>{const el=$(id);if(el)el.textContent=t(key);});
+  $('hintJpegDesc').textContent=t('hintJpegDesc');
+  $('hintOtherDesc').textContent=t('hintOtherDesc');
+  if(!converting)$('cvtBtn').textContent=t('cvtTxt');
+}
+
+function nextLocale(){
+  const ls=['zh_CN','en','zh_TW','ja_JP'];
+  locale=ls[(ls.indexOf(locale)+1)%ls.length];
+  localStorage.setItem('s2j_locale',locale);
+  updateUI();render();
+}
+
+function showHelp(){
+  $('helpModal').classList.add('show');
+  updateHelpContent();
+}
+function hideHelp(){
+  $('helpModal').classList.remove('show');
+}
+function updateHelpContent(){
+  const isZh=locale.startsWith('zh');
+  const isJa=locale==='ja_JP';
+  $('modalTitle').textContent=isZh?'使用说明':isJa?'使用ガイド':'Usage Guide';
+  $('helpJpeg').innerHTML=isZh?
+    '使用 <code>--lossless_jpeg=1</code> 可逆转码，DCT 系数完整保留。<br>✅ 无论文件大小，始终转换<br>✅ 可完美还原为原始 JPEG':
+    isJa?'<code>--lossless_jpeg=1</code> で可逆トランスコード。<br>✅ サイズに関係なく常に変換<br>✅ 元のJPEGに完全復元可能':
+    'Uses <code>--lossless_jpeg=1</code> for reversible transcoding.<br>✅ Always converts regardless of size<br>✅ Can be perfectly restored to original JPEG';
+  $('helpOther').innerHTML=isZh?
+    '使用 <code>-d 0</code> 数学无损压缩。<br>⚠️ 仅当文件 ≥ 阈值时转换<br>💡 小文件压缩收益有限，建议保持原格式':
+    isJa?'<code>-d 0</code> で数学的ロスレス圧縮。<br>⚠️ 閾値以上のファイルのみ変換<br>💡 小さいファイルは圧縮効果が限定的':
+    'Uses <code>-d 0</code> for mathematical lossless.<br>⚠️ Only converts if file ≥ threshold<br>💡 Small files have limited compression benefit';
+  $('helpThreshold').innerHTML=isZh?
+    '默认 <code>1.25 MB</code>，可自定义。<br>设为 <code>0</code> 关闭过滤，转换所有文件。<br>建议：大图 ≥1MB 转换效果最佳':
+    isJa?'デフォルト <code>1.25 MB</code>、カスタマイズ可能。<br><code>0</code> でフィルタ無効。<br>推奨：≥1MBの大きいファイル':
+    'Default <code>1.25 MB</code>, customizable.<br>Set to <code>0</code> to disable filtering.<br>Recommended: Large files ≥1MB work best';
+  $('helpTip').textContent=isZh?
+    '💡 提示：JXL 对大文件压缩效果更好，小文件可能反而变大（会自动回退）':
+    isJa?'💡 ヒント：JXLは大きいファイルに効果的。小さいファイルは大きくなる可能性あり（自動ロールバック）':
+    '💡 Tip: JXL works best for large files. Small files may become larger (auto rollback)';
+}
+
+// 平台检测
+const PLATFORM={
+  os:process.platform,           // darwin, win32, linux
+  arch:process.arch,             // arm64, x64
+  isWin:process.platform==='win32',
+  isMac:process.platform==='darwin',
+  isLinux:process.platform==='linux',
+  isArm:process.arch==='arm64'
+};
+
+// 获取内置二进制文件路径
+function getBundledPath(name){
+  const binDir=path.join(__dirname,'bin');
+  
+  if(PLATFORM.isWin){
+    // Windows: bin/win32/cjxl.exe
+    return path.join(binDir,'win32',name+'.exe');
+  }
+  
+  if(PLATFORM.isMac){
+    // macOS: bin/darwin/cjxl (通用二进制或按架构)
+    // 优先查找通用二进制
+    const universal=path.join(binDir,'darwin',name);
+    // 按架构查找
+    const archSpecific=path.join(binDir,'darwin',PLATFORM.arch,name);
+    return{universal,archSpecific};
+  }
+  
+  if(PLATFORM.isLinux){
+    // Linux: bin/linux/cjxl 或 bin/linux/x64/cjxl
+    const generic=path.join(binDir,'linux',name);
+    const archSpecific=path.join(binDir,'linux',PLATFORM.arch,name);
+    return{generic,archSpecific};
+  }
+  
+  return null;
+}
+
+// 执行命令（仅使用内置工具）
+function exec(cmd,args){
+  return new Promise((res,rej)=>{
+    const env={...process.env};
+    
+    // macOS: 设置动态库路径
+    if(PLATFORM.isMac){
+      const libDir=path.join(__dirname,'bin','darwin','lib');
+      env.DYLD_LIBRARY_PATH=(env.DYLD_LIBRARY_PATH||'')+':'+libDir;
+      env.DYLD_FALLBACK_LIBRARY_PATH=(env.DYLD_FALLBACK_LIBRARY_PATH||'')+':'+libDir;
+    }
+    
+    // Linux: 设置动态库路径
+    if(PLATFORM.isLinux){
+      const libDir=path.join(__dirname,'bin','linux','lib');
+      env.LD_LIBRARY_PATH=(env.LD_LIBRARY_PATH||'')+':'+libDir;
+    }
+    
+    const p=spawn(cmd,args,{shell:false,env});
+    let out='',err='';
+    p.stdout.on('data',d=>out+=d);
+    p.stderr.on('data',d=>err+=d);
+    p.on('close',c=>c===0?res({out,err}):rej({code:c,out,err}));
+    p.on('error',e=>rej({err:e.message}));
+  });
+}
+
+// 查找内置工具（不依赖系统）
+async function findTool(name){
+  const paths=getBundledPath(name);
+  if(!paths)return null;
+  
+  // 字符串路径（Windows）
+  if(typeof paths==='string'){
+    try{await fs.access(paths,fss.constants.X_OK);return paths;}catch{}
+    try{await fs.access(paths);return paths;}catch{}
+    return null;
+  }
+  
+  // 对象路径（macOS/Linux）
+  const candidates=[paths.universal,paths.archSpecific,paths.generic].filter(Boolean);
+  for(const p of candidates){
+    try{
+      await fs.access(p);
+      // 确保可执行权限
+      try{await fs.chmod(p,0o755);}catch{}
+      return p;
+    }catch{}
+  }
+  
+  return null;
+}
+
+// 获取平台信息字符串
+function getPlatformInfo(){
+  const os=PLATFORM.isMac?'macOS':PLATFORM.isWin?'Windows':PLATFORM.isLinux?'Linux':'Unknown';
+  const arch=PLATFORM.arch==='arm64'?'ARM64':'x64';
+  return `${os} ${arch}`;
+}
+</script>
+
+<script>
+function shouldSkip(f){
+  if(!f||!f.ext)return{skip:true,reason:'invalid'};
+  const fmt=getFormatInfo(f.ext);
+  if(!fmt)return{skip:true,reason:'unsupported'};
+  // JPEG 永远不跳过（可逆转码）
+  if(fmt.type==='jpeg')return{skip:false};
+  // 阈值为0时关闭过滤
+  if(thresholdBytes===0)return{skip:false};
+  // 无损源文件 < 阈值则跳过
+  if(fmt.lossless && f.size<thresholdBytes){
+    return{skip:true,reason:t('skipSmall')};
+  }
+  return{skip:false};
+}
+
+function render(){
+  const toConvert=files.filter(f=>!shouldSkip(f).skip);
+  const toSkip=files.filter(f=>shouldSkip(f).skip);
+  $('vFiles').textContent=toConvert.length;
+  $('vSkip').textContent=toSkip.length;
+  $('fCount').textContent=files.length;
+  
+  if(files.length===0){
+    $('fList').innerHTML='<div class="empty"><div class="empty-icon">🖼️</div><div class="empty-title">'+t('emptyT')+'</div><div class="empty-desc">'+t('emptyD')+'</div></div>';
+    $('cvtBtn').disabled=true;
+    return;
+  }
+  
+  $('fList').innerHTML=files.map((f,i)=>{
+    const fmt=getFormatInfo(f.ext);
+    const icon=fmt?fmt.icon:'📄';
+    const skipInfo=shouldSkip(f);
+    const sizeStr=f.size>=1024*1024?(f.size/1024/1024).toFixed(2)+'MB':(f.size/1024).toFixed(0)+'KB';
+    const skipClass=skipInfo.skip?'skipped':'';
+    const skipReason=skipInfo.skip?'<div class="skip-reason">⏭️ '+skipInfo.reason+'</div>':'';
+    return '<div class="file-item '+skipClass+'" style="animation-delay:'+(i*20)+'ms"><div class="file-icon">'+icon+'</div><div class="file-name">'+f.name+'</div><div class="file-size">'+sizeStr+'</div><div class="file-ext">.'+f.ext+'</div>'+skipReason+'</div>';
+  }).join('');
+  
+  $('cvtBtn').disabled=!cjxl||converting||toConvert.length===0;
+}
+
+async function load(){
+  if(loading||!window.eagle?.item)return;
+  loading=true;$('refBtn').disabled=true;
+  log.i(K.FILE,'Loading...');
+  try{
+    const items=await eagle.item.getSelected();
+    const supported=(items||[]).filter(i=>i&&i.ext&&ALL_EXTS.includes(i.ext.toLowerCase()));
+    files=supported.filter(f=>!done.has(f.id)).map(f=>{
+      let fileName=f.name;
+      if(!fileName&&f.filePath){
+        const base=f.filePath.split('/').pop().split('\\').pop();
+        fileName=base.split('.').slice(0,-1).join('.')||base;
+      }
+      return{
+        id:f.id,
+        name:fileName||'unknown',
+        ext:(f.ext||'').toLowerCase(),
+        filePath:f.filePath,
+        size:(f.filePath&&fss.existsSync(f.filePath))?fss.statSync(f.filePath).size:0
+      };
+    });
+    log.i(K.FILE,'Loaded',{total:supported.length,new:files.length});
+    render();
+  }catch(e){log.e(K.FILE,'Error',{err:e.message});}
+  loading=false;$('refBtn').disabled=false;
+}
+
+async function convert(f){
+  const inp=f.filePath;
+  const out=inp.replace(/\.[^.]+$/,'.jxl');
+  const fmt=getFormatInfo(f.ext);
+  const isJpeg=fmt.type==='jpeg';
+  
+  try{await fs.access(inp);}catch{throw new Error('ENOENT');}
+  log.i(K.CVT,'Start',{name:f.name,type:fmt.type,isJpeg});
+  
+  // JPEG: --lossless_jpeg=1 可逆转码 | 其他: -d 0 数学无损
+  const args=isJpeg?[inp,out,'--lossless_jpeg=1','-e','7']:[inp,out,'-d','0','-e','7'];
+  await exec(cjxl,args);
+  
+  try{await fs.access(out);}catch{throw new Error('Output not created');}
+  
+  // 智能回退：JXL 更大则跳过
+  const inSize=f.size;
+  const outSize=(await fs.stat(out)).size;
+  if(outSize>inSize){
+    log.w(K.CVT,'JXL larger, rollback',{name:f.name,in:inSize,out:outSize});
+    await fs.unlink(out);
+    return{skipped:true,reason:t('skipLarger')};
+  }
+  
+  // 元数据迁移
+  if(exiftool){
+    try{await exec(exiftool,['-tagsFromFile',inp,'-all:all','-icc_profile','-overwrite_original',out]);}catch{}
+  }
+  
+  // 保留时间戳
+  try{const st=await fs.stat(inp);await fs.utimes(out,st.atime,st.mtime);}catch{}
+  
+  // 删除原文件
+  try{await fs.unlink(inp);}catch{}
+  
+  // 更新 Eagle metadata
+  try{
+    const dir=path.dirname(inp);
+    if(dir.endsWith('.info')){
+      const mp=path.join(dir,'metadata.json');
+      const m=JSON.parse(await fs.readFile(mp,'utf8'));
+      m.ext='jxl';m.modificationTime=Date.now();
+      await fs.writeFile(mp,JSON.stringify(m,null,2));
+    }
+  }catch{}
+  
+  done.add(f.id);
+  log.i(K.CVT,'Done',{name:f.name,reduction:((1-outSize/inSize)*100).toFixed(1)+'%'});
+  return{skipped:false};
+}
+
+async function run(){
+  const toConvert=files.filter(f=>!shouldSkip(f).skip);
+  if(!toConvert.length||!cjxl||converting)return;
+  converting=true;
+  const btn=$('cvtBtn');
+  btn.disabled=true;btn.classList.add('loading');btn.textContent=t('cvting');
+  $('status').innerHTML='<div class="progress"><div class="progress-bar" id="pBar"></div></div>';
+  
+  log.i(K.CVT,'=== Batch start ===',{total:toConvert.length,threshold:thresholdBytes});
+  let ok=0,fail=0,skip=0;
+  
+  for(let i=0;i<toConvert.length;i++){
+    try{
+      const result=await convert(toConvert[i]);
+      if(result.skipped){skip++;}else{ok++;}
+    }catch(e){
+      fail++;
+      log.e(K.CVT,'Failed',{name:toConvert[i].name,err:e.message||e.err});
+    }
+    $('pBar').style.width=((i+1)/toConvert.length*100)+'%';
+  }
+  
+  log.i(K.CVT,'=== Batch done ===',{ok,fail,skip});
+  btn.classList.remove('loading');
+  const st=$('status');
+  if(fail===0&&skip===0){
+    st.innerHTML='<div class="status status-ok">'+t('okAll').replace('{n}',ok)+'<br><small style="opacity:.7">'+t('hint')+'</small></div>';
+  }else{
+    st.innerHTML='<div class="status status-warn">'+t('okPart').replace('{ok}',ok).replace('{fail}',fail).replace('{skip}',skip)+'</div>';
+  }
+  converting=false;btn.textContent=t('cvtTxt');files=[];render();
+}
+
+// 事件绑定
+$('langBtn').onclick=nextLocale;
+$('helpBtn').onclick=showHelp;
+$('modalClose').onclick=hideHelp;
+// 移除点击边缘关闭帮助窗口的行为 - 用户只能通过关闭按钮关闭
+$('minBtn').onclick=()=>eagle.window.minimize();
+$('maxBtn').onclick=async()=>{(await eagle.window.isMaximized())?eagle.window.unmaximize():eagle.window.maximize();};
+$('closeBtn').onclick=()=>eagle.window.hide();
+$('refBtn').onclick=()=>{done.clear();$('status').innerHTML='';load();};
+$('cvtBtn').onclick=run;
+$('thresholdVal').oninput=updateThresholdStatus;
+$('thresholdUnit').onchange=updateThresholdStatus;
+
+async function init(){
+  log.i(K.INIT,'=== Static to JXL (Enhanced) ===');
+  log.i(K.INIT,'Platform: '+getPlatformInfo());
+  loadSettings();
+  updateUI();
+  
+  $('vTool').textContent='...';
+  cjxl=await findTool('cjxl');
+  exiftool=await findTool('exiftool');
+  
+  if(cjxl){
+    $('vTool').textContent='✓ cjxl';
+    log.i(K.TOOL,'cjxl found (bundled)',{path:cjxl,platform:getPlatformInfo()});
+  }else{
+    $('vTool').textContent='✗';
+    const errMsg=PLATFORM.isLinux?t('noTool')+' (Linux '+PLATFORM.arch+')':t('noTool');
+    $('status').innerHTML='<div class="status status-err">'+errMsg+'<br><small>'+getPlatformInfo()+'</small></div>';
+    log.e(K.TOOL,'cjxl not found',{platform:getPlatformInfo(),binDir:path.join(__dirname,'bin')});
+    return;
+  }
+  
+  if(exiftool)log.i(K.TOOL,'exiftool found (bundled)',{path:exiftool});
+  
+  if(!window.eagle){log.e(K.EAGLE,'No Eagle API');return;}
+  eagle.onPluginCreate(()=>load());
+  eagle.onPluginRun(()=>load());
+  eagle.onPluginShow(()=>load());
+  if(eagle.onSelectionChanged)eagle.onSelectionChanged(()=>load());
+  setTimeout(load,100);
+  log.i(K.INIT,'Ready',{platform:getPlatformInfo()});
+}
+init();
+</script>

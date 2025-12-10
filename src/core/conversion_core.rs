@@ -211,6 +211,7 @@ pub fn execute_conversion(
  output: &Path,
  format: &str,
  config: &ConversionConfig,
+ input_format: Option<&str>,
 ) -> Result<ConversionResult> {
  let start_time = std::time::Instant::now();
 
@@ -300,7 +301,7 @@ pub fn execute_conversion(
 // ═══════════════════════════════════════════════════
 // 🔄 executeactualconversion
 // ═══════════════════════════════════════════════════
- let strategy_used = perform_conversion(&preprocessed_input, output, format, config)?;
+ let strategy_used = perform_conversion(&preprocessed_input, output, format, config, input_format)?;
 
 // cleanuptemporarypreprocessingfile
  if preprocessed_input != input {
@@ -683,32 +684,38 @@ fn perform_conversion(
  output: &Path,
  format: &str,
  config: &ConversionConfig,
+ input_format: Option<&str>,
 ) -> Result<String> {
  use image::ImageFormat;
 
-// checkinputformat，ifisexternalformat(AVIF/JXL)，conversionfor PNG
- let input_ext = input.extension()
- .and_then(|s| s.to_str())
- .unwrap_or("")
- .to_lowercase();
-
- let (actual_input, temp_file) = if matches!(input_ext.as_str(), "avif" | "jxl" | "jpegxl") {
-// createtemporaryPNGfile
- let timestamp = std::time::SystemTime::now()
- .duration_since(std::time::UNIX_EPOCH)
- .unwrap_or(std::time::Duration::from_secs(0))
- .as_millis();
- let temp_path = std::env::temp_dir().join(format!("pixly_temp_{}.png", timestamp));
-
-// useexternalconversionfor PNG
- decode_external_format(input, &temp_path)?;
- (temp_path.clone(), Some(temp_path))
+ // checkinputformat，ifisexternalformat(AVIF/JXL)，conversionfor PNG
+ let input_ext = if let Some(fmt) = input_format {
+  fmt.to_lowercase()
  } else {
- (input.to_path_buf(), None)
+  input.extension()
+  .and_then(|s| s.to_str())
+  .unwrap_or("")
+  .to_lowercase()
  };
 
-// readinputimage
- let img = image::open(&actual_input)?;
+ let (actual_input, temp_file) = if matches!(input_ext.as_str(), "avif" | "jxl" | "jpegxl") {
+ // createtemporaryPNGfile
+  let timestamp = std::time::SystemTime::now()
+  .duration_since(std::time::UNIX_EPOCH)
+  .unwrap_or(std::time::Duration::from_secs(0))
+  .as_millis();
+  let temp_path = std::env::temp_dir().join(format!("pixly_temp_{}.png", timestamp));
+
+ // useexternalconversionfor PNG
+  decode_external_format(input, &temp_path, &input_ext)?;
+  (temp_path.clone(), Some(temp_path))
+ } else {
+  (input.to_path_buf(), None)
+ };
+
+ // readinputimage
+ let img = image::open(&actual_input)
+  .map_err(|e| anyhow::anyhow!("Failed to open image: {}. Format: {}", e, input_ext))?;
 
 // based onformatselect Encoder
  let strategy = match format.to_lowercase().as_str() {
@@ -768,15 +775,10 @@ fn perform_conversion(
 }
 
 /// decodingexternalformat(AVIF/JXL)forPNG
-fn decode_external_format(input: &Path, output: &Path) -> Result<()> {
+fn decode_external_format(input: &Path, output: &Path, input_fmt: &str) -> Result<()> {
  use std::process::Command;
 
- let input_ext = input.extension()
- .and_then(|s| s.to_str())
- .unwrap_or("")
- .to_lowercase();
-
- match input_ext.as_str() {
+ match input_fmt {
  "avif" => {
 // useavifencdecodingfeatureor Image Magick
  let output = Command::new("magick")
@@ -801,7 +803,7 @@ fn decode_external_format(input: &Path, output: &Path) -> Result<()> {
  anyhow::bail!("JXL decode failed: {}", String::from_utf8_lossy(&output.stderr));
  }
  }
- _ => anyhow::bail!("Unsupported external format: {}", input_ext),
+ _ => anyhow::bail!("Unsupported external format: {}", input_fmt),
  }
 
  Ok(())

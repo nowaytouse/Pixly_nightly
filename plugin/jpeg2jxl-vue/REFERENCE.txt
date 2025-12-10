@@ -1,0 +1,105 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                   JPEG to JXL Eagle Plugin - v1.0.0                       ║
+║                         Quick Reference Card                              ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+📦 INSTALLATION
+═══════════════════════════════════════════════════════════════════════════
+  1. Validate plugin:
+     $ ./validate.sh
+  
+  2. Setup binaries (if needed):
+     $ ./setup.sh
+  
+  3. Import to Eagle:
+     Eagle → Plugins → Developer → Import Local Plugin → Select this folder
+
+🚀 USAGE
+═══════════════════════════════════════════════════════════════════════════
+  1. Select JPEG files in Eagle
+  2. Open: Plugins → "JPEG to JXL Converter"
+  3. Click "Convert to JXL" button
+  4. Done! JXL files saved next to originals
+
+✅ STATUS CHECK
+═══════════════════════════════════════════════════════════════════════════
+  Component           Status    Path
+  ─────────────────────────────────────────────────────────────────────────
+  manifest.json       ✅        ./manifest.json (606B)
+  logo.png           ✅        ./logo.png (579KB)
+  index.html         ✅        ./index.html (12KB)
+  
+  macOS binary       ✅        ./bin/darwin/cjxl (293KB)
+  Windows binary     ✅        ./bin/win32/cjxl.exe (47.7MB)
+  Linux binary       ⚠️         ./bin/linux/cjxl (run setup.sh)
+
+🛠️  SCRIPTS
+═══════════════════════════════════════════════════════════════════════════
+  ./validate.sh      Validate plugin integrity and configuration
+  ./setup.sh         Download missing platform binaries
+  
+📚 DOCUMENTATION
+═══════════════════════════════════════════════════════════════════════════
+  QUICKSTART.md      Quick start guide (Chinese + English)
+  README.md          Detailed documentation  
+  CHANGELOG.md       Version history
+  FIX_SUMMARY.md     Complete fix report
+
+🌍 PLATFORM SUPPORT
+═══════════════════════════════════════════════════════════════════════════
+  🍎 macOS (darwin)     ✅ Ready
+  🪟 Windows (win32)    ✅ Ready
+  🐧 Linux              ⚠️  Run ./setup.sh first
+
+⚙️  FEATURES
+═══════════════════════════════════════════════════════════════════════════
+  ✅ Lossless JPEG to JXL conversion
+  ✅ Batch processing
+  ✅ Cross-platform support
+  ✅ Progress display
+  ✅ Error handling
+  ✅ Automatic platform detection
+
+🔍 TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════════
+  Problem                      Solution
+  ─────────────────────────────────────────────────────────────────────────
+  ❌ Plugin won't import       Check logo.png and manifest.json exist
+  ❌ "Binary not found"        Run ./setup.sh
+  ❌ Permission denied         chmod +x bin/*/cjxl*
+  ❌ Conversion fails          Enable dev tools in Eagle to see logs
+
+📊 FILE STRUCTURE
+═══════════════════════════════════════════════════════════════════════════
+  jpeg2jxl-vue/
+  ├── manifest.json            Eagle plugin configuration
+  ├── index.html               Plugin UI and logic
+  ├── logo.png                Plugin icon
+  ├── package.json            Project metadata
+  ├── README.md               Full documentation
+  ├── QUICKSTART.md           Quick start guide
+  ├── CHANGELOG.md            Version history
+  ├── FIX_SUMMARY.md          Fix report
+  ├── setup.sh                Auto-setup script
+  ├── validate.sh             Validation script
+  └── bin/                    Platform binaries
+      ├── darwin/cjxl         macOS binary
+      ├── win32/cjxl.exe      Windows binary
+      └── linux/cjxl          Linux binary (download via setup.sh)
+
+🎯 CORE FUNCTIONALITY
+═══════════════════════════════════════════════════════════════════════════
+  Input:  .jpg, .jpeg, .jpe, .jfif
+  Output: .jxl (lossless, -d 0)
+  Size:   Typically 20-50% smaller than JPEG
+  
+💡 TIPS
+═══════════════════════════════════════════════════════════════════════════
+  • Run ./validate.sh before first use
+  • Enable devTools in manifest.json for debugging
+  • Check console logs (F12) if conversion fails
+  • JXL files can be viewed in Chrome, Edge, Safari (with support)
+
+═══════════════════════════════════════════════════════════════════════════
+Version: 1.0.0 | Updated: 2025-11-27 | Status: ✅ Ready for Production
+═══════════════════════════════════════════════════════════════════════════

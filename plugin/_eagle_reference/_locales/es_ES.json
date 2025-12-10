@@ -1,0 +1,302 @@
+{
+  "manifest": {
+    "app": {
+      "name": "Custom Export"
+    }
+  },
+  "main": {
+    "taskList": {
+      "processing": "Procesando",
+      "completed": "Completado",
+      "failed": "Fallido",
+      "status": "Estado",
+      "clickToOpen": "Haz clic para abrir la carpeta",
+      "remove": "Eliminar de la lista",
+      "statusLabels": {
+        "waiting": "Esperando",
+        "processing": "Procesando",
+        "success": "Completado",
+        "failed": "Fallido"
+      },
+      "emptyText": "Por favor, seleccione primero las imágenes de Eagle"
+    },
+    "dropzone": {
+      "title": "Arrastra o selecciona imágenes",
+      "subtitle": "Por favor, usa imágenes de Eagle"
+    },
+    "SettingSidebar": {
+      "header": {
+        "iconAlt": "Icono del plugin",
+        "close": "Cerrar"
+      },
+      "operationMode": {
+        "title": "Modo de operación",
+        "export": "Exportar",
+        "replace": "Reemplazar"
+      },
+      "format": {
+        "label": "Formato",
+        "searchPlaceholder": "Buscar...",
+        "format-options": {
+          "original": "Original",
+          "jpg": "JPG",
+          "png": "PNG",
+          "webp": "WebP",
+          "bmp": "BMP",
+          "heic": "HEIC",
+          "gif": "GIF",
+          "tif": "TIF",
+          "avif": "AVIF",
+          "jxl": "JXL",
+          "ico": "ICO",
+          "exr": "EXR",
+          "hdr": "HDR",
+          "tga": "TGA",
+          "mp4": "MP4",
+          "webm": "WebM",
+          "noResults": "Sin resultados"
+        }
+      },
+      "quality": {
+        "label": "Calidad",
+        "searchPlaceholder": "Buscar..."
+      },
+      "fps": {
+        "label": "Frecuencia de cuadros",
+        "searchPlaceholder": "Buscar...",
+        "fps-options": {
+          "sameAsSource": "Igual que el original",
+          "5": "5",
+          "10": "10",
+          "12": "12",
+          "15": "15",
+          "20": "20",
+          "23.976": "23.976 (NTSC Film)",
+          "24": "24",
+          "25": "25 (PAL Film/Video)",
+          "29.97": "29.97 (NTSC Video)",
+          "30": "30",
+          "48": "48",
+          "50": "50",
+          "59.94": "59.94",
+          "60": "60"
+        }
+      },
+      "codec": {
+        "label": "Códec",
+        "searchPlaceholder": "Buscar...",
+        "codec-options": {
+          "h264": "H.264",
+          "h265": "H.265",
+          "vp8": "VP8",
+          "vp9": "VP9",
+          "noResults": "Sin resultados"
+        }
+      },
+      "size": {
+        "label": "Tamaño",
+        "searchPlaceholder": "Buscar...",
+        "size-options": {
+          "original": "Original",
+          "maxWidth": "Ancho máximo",
+          "maxHeight": "Altura máxima",
+          "minWidth": "Ancho mínimo",
+          "minHeight": "Altura mínima",
+          "maxSide": "Lado largo máximo",
+          "minSide": "Lado corto mínimo"
+        }
+      },
+      "namingSettings": {
+        "title": "Configuración de nombres",
+        "nameType": {
+          "label": "Nombre de archivo",
+          "original": "Nombre original",
+          "custom": "Renombrar",
+          "searchPlaceholder": "Buscar..."
+        },
+        "customName": {
+          "label": "Nuevo nombre",
+          "placeholder": "Ingresa el nombre del archivo"
+        },
+        "startNumber": {
+          "label": "Número inicial",
+          "tooltip": "Número inicial para la nomenclatura secuencial"
+        }
+      },
+      "progressDialog": {
+        "title": "Exportando...",
+        "cancel": "Cancelar"
+      },
+      "footer": {
+        "exportButton": {
+          "export": "Exportar",
+          "replace": "Reemplazar",
+          "count": "({{count}})"
+        },
+        "closeButton": "Cerrar"
+      },
+      "dialogs": {
+        "error": {
+          "title": "Error de exportación",
+          "unknownError": "Se produjo un error desconocido",
+          "close": "Cerrar"
+        },
+        "fileDuplication": {
+          "title": "El archivo ya existe",
+          "description": "Se encontraron {{count}} archivos que ya existen. ¿Deseas reemplazarlos con los archivos que se están exportando?",
+          "cancel": "Cancelar",
+          "replace": "Reemplazar",
+          "keepBoth": "Mantener ambos"
+        }
+      },
+      "notifications": {
+        "exportSuccess": {
+          "title": "Exportación exitosa",
+          "message": "{{successCount}}/{{totalCount}} archivos exportados con éxito",
+          "action": "Abrir carpeta"
+        }
+      },
+      "combobox": {
+        "noResults": "Sin resultados",
+        "searchPlaceholder": "Buscar..."
+      },
+      "preset": {
+        "error": {
+          "saveFailed": "Error al guardar, posiblemente debido a espacio de almacenamiento insuficiente"
+        },
+        "command": {
+          "searchPlaceholder": "Buscar...",
+          "noResults": "No se encontraron resultados",
+          "applyPreset": "Aplicar preajuste",
+          "edit": "Editar",
+          "clone": "Clonar",
+          "remove": "Eliminar",
+          "createPreset": "Crear parámetro"
+        },
+        "settings": {
+          "title": "Parámetros predefinidos",
+          "nameLabel": "Nombre",
+          "namePlaceholder": "Ingresar",
+          "selectPlaceholder": "Seleccionar",
+          "pixelUnit": "px",
+          "updatePreset": "Actualizar predefinido",
+          "createPreset": "Crear predefinido"
+        },
+        "dialog": {
+          "tooltipTitle": "Parámetros predefinidos",
+          "emptyTitle": "Parámetros predefinidos",
+          "emptyDescription": "Guarda parámetros de exportación como preajustes para seleccionarlos directamente más tarde, eliminando ajustes repetitivos y mejorando la eficiencia.",
+          "createButton": "Crear parámetro"
+        }
+      }
+    },
+    "status": {
+      "processing": "Procesando, por favor espera…",
+      "success": "Exportado con éxito",
+      "fail": "Error en la exportación",
+      "retry": "Reintentar",
+      "cancel": "Cancelar",
+      "unsupportedFormat": "Formato no compatible",
+      "imageTooLarge": "Image size exceeds limit (16384x16384)"
+    },
+    "notification": {
+      "exportSuccess": "Exportado con éxito",
+      "exportPartialSuccess": "{{successCount}}/{{totalCount}} archivos exportados con éxito",
+      "openFolder": "Abrir carpeta"
+    },
+    "progressDialog": {
+      "title": "Procesando...",
+      "cancel": "Cancelar"
+    },
+    "error": "Error de imagen"
+  },
+  "search": "Buscar...",
+  "footer": {
+    "dialog": {
+      "error": {
+        "outputPathCouldNotOpen": {
+          "title": "No se puede abrir la ruta de salida",
+          "description": "Verifica si la ruta de salida es correcta o si tienes permisos de escritura."
+        },
+        "unknownError": {
+          "title": "Error desconocido"
+        },
+        "close": "Cerrar"
+      }
+    }
+  },
+  "error": {
+    "equalExtension": "La extensión de archivo es la misma",
+    "imageLoadError": "Error al cargar la imagen",
+    "fileNotSupported": "Formato de archivo no compatible",
+    "fileSizeNotSupported": "Tamaño de archivo no compatible, el tamaño máximo admitido es 50 MB",
+    "resolutionNotSupported": "La imagen supera el límite de tamaño, el máximo admitido es 10000 píxeles",
+    "fileResolutionIsNotEqual": "Conversión fallida, resultado anómalo (ERROR_RESOLUTION)",
+    "fileHistogramsAbnormality": "Conversión fallida, resultado anómalo (ERROR_HISTOGRAMS)",
+    "fileSizeAbnormality": "Conversión fallida, resultado anómalo (ERROR_SIZE)",
+    "noItemsSelected": "No se ha seleccionado ningún elemento",
+    "userCanceled": "Usuario canceló",
+    "cannotDetermineSourcePath": "No se puede determinar la ruta del archivo fuente",
+    "unsupportedFormat": "El formato {{format}} no es compatible",
+    "sourceMissing": "Archivo fuente faltante",
+    "outputMissing": "Ruta de salida faltante",
+    "formatMissing": "Formato no especificado",
+    "fileNameMissing": "Nombre de archivo no especificado",
+    "formatNotSupported": "Formato no compatible",
+    "heicMacOSOnly": "La conversión HEIC/HEIF actualmente solo es compatible con macOS",
+    "canvasRendererRequired": "Este convertidor requiere ejecutarse en el proceso del renderizador",
+    "formFieldContext": "useFormField debe usarse dentro de <FormField>",
+    "invalidInputString": "Cadena de entrada inválida",
+    "canvasDoesNotSupport": "Canvas no admite el formato {{format}}, usa el convertidor FFmpeg",
+    "failedToLoadImage": "Error al cargar la imagen: {{error}}",
+    "failedToConvertImage": "Error al convertir la imagen: {{error}}",
+    "failedToGetImageDimensions": "Error al obtener las dimensiones de la imagen: {{error}}",
+    "noItemsSelectedForExport": "No hay elementos seleccionados para exportar",
+    "cannotDetermineSourcePathForReplacement": "No se puede determinar la ruta del archivo fuente para el reemplazo",
+    "fileSizeBelowMin": "El tamaño del archivo {{size}} bytes está por debajo del mínimo de {{minSize}} bytes",
+    "fileSizeExceedsMax": "El tamaño del archivo {{size}} bytes excede el máximo de {{maxSize}} bytes",
+    "outputFileNotFound": "Archivo de salida no encontrado: {{filePath}}"
+  },
+  "console": {
+    "warnings": {
+      "noUndosAvailable": "No hay más deshacer disponibles",
+      "noRedosAvailable": "No hay más rehacer disponibles",
+      "unsupportedFormatDetected": "Formato no compatible detectado: {{ext}} para el archivo {{name}}",
+      "taskAlreadyExists": "La tarea ya existe: {{id}}",
+      "failedToGetDimensions": "Error al obtener las dimensiones originales",
+      "failedToGetExportInfo": "Error al obtener la información de exportación",
+      "memoryPressureDetected": "Presión de memoria alta detectada, iniciando limpieza",
+      "canvasConverterFailed": "Convertidor Canvas falló, intentando alternativa FFmpeg",
+      "ffmpegConverterFailed": "Convertidor FFmpeg falló, intentando alternativa Canvas"
+    },
+    "info": {
+      "taskLoadingCancelled": "Carga de tarea cancelada por el usuario",
+      "memoryCleanupCompleted": "Limpieza de memoria completada",
+      "conversionCancelled": "Conversión cancelada",
+      "progressLoaderCancelled": "Cargador de progreso cancelado"
+    },
+    "errors": {
+      "taskComplete": "[Main.onTaskComplete] Tarea falló: {{message}}",
+      "taskCompleteError": "[Main.onTaskComplete] Error: {{error}}",
+      "gettingImageDimensions": "Error al obtener las dimensiones de la imagen: {{error}}",
+      "progressiveLoading": "TaskManager: Error durante la carga progresiva: {{error}}",
+      "taskNotFound": "Tarea {{taskId}} no encontrada para actualización de estado"
+    }
+  },
+  "validation": {
+    "selectLanguage": "Por favor selecciona un idioma"
+  },
+  "units": {
+    "fileSize": {
+      "bytes": "B",
+      "kilobytes": "KB",
+      "megabytes": "MB",
+      "gigabytes": "GB",
+      "terabytes": "TB",
+      "petabytes": "PB",
+      "exabytes": "EB",
+      "zettabytes": "ZB",
+      "yottabytes": "YB"
+    }
+  }
+}

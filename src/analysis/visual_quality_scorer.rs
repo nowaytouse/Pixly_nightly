@@ -2,6 +2,7 @@
 
 use image::{DynamicImage, GenericImageView, Pixel};
 use std::path::Path;
+use crate::utils::modern_format_loader;
 
 #[derive(Debug, Clone)]
 pub struct ImageFeatures {
@@ -52,7 +53,7 @@ impl VisualQualityScorer {
 
 /// analysisimageandextractionfeature
  pub fn analyze_image<P: AsRef<Path>>(&self, file_path: P) -> Result<ImageFeatures, Box<dyn std::error::Error>> {
- let img = image::open(file_path)?;
+ let img = modern_format_loader::load_image(file_path.as_ref())?;
 
  let width = img.width();
  let height = img.height();

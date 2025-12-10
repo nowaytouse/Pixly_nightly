@@ -22,6 +22,7 @@ pub mod image_params;
 pub mod log_manager;
 pub mod magika_detector;
 pub mod metadata_comprehensive;
+pub mod modern_format_loader;
 pub mod quality_presets;
 pub mod same_format_optimizer;
 pub mod simd_processor;

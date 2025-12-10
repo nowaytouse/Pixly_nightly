@@ -1,5 +1,5 @@
 <template>
-  <div class="panel">
+  <div class="panel quick-tools-panel">
     <!-- 标签切换 -->
     <div class="panel-tabs">
       <button 
@@ -19,7 +19,7 @@
     </div>
     
     <!-- 快捷工具面板 -->
-    <div v-if="activeTab === 'tools'" class="panel-content">
+    <div v-if="activeTab === 'tools'" class="panel-content tools-content">
       <!-- AI 文件验证 -->
       <label class="tool-item" :title="t('tools.fileValidationHint')">
         <input type="checkbox" v-model="localTools.fileValidation" />
@@ -113,14 +113,16 @@ defineExpose({
 watch(localTools, (newVal) => {
   emit('update:modelValue', newVal)
 }, { deep: true })
-
-// 🔥 移除会导致无限循环的watch
-// watch(() => props.modelValue, (newVal) => {
-//   localTools.value = { ...newVal }
-// }, { deep: true })
 </script>
 
 <style scoped>
+.quick-tools-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
+  max-height: 350px;
+}
+
 /* 标签切换 */
 .panel-tabs {
   display: flex;
@@ -128,6 +130,7 @@ watch(localTools, (newVal) => {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px 8px 0 0;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .panel-tab {
@@ -154,9 +157,16 @@ watch(localTools, (newVal) => {
 }
 
 .panel-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.tools-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   padding: 8px 12px 12px;
 }
 
@@ -169,6 +179,7 @@ watch(localTools, (newVal) => {
   cursor: pointer;
   transition: all var(--transition-fast);
   background: var(--bg-primary);
+  flex-shrink: 0;
 }
 
 .tool-item:hover {
@@ -188,6 +199,7 @@ watch(localTools, (newVal) => {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .tool-name {

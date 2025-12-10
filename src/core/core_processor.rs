@@ -12,6 +12,7 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::time::Instant;
+use crate::utils::modern_format_loader;
 
 /// imagehandler
 #[derive(Debug)]
@@ -178,8 +179,8 @@ impl ImageProcessor {
  _input_format: &str,
  output_format: &str,
  ) -> Result<()> {
-// useimage cratelinebasicconversion
- let img = image::open(input)
+// useimage cratelinebasicconversion (支持 AVIF/JXL/HEIC 等现代格式)
+ let img = modern_format_loader::load_image(input)
  .map_err(|e| ProcessingError::Processing {
  message: format!("Failed to open image: {}", e),
  })?;
@@ -217,7 +218,7 @@ impl ImageProcessor {
  pub fn get_image_info<P: AsRef<Path>>(&self, path: P) -> Result<ImageInfo> {
  let path = path.as_ref();
 
- let img = image::open(path)
+ let img = modern_format_loader::load_image(path)
  .context("Failed to open image")?;
 
  let metadata = std::fs::metadata(path)

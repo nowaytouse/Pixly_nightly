@@ -9,9 +9,9 @@ use crate::analysis::media_analyzer::MediaAnalyzer;
 #[derive(Debug, Clone)]
 #[derive(Default)]
 pub struct AnalyzeOptions {
- pub use_ai: bool, // whetherusingAIrecommended
- pub json_output: bool, // whetheroutputJSONformat
- pub target_format: Option<String>, // targetformat（optional）
+ pub json: bool,
+ /// 🔥 File format from Eagle metadata (for files without extension)
+ pub format: Option<String>,
 }
 
 
@@ -22,6 +22,19 @@ pub struct AnalysisResult {
  pub features: Vec<f64>, // 🔥 128dimensionfeature
  pub basic_info: BasicInfo,
  pub recommendation: Option<Recommendation>,
+ pub optimization_status: Option<OptimizationStatusInfo>,  // 🆕 优化状态
+}
+
+/// 优化状态信息
+#[derive(Debug, Serialize, Deserialize)]
+pub struct OptimizationStatusInfo {
+ pub status: String,  // "optimal", "minor", "significant", "critical"
+ pub can_skip: bool,
+ pub current_size: u64,
+ pub predicted_size: u64,
+ pub savings_percent: f64,
+ pub confidence: f64,
+ pub method: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -56,11 +69,13 @@ pub fn handle_analyze(input: &str, options: &AnalyzeOptions) -> Result<()> {
 
 // 1. use Media Analyzeranalysisfile
  let analyzer = MediaAnalyzer::new();
- let media_info = analyzer.analyze(input_path)
- .context("Failed to analyze media file")?;
+ // 🔥 传递格式信息给 analyzer（来自 Eagle 元数据）
+ let media_info = analyzer.analyze_with_format(input_path, options.format.as_deref())
+ .with_context(|| format!("Failed to analyze media file: {:?}", input_path))?;
 
 // 2. extractionfeature
- let (has_alpha, complexity) = detect_image_features(input_path)?;
+ let (has_alpha, complexity) = detect_image_features(input_path)
+ .with_context(|| format!("Failed to detect image features: {:?}", input_path))?;
 
 // buildBasicInfo
  let basic_info = BasicInfo {
@@ -76,35 +91,42 @@ pub fn handle_analyze(input: &str, options: &AnalyzeOptions) -> Result<()> {
  };
 
 // 3. extraction128dimensionalfeature
-// needLoad image
- let img = image::open(input_path)
- .context("Failed to load image for feature extraction")?;
+// JXL/AVIF/HEIC 等现代格式无法直接加载，使用默认特征向量
+ let feature_vector = if matches!(basic_info.format.as_str(), "jxl" | "avif" | "heic" | "heif") {
+  log::info!("Using default features for {} format", basic_info.format);
+  // 返回128维的默认特征向量
+  vec![0.5; 128]
+ } else {
+  // 标准格式可以直接打开
+  let img = image::open(input_path)
+   .context("Failed to load image for feature extraction")?;
 
 // conversionBasicInfoforImageFeatures
- let image_features = crate::ImageFeatures {
- width: basic_info.width,
- height: basic_info.height,
- file_size: basic_info.file_size,
- format: basic_info.format.clone(),
- has_alpha: basic_info.has_alpha,
- is_animated: basic_info.is_animated,
- complexity: basic_info.complexity,
- };
+  let image_features = crate::ImageFeatures {
+   width: basic_info.width,
+   height: basic_info.height,
+   file_size: basic_info.file_size,
+   format: basic_info.format.clone(),
+   has_alpha: basic_info.has_alpha,
+   is_animated: basic_info.is_animated,
+   complexity: basic_info.complexity,
+  };
 
- let feature_vector = crate::core::feature_extractor_128d::extract_128d_features(
- &img,
- input_path,
- &image_features
- );
+  crate::core::feature_extractor_128d::extract_128d_features(
+   &img,
+   input_path,
+   &image_features
+  )
+ };
 
 // 4. AIrecommended（ifenabled）
- let recommendation = if options.use_ai {
- Some(get_ai_recommendation(&media_info, &basic_info, &feature_vector)?)
- } else {
- None
- };
+ // 🤖 AI recommendation (always enabled for analyze command)
+ let recommendation = Some(get_ai_recommendation(&media_info, &basic_info, &feature_vector)?);
+ 
+ // 🆕 5. 优化状态分析
+ let optimization_status = analyze_optimization_status(input_path, options.format.as_deref())?;
 
-// 5. outputresult
+ // 6. outputresult
  let media_type_str = match media_info.media_type {
  crate::analysis::media_analyzer::MediaType::Image => "image",
  crate::analysis::media_analyzer::MediaType::Animation => "animation",
@@ -118,9 +140,10 @@ pub fn handle_analyze(input: &str, options: &AnalyzeOptions) -> Result<()> {
  features: feature_vector,
  basic_info,
  recommendation,
+ optimization_status,  // 🆕 优化状态
  };
 
- if options.json_output {
+ if options.json {
 // JSONformatoutput（JSparse）
  let json = serde_json::to_string_pretty(&result)?;
  println!("{}", json);
@@ -240,14 +263,26 @@ fn get_ai_recommendation(media_info: &crate::analysis::media_analyzer::MediaInfo
 ///
 /// useimagelibrarylinerealimageanalysis + edgedetectioncalculationcomplexity
 fn detect_image_features(path: &Path) -> Result<(bool, f64)> {
+ // 获取文件扩展名
+ let extension = path.extension()
+  .and_then(|e| e.to_str())
+  .map(|e| e.to_lowercase())
+  .unwrap_or_default();
+
+ // JXL/AVIF/HEIC 等现代格式无法用 image crate 打开
+ if matches!(extension.as_str(), "jxl" | "avif" | "heic" | "heif") {
+  log::info!("Using defaults for {} format (not supported by image crate)", extension);
+  return Ok((false, 0.5));
+ }
+
 // tryopenimage
  let img = match image::open(path) {
- Ok(img) => img,
- Err(e) => {
+  Ok(img) => img,
+  Err(e) => {
 // ifnoopen（mayisvideooraudio），returndefaultvalue
- eprintln!("⚠️ Cannot open as image ({}), using defaults", e);
- return Ok((false, 0.5));
- }
+   eprintln!("⚠️ Cannot open as image ({}), using defaults", e);
+   return Ok((false, 0.5));
+  }
  };
 
 // detectiontransparencydegree（realdetection）
@@ -337,27 +372,96 @@ fn print_human_readable(result: &AnalysisResult) {
  .join(", "));
 
  if let Some(rec) = &result.recommendation {
- println!("\n🤖 AI Recommendation:");
- println!(" Format: {}", rec.format.to_uppercase());
- println!(" Parameters: {}", rec.params);
- println!(" Estimated Size: {}", rec.estimated_size);
- println!(" Size Reduction: {:.1}%", rec.size_reduction);
- println!(" Quality Score: {}", rec.quality_score);
- println!(" Confidence: {:.0}%", rec.confidence * 100.0);
+  println!("\n🤖 AI Recommendation:");
+  println!(" Format: {}", rec.format.to_uppercase());
+  println!(" Parameters: {}", rec.params);
+  println!(" Estimated Size: {}", rec.estimated_size);
+  println!(" Size Reduction: {:.1}%", rec.size_reduction);
+  println!(" Quality Score: {}", rec.quality_score);
+  println!(" Confidence: {:.0}%", rec.confidence * 100.0);
  }
-
+ 
+ // 🆕 显示优化状态
+ if let Some(opt) = &result.optimization_status {
+  println!("\n📊 Optimization Status:");
+  
+  let (icon, status_text) = match opt.status.as_str() {
+   "optimal" => ("✅", "Already Optimized"),
+   "minor" => ("👍", "Minor Improvement Possible"),
+   "significant" => ("⚠️", "Significant Improvement Recommended"),
+   "critical" => ("❌", "Critical Optimization Needed"),
+   _ => ("❓", "Unknown"),
+  };
+  
+  println!(" Status: {} {}", icon, status_text);
+  println!(" Current Size: {:.2} MB", opt.current_size as f64 / (1024.0 * 1024.0));
+  println!(" Predicted Size: {:.2} MB", opt.predicted_size as f64 / (1024.0 * 1024.0));
+  println!(" Potential Savings: {:.1}%", opt.savings_percent);
+  println!(" Can Skip: {}", if opt.can_skip { "Yes" } else { "No" });
+  println!(" Confidence: {:.0}%", opt.confidence * 100.0);
+  println!(" Method: {}", opt.method);
+ }
+ 
  println!("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+}
+
+/// 🆕 分析优化状态
+fn analyze_optimization_status(path: &Path, format_hint: Option<&str>) -> Result<Option<OptimizationStatusInfo>> {
+    use crate::core::optimization_analyzer;
+    
+    // 调用优化分析器
+    match optimization_analyzer::analyze_file(path, false, format_hint) {
+        Ok(report) => {
+            // 提取状态字符串
+            let status_str = match &report.status {
+                optimization_analyzer::OptimizationStatus::AlreadyOptimized { .. } => "optimal",
+                optimization_analyzer::OptimizationStatus::MinorImprovement { .. } => "minor",
+                optimization_analyzer::OptimizationStatus::SignificantImprovement { .. } => "significant",
+                optimization_analyzer::OptimizationStatus::CriticalImprovement { .. } => "critical",
+            };
+            
+            // 提取尺寸信息
+            let (current_size, predicted_size, savings_percent) = match &report.status {
+                optimization_analyzer::OptimizationStatus::AlreadyOptimized { 
+                    current_size, predicted_size, savings_percent, .. 
+                } |
+                optimization_analyzer::OptimizationStatus::MinorImprovement { 
+                    current_size, predicted_size, savings_percent, .. 
+                } |
+                optimization_analyzer::OptimizationStatus::SignificantImprovement { 
+                    current_size, predicted_size, savings_percent, .. 
+                } |
+                optimization_analyzer::OptimizationStatus::CriticalImprovement { 
+                    current_size, predicted_size, savings_percent, .. 
+                } => (*current_size, *predicted_size, *savings_percent),
+            };
+            
+            Ok(Some(OptimizationStatusInfo {
+                status: status_str.to_string(),
+                can_skip: report.can_skip,
+                current_size,
+                predicted_size,
+                savings_percent,
+                confidence: report.confidence,
+                method: report.method,
+            }))
+        }
+        Err(e) => {
+            // 分析失败时，返回 None 而不是错误
+            log::warn!("Optimization analysis failed: {}", e);
+            Ok(None)
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
  use super::*;
 
- #[test]
- fn test_default_options() {
- let options = AnalyzeOptions::default();
- assert!(!options.use_ai);
- assert!(!options.json_output);
- assert_eq!(options.target_format, None);
- }
+  #[test]
+  fn test_default_options() {
+   let options = AnalyzeOptions::default();
+   assert!(!options.json);
+   assert_eq!(options.format, None);
+  }
 }

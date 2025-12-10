@@ -1,0 +1,40 @@
+{
+    "name": "@pixly/jpeg2jxl-eagle-plugin",
+    "version": "1.0.0",
+    "description": "Eagle plugin to convert JPEG images to lossless JXL format",
+    "author": "Pixly",
+    "license": "MIT",
+    "keywords": [
+        "eagle",
+        "plugin",
+        "jpeg",
+        "jxl",
+        "jpeg-xl",
+        "image-converter",
+        "lossless"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/pixly/pixly"
+    },
+    "engines": {
+        "node": ">=16.0.0"
+    },
+    "eaglePlugin": {
+        "id": "com.pixly.jpeg2jxl",
+        "type": "window",
+        "platforms": [
+            "darwin",
+            "win32",
+            "linux"
+        ],
+        "architectures": [
+            "x64",
+            "arm64"
+        ]
+    },
+    "scripts": {
+        "setup": "bash setup.sh",
+        "check": "bash -c 'ls -lh bin/*/* 2>/dev/null || echo \"No binaries found\"'"
+    }
+}

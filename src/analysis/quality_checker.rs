@@ -7,6 +7,7 @@
 use anyhow::{Context, Result};
 use image::{DynamicImage, GenericImageView, Rgba};
 use std::path::Path;
+use crate::utils::modern_format_loader;
 
 /// SSIM qualitycheckresult
 #[derive(Debug, Clone)]
@@ -92,11 +93,11 @@ impl QualityChecker {
  original_path: &Path,
  converted_path: &Path,
  ) -> Result<QualityCheckResult> {
-// 1. Load image
- let original = image::open(original_path)
+// 1. Load image (支持 AVIF/JXL/HEIC 等现代格式)
+ let original = modern_format_loader::load_image(original_path)
  .with_context(|| format!("Failed to load original: {:?}", original_path))?;
 
- let converted = image::open(converted_path)
+ let converted = modern_format_loader::load_image(converted_path)
  .with_context(|| format!("Failed to load converted: {:?}", converted_path))?;
 
 // 2. checkdimension
@@ -243,9 +244,9 @@ impl QualityChecker {
  ) -> Result<AdvancedQualityMetrics> {
  use image::GenericImageView;
 
- let original = image::open(original_path.as_ref())
+ let original = modern_format_loader::load_image(original_path.as_ref())
  .with_context(|| format!("Failed to open original: {:?}", original_path.as_ref()))?;
- let converted = image::open(converted_path.as_ref())
+ let converted = modern_format_loader::load_image(converted_path.as_ref())
  .with_context(|| format!("Failed to open converted: {:?}", converted_path.as_ref()))?;
 
 // ensuredimensionsame

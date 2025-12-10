@@ -16,7 +16,7 @@ export function useRustCLI() {
   const rustBinaryPath = ref(null)
 
   /**
-   * 初始化：查找 pixly-converter 二进制文件
+   * 初始化：查找 pixly-eagle-core 共享二进制文件
    */
   const initRustCLI = async () => {
     if (rustBinaryPath.value) {
@@ -29,47 +29,83 @@ export function useRustCLI() {
     const fs = require('fs')
 
     // 🔥 获取插件根目录
-    // 使用 window.location 获取插件的实际路径
+    // Eagle 环境：从 window.location 获取实际路径
+    // 开发环境：使用 __dirname
     let pluginRoot
     if (window.location && window.location.pathname) {
-      // 从 file:///path/to/plugin/dist/index.html 提取插件根目录
-      const htmlPath = window.location.pathname
-      pluginRoot = path.dirname(path.dirname(htmlPath))  // 向上两级：dist/ -> plugin/
+      // Eagle: file:///path/to/eagle-plugins/xxx/dist/index.html
+      // 需要解析出插件目录（dist 的父目录）
+      const htmlPath = decodeURIComponent(window.location.pathname)
+
+      // 检查是否在 dist/ 目录中（Eagle 环境）
+      if (htmlPath.includes('/dist/')) {
+        // 从 /path/to/plugin/dist/index.html 提取 /path/to/plugin
+        pluginRoot = path.dirname(path.dirname(htmlPath))
+      } else {
+        // 开发环境或其他情况
+        pluginRoot = path.dirname(htmlPath)
+      }
     } else {
-      // Fallback: 使用 __dirname
+      // Fallback: 使用 __dirname（Node.js 环境）
       pluginRoot = path.resolve(__dirname, '../..')
     }
 
+    // 🔥 共享二进制路径（符号链接或复制）
     const possiblePaths = [
-      path.join(pluginRoot, 'bin/pixly-converter'),           // plugin/format-vue/bin/
-      path.join(pluginRoot, '../bin/pixly-converter'),        // plugin/bin/
-      path.join(pluginRoot, '../../bin/pixly-converter'),     // 项目根/bin/
-      path.join(pluginRoot, '../../target/release/pixly-converter'),  // 项目根/target/release/
-      path.join(pluginRoot, '../../target/debug/pixly-converter'),    // 项目根/target/debug/
-      'pixly-converter'  // 系统PATH
+      path.join(pluginRoot, 'dist/bin/pixly-eagle-core'),     // Eagle: plugin/dist/bin/
+      path.join(pluginRoot, 'bin/pixly-eagle-core'),           // 开发: plugin/bin/ (符号链接)
+      path.join(pluginRoot, '../shared/bin/pixly-eagle-core'), // 开发: plugin/shared/bin/
+      // 移除所有外部路径，仅使用插件内嵌或共享二进制
     ]
 
-    logger.info(LOG_KEYS.RUST_CLI_EXEC, 'Searching for pixly-converter', {
+    logger.info(LOG_KEYS.RUST_CLI_EXEC, 'Searching for pixly-eagle-core', {
       pluginRoot,
       searchPaths: possiblePaths.length
     })
+
+    // 生产模式：检测 Eagle 环境
+    const isEagleEnv = typeof window !== 'undefined' &&
+      window.eagle !== undefined &&
+      typeof window.eagle.plugin !== 'undefined'
+
+    const isDev = process.env.NODE_ENV === 'development'
+
+    if (!isDev && !isEagleEnv) {
+      const errorMsg = 'This plugin can ONLY run inside Eagle.'
+      logger.error(LOG_KEYS.RUST_CLI_ERROR, errorMsg)
+      throw new Error(errorMsg)
+    }
+
+    // 设置环境变量供 Rust 检测
+    if (isEagleEnv) {
+      process.env.EAGLE_PLUGIN = 'true'
+      logger.info(LOG_KEYS.RUST_CLI_EXEC, 'Eagle environment detected', { EAGLE_PLUGIN: 'true' })
+    } else {
+      logger.warn(LOG_KEYS.RUST_CLI_EXEC, 'Development mode: Eagle environment not detected')
+    }
 
     for (const p of possiblePaths) {
       try {
         const resolved = path.resolve(p)
 
-        // 检查文件是否存在（除了系统PATH）
-        if (p !== 'pixly-converter') {
-          if (!fs.existsSync(resolved)) {
-            logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Path not found', { path: resolved })
-            continue
-          }
-          logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Found file', { path: resolved })
+        // 检查文件是否存在
+        if (!fs.existsSync(resolved)) {
+          logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Path not found', { path: resolved })
+          continue
         }
+        logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Found file', { path: resolved })
 
-        // 测试执行
-        logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Testing executable', { path: p })
-        const proc = spawn(p, ['--version'], { timeout: 3000 })
+        // 测试执行（开发模式传递 --dev 参数）
+        const testArgs = isDev ? ['--dev', '--version'] : ['--version']
+        logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Testing executable', { path: p, args: testArgs })
+
+        const proc = spawn(p, testArgs, {
+          timeout: 3000,
+          env: {
+            ...process.env,
+            EAGLE_PLUGIN: isEagleEnv ? 'true' : undefined
+          }
+        })
         let output = ''
         let error = ''
 
@@ -99,9 +135,10 @@ export function useRustCLI() {
 
         if (success) {
           rustBinaryPath.value = p
-          logger.info(LOG_KEYS.RUST_CLI_EXEC, '✅ Found pixly-converter', {
+          logger.info(LOG_KEYS.RUST_CLI_EXEC, '✅ Found pixly-eagle-core', {
             path: p,
-            version: output.trim()
+            version: output.trim(),
+            devMode: isDev
           })
           return p
         }
@@ -112,7 +149,7 @@ export function useRustCLI() {
     }
 
     // 🔥 未找到，提供详细错误信息
-    const errorMsg = `pixly-converter not found. Searched paths:\n${possiblePaths.map(p => `  - ${p}`).join('\n')}\n\nPlease:\n1. Compile: cargo build --release\n2. Copy to: ${path.join(pluginRoot, 'bin/pixly-converter')}`
+    const errorMsg = `pixly-eagle-core not found. Searched paths:\n${possiblePaths.map(p => `  - ${p}`).join('\n')}\n\nPlease:\n1. Run setup: cd ${pluginRoot} && npm run setup\n2. Or build: cd ${path.join(pluginRoot, '../shared')} && bash build.sh`
 
     logger.error(LOG_KEYS.RUST_CLI_ERROR, errorMsg)
     throw new Error(errorMsg)
@@ -177,29 +214,32 @@ export function useRustCLI() {
           throw new Error(`File path is undefined for: ${file.name}`)
         }
 
+        // 🔧 Bug Fix: 清理格式字符串中可能存在的引号（必须在生成输出路径之前）
+        const cleanFormat = (options.format || 'avif').replace(/^["']|["']$/g, '').toLowerCase()
+
         // 🔥 生成输出路径（原地替换：同目录，新扩展名）
         const inputPath = file.path
         const outputPath = path.join(
           path.dirname(inputPath),
-          `${path.basename(inputPath, path.extname(inputPath))}.${options.format}`
+          `${path.basename(inputPath, path.extname(inputPath))}.${cleanFormat}`
         )
 
         logger.info(LOG_KEYS.CONVERT_START, 'Converting file', {
           input: inputPath,
           output: outputPath,
-          format: options.format
+          format: cleanFormat
         })
 
         // 🔥 正确的命令格式：convert <INPUT> --format <FORMAT> --quality <Q> [OPTIONS]
         const args = [
           'convert',
           inputPath,
-          '--format', options.format,
+          '--format', cleanFormat,
           '--quality', options.quality.toString()
         ]
 
         // JXL 参数
-        if (options.format === 'jxl') {
+        if (cleanFormat === 'jxl') {
           if (options.effort !== undefined) args.push('--effort', options.effort.toString())
           if (options.distance !== undefined) args.push('--distance', options.distance.toString())
           if (options.lossless) args.push('--lossless')
@@ -211,7 +251,7 @@ export function useRustCLI() {
         }
 
         // AVIF 参数
-        if (options.format === 'avif') {
+        if (cleanFormat === 'avif') {
           if (options.speed !== undefined) args.push('--speed', options.speed.toString())
           if (options.minQuantizer !== undefined) args.push('--min-quantizer', options.minQuantizer.toString())
           if (options.maxQuantizer !== undefined) args.push('--max-quantizer', options.maxQuantizer.toString())
@@ -220,7 +260,7 @@ export function useRustCLI() {
         }
 
         // WebP 参数
-        if (options.format === 'webp') {
+        if (cleanFormat === 'webp') {
           if (options.method !== undefined) args.push('--method', options.method.toString())
           if (options.lossless) args.push('--lossless')
           if (options.filterStrength !== undefined) args.push('--filter-strength', options.filterStrength.toString())
@@ -228,7 +268,7 @@ export function useRustCLI() {
         }
 
         // HEIC 参数
-        if (options.format === 'heic') {
+        if (cleanFormat === 'heic') {
           if (options.encoder) args.push('--encoder', options.encoder)
           if (options.lossless) args.push('--lossless')
           if (options.thumbnail) args.push('--thumbnail')
@@ -454,14 +494,22 @@ export function useRustCLI() {
 
   /**
    * 执行 Rust CLI 命令
-   * 🔥 修复：添加PATH环境变量，确保找到外部工具（cjxl, avifenc等）
+   * 🔥 修复：添加 --dev 参数支持和 EAGLE_PLUGIN 环境变量
    */
   const executeRustCLI = (args) => {
     return new Promise((resolve, reject) => {
       const { spawn } = require('child_process')
 
-      logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Executing pixly-converter', {
-        args: args.join(' ')
+      // 开发模式：添加 --dev 参数
+      const isDev = process.env.NODE_ENV === 'development'
+      const isEagleEnv = typeof window !== 'undefined' && window.eagle !== undefined
+
+      const finalArgs = isDev ? ['--dev', ...args] : args
+
+      logger.debug(LOG_KEYS.RUST_CLI_EXEC, 'Executing pixly-eagle-core', {
+        args: finalArgs.join(' '),
+        devMode: isDev,
+        eagleEnv: isEagleEnv
       })
 
       // 🔥 设置完整的PATH环境变量（包含Homebrew等工具路径）
@@ -476,10 +524,11 @@ export function useRustCLI() {
         process.env.PATH || ''
       ].filter(Boolean).join(':')
 
-      const proc = spawn(rustBinaryPath.value, args, {
+      const proc = spawn(rustBinaryPath.value, finalArgs, {
         env: {
           ...process.env,
-          PATH: fullPath
+          PATH: fullPath,
+          EAGLE_PLUGIN: isEagleEnv ? 'true' : undefined
         }
       })
 

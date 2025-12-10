@@ -12,7 +12,12 @@
   "empty": {
     "title": "未选择文件",
     "subtitle": "在 Eagle 中选择图片或视频",
-    "loadButton": "加载文件"
+    "loadButton": "加载文件",
+    "selectTitle": "选择文件",
+    "selectSubtitle": "从列表中选择要转换的文件",
+    "filesAvailable": "个文件可用",
+    "selectImages": "仅图像",
+    "selectVideos": "仅视频"
   },
   "controls": {
     "title": "🤖 智能选项",
@@ -114,7 +119,8 @@
   },
   "common": {
     "yes": "是",
-    "no": "否"
+    "no": "否",
+    "experimental": "实验性"
   },
   "log": {
     "aiLog": "🔍 AI日志",
@@ -129,7 +135,11 @@
     "allComplete": "✅ 全部完成！成功: {success}/{total}",
     "partialComplete": "⚠️ 部分完成！成功: {success}, 失败: {failed}",
     "allFailed": "❌ 全部失败！失败: {failed}/{total}",
-    "compression": "压缩: {input} → {output} ({ratio}%)"
+    "compression": "压缩: {input} → {output} ({ratio}%)",
+    "targetFormat": "目标格式: {format}",
+    "aiPrediction": "AI参数预测: {status}",
+    "enabled": "已启用",
+    "disabled": "已禁用"
   },
   "image": {
     "title": "🖼️ 图像选项",
@@ -203,6 +213,11 @@
     "icc": "色彩配置",
     "timestamps": "时间戳",
     "extendedAttr": "扩展属性"
+  },
+  "xmp": {
+    "autoMerge": "XMP元数据自动合并",
+    "description": "检测到 {count} 个XMP元数据文件",
+    "hint": "💡 将使用exiftool自动合并XMP元数据到对应的媒体文件中"
   },
   "help": {
     "title": "使用帮助",

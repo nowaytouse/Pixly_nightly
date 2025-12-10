@@ -7,7 +7,7 @@
 // - providestandardizemediainformation
 // - supportmultitypeformatdetection
 
-use anyhow::{Result, bail};
+use anyhow::{Result, bail, Context};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use image::GenericImageView;
@@ -70,36 +70,47 @@ impl MediaAnalyzer {
  }
 
  pub fn analyze(&self, file_path: &Path) -> Result<MediaInfo> {
- if !file_path.exists() {
- bail!("File not found: {:?}", file_path);
+  self.analyze_with_format(file_path, None)
  }
+ 
+ /// 🔥 分析文件（使用提供的格式信息，避免猜测）
+ /// 
+ /// 用于 Eagle 等没有扩展名的文件，直接使用元数据中的格式信息
+ pub fn analyze_with_format(&self, file_path: &Path, format_hint: Option<&str>) -> Result<MediaInfo> {
+  if !file_path.exists() {
+   bail!("File not found: {:?}", file_path);
+  }
 
 // 🚀 performanceoptimization: cachemetadatacall
- let metadata = std::fs::metadata(file_path)?;
- let size = metadata.len();
+  let metadata = std::fs::metadata(file_path)?;
+  let size = metadata.len();
 
-// 🚀 performanceoptimization: usestaticstring
- let extension = file_path.extension()
- .and_then(|e| e.to_str())
- .map(|e| e.to_lowercase())
- .unwrap_or_else(|| String::from("unknown"));
+// 🔥 使用提供的格式信息，而不是从文件名猜测
+  let extension = if let Some(fmt) = format_hint {
+   fmt.to_lowercase()
+  } else {
+   file_path.extension()
+    .and_then(|e| e.to_str())
+    .map(|e| e.to_lowercase())
+    .unwrap_or_else(|| String::from("unknown"))
+  };
 
- match extension.as_str() {
- "mp4" | "mov" | "avi" | "mkv" | "webm" | "m4v" | "flv" | "wmv" => {
- self.analyze_video(file_path, size)
- }
- "gif" | "apng" => {
- self.analyze_animation(file_path, size)
- }
- "jpg" | "jpeg" | "png" | "webp" | "avif" | "jxl" |
- "bmp" | "tiff" | "tif" | "heic" | "heif" |
- "svg" | "psd" | "ico" | "dds" => {
- self.analyze_image(file_path, size)
- }
- _ => {
- self.analyze_image(file_path, size)
- }
- }
+  match extension.as_str() {
+   "mp4" | "mov" | "avi" | "mkv" | "webm" | "m4v" | "flv" | "wmv" => {
+    self.analyze_video(file_path, size)
+   }
+   "gif" | "apng" => {
+    self.analyze_animation(file_path, size)
+   }
+   "jpg" | "jpeg" | "png" | "webp" | "avif" | "jxl" |
+   "bmp" | "tiff" | "tif" | "heic" | "heif" |
+   "svg" | "psd" | "ico" | "dds" => {
+    self.analyze_image(file_path, size, Some(&extension))
+   }
+   _ => {
+    self.analyze_image(file_path, size, Some(&extension))
+   }
+  }
  }
 
  fn analyze_video(&self, file_path: &Path, size: u64) -> Result<MediaInfo> {
@@ -150,38 +161,123 @@ impl MediaAnalyzer {
  })
  }
 
- fn analyze_image(&self, file_path: &Path, size: u64) -> Result<MediaInfo> {
- let img = image::open(file_path)?;
- let (width, height) = img.dimensions();
+ fn analyze_image(&self, file_path: &Path, size: u64, format_hint: Option<&str>) -> Result<MediaInfo> {
+  // 🔥 使用提供的格式信息（来自 Eagle 元数据），不再猜测
+  let extension = if let Some(fmt) = format_hint {
+   fmt.to_string()
+  } else {
+   file_path.extension()
+    .and_then(|e| e.to_str())
+    .map(|e| e.to_lowercase())
+    .unwrap_or_else(|| "unknown".to_string())
+  };
 
- let extension = file_path.extension()
- .and_then(|e| e.to_str())
- .map(|e| e.to_lowercase())
- .unwrap_or_else(|| "unknown".to_string());
+  // 🔥 JXL/AVIF/HEIC 等现代格式需要外部工具支持
+  let (width, height) = match extension.as_str() {
+   "jxl" => self.get_dimensions_via_external_tool(file_path, "jxl")?,
+   "avif" => self.get_dimensions_via_external_tool(file_path, "avif")?,
+   "heic" | "heif" => self.get_dimensions_via_external_tool(file_path, "heic")?,
+   _ => {
+    // 标准格式使用 image crate
+    let img = image::open(file_path)
+     .with_context(|| format!("Failed to open image: {:?}", file_path))?;
+    img.dimensions()
+   }
+  };
 
-// 🔥 extractionfullfeature（ifenabled AIdetection）
- let features_128d = if self.enable_ai_detection {
- self.extract_full_features(file_path).ok()
- } else {
- None
- };
+  // 🔥 提取完整特征（如果启用 AI 检测）- 现代格式跳过特征提取
+  let features_128d = if self.enable_ai_detection && !matches!(extension.as_str(), "jxl" | "avif" | "heic" | "heif") {
+   self.extract_full_features(file_path).ok()
+  } else {
+   None
+  };
 
- Ok(MediaInfo {
- path: file_path.to_path_buf(),
- media_type: MediaType::Image,
- size,
- format: extension,
- resolution: (width, height),
- fps: None,
- frame_count: None,
- duration: None,
- bitrate: None,
- has_audio: false,
- audio_codec: None,
- color_space: Some("rgb".to_string()),
- bit_depth: Some(8),
- features_128d,
- })
+  Ok(MediaInfo {
+   path: file_path.to_path_buf(),
+   media_type: MediaType::Image,
+   size,
+   format: extension,
+   resolution: (width, height),
+   fps: None,
+   frame_count: None,
+   duration: None,
+   bitrate: None,
+   has_audio: false,
+   audio_codec: None,
+   color_space: Some("rgb".to_string()),
+   bit_depth: Some(8),
+   features_128d,
+  })
+ }
+
+ /// 🔧 通过外部工具获取图像尺寸（用于 JXL/HEIC 等现代格式）
+ fn get_dimensions_via_external_tool(&self, file_path: &Path, format: &str) -> Result<(u32, u32)> {
+  use std::process::Command;
+
+  // 尝试使用 ImageMagick identify
+  if let Ok(output) = Command::new("identify")
+   .args(["-format", "%w %h", file_path.to_str().unwrap_or_default()])
+   .output()
+  {
+   if output.status.success() {
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let parts: Vec<&str> = stdout.trim().split_whitespace().collect();
+    if parts.len() >= 2 {
+     if let (Ok(w), Ok(h)) = (parts[0].parse::<u32>(), parts[1].parse::<u32>()) {
+      return Ok((w, h));
+     }
+    }
+   }
+  }
+
+  // JXL 专用：尝试 jxlinfo
+  if format == "jxl" {
+   if let Ok(output) = Command::new("jxlinfo")
+    .arg(file_path)
+    .output()
+   {
+    if output.status.success() {
+     let stdout = String::from_utf8_lossy(&output.stdout);
+     // 解析 jxlinfo 输出，例如 "Size: 800 x 731"
+     for line in stdout.lines() {
+      if line.contains("Size:") || line.contains("size:") {
+       let re = regex::Regex::new(r"(\d+)\s*x\s*(\d+)").ok();
+       if let Some(re) = re {
+        if let Some(caps) = re.captures(line) {
+         if let (Some(w), Some(h)) = (caps.get(1), caps.get(2)) {
+          if let (Ok(w), Ok(h)) = (w.as_str().parse::<u32>(), h.as_str().parse::<u32>()) {
+           return Ok((w, h));
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+
+  // HEIC 专用：尝试 exiftool
+  if format == "heic" {
+   if let Ok(output) = Command::new("exiftool")
+    .args(["-ImageWidth", "-ImageHeight", "-s", "-s", "-s", file_path.to_str().unwrap_or_default()])
+    .output()
+   {
+    if output.status.success() {
+     let stdout = String::from_utf8_lossy(&output.stdout);
+     let lines: Vec<&str> = stdout.trim().lines().collect();
+     if lines.len() >= 2 {
+      if let (Ok(w), Ok(h)) = (lines[0].parse::<u32>(), lines[1].parse::<u32>()) {
+       return Ok((w, h));
+      }
+     }
+    }
+   }
+  }
+
+  // 如果所有方法都失败，返回默认值并记录警告
+  log::warn!("Could not determine dimensions for {} file: {:?}, using defaults", format, file_path);
+  Ok((1920, 1080)) // 默认值
  }
 
 /// 🔬 extractionfull128dimensionalfeature
@@ -238,12 +334,12 @@ impl MediaAnalyzer {
  }
 
  pub fn is_animated(&self, file_path: &Path) -> Result<bool> {
- let extension = file_path.extension()
- .and_then(|e| e.to_str())
- .map(|e| e.to_lowercase())
- .unwrap_or_else(|| "unknown".to_string());
+  let extension = file_path.extension()
+   .and_then(|e| e.to_str())
+   .map(|e| e.to_lowercase())
+   .unwrap_or_else(|| "unknown".to_string());
 
- Ok(matches!(extension.as_str(), "gif" | "apng" | "webp"))
+  Ok(matches!(extension.as_str(), "gif" | "apng" | "webp"))
  }
 }
 

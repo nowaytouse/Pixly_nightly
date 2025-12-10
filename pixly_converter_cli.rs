@@ -654,24 +654,23 @@ fn run(cli: Cli) -> Result<()> {
         
         Commands::Analyze {
             input,
-            ai,
+            ai: _,  // AI 参数已不再使用，analyze 总是启用 AI
             json,
             format,
         } => {
             // Call analyze module
             use pixly_kernel::cli::cli_analyze::{handle_analyze, AnalyzeOptions};
-            
+
             let options = AnalyzeOptions {
-                use_ai: ai,
-                json_output: json,
-                target_format: format,
+                json,
+                format,
             };
-            
+
             handle_analyze(
                 input.to_str().context("Invalid input path")?,
                 &options
             )?;
-            
+
             Ok(())
         }
         
@@ -1155,6 +1154,7 @@ fn run(cli: Cli) -> Result<()> {
                 &output_path,
                 &target_format,
                 &config,
+                None, // input_format: 使用文件扩展名自动检测
             )?;
             
             // Clean up temporary normalized file

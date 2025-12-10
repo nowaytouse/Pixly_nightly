@@ -11,6 +11,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use image::GenericImageView;
 use std::collections::HashSet;
+use super::modern_format_loader;
 
 /// imagefeature
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -53,7 +54,7 @@ impl ImageParamAnalyzer {
  .unwrap_or("")
  .to_lowercase();
 
- let img = image::open(path)
+ let img = modern_format_loader::load_image(path)
  .with_context(|| format!("Failed to open image: {}", path.display()))?;
 
  let (width, height) = img.dimensions();

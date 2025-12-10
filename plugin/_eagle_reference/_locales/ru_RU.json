@@ -1,0 +1,302 @@
+{
+  "manifest": {
+    "app": {
+      "name": "Кастомный экспорт"
+    }
+  },
+  "main": {
+    "taskList": {
+      "processing": "В обработке",
+      "completed": "Выполнено",
+      "failed": "Неудачно",
+      "status": "Статус",
+      "clickToOpen": "Нажмите, чтобы открыть папку",
+      "remove": "Удалить из списка",
+      "statusLabels": {
+        "waiting": "Ожидание",
+        "processing": "В обработке",
+        "success": "Выполнено",
+        "failed": "Неудачно"
+      },
+      "emptyText": "Пожалуйста, сначала выберите изображения из Eagle"
+    },
+    "dropzone": {
+      "title": "Перетащите или выберите изображения",
+      "subtitle": "Пожалуйста, используйте изображения из Eagle"
+    },
+    "SettingSidebar": {
+      "header": {
+        "iconAlt": "Значок плагина",
+        "close": "Закрыть"
+      },
+      "operationMode": {
+        "title": "Режим работы",
+        "export": "Экспорт",
+        "replace": "Замена"
+      },
+      "format": {
+        "label": "Формат",
+        "searchPlaceholder": "Поиск...",
+        "format-options": {
+          "original": "Оригинал",
+          "jpg": "JPG",
+          "png": "PNG",
+          "webp": "WebP",
+          "bmp": "BMP",
+          "heic": "HEIC",
+          "gif": "GIF",
+          "tif": "TIF",
+          "avif": "AVIF",
+          "jxl": "JXL",
+          "ico": "ICO",
+          "exr": "EXR",
+          "hdr": "HDR",
+          "tga": "TGA",
+          "mp4": "MP4",
+          "webm": "WebM",
+          "noResults": "Нет результатов"
+        }
+      },
+      "quality": {
+        "label": "Качество",
+        "searchPlaceholder": "Поиск..."
+      },
+      "fps": {
+        "label": "Частота кадров",
+        "searchPlaceholder": "Поиск...",
+        "fps-options": {
+          "sameAsSource": "Как в исходном",
+          "5": "5",
+          "10": "10",
+          "12": "12",
+          "15": "15",
+          "20": "20",
+          "23.976": "23.976 (NTSC Film)",
+          "24": "24",
+          "25": "25 (PAL Film/Video)",
+          "29.97": "29.97 (NTSC Video)",
+          "30": "30",
+          "48": "48",
+          "50": "50",
+          "59.94": "59.94",
+          "60": "60"
+        }
+      },
+      "codec": {
+        "label": "Кодек",
+        "searchPlaceholder": "Поиск...",
+        "codec-options": {
+          "h264": "H.264",
+          "h265": "H.265",
+          "vp8": "VP8",
+          "vp9": "VP9",
+          "noResults": "Нет результатов"
+        }
+      },
+      "size": {
+        "label": "Размер",
+        "searchPlaceholder": "Поиск...",
+        "size-options": {
+          "original": "Оригинал",
+          "maxWidth": "Макс. ширина",
+          "maxHeight": "Макс. высота",
+          "minWidth": "Мин. ширина",
+          "minHeight": "Мин. высота",
+          "maxSide": "Макс. длинная сторона",
+          "minSide": "Мин. короткая сторона"
+        }
+      },
+      "namingSettings": {
+        "title": "Настройки именования",
+        "nameType": {
+          "label": "Имя файла",
+          "original": "Исходное имя",
+          "custom": "Переименовать",
+          "searchPlaceholder": "Поиск..."
+        },
+        "customName": {
+          "label": "Новое имя",
+          "placeholder": "Введите имя файла"
+        },
+        "startNumber": {
+          "label": "Начальный номер",
+          "tooltip": "Начальный номер для последовательного именования"
+        }
+      },
+      "progressDialog": {
+        "title": "Экспортируется...",
+        "cancel": "Отмена"
+      },
+      "footer": {
+        "exportButton": {
+          "export": "Экспорт",
+          "replace": "Замена",
+          "count": "({{count}})"
+        },
+        "closeButton": "Закрыть"
+      },
+      "dialogs": {
+        "error": {
+          "title": "Ошибка экспорта",
+          "unknownError": "Произошла неизвестная ошибка",
+          "close": "Закрыть"
+        },
+        "fileDuplication": {
+          "title": "Файл уже существует",
+          "description": "Обнаружено {{count}} файлов, которые уже существуют. Хотите заменить их экспортируемыми файлами?",
+          "cancel": "Отмена",
+          "replace": "Заменить",
+          "keepBoth": "Сохранить оба"
+        }
+      },
+      "notifications": {
+        "exportSuccess": {
+          "title": "Экспорт выполнен успешно",
+          "message": "{{successCount}}/{{totalCount}} файлов экспортировано успешно",
+          "action": "Открыть папку"
+        }
+      },
+      "combobox": {
+        "noResults": "Нет результатов",
+        "searchPlaceholder": "Поиск..."
+      },
+      "preset": {
+        "error": {
+          "saveFailed": "Не удалось сохранить, возможно из-за недостатка места для хранения"
+        },
+        "command": {
+          "searchPlaceholder": "Введите команду или выполните поиск...",
+          "noResults": "Результаты не найдены",
+          "applyPreset": "Применить пресет",
+          "edit": "Редактировать",
+          "clone": "Клонировать",
+          "remove": "Удалить",
+          "createPreset": "Создать пресет"
+        },
+        "settings": {
+          "title": "Параметры пресета",
+          "nameLabel": "Имя",
+          "namePlaceholder": "Введите",
+          "selectPlaceholder": "Выберите",
+          "pixelUnit": "пикс",
+          "updatePreset": "Обновить пресет",
+          "createPreset": "Создать пресет"
+        },
+        "dialog": {
+          "tooltipTitle": "Предустановки экспорта",
+          "emptyTitle": "Параметры пресета",
+          "emptyDescription": "Сохраните параметры экспорта как пресеты для прямого выбора позже, устраняя повторяющиеся настройки и повышая эффективность.",
+          "createButton": "Создать пресет"
+        }
+      }
+    },
+    "status": {
+      "processing": "Обработка, пожалуйста, подождите…",
+      "success": "Экспорт выполнен успешно",
+      "fail": "Экспорт не удался",
+      "retry": "Повторить",
+      "cancel": "Отмена",
+      "unsupportedFormat": "Неподдерживаемый формат",
+      "imageTooLarge": "Image size exceeds limit (16384x16384)"
+    },
+    "notification": {
+      "exportSuccess": "Экспорт выполнен успешно",
+      "exportPartialSuccess": "{{successCount}}/{{totalCount}} файлов экспортировано успешно",
+      "openFolder": "Открыть папку"
+    },
+    "progressDialog": {
+      "title": "Обработка...",
+      "cancel": "Отмена"
+    },
+    "error": "Ошибка изображения"
+  },
+  "search": "Поиск...",
+  "footer": {
+    "dialog": {
+      "error": {
+        "outputPathCouldNotOpen": {
+          "title": "Не удается открыть путь вывода",
+          "description": "Проверьте правильность пути вывода или наличие прав на запись."
+        },
+        "unknownError": {
+          "title": "Неизвестная ошибка"
+        },
+        "close": "Закрыть"
+      }
+    }
+  },
+  "error": {
+    "equalExtension": "Расширения файла одинаковы",
+    "imageLoadError": "Не удалось загрузить изображение",
+    "fileNotSupported": "Неподдерживаемый формат файла",
+    "fileSizeNotSupported": "Размер файла не поддерживается. Поддерживается до 50МБ",
+    "resolutionNotSupported": "Изображение превышает максимально допустимый размер. Поддерживается до 10000 пикселей",
+    "fileResolutionIsNotEqual": "Ошибка конвертации, аномальный результат (ERROR_RESOLUTION)",
+    "fileHistogramsAbnormality": "Ошибка конвертации, аномальный результат (ERROR_HISTOGRAMS)",
+    "fileSizeAbnormality": "Ошибка конвертации, аномальный результат (ERROR_SIZE)",
+    "noItemsSelected": "Элементы не выбраны",
+    "userCanceled": "Пользователь отменил",
+    "cannotDetermineSourcePath": "Невозможно определить путь к исходному файлу",
+    "unsupportedFormat": "Формат {{format}} не поддерживается",
+    "sourceMissing": "Исходный файл отсутствует",
+    "outputMissing": "Путь вывода отсутствует",
+    "formatMissing": "Формат не указан",
+    "fileNameMissing": "Имя файла не указано",
+    "formatNotSupported": "Формат не поддерживается",
+    "heicMacOSOnly": "Конвертация HEIC/HEIF в настоящее время поддерживается только на macOS",
+    "canvasRendererRequired": "Этот конвертер должен выполняться в процессе рендерера",
+    "formFieldContext": "useFormField должно использоваться внутри <FormField>",
+    "invalidInputString": "Недопустимая входная строка",
+    "canvasDoesNotSupport": "Canvas не поддерживает формат {{format}}, используйте конвертер FFmpeg",
+    "failedToLoadImage": "Не удалось загрузить изображение: {{error}}",
+    "failedToConvertImage": "Не удалось конвертировать изображение: {{error}}",
+    "failedToGetImageDimensions": "Не удалось получить размеры изображения: {{error}}",
+    "noItemsSelectedForExport": "Не выбраны элементы для экспорта",
+    "cannotDetermineSourcePathForReplacement": "Невозможно определить путь к исходному файлу для замены",
+    "fileSizeBelowMin": "Размер файла {{size}} байт ниже минимума {{minSize}} байт",
+    "fileSizeExceedsMax": "Размер файла {{size}} байт превышает максимум {{maxSize}} байт",
+    "outputFileNotFound": "Выходной файл не найден: {{filePath}}"
+  },
+  "console": {
+    "warnings": {
+      "noUndosAvailable": "Больше нет доступных отмен",
+      "noRedosAvailable": "Больше нет доступных повторов",
+      "unsupportedFormatDetected": "Обнаружен неподдерживаемый формат: {{ext}} для файла {{name}}",
+      "taskAlreadyExists": "Задача уже существует: {{id}}",
+      "failedToGetDimensions": "Не удалось получить исходные размеры",
+      "failedToGetExportInfo": "Не удалось получить информацию об экспорте",
+      "memoryPressureDetected": "Обнаружена высокая нагрузка на память, запускается очистка",
+      "canvasConverterFailed": "Конвертер Canvas не удался, пробуем резервный FFmpeg",
+      "ffmpegConverterFailed": "Конвертер FFmpeg не удался, пробуем резервный Canvas"
+    },
+    "info": {
+      "taskLoadingCancelled": "Загрузка задачи отменена пользователем",
+      "memoryCleanupCompleted": "Очистка памяти завершена",
+      "conversionCancelled": "Конвертация отменена",
+      "progressLoaderCancelled": "Индикатор прогресса отменен"
+    },
+    "errors": {
+      "taskComplete": "[Main.onTaskComplete] Задача не удалась: {{message}}",
+      "taskCompleteError": "[Main.onTaskComplete] Ошибка: {{error}}",
+      "gettingImageDimensions": "Ошибка получения размеров изображения: {{error}}",
+      "progressiveLoading": "TaskManager: Ошибка во время прогрессивной загрузки: {{error}}",
+      "taskNotFound": "Задача {{taskId}} не найдена для обновления статуса"
+    }
+  },
+  "validation": {
+    "selectLanguage": "Пожалуйста, выберите язык"
+  },
+  "units": {
+    "fileSize": {
+      "bytes": "Б",
+      "kilobytes": "КБ",
+      "megabytes": "МБ",
+      "gigabytes": "ГБ",
+      "terabytes": "ТБ",
+      "petabytes": "ПБ",
+      "exabytes": "ЭБ",
+      "zettabytes": "ЗБ",
+      "yottabytes": "ЙБ"
+    }
+  }
+}

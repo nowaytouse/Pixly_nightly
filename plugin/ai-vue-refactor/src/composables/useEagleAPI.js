@@ -114,7 +114,8 @@ export function useEagleAPI() {
         return {
           id: item.id,
           name: item.name,
-          ext: item.ext,
+          // 🔧 Bug Fix: 清理扩展名中可能存在的引号
+          ext: (item.ext || '').replace(/^["']|["']$/g, '').toLowerCase(),
           filePath: item.filePath,
           path: item.filePath, // 添加path别名
           thumbnail: thumbnail, // 使用处理后的缩略图路径

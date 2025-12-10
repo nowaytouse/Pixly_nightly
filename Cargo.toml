@@ -79,23 +79,69 @@ default = [
     "ai-core",
 ]
 
+# ========================================
+# Plugin-specific features
+# ========================================
+
+# format-vue: 基础转换 - 图像/视频/动图 + 辅助功能（不含 AI）
+plugin-format-vue = [
+    "image-base",
+    "video-base",
+    "xmp",
+    "file-validation",
+    "ssim",
+    "filename-normalize",
+]
+
+# ai-vue-refactor: 智能转换 - 图像/视频/动图 + AI 参数预测 + 辅助功能
+plugin-ai-vue = [
+    "ai-core",
+    "image-base",
+    "video-base",
+    "xmp",
+    "file-validation",
+    "ssim",
+    "filename-normalize",
+    "gpu",
+    "scene-detection",
+    "vmaf",
+]
+
+# ========================================
 # Image encoder features
+# ========================================
 image-base = []
 image-modern = ["image-base"]
 image-all = ["image-modern"]
 
+# ========================================
 # Video encoder features
+# ========================================
 video-base = []
 video-modern = ["video-base"]
 video-experimental = ["video-modern"]
 
+# ========================================
 # AI features
+# ========================================
 ai-core = []
 ai-advanced = ["ai-core"]
 
+# ========================================
+# Shared utility features (辅助功能)
+# ========================================
+xmp = []              # XMP 合并
+filename-normalize = []  # 文件名规范化
+file-validation = []  # Magika 文件验证
+ssim = []             # SSIM 质量检测
+
+# ========================================
 # Performance features
+# ========================================
 simd = []
 gpu = []
+scene-detection = []  # 视频场景检测
+vmaf = []             # VMAF 视频质量评估
 
 [[bin]]
 name = "pixly-kernel"

@@ -26,6 +26,7 @@ use rayon::prelude::*; // Phase 40.15: Parallel processing
 use std::sync::atomic::{AtomicUsize, Ordering}; // Phase 40.15: Thread-safe counters
 // Unified logging system
 use tracing::{info, warn, error, debug};
+use super::modern_format_loader;
 
 /// Eagle image element metadata
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -256,8 +257,8 @@ impl EagleAdapter {
         let info_dir = info_dir.as_ref();
         let size = size.unwrap_or(800);
 
-        // Read source image
-        let img = image::open(source)
+        // Read source image (支持 AVIF/JXL/HEIC 等现代格式)
+        let img = modern_format_loader::load_image(source)
             .context("Failed to open source image for thumbnail generation")?;
 
         let (width, height) = img.dimensions();
@@ -317,8 +318,8 @@ impl EagleAdapter {
             }
         }
 
-        // Check image dimensions
-        if let Ok(img) = image::open(path) {
+        // Check image dimensions (支持现代格式)
+        if let Ok(img) = modern_format_loader::load_image(path) {
             let (width, height) = img.dimensions();
 
             // Large images need thumbnails
@@ -734,8 +735,8 @@ impl EagleAdapter {
             original_file.file_name().unwrap_or_default(),
             output_file.file_name().unwrap_or_default());
 
-        // Simplified image conversion
-        let img = image::open(&original_file)
+        // Simplified image conversion (支持现代格式)
+        let img = modern_format_loader::load_image(&original_file)
             .context("Failed to open image")?;
 
         img.save(&output_file)

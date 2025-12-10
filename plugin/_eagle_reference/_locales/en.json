@@ -1,0 +1,302 @@
+{
+  "manifest": {
+    "app": {
+      "name": "Custom Export"
+    }
+  },
+  "main": {
+    "taskList": {
+      "processing": "Processing",
+      "completed": "Completed",
+      "failed": "Failed",
+      "status": "Status",
+      "clickToOpen": "Click to open folder",
+      "remove": "Remove from list",
+      "statusLabels": {
+        "waiting": "Waiting",
+        "processing": "Processing",
+        "success": "Completed",
+        "failed": "Failed"
+      },
+      "emptyText": "Please select images from Eagle first"
+    },
+    "dropzone": {
+      "title": "Drag or select images",
+      "subtitle": "Please use images from Eagle"
+    },
+    "SettingSidebar": {
+      "header": {
+        "iconAlt": "Plugin Icon",
+        "close": "Close"
+      },
+      "operationMode": {
+        "title": "Operation Mode",
+        "export": "Export",
+        "replace": "Replace"
+      },
+      "format": {
+        "label": "Format",
+        "searchPlaceholder": "Search...",
+        "format-options": {
+          "original": "Original",
+          "jpg": "JPG",
+          "png": "PNG",
+          "webp": "WebP",
+          "bmp": "BMP",
+          "heic": "HEIC",
+          "gif": "GIF",
+          "tif": "TIF",
+          "avif": "AVIF",
+          "jxl": "JXL",
+          "ico": "ICO",
+          "exr": "EXR",
+          "hdr": "HDR",
+          "tga": "TGA",
+          "mp4": "MP4",
+          "webm": "WebM",
+          "noResults": "No results"
+        }
+      },
+      "quality": {
+        "label": "Quality",
+        "searchPlaceholder": "Search..."
+      },
+      "fps": {
+        "label": "Frame Rate",
+        "searchPlaceholder": "Search...",
+        "fps-options": {
+          "sameAsSource": "Same as Source",
+          "5": "5",
+          "10": "10",
+          "12": "12",
+          "15": "15",
+          "20": "20",
+          "23.976": "23.976 (NTSC Film)",
+          "24": "24",
+          "25": "25 (PAL Film/Video)",
+          "29.97": "29.97 (NTSC Video)",
+          "30": "30",
+          "48": "48",
+          "50": "50",
+          "59.94": "59.94",
+          "60": "60"
+        }
+      },
+      "codec": {
+        "label": "Codec",
+        "searchPlaceholder": "Search...",
+        "codec-options": {
+          "h264": "H.264",
+          "h265": "H.265",
+          "vp8": "VP8",
+          "vp9": "VP9",
+          "noResults": "No results"
+        }
+      },
+      "size": {
+        "label": "Size",
+        "searchPlaceholder": "Search...",
+        "size-options": {
+          "original": "Original",
+          "maxWidth": "Max Width",
+          "maxHeight": "Max Height",
+          "minWidth": "Min Width",
+          "minHeight": "Min Height",
+          "maxSide": "Max Long Edge",
+          "minSide": "Min Short Edge"
+        }
+      },
+      "namingSettings": {
+        "title": "Naming Settings",
+        "nameType": {
+          "label": "File Name",
+          "original": "Original Name",
+          "custom": "Rename",
+          "searchPlaceholder": "Search..."
+        },
+        "customName": {
+          "label": "New Name",
+          "placeholder": "Enter file name"
+        },
+        "startNumber": {
+          "label": "Start Number",
+          "tooltip": "Starting number for sequential naming"
+        }
+      },
+      "progressDialog": {
+        "title": "Exporting...",
+        "cancel": "Cancel"
+      },
+      "footer": {
+        "exportButton": {
+          "export": "Export",
+          "replace": "Replace",
+          "count": "({{count}})"
+        },
+        "closeButton": "Close"
+      },
+      "dialogs": {
+        "error": {
+          "title": "Export Error",
+          "unknownError": "An unknown error occurred",
+          "close": "Close"
+        },
+        "fileDuplication": {
+          "title": "Files Already Exist",
+          "description": "Found {{count}} files already exist, do you want to replace them with the files being exported?",
+          "cancel": "Cancel",
+          "replace": "Replace",
+          "keepBoth": "Keep Both"
+        }
+      },
+      "notifications": {
+        "exportSuccess": {
+          "title": "Export Successful",
+          "message": "{{successCount}}/{{totalCount}} files exported successfully",
+          "action": "Open Folder"
+        }
+      },
+      "combobox": {
+        "noResults": "No results",
+        "searchPlaceholder": "Search..."
+      },
+      "preset": {
+        "error": {
+          "saveFailed": "Failed to save, possibly due to insufficient storage space"
+        },
+        "command": {
+          "searchPlaceholder": "Type a command or search...",
+          "noResults": "No results found",
+          "applyPreset": "Apply Preset",
+          "edit": "Edit",
+          "clone": "Clone",
+          "remove": "Remove",
+          "createPreset": "Create Preset"
+        },
+        "settings": {
+          "title": "Preset Parameters",
+          "nameLabel": "Name",
+          "namePlaceholder": "Please enter",
+          "selectPlaceholder": "Please select",
+          "pixelUnit": "px",
+          "updatePreset": "Update Preset",
+          "createPreset": "Create Preset"
+        },
+        "dialog": {
+          "tooltipTitle": "Export Parameter Presets",
+          "emptyTitle": "Preset Parameters",
+          "emptyDescription": "Preset export parameters to directly select preset schemes later, eliminating repetitive adjustments and improving efficiency.",
+          "createButton": "Create Preset"
+        }
+      }
+    },
+    "status": {
+      "processing": "Processing, please wait...",
+      "success": "Export Successful",
+      "fail": "Export Failed",
+      "retry": "Retry",
+      "cancel": "Cancel",
+      "unsupportedFormat": "Unsupported format",
+      "imageTooLarge": "Image size exceeds limit (16384x16384)"
+    },
+    "notification": {
+      "exportSuccess": "Export Successful",
+      "exportPartialSuccess": "{{successCount}}/{{totalCount}} files exported successfully",
+      "openFolder": "Open Folder"
+    },
+    "progressDialog": {
+      "title": "Processing...",
+      "cancel": "Cancel"
+    },
+    "error": "Image Error"
+  },
+  "search": "Search...",
+  "footer": {
+    "dialog": {
+      "error": {
+        "outputPathCouldNotOpen": {
+          "title": "Output path could not be opened",
+          "description": "Please check if the output path is correct or if you have write permissions."
+        },
+        "unknownError": {
+          "title": "Unknown Error"
+        },
+        "close": "Close"
+      }
+    }
+  },
+  "error": {
+    "equalExtension": "File extension is the same",
+    "imageLoadError": "Failed to load image",
+    "fileNotSupported": "File format not supported",
+    "fileSizeNotSupported": "File size not supported, maximum allowed is 50MB",
+    "resolutionNotSupported": "Image exceeds maximum size limit, maximum allowed is 10000 pixels",
+    "fileResolutionIsNotEqual": "Conversion failed, output abnormal (ERROR_RESOLUTION)",
+    "fileHistogramsAbnormality": "Conversion failed, output abnormal (ERROR_HISTOGRAMS)",
+    "fileSizeAbnormality": "Conversion failed, output abnormal (ERROR_SIZE)",
+    "noItemsSelected": "No items selected",
+    "userCanceled": "User canceled",
+    "cannotDetermineSourcePath": "Cannot determine source file path",
+    "unsupportedFormat": "Format {{format}} is not supported",
+    "sourceMissing": "Source file missing",
+    "outputMissing": "Output path missing",
+    "formatMissing": "Format not specified",
+    "fileNameMissing": "File name not specified",
+    "formatNotSupported": "Format not supported",
+    "heicMacOSOnly": "HEIC/HEIF conversion is currently only supported on macOS",
+    "canvasRendererRequired": "This converter requires to be run in the renderer process",
+    "formFieldContext": "useFormField should be used within <FormField>",
+    "invalidInputString": "Invalid input string",
+    "canvasDoesNotSupport": "Canvas does not support {{format}} format, use FFmpeg converter",
+    "failedToLoadImage": "Failed to load image: {{error}}",
+    "failedToConvertImage": "Failed to convert image: {{error}}",
+    "failedToGetImageDimensions": "Failed to get image dimensions: {{error}}",
+    "noItemsSelectedForExport": "No items selected for export",
+    "cannotDetermineSourcePathForReplacement": "Cannot determine source file path for replacement",
+    "fileSizeBelowMin": "File size {{size}} bytes is below minimum {{minSize}} bytes",
+    "fileSizeExceedsMax": "File size {{size}} bytes exceeds maximum {{maxSize}} bytes",
+    "outputFileNotFound": "Output file not found: {{filePath}}"
+  },
+  "console": {
+    "warnings": {
+      "noUndosAvailable": "No more undos available",
+      "noRedosAvailable": "No more redos available",
+      "unsupportedFormatDetected": "Unsupported format detected: {{ext}} for file {{name}}",
+      "taskAlreadyExists": "Task already exists: {{id}}",
+      "failedToGetDimensions": "Failed to get original dimensions",
+      "failedToGetExportInfo": "Failed to get export info",
+      "memoryPressureDetected": "High memory pressure detected, triggering cleanup",
+      "canvasConverterFailed": "Canvas converter failed, trying FFmpeg fallback",
+      "ffmpegConverterFailed": "FFmpeg converter failed, trying Canvas fallback"
+    },
+    "info": {
+      "taskLoadingCancelled": "Task loading cancelled by user",
+      "memoryCleanupCompleted": "Memory cleanup completed",
+      "conversionCancelled": "Conversion cancelled",
+      "progressLoaderCancelled": "Progressive loader cancelled"
+    },
+    "errors": {
+      "taskComplete": "[Main.onTaskComplete] Task failed: {{message}}",
+      "taskCompleteError": "[Main.onTaskComplete] Error: {{error}}",
+      "gettingImageDimensions": "Error getting image dimensions: {{error}}",
+      "progressiveLoading": "TaskManager: Error during progressive loading: {{error}}",
+      "taskNotFound": "Task {{taskId}} not found for status update"
+    }
+  },
+  "validation": {
+    "selectLanguage": "Please select a language"
+  },
+  "units": {
+    "fileSize": {
+      "bytes": "B",
+      "kilobytes": "KB",
+      "megabytes": "MB",
+      "gigabytes": "GB",
+      "terabytes": "TB",
+      "petabytes": "PB",
+      "exabytes": "EB",
+      "zettabytes": "ZB",
+      "yottabytes": "YB"
+    }
+  }
+}

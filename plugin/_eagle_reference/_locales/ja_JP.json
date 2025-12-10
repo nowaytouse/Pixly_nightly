@@ -1,0 +1,302 @@
+{
+  "manifest": {
+    "app": {
+      "name": "カスタムエクスポート"
+    }
+  },
+  "main": {
+    "taskList": {
+      "processing": "処理中",
+      "completed": "完了済み",
+      "failed": "失敗",
+      "status": "ステータス",
+      "clickToOpen": "クリックしてフォルダを開く",
+      "remove": "リストから削除",
+      "statusLabels": {
+        "waiting": "待機中",
+        "processing": "処理中",
+        "success": "完了済み",
+        "failed": "失敗"
+      },
+      "emptyText": "まずEagleから画像を選択してください"
+    },
+    "dropzone": {
+      "title": "画像をドラッグまたは選択",
+      "subtitle": "Eagle内の画像をご利用ください"
+    },
+    "SettingSidebar": {
+      "header": {
+        "iconAlt": "プラグインアイコン",
+        "close": "閉じる"
+      },
+      "operationMode": {
+        "title": "操作モード",
+        "export": "エクスポート",
+        "replace": "置換"
+      },
+      "format": {
+        "label": "フォーマット",
+        "searchPlaceholder": "検索...",
+        "format-options": {
+          "original": "元の形式",
+          "jpg": "JPG",
+          "png": "PNG",
+          "webp": "WebP",
+          "bmp": "BMP",
+          "heic": "HEIC",
+          "gif": "GIF",
+          "tif": "TIF",
+          "avif": "AVIF",
+          "jxl": "JXL",
+          "ico": "ICO",
+          "exr": "EXR",
+          "hdr": "HDR",
+          "tga": "TGA",
+          "mp4": "MP4",
+          "webm": "WebM",
+          "noResults": "結果なし"
+        }
+      },
+      "quality": {
+        "label": "品質",
+        "searchPlaceholder": "検索..."
+      },
+      "fps": {
+        "label": "フレームレート",
+        "searchPlaceholder": "検索...",
+        "fps-options": {
+          "sameAsSource": "元の動画と同じ",
+          "5": "5",
+          "10": "10",
+          "12": "12",
+          "15": "15",
+          "20": "20",
+          "23.976": "23.976 (NTSC Film)",
+          "24": "24",
+          "25": "25 (PAL Film/Video)",
+          "29.97": "29.97 (NTSC Video)",
+          "30": "30",
+          "48": "48",
+          "50": "50",
+          "59.94": "59.94",
+          "60": "60"
+        }
+      },
+      "codec": {
+        "label": "コーデック",
+        "searchPlaceholder": "検索...",
+        "codec-options": {
+          "h264": "H.264",
+          "h265": "H.265",
+          "vp8": "VP8",
+          "vp9": "VP9",
+          "noResults": "結果なし"
+        }
+      },
+      "size": {
+        "label": "サイズ",
+        "searchPlaceholder": "検索...",
+        "size-options": {
+          "original": "元のサイズ",
+          "maxWidth": "最大幅",
+          "maxHeight": "最大高さ",
+          "minWidth": "最小幅",
+          "minHeight": "最小高さ",
+          "maxSide": "最大長辺",
+          "minSide": "最小短辺"
+        }
+      },
+      "namingSettings": {
+        "title": "命名設定",
+        "nameType": {
+          "label": "ファイル名",
+          "original": "元の名前",
+          "custom": "名前変更",
+          "searchPlaceholder": "検索..."
+        },
+        "customName": {
+          "label": "新しい名前",
+          "placeholder": "ファイル名を入力"
+        },
+        "startNumber": {
+          "label": "開始番号",
+          "tooltip": "連番命名の開始番号"
+        }
+      },
+      "progressDialog": {
+        "title": "エクスポート中...",
+        "cancel": "キャンセル"
+      },
+      "footer": {
+        "exportButton": {
+          "export": "エクスポート",
+          "replace": "置換",
+          "count": "({{count}})"
+        },
+        "closeButton": "閉じる"
+      },
+      "dialogs": {
+        "error": {
+          "title": "エクスポートエラー",
+          "unknownError": "不明なエラーが発生しました",
+          "close": "閉じる"
+        },
+        "fileDuplication": {
+          "title": "ファイルが既に存在します",
+          "description": "{{count}} 個のファイルが既に存在します。エクスポート中のファイルで置き換えますか？",
+          "cancel": "キャンセル",
+          "replace": "置換",
+          "keepBoth": "両方保持"
+        }
+      },
+      "notifications": {
+        "exportSuccess": {
+          "title": "エクスポート成功",
+          "message": "{{successCount}}/{{totalCount}} 個のファイルをエクスポートしました",
+          "action": "フォルダを開く"
+        }
+      },
+      "combobox": {
+        "noResults": "結果なし",
+        "searchPlaceholder": "検索..."
+      },
+      "preset": {
+        "error": {
+          "saveFailed": "保存に失敗しました。ストレージ容量が不足している可能性があります"
+        },
+        "command": {
+          "searchPlaceholder": "コマンドを入力するか検索...",
+          "noResults": "結果が見つかりません",
+          "applyPreset": "プリセットを適用",
+          "edit": "編集",
+          "clone": "複製",
+          "remove": "削除",
+          "createPreset": "プリセットを作成"
+        },
+        "settings": {
+          "title": "プリセットパラメータ",
+          "nameLabel": "名前",
+          "namePlaceholder": "入力してください",
+          "selectPlaceholder": "選択してください",
+          "pixelUnit": "px",
+          "updatePreset": "プリセットを更新",
+          "createPreset": "プリセットを作成"
+        },
+        "dialog": {
+          "tooltipTitle": "書き出しプリセット",
+          "emptyTitle": "プリセットパラメータ",
+          "emptyDescription": "エクスポートパラメータをプリセットとして保存し、後で簡単に選択できるようにして、効率を向上させます。",
+          "createButton": "プリセットを作成"
+        }
+      }
+    },
+    "status": {
+      "processing": "処理中、お待ちください…",
+      "success": "エクスポート成功",
+      "fail": "エクスポート失敗",
+      "retry": "再試行",
+      "cancel": "キャンセル",
+      "unsupportedFormat": "サポートされていない形式",
+      "imageTooLarge": "画像サイズが制限を超えています (16384x16384)"
+    },
+    "notification": {
+      "exportSuccess": "エクスポート成功",
+      "exportPartialSuccess": "{{successCount}}/{{totalCount}} 個のファイルをエクスポートしました",
+      "openFolder": "フォルダを開く"
+    },
+    "progressDialog": {
+      "title": "処理中...",
+      "cancel": "キャンセル"
+    },
+    "error": "画像エラー"
+  },
+  "search": "検索...",
+  "footer": {
+    "dialog": {
+      "error": {
+        "outputPathCouldNotOpen": {
+          "title": "出力パスを開くことができません",
+          "description": "出力パスが正しいか、書き込み権限があるかを確認してください。"
+        },
+        "unknownError": {
+          "title": "不明なエラー"
+        },
+        "close": "閉じる"
+      }
+    }
+  },
+  "error": {
+    "equalExtension": "ファイル拡張子が同じです",
+    "imageLoadError": "画像の読み込みに失敗しました",
+    "fileNotSupported": "サポートされていないファイル形式です",
+    "fileSizeNotSupported": "ファイルサイズをサポートしていません。現在の最大サイズは50MBです",
+    "resolutionNotSupported": "画像が最大サイズ制限を超えています。現在の最大ピクセル数は10000です",
+    "fileResolutionIsNotEqual": "変換失敗、出力結果に異常があります (ERROR_RESOLUTION)",
+    "fileHistogramsAbnormality": "変換失敗、出力結果に異常があります (ERROR_HISTOGRAMS)",
+    "fileSizeAbnormality": "変換失敗、出力結果に異常があります (ERROR_SIZE)",
+    "noItemsSelected": "項目が選択されていません",
+    "userCanceled": "ユーザーがキャンセルしました",
+    "cannotDetermineSourcePath": "ソースファイルのパスを決定できません",
+    "unsupportedFormat": "{{format}} 形式はサポートされていません",
+    "sourceMissing": "ソースファイルが見つかりません",
+    "outputMissing": "出力パスが見つかりません",
+    "formatMissing": "形式が指定されていません",
+    "fileNameMissing": "ファイル名が指定されていません",
+    "formatNotSupported": "形式がサポートされていません",
+    "heicMacOSOnly": "HEIC/HEIF変換は現在macOSでのみサポートされています",
+    "canvasRendererRequired": "このコンバーターはレンダラープロセスで実行される必要があります",
+    "formFieldContext": "useFormFieldは<FormField>内で使用する必要があります",
+    "invalidInputString": "無効な入力文字列",
+    "canvasDoesNotSupport": "Canvasは{{format}}形式をサポートしていません。FFmpegコンバーターを使用してください",
+    "failedToLoadImage": "画像の読み込みに失敗しました：{{error}}",
+    "failedToConvertImage": "画像の変換に失敗しました：{{error}}",
+    "failedToGetImageDimensions": "画像の寸法取得に失敗しました：{{error}}",
+    "noItemsSelectedForExport": "エクスポート用の項目が選択されていません",
+    "cannotDetermineSourcePathForReplacement": "置換用のソースファイルパスを決定できません",
+    "fileSizeBelowMin": "ファイルサイズ {{size}} バイトが最小値 {{minSize}} バイトを下回っています",
+    "fileSizeExceedsMax": "ファイルサイズ {{size}} バイトが最大値 {{maxSize}} バイトを超えています",
+    "outputFileNotFound": "出力ファイルが見つかりません：{{filePath}}"
+  },
+  "console": {
+    "warnings": {
+      "noUndosAvailable": "元に戻せる操作がありません",
+      "noRedosAvailable": "やり直せる操作がありません",
+      "unsupportedFormatDetected": "サポートされていない形式が検出されました：ファイル {{name}} の {{ext}}",
+      "taskAlreadyExists": "タスクが既に存在します：{{id}}",
+      "failedToGetDimensions": "元の寸法の取得に失敗しました",
+      "failedToGetExportInfo": "エクスポート情報の取得に失敗しました",
+      "memoryPressureDetected": "高いメモリ圧迫が検出され、クリーンアップを開始します",
+      "canvasConverterFailed": "Canvasコンバーターが失敗しました。FFmpegフォールバックを試行します",
+      "ffmpegConverterFailed": "FFmpegコンバーターが失敗しました。Canvasフォールバックを試行します"
+    },
+    "info": {
+      "taskLoadingCancelled": "ユーザーがタスクの読み込みをキャンセルしました",
+      "memoryCleanupCompleted": "メモリクリーンアップが完了しました",
+      "conversionCancelled": "変換がキャンセルされました",
+      "progressLoaderCancelled": "進行状況ローダーがキャンセルされました"
+    },
+    "errors": {
+      "taskComplete": "[Main.onTaskComplete] タスクが失敗しました：{{message}}",
+      "taskCompleteError": "[Main.onTaskComplete] エラー：{{error}}",
+      "gettingImageDimensions": "画像寸法の取得中にエラーが発生しました：{{error}}",
+      "progressiveLoading": "TaskManager：段階的読み込み中にエラーが発生しました：{{error}}",
+      "taskNotFound": "ステータス更新のためのタスク {{taskId}} が見つかりません"
+    }
+  },
+  "validation": {
+    "selectLanguage": "言語を選択してください"
+  },
+  "units": {
+    "fileSize": {
+      "bytes": "B",
+      "kilobytes": "KB",
+      "megabytes": "MB",
+      "gigabytes": "GB",
+      "terabytes": "TB",
+      "petabytes": "PB",
+      "exabytes": "EB",
+      "zettabytes": "ZB",
+      "yottabytes": "YB"
+    }
+  }
+}

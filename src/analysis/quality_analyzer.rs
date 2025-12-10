@@ -17,6 +17,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, SystemTime};
+use crate::utils::modern_format_loader;
 
 /// quality - fullmediafilequalityevaluate
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -205,7 +206,7 @@ impl ImageAnalyzer {
  path: P,
  metrics: &mut QualityMetrics,
  ) -> Result<()> {
- let img = image::open(path)?;
+ let img = modern_format_loader::load_image(path.as_ref())?;
  let (width, height) = img.dimensions();
 
  metrics.width = width;

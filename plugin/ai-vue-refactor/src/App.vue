@@ -53,19 +53,18 @@
         </div>
       </div>
 
-      <!-- Empty State -->
-      <div v-else-if="files.length === 0" class="empty fade-in">
-        <div class="empty-content liquid-glass">
-          <div class="empty-icon">📁</div>
-          <h3>{{ t('empty.title') }}</h3>
-          <p>{{ t('empty.subtitle') }}</p>
-          <button class="btn btn-primary btn-lg" @click="refreshFiles">
+      <!-- Empty State: No files from Eagle - 更简洁的提示 -->
+      <div v-else-if="files.length === 0" class="empty-inline fade-in">
+        <div class="empty-inline-content">
+          <span class="empty-inline-icon">📂</span>
+          <span class="empty-inline-text">{{ t('empty.subtitle') }}</span>
+          <button class="btn btn-primary btn-sm" @click="refreshFiles">
             {{ t('empty.loadButton') }}
           </button>
         </div>
       </div>
 
-      <!-- Content -->
+      <!-- 🔥 Content: 有文件时始终显示两栏布局 -->
       <div v-else class="content fade-in">
         <!-- Left: Controls -->
         <div class="panel controls-panel">
@@ -138,7 +137,7 @@
               </label>
               <label class="checkbox-wrapper">
                 <input type="checkbox" v-model="enableFileValidation">
-                <span>{{ t('image.fileValidation') }} <span class="badge badge-primary">Exp</span></span>
+                <span>{{ t('image.fileValidation') }} <span class="badge badge-warning">{{ t('common.experimental') }}</span></span>
               </label>
               <label class="checkbox-wrapper">
                 <input type="checkbox" v-model="enableSSIM">
@@ -154,7 +153,7 @@
               </label>
               <label class="checkbox-wrapper">
                 <input type="checkbox" v-model="enableFormatCorrection">
-                <span>{{ t('image.formatCorrection') }} <span class="badge badge-primary">Exp</span></span>
+                <span>{{ t('image.formatCorrection') }} <span class="badge badge-warning">{{ t('common.experimental') }}</span></span>
               </label>
               <label class="checkbox-wrapper">
                 <input type="checkbox" v-model="enableVideoForAnimation">
@@ -174,20 +173,32 @@
               <div class="file-groups">
                 <div class="group-item">
                   <span class="group-icon">🖼️</span>
-                  <span>{{ t('mixedMode.images', { count: selectedFiles.filter(f => {
+                  <span>{{ t('mixedMode.images', { count: getMediaFiles(selectedFiles).filter(f => {
                     const ext = (f.ext || '').toLowerCase()
                     return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'jxl', 'heic', 'heif', 'bmp', 'tiff', 'tif', 'apng'].includes(ext)
                   }).length }) }}</span>
                 </div>
                 <div class="group-item">
                   <span class="group-icon">🎬</span>
-                  <span>{{ t('mixedMode.videos', { count: selectedFiles.filter(f => {
+                  <span>{{ t('mixedMode.videos', { count: getMediaFiles(selectedFiles).filter(f => {
                     const ext = (f.ext || '').toLowerCase()
                     return ['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv', 'm4v', 'mpg', 'mpeg'].includes(ext)
                   }).length }) }}</span>
                 </div>
               </div>
               <p class="notice-tip">{{ t('mixedMode.hint') }}</p>
+            </div>
+          </div>
+
+          <!-- 🔥 XMP自动合并提示 -->
+          <div v-if="hasXMPFiles" class="xmp-notice glass slide-in">
+            <div class="notice-header">
+              <span class="notice-icon">🔄</span>
+              <strong>{{ t('xmp.autoMerge') }}</strong>
+            </div>
+            <div class="notice-body">
+              <p>{{ t('xmp.description', { count: xmpFileCount }) }}</p>
+              <p class="notice-tip">{{ t('xmp.hint') }}</p>
             </div>
           </div>
 
@@ -218,29 +229,14 @@
             </div>
           </details>
 
-          <!-- 🔍 AI日志窗口 / 功能说明 切换区域 -->
+          <!-- 🔍 AI日志窗口 -->
           <div class="log-window-container glass">
-            <!-- 切换标签 -->
-            <div class="log-tabs">
-              <button 
-                class="log-tab" 
-                :class="{ active: showAILog }"
-                @click="showAILog = true"
-              >
-                {{ t('log.aiLog') }}
-              </button>
-              <button 
-                class="log-tab" 
-                :class="{ active: !showAILog }"
-                @click="showAILog = false"
-              >
-                {{ t('log.features') }}
-              </button>
+            <div class="log-header">
+              <span class="log-title">🤖 {{ t('log.aiLog') }}</span>
+              <button class="log-clear-btn" @click="clearLogs" title="Clear logs">✕</button>
             </div>
-
-            <!-- AI日志窗口 -->
-            <div v-if="showAILog" class="log-window">
-              <div class="log-content" ref="logContent" @wheel.stop>
+            <div class="log-window">
+              <div class="log-content" ref="logContent">
                 <div v-for="(log, index) in aiLogs" :key="index" class="log-entry" :class="log.type">
                   <span class="log-time">{{ log.time }}</span>
                   <span class="log-icon">{{ log.icon }}</span>
@@ -252,41 +248,13 @@
                 </div>
               </div>
             </div>
-
-            <!-- 功能说明面板 -->
-            <div v-else class="features-panel fade-in">
-              <!-- 自动处理提示 -->
-              <div class="auto-hints">
-                <div class="hint-item">
-                  <span class="hint-icon">✨</span>
-                  {{ t('features.validation') }}
-                </div>
-                <div class="hint-item">
-                  <span class="hint-icon">🔄</span>
-                  {{ t('features.xmpMerge') }}
-                </div>
-                <div class="hint-item">
-                  <span class="hint-icon">📝</span>
-                  {{ t('features.filenameNorm') }}
-                </div>
-              </div>
-
-              <!-- 元数据保留提示 -->
-              <div class="metadata-notice">
-                <strong>{{ t('features.metadataTitle') }}</strong>
-                <div class="metadata-items">
-                  <span class="meta-tag">Exif</span>
-                  <span class="meta-tag">XMP</span>
-                  <span class="meta-tag">ICC</span>
-                  <span class="meta-tag">Time</span>
-                </div>
-              </div>
-            </div>
           </div>
 
+          <!-- 🔥 Bug Fix #3: Removed duplicate select hints - use batch-actions bar instead -->
+
           <!-- 转换按钮 -->
-          <button 
-            class="btn btn-primary btn-block btn-lg" 
+          <button
+            class="btn btn-primary btn-block btn-lg"
             @click="startConvert"
             :disabled="selectedCount === 0 || processing"
           >
@@ -336,6 +304,14 @@
             <button class="batch-btn" @click="selectVideos" :title="t('fileList.selectVideos')">
               🎬 Vid
             </button>
+            <div class="divider"></div>
+            <!-- 🆕 优化相关选择 -->
+            <button class="batch-btn" @click="selectNeedOptimization" title="选择需要优化的文件">
+              ⚠️ Opt
+            </button>
+            <button class="batch-btn" @click="selectOptimal" title="选择已优化的文件">
+              ✅ OK
+            </button>
           </div>
 
           <div class="file-list">
@@ -368,6 +344,13 @@
                 <div class="file-meta">
                   <span class="meta-pill">{{ (file.ext || '').toUpperCase() }}</span>
                   <span class="meta-text">{{ formatSize(file.size) }} · {{ file.width }}×{{ file.height }}</span>
+                  <!-- 🆕 优化状态徽章 -->
+                  <OptimizationStatusBadge 
+                    v-if="file.optimizationStatus"
+                    :status="file.optimizationStatus.status"
+                    :savings="file.optimizationStatus.savingsPercent"
+                    :showSavings="true"
+                  />
                 </div>
               </div>
             </label>
@@ -384,21 +367,43 @@
           <button class="modal-close" @click="showHelp = false">✕</button>
         </div>
         <div class="modal-body">
+          <!-- 🔥 自动处理功能 -->
           <section>
-            <h3>🎯 {{ t('help.vision') }}</h3>
-            <p><strong>{{ t('help.visionDesc') }}</strong></p>
-            <p><strong>{{ t('help.modernFormats') }}</strong></p>
-            <p><strong>{{ t('help.smartUpgrade') }}</strong></p>
+            <h3>✨ {{ t('features.autoTitle') || 'Auto Processing' }}</h3>
+            <div class="feature-list">
+              <div class="feature-row">
+                <span class="feature-icon">🔒</span>
+                <span>{{ t('features.validation') }}</span>
+              </div>
+              <div class="feature-row">
+                <span class="feature-icon">🔄</span>
+                <span>{{ t('features.xmpMerge') }}</span>
+              </div>
+              <div class="feature-row">
+                <span class="feature-icon">📝</span>
+                <span>{{ t('features.filenameNorm') }}</span>
+              </div>
+            </div>
           </section>
-          
+
+          <!-- 🔥 元数据保留 -->
           <section>
             <h3>📦 {{ t('help.metadataTitle') }}</h3>
             <div class="feature-grid">
               <div class="feature-item">Exif</div>
               <div class="feature-item">XMP</div>
               <div class="feature-item">ICC Profile</div>
+              <div class="feature-item">Time</div>
               <div class="feature-item">Eagle Tags</div>
             </div>
+          </section>
+
+          <!-- 项目愿景 -->
+          <section>
+            <h3>🎯 {{ t('help.vision') }}</h3>
+            <p>{{ t('help.visionDesc') }}</p>
+            <p>{{ t('help.modernFormats') }}</p>
+            <p>{{ t('help.smartUpgrade') }}</p>
           </section>
         </div>
       </div>
@@ -414,6 +419,7 @@ import { logger, LOG_KEYS } from './utils/logger'
 import SmartProgressBar from './components/SmartProgressBar.vue'
 import SkeletonLoader from './components/SkeletonLoader.vue'
 import LiquidFilter from './components/LiquidFilter.vue'
+import OptimizationStatusBadge from './components/OptimizationStatusBadge.vue'  // 🆕 优化状态徽章
 
 // Use global i18n instance from main.js
 const i18n = inject('i18n')
@@ -460,7 +466,16 @@ const showAILog = ref(true) // 默认显示AI日志
 const aiLogs = ref([])
 const logContent = ref(null)
 
-// 🔍 日志系统性能优化
+// � 计算XMP文件相关信息
+const hasXMPFiles = computed(() => {
+  return selectedFiles.value.some(f => (f.ext || '').toLowerCase() === 'xmp')
+})
+
+const xmpFileCount = computed(() => {
+  return selectedFiles.value.filter(f => (f.ext || '').toLowerCase() === 'xmp').length
+})
+
+// �🔍 日志系统性能优化
 let scrollTimer = null  // 防抖滚动定时器
 
 // 添加日志
@@ -497,26 +512,41 @@ const clearLogs = () => {
   }
 }
 
+// 🔥 正确修复 Bug #1: 辅助函数 - 过滤XMP文件用于模式判定
+// XMP文件仍然保留在selectedFiles中,会被传递给Rust CLI进行元数据合并
+const getMediaFiles = (files) => {
+  const xmpExts = ['xmp']
+  return files.filter(f => {
+    const ext = (f.ext || '').toLowerCase()
+    return !xmpExts.includes(ext)
+  })
+}
+
 const isVideoMode = computed(() => {
-  if (selectedFiles.value.length === 0) return false
+  const mediaFiles = getMediaFiles(selectedFiles.value)
+  if (mediaFiles.length === 0) return false
   const videoExts = ['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv', 'm4v', 'mpg', 'mpeg']
-  return selectedFiles.value.every(f => {
+  return mediaFiles.every(f => {
     const ext = (f.ext || '').toLowerCase()
     return videoExts.includes(ext)
   })
 })
 
 const isImageMode = computed(() => {
-  if (selectedFiles.value.length === 0) return false
+  const mediaFiles = getMediaFiles(selectedFiles.value)
+  if (mediaFiles.length === 0) return false
   const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'jxl', 'heic', 'heif', 'bmp', 'tiff', 'tif', 'apng']
-  return selectedFiles.value.every(f => {
+  return mediaFiles.every(f => {
     const ext = (f.ext || '').toLowerCase()
     return imageExts.includes(ext)
   })
 })
 
+// 混合模式: 既有图像又有视频(忽略XMP)
 const isMixedMode = computed(() => {
-  return selectedFiles.value.length > 0 && !isVideoMode.value && !isImageMode.value
+  const mediaFiles = getMediaFiles(selectedFiles.value)
+  if (mediaFiles.length === 0) return false
+  return !isVideoMode.value && !isImageMode.value
 })
 
 
@@ -535,15 +565,99 @@ const toggleLanguage = () => {
 const refreshFiles = async () => {
   isLoading.value = true
   try {
-    const items = await eagleAPI.getSelectedItems()
-    // 模拟网络延迟以展示骨架屏效果 (仅开发时)
-    // await new Promise(resolve => setTimeout(resolve, 800))
-    files.value = items.map(item => ({ ...item, selected: false }))
+    // 🔥 添加超时保护，防止永远卡在加载状态
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout')), 5000)
+    )
+    
+    const items = await Promise.race([
+      eagleAPI.getSelectedItems(),
+      timeoutPromise
+    ])
+    
+    files.value = (items || []).map(item => ({ ...item, selected: false, optimizationStatus: null }))
+    
+    // 🔥 Bug Fix: 自动选中XMP文件
+    // XMP文件必须被处理以确保元数据合并功能正常工作
+    files.value.forEach(f => {
+      const ext = (f.ext || '').toLowerCase()
+      if (ext === 'xmp') {
+        f.selected = true
+      }
+    })
+    
+    // 🆕 后台分析优化状态（异步，不阻塞UI）
+    // 🔥 修复：延迟调用，确保 rustCLI 完全初始化
+    setTimeout(() => {
+      analyzeOptimizationStatusForAll().catch(err => {
+        logger.error(LOG_KEYS.RUST_CLI_ERROR, '❌ Background optimization analysis failed', {
+          error: err.message
+        })
+      })
+    }, 500) // 延迟500ms，让rustCLI完全初始化
   } catch (err) {
     logger.error(LOG_KEYS.FILE_LOAD_ERROR, 'Failed to load files', { error: err.message })
+    // 🔥 出错时设置空数组，显示空状态而不是一直加载
+    files.value = []
   } finally {
     isLoading.value = false
   }
+}
+
+// 🆕 分析所有文件的优化状态（后台异步）
+const analyzeOptimizationStatusForAll = async () => {
+  // 🔥 修复：确保 rustCLI 完全初始化
+  try {
+    // 先初始化 rustCLI
+    await rustCLI.initRustCLI()
+  } catch (err) {
+    logger.error(LOG_KEYS.RUST_CLI_ERROR, '❌ Failed to initialize Rust CLI for optimization analysis', {
+      error: err.message
+    })
+    addLog('❌ Rust CLI 初始化失败', 'error', '❌')
+    throw err // 抛出错误而不是静默失败
+  }
+  
+  // 确保 rustCLI 可用
+  if (!rustCLI || typeof rustCLI.analyzeOptimizationStatus !== 'function') {
+    const error = new Error('analyzeOptimizationStatus function not available')
+    logger.error(LOG_KEYS.RUST_CLI_ERROR, '❌ analyzeOptimizationStatus function not available!', {
+      rustCLI: !!rustCLI,
+      hasFunction: typeof rustCLI?.analyzeOptimizationStatus
+    })
+    addLog('❌ 优化状态分析功能不可用', 'error', '❌')
+    throw error // 抛出错误而不是返回
+  }
+  
+  logger.info(LOG_KEYS.RUST_CLI_EXEC, `🔍 Starting optimization analysis for ${files.value.length} files...`)
+  
+  for (const file of files.value) {
+    // 跳过XMP文件
+    if ((file.ext || '').toLowerCase() === 'xmp') continue
+    
+    try {
+      // 🔥 传递扩展名信息（来自Eagle元数据，不重复造轮子）
+      const status = await rustCLI.analyzeOptimizationStatus(file.path, file.ext)
+      if (status) {
+        file.optimizationStatus = status
+        logger.info(LOG_KEYS.RUST_CLI_EXEC, `✅ Analyzed ${file.name}: ${status.status} (${status.savingsPercent}% savings)`)
+      } else {
+        // 🔥 响亮警告：分析返回null
+        logger.warn(LOG_KEYS.RUST_CLI_ERROR, `⚠️ Optimization analysis returned null for ${file.name}`)
+      }
+    } catch (err) {
+      // 🔥 响亮报错而不是静默失败
+      logger.error(LOG_KEYS.RUST_CLI_ERROR, `❌ Optimization analysis FAILED for ${file.name}`, {
+        file: file.name,
+        error: err.message,
+        stack: err.stack
+      })
+      addLog(`❌ 分析失败: ${file.name} - ${err.message}`, 'error', '❌')
+      // 继续分析其他文件，但不静默失败
+    }
+  }
+  
+  logger.info(LOG_KEYS.RUST_CLI_EXEC, '✅ Optimization analysis completed')
 }
 
 // 🔥 批量选择功能
@@ -573,6 +687,99 @@ const selectVideos = () => {
     const ext = (f.ext || '').toLowerCase()
     f.selected = videoExts.includes(ext)
   })
+}
+
+// 🆕 选择需要优化的文件（有优化状态且不是optimal）
+const selectNeedOptimization = () => {
+  // 🔥 统计分析状态
+  const analyzedFiles = files.value.filter(f => 
+    f.optimizationStatus && (f.ext || '').toLowerCase() !== 'xmp'
+  )
+  const totalMediaFiles = files.value.filter(f => 
+    (f.ext || '').toLowerCase() !== 'xmp'
+  ).length
+  
+  // 🔥 如果没有任何分析结果，明确报错而不是fallback
+  if (analyzedFiles.length === 0 && totalMediaFiles > 0) {
+    logger.error(LOG_KEYS.UI_CLICK, '❌ No optimization analysis available!', {
+      totalFiles: totalMediaFiles,
+      analyzedFiles: 0
+    })
+    addLog('❌ 无法选择：优化状态分析尚未完成或失败', 'error', '❌')
+    addLog('💡 请等待分析完成或检查错误日志', 'warning', '⚠️')
+    
+    // 🔥 不选择任何文件，而不是fallback到全选
+    files.value.forEach(f => f.selected = false)
+    return
+  }
+  
+  // 🔥 只选择明确标记为需要优化的文件
+  let selectedCount = 0
+  files.value.forEach(f => {
+    if (f.optimizationStatus) {
+      // 有分析状态：根据状态选择
+      if (f.optimizationStatus.status !== 'optimal') {
+        f.selected = true
+        selectedCount++
+      } else {
+        f.selected = false
+      }
+    } else {
+      // 🔥 没有分析状态：明确不选择（而不是fallback到选择）
+      f.selected = false
+    }
+  })
+  
+  logger.info(LOG_KEYS.UI_CLICK, '✅ Selected files needing optimization', {
+    selected: selectedCount,
+    total: totalMediaFiles,
+    analyzed: analyzedFiles.length
+  })
+  
+  if (selectedCount === 0 && analyzedFiles.length > 0) {
+    addLog('✅ 所有已分析文件都已优化', 'success', '✅')
+  } else if (selectedCount > 0) {
+    addLog(`✅ 已选择 ${selectedCount} 个需要优化的文件`, 'success', '✅')
+  }
+}
+
+// 🆕 选择已优化的文件
+const selectOptimal = () => {
+  // 🔥 检查是否有分析结果
+  const analyzedFiles = files.value.filter(f => 
+    f.optimizationStatus && (f.ext || '').toLowerCase() !== 'xmp'
+  )
+  
+  if (analyzedFiles.length === 0) {
+    logger.error(LOG_KEYS.UI_CLICK, '❌ No optimization analysis available!', {
+      totalFiles: files.value.length
+    })
+    addLog('❌ 无法选择：优化状态分析尚未完成或失败', 'error', '❌')
+    files.value.forEach(f => f.selected = false)
+    return
+  }
+  
+  // 🔥 只选择明确标记为已优化的文件
+  let selectedCount = 0
+  files.value.forEach(f => {
+    if (f.optimizationStatus && f.optimizationStatus.status === 'optimal') {
+      f.selected = true
+      selectedCount++
+    } else {
+      f.selected = false
+    }
+  })
+  
+  logger.info(LOG_KEYS.UI_CLICK, '✅ Selected optimal files', {
+    selected: selectedCount,
+    analyzed: analyzedFiles.length
+  })
+  
+  if (selectedCount === 0) {
+    addLog('ℹ️ 没有已优化的文件', 'info', 'ℹ️')
+  } else {
+    addLog(`✅ 已选择 ${selectedCount} 个已优化的文件`, 'success', '✅')
+  }
 }
 
 
@@ -643,6 +850,13 @@ const startConvert = async () => {
   addLog(`开始处理 ${selected.length} 个文件`, 'info', '🚀')
   addLog(`优化模式: ${optimizeMode.value}`, 'info', '⚙️')
   
+  // 🔥 检测并提示XMP文件
+  const xmpFiles = selected.filter(f => (f.ext || '').toLowerCase() === 'xmp')
+  if (xmpFiles.length > 0) {
+    addLog(`检测到 ${xmpFiles.length} 个XMP元数据文件`, 'info', '🔄')
+    addLog(`将自动合并到对应的媒体文件中`, 'info', '💡')
+  }
+  
   if (selected.length > 0) {
     const firstFile = selected[0]
     addLog(`文件: ${firstFile.name} (${formatSize(firstFile.size)})`, 'info', '📄')
@@ -680,8 +894,8 @@ const startConvert = async () => {
         for (let i = 0; i < images.length; i++) {
           const file = images[i]
           try {
-            processed++
-            progress.value = Math.round((processed / total) * 100)
+            // 🔥 Bug Fix #4: Update progress BEFORE processing to ensure 100% is reached
+            progress.value = Math.round(((processed + 1) / total) * 100)
             progressText.value = t('progress.imageProgress', { current: i + 1, total: images.length, filename: file.name })
             
             // 🔍 Log processing start
@@ -703,8 +917,10 @@ const startConvert = async () => {
             })
             
             results.push({ file: file.name, success: true, result })
+            processed++
           } catch (err) {
             results.push({ file: file.name, success: false, error: err.message })
+            processed++
           }
         }
       }
@@ -716,8 +932,8 @@ const startConvert = async () => {
         for (let i = 0; i < videos.length; i++) {
           const file = videos[i]
           try {
-            processed++
-            progress.value = Math.round((processed / total) * 100)
+            // 🔥 Bug Fix #4: Update progress BEFORE processing to ensure 100% is reached
+            progress.value = Math.round(((processed + 1) / total) * 100)
             progressText.value = t('progress.videoProgress', { current: i + 1, total: videos.length, filename: file.name })
             
             const result = await rustCLI.convertVideo({
@@ -735,8 +951,10 @@ const startConvert = async () => {
             })
             
             results.push({ file: file.name, success: true, result })
+            processed++
           } catch (err) {
             results.push({ file: file.name, success: false, error: err.message })
+            processed++
           }
         }
       }
@@ -840,7 +1058,24 @@ const startConvert = async () => {
     }, 2000)
   } catch (err) {
     logger.error(LOG_KEYS.CONVERT_ERROR, 'Conversion failed', { error: err.message })
-    progressText.value = 'Conversion failed: ' + err.message
+    
+    // 🔥 Bug Fix: 错误处理改进 - 不重置进度,显示友好错误信息
+    addLog('─────────────────────────', 'error', '')
+    addLog('❌ 转换失败', 'error', '❌')
+    
+    // 🔥 检测pixly-converter缺失
+    if (err.message && err.message.includes('pixly-converter not found')) {
+      addLog('⚠️ 未找到转换器程序', 'error', '⚠️')
+      addLog('请编译Rust项目: cargo build --release', 'error', '📝')
+      addLog('然后复制到: plugin/ai-vue-refactor/bin/', 'error', '📁')
+      progressText.value = '❌ 转换器程序缺失 - 请查看日志'
+    } else {
+      addLog(`错误详情: ${err.message}`, 'error', '🔍')
+      progressText.value = `❌ 转换失败: ${err.message}`
+    }
+    
+    // 🔥 保持进度条显示,不重置为0
+    // progress.value 保持当前值
     processing.value = false
   }
 }
@@ -933,8 +1168,19 @@ const closeWindow = () => {
 
 onMounted(() => {
   eagleAPI.detect()
-  rustCLI.init()
-  refreshFiles()
+  
+  // 🔥 等待 Eagle plugin-create 事件后再加载文件
+  if (window.eagle && window.eagle.onPluginCreate) {
+    window.eagle.onPluginCreate(() => {
+      refreshFiles()
+    })
+  } else if (window.eagle) {
+    // 🔥 如果已经初始化完成，直接加载
+    setTimeout(() => refreshFiles(), 100)
+  } else {
+    // 🔥 开发模式，直接加载 mock 数据
+    refreshFiles()
+  }
 })
 </script>
 
@@ -983,16 +1229,18 @@ onMounted(() => {
   to { transform: rotate(360deg); }
 }
 
-/* Header Styles */
+/* Header Styles - 🔥 Phase Fix: 窗口拖动区域 */
 .header {
-  height: 60px;
-  padding: 0 20px;
+  -webkit-app-region: drag;
+  height: 64px;
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 10; /* 提升层级 */
+  z-index: 100;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
+  cursor: move;
 }
 
 .header-left {
@@ -1044,6 +1292,7 @@ onMounted(() => {
 }
 
 .header-right {
+  -webkit-app-region: no-drag;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -1131,10 +1380,7 @@ onMounted(() => {
   gap: 20px;
 }
 
-.controls-panel {
-  background: var(--color-bg-secondary);
-  border-right: 1px solid var(--color-border-primary);
-}
+/* 🔥 controls-panel 样式已移至下方统一定义 */
 
 .files-panel {
   background: var(--color-bg-primary);
@@ -1245,11 +1491,11 @@ onMounted(() => {
   color: var(--color-text-primary);
 }
 
-/* Details Panel */
+/* Details Panel - 🔥 修复选项被遮挡问题 */
 .details {
   border: 1px solid var(--color-border-primary);
   border-radius: 12px;
-  overflow: hidden;
+  overflow: visible;
   background-image: var(--gradient-dark);
   color: var(--color-text-primary);
 }
@@ -1292,8 +1538,9 @@ onMounted(() => {
   transform: translateY(-2px) scale(1.01);
 }
 
-/* Header Styles */
+/* Header Styles - 🔥 Phase Fix: 确保窗口可拖动 */
 .header {
+  -webkit-app-region: drag;
   height: 64px;
   padding: 0 24px;
   display: flex;
@@ -1301,6 +1548,7 @@ onMounted(() => {
   justify-content: space-between;
   z-index: 100;
   position: relative;
+  cursor: move;
 }
 
 .logo-container {
@@ -1477,10 +1725,23 @@ onMounted(() => {
   backdrop-filter: blur(10px);
 }
 
+/* 🔥 Phase Fix: 控制面板 - 修复宽度冲突和滚动问题 */
 .controls-panel {
-  width: 320px;
+  width: 420px;
+  min-width: 420px;
+  max-width: 420px;
+  overflow-y: auto;
+  min-height: 0;
   padding: 20px;
   gap: 20px;
+  flex-shrink: 0;
+}
+
+/* 🔥 Phase Fix: 文件列表面板 - 扩大宽度填充右侧空白 */
+.files-panel {
+  flex: 1;
+  min-width: 0;
+  padding: 20px;
 }
 
 .preview-panel {
@@ -1549,7 +1810,7 @@ onMounted(() => {
 .details {
   border: 1px solid var(--glass-border);
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
   background: rgba(0, 0, 0, 0.1);
 }
 
@@ -1574,6 +1835,15 @@ onMounted(() => {
 }
 
 /* Log Window */
+.log-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+  max-height: 250px;
+  overflow: hidden;
+}
+
 .log-window-container {
   flex: 1;
   display: flex;
@@ -1583,31 +1853,41 @@ onMounted(() => {
   min-height: 200px;
 }
 
-.log-tabs {
+/* 🔥 日志窗口头部 */
+.log-header {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--glass-border);
   background: rgba(0,0,0,0.02);
 }
 
-.log-tab {
-  flex: 1;
-  padding: 8px;
-  border: none;
-  background: transparent;
+.log-title {
   font-size: 12px;
   font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.log-clear-btn {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
   color: var(--color-text-secondary);
   cursor: pointer;
+  border-radius: 4px;
+  font-size: 12px;
   transition: all 0.2s;
 }
 
-.log-tab.active {
-  color: var(--color-primary);
-  background: var(--glass-bg);
-  box-shadow: inset 0 -2px 0 var(--color-primary);
+.log-clear-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: var(--color-negative);
 }
 
 .log-content {
+  min-height: 0;
   flex: 1;
   overflow-y: auto;
   padding: 12px;
@@ -1800,31 +2080,186 @@ onMounted(() => {
   color: var(--color-text-secondary);
 }
 
-/* Empty State */
+/* 🔥 Empty State - 全屏居中美化版 */
 .empty {
+  flex: 1;
+  width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, var(--color-bg-hover), var(--color-bg-secondary));
+  background: transparent;
+  position: relative;
 }
 
 .empty-content {
   text-align: center;
-  padding: 40px;
-  border-radius: 24px;
-  max-width: 400px;
+  padding: 48px 56px;
+  border-radius: 28px;
+  max-width: 480px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.empty-content h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.empty-content p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 24px;
+  line-height: 1.6;
 }
 
 .empty-icon {
-  font-size: 64px;
-  margin-bottom: 20px;
+  font-size: 72px;
+  margin-bottom: 24px;
   animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+}
+
+/* 🔥 SVG 图标样式 - 更柔和 */
+.empty-icon-svg {
+  margin-bottom: 24px;
+  animation: float 3s ease-in-out infinite;
+}
+
+.empty-icon-svg svg {
+  width: 72px;
+  height: 72px;
+  color: rgba(165, 180, 252, 0.6);
+  filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.2));
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-12px); }
+}
+
+/* 🔥 空状态统计 */
+.empty-stats {
+  margin: 20px 0;
+  padding: 14px 24px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 14px;
+  display: inline-block;
+}
+
+.stat-item {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 🔥 空状态操作按钮 */
+.empty-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.empty-actions .btn {
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* 🔥 未选中文件提示 - 内嵌在控制面板中 */
+.select-hint {
+  padding: 16px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px dashed rgba(99, 102, 241, 0.3);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.select-hint p {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.hint-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* 🔥 Bug Fix #2: Add btn-lg and btn-block for proper button sizing */
+.btn-lg {
+  padding: 16px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  min-height: 52px;
+}
+
+.btn-block {
+  width: 100%;
+  display: block;
+}
+
+/* 🔥 内联空状态 - 不打断布局 */
+.empty-inline {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.empty-inline-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 48px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+}
+
+.empty-inline-icon {
+  font-size: 32px;
+  opacity: 0.6;
+}
+
+.empty-inline-text {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* Progress Bar */
@@ -1890,6 +2325,44 @@ onMounted(() => {
   color: var(--color-primary);
 }
 
+.badge-warning {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+/* 🔥 XMP Auto-Merge Notice */
+.xmp-notice {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  margin-bottom: 16px;
+}
+
+.xmp-notice .notice-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+}
+
+.xmp-notice .notice-icon {
+  font-size: 18px;
+}
+
+.xmp-notice .notice-body p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.xmp-notice .notice-tip {
+  color: rgba(96, 165, 250, 0.9);
+  font-weight: 500;
+}
+
 /* Modal */
 .modal-overlay {
   position: fixed;
@@ -1949,17 +2422,38 @@ onMounted(() => {
 
 .feature-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
 }
 
 .feature-item {
-  padding: 10px;
+  padding: 8px 12px;
   background: var(--color-bg-secondary);
   border-radius: 8px;
   text-align: center;
   font-size: 12px;
   font-weight: 500;
+}
+
+/* 🔥 功能列表样式 */
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feature-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.feature-icon {
+  font-size: 16px;
 }
 
 .pulse-dot {
