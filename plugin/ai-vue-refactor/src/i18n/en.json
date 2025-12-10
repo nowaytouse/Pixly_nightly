@@ -1,7 +1,17 @@
 {
   "app": {
     "title": "PIXLY AI",
-    "subtitle": "Intelligent Media Processing"
+    "subtitle": "Intelligent Filter Optimization"
+  },
+  "filter": {
+    "title": "🔮 Filter Mode",
+    "description": "Like an invisible thin filter layer, AI intelligently optimizes image quality while preserving the original format, achieving imperceptible quality improvements.",
+    "modeActive": "🔮 Filter Mode: Preserving format, AI optimization",
+    "imageOptions": "🖼️ Image Filter Options",
+    "videoOptions": "🎬 Video Filter Options",
+    "aiOptimization": "🤖 AI Smart Optimization",
+    "qualityValidation": "📊 Quality Validation",
+    "smartPreprocess": "✨ Smart Preprocessing"
   },
   "header": {
     "refresh": "Refresh",
@@ -178,8 +188,9 @@
     "convertButton": "Start Conversion"
   },
   "button": {
-    "processing": "Processing...",
-    "startConvert": "Start AI Processing"
+    "processing": "Optimizing...",
+    "startConvert": "Start AI Processing",
+    "startOptimize": "Start AI Filter"
   },
   "progress": {
     "processing": "Processing...",

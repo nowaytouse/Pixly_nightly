@@ -1,7 +1,17 @@
 {
   "app": {
-    "title": "PIXLY",
-    "subtitle": "智能多媒体处理"
+    "title": "PIXLY AI",
+    "subtitle": "智能滤镜优化"
+  },
+  "filter": {
+    "title": "🔮 滤镜模式",
+    "description": "像一层薄薄的不可见滤镜，在保持原格式的前提下，通过AI智能优化图像质量，实现不可察觉的质量提升。",
+    "modeActive": "🔮 滤镜模式：保持原格式，智能优化",
+    "imageOptions": "🖼️ 图像滤镜选项",
+    "videoOptions": "🎬 视频滤镜选项",
+    "aiOptimization": "🤖 AI智能优化",
+    "qualityValidation": "📊 质量验证",
+    "smartPreprocess": "✨ 智能预处理"
   },
   "header": {
     "refresh": "刷新",
@@ -178,8 +188,9 @@
     "convertButton": "开始转换"
   },
   "button": {
-    "processing": "处理中...",
-    "startConvert": "开始处理"
+    "processing": "优化中...",
+    "startConvert": "开始处理",
+    "startOptimize": "开始滤镜优化"
   },
   "progress": {
     "processing": "处理中...",

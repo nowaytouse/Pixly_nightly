@@ -10,7 +10,7 @@
         </div>
         <div class="title-group">
           <h1>{{ t('app.title') }}</h1>
-          <p>{{ t('app.subtitle') }}</p>
+          <p>{{ t('app.subtitle') }} 🔮</p>
         </div>
       </div>
       <div class="header-right">
@@ -72,6 +72,17 @@
             <span class="icon">⚙️</span> {{ t('controls.title') }}
           </h3>
 
+          <!-- 🎯 滤镜模式说明 -->
+          <div class="filter-mode-notice glass slide-in">
+            <div class="notice-header">
+              <span class="notice-icon">🔮</span>
+              <strong>{{ t('filter.title') }}</strong>
+            </div>
+            <div class="notice-body">
+              <p>{{ t('filter.description') }}</p>
+            </div>
+          </div>
+
           <!-- 优化目标 -->
           <div class="form-group">
             <label>{{ t('controls.optimizeMode') }}</label>
@@ -84,56 +95,13 @@
             </div>
           </div>
 
-          <!-- 🖼️ 图像输出格式 (仅图像模式) -->
-          <div v-if="isImageMode" class="form-group slide-in">
-            <label>{{ t('image.format') }}</label>
-            <div class="select-wrapper">
-              <select v-model="outputFormat" class="select">
-                <option value="auto">{{ t('image.formatAuto') }}</option>
-                <option value="disabled">🚫 Disabled (Original Format)</option>
-                <option value="avif">AVIF</option>
-                <option value="jxl">JXL</option>
-                <option value="webp">WebP</option>
-                <option value="heic">HEIC</option>
-                <option value="png">PNG</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- 🎬 视频输出格式 (仅视频模式) -->
-          <template v-if="isVideoMode">
-            <div class="form-group slide-in">
-              <label>{{ t('video.codec') }}</label>
-              <div class="select-wrapper">
-                <select v-model="videoCodec" class="select">
-                  <option value="h265">H.265/HEVC (Recommended)</option>
-                  <option value="h264">H.264/AVC</option>
-                  <option value="av1">AV1 (Most Efficient)</option>
-                  <option value="vp9">VP9</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group slide-in">
-              <label>{{ t('video.container') }}</label>
-              <div class="select-wrapper">
-                <select v-model="videoContainer" class="select">
-                  <option value="mp4">MP4 (Recommended)</option>
-                  <option value="mov">MOV</option>
-                  <option value="webm">WebM</option>
-                  <option value="mkv">MKV</option>
-                </select>
-              </div>
-            </div>
-          </template>
-
-          <!-- 🖼️ 图像 AI 功能 (仅图像模式) -->
+          <!-- 🔮 图像滤镜功能 (仅图像模式) -->
           <details v-if="isImageMode" class="details glass-panel" open>
-            <summary>{{ t('image.title') }}</summary>
+            <summary>{{ t('filter.imageOptions') }}</summary>
             <div class="checkbox-group">
               <label class="checkbox-wrapper">
                 <input type="checkbox" v-model="enableAIPrediction">
-                <span>{{ t('image.aiPrediction') }}</span>
+                <span>{{ t('filter.aiOptimization') }}</span>
               </label>
               <label class="checkbox-wrapper">
                 <input type="checkbox" v-model="enableFileValidation">
@@ -141,7 +109,7 @@
               </label>
               <label class="checkbox-wrapper">
                 <input type="checkbox" v-model="enableSSIM">
-                <span>{{ t('image.ssimValidation') }}</span>
+                <span>{{ t('filter.qualityValidation') }}</span>
               </label>
               <label class="checkbox-wrapper">
                 <input type="checkbox" v-model="enableGPU">
@@ -149,15 +117,11 @@
               </label>
               <label class="checkbox-wrapper">
                 <input type="checkbox" v-model="enablePreprocess">
-                <span>{{ t('image.preprocess') }}</span>
+                <span>{{ t('filter.smartPreprocess') }}</span>
               </label>
               <label class="checkbox-wrapper">
                 <input type="checkbox" v-model="enableFormatCorrection">
                 <span>{{ t('image.formatCorrection') }} <span class="badge badge-warning">{{ t('common.experimental') }}</span></span>
-              </label>
-              <label class="checkbox-wrapper">
-                <input type="checkbox" v-model="enableVideoForAnimation">
-                <span>{{ t('image.animationToVideo') }}</span>
               </label>
             </div>
           </details>
@@ -202,17 +166,13 @@
             </div>
           </div>
 
-          <!-- 🎬 视频 AI 功能 (仅视频模式) -->
+          <!-- 🔮 视频滤镜功能 (仅视频模式) -->
           <details v-if="isVideoMode" class="details glass-panel" open>
-            <summary>{{ t('video.title') }}</summary>
+            <summary>{{ t('filter.videoOptions') }}</summary>
             <div class="checkbox-group">
               <label class="checkbox-wrapper">
                 <input type="checkbox" v-model="enableVideoCodecRecommendation" checked>
-                <span>🤖 {{ t('video.codecRecommendation') }}</span>
-              </label>
-              <label class="checkbox-wrapper">
-                <input type="checkbox" v-model="enableVideoForAnimation">
-                <span>🎬 {{ t('video.animationToVideo') }}</span>
+                <span>🤖 {{ t('filter.aiOptimization') }}</span>
               </label>
               <label class="checkbox-wrapper">
                 <input type="checkbox" v-model="enableSceneDetection">
@@ -220,7 +180,7 @@
               </label>
               <label class="checkbox-wrapper">
                 <input type="checkbox" v-model="enableVMAF">
-                <span>📊 {{ t('video.vmafValidation') }}</span>
+                <span>📊 {{ t('filter.qualityValidation') }}</span>
               </label>
               <label class="checkbox-wrapper">
                 <input type="checkbox" v-model="enableTwoPass">
@@ -252,14 +212,14 @@
 
           <!-- 🔥 Bug Fix #3: Removed duplicate select hints - use batch-actions bar instead -->
 
-          <!-- 转换按钮 -->
+          <!-- 🔮 滤镜优化按钮 -->
           <button
             class="btn btn-primary btn-block btn-lg"
             @click="startConvert"
             :disabled="selectedCount === 0 || processing"
           >
             <span v-if="processing" class="spinner"></span>
-            {{ processing ? t('button.processing') : t('button.startConvert') }}
+            🔮 {{ processing ? t('button.processing') : t('button.startOptimize') }}
           </button>
 
           <!-- Progress Bar -->
@@ -434,22 +394,20 @@ const files = ref([])
 const isLoading = ref(true) // 🔥 加载状态
 const optimizeMode = ref('balanced')
 
-// 🖼️ 图像相关
-const outputFormat = ref('auto')
+// 🔮 滤镜模式 - 不改变格式，只优化质量
+// 移除 outputFormat - 滤镜模式保持原格式
 const enableAIPrediction = ref(true)
 const enableFileValidation = ref(true)
-const enableSSIM = ref(false)
+const enableSSIM = ref(true)  // 滤镜模式默认开启质量验证
 const enableGPU = ref(true)
 const enablePreprocess = ref(true)
 const enableFormatCorrection = ref(false)
 
-// 🎬 视频相关
-const videoCodec = ref('h265')
-const videoContainer = ref('mp4')
+// 🎬 视频相关 - 滤镜模式保持原格式
 const enableVideoCodecRecommendation = ref(true)
-const enableVideoForAnimation = ref(true)
+const enableVideoForAnimation = ref(false)  // 滤镜模式默认关闭格式转换
 const enableSceneDetection = ref(false)
-const enableVMAF = ref(false)
+const enableVMAF = ref(true)  // 滤镜模式默认开启质量验证
 const enableTwoPass = ref(false)
 
 const processing = ref(false)
@@ -901,11 +859,13 @@ const startConvert = async () => {
             // 🔍 Log processing start
             addLog(`[${i + 1}/${images.length}] 处理: ${file.name}`, 'info', '⚙️')
             
+            // 🔮 滤镜模式：保持原格式，只优化质量
+            const fileExt = (file.ext || file.path.split('.').pop() || '').toLowerCase()
             const result = await rustCLI.convert({
               inputPath: file.path,
-              outputPath: file.path.replace(/\.[^.]+$/, `.${outputFormat.value === 'auto' || outputFormat.value === 'disabled' ? 'avif' : outputFormat.value}`),
-              format: outputFormat.value === 'auto' ? null : (outputFormat.value === 'disabled' ? null : outputFormat.value),
-              disableFormatChange: outputFormat.value === 'disabled',
+              outputPath: file.path,  // 滤镜模式：原地优化
+              format: null,  // 滤镜模式：不改变格式
+              disableFormatChange: true,  // 🔮 滤镜模式核心：禁用格式转换
               useAI: enableAIPrediction.value,
               optimizeMode: optimizeMode.value,
               enableFileValidation: enableFileValidation.value,
@@ -913,7 +873,7 @@ const startConvert = async () => {
               enableGPU: enableGPU.value,
               enablePreprocess: enablePreprocess.value,
               enableFormatCorrection: enableFormatCorrection.value,
-              enableVideoForAnimation: enableVideoForAnimation.value
+              enableVideoForAnimation: false  // 滤镜模式：不转换动画为视频
             })
             
             results.push({ file: file.name, success: true, result })
@@ -936,15 +896,17 @@ const startConvert = async () => {
             progress.value = Math.round(((processed + 1) / total) * 100)
             progressText.value = t('progress.videoProgress', { current: i + 1, total: videos.length, filename: file.name })
             
+            // 🔮 滤镜模式：保持原格式，只优化质量
+            const videoExt = (file.ext || file.path.split('.').pop() || '').toLowerCase()
             const result = await rustCLI.convertVideo({
               inputPath: file.path,
-              outputPath: file.path.replace(/\.[^.]+$/, `.${videoContainer.value}`),
-              codec: videoCodec.value,
-              container: videoContainer.value,
+              outputPath: file.path,  // 滤镜模式：原地优化
+              codec: null,  // 滤镜模式：保持原编码
+              container: videoExt,  // 滤镜模式：保持原容器
               useAI: enableAIPrediction.value,
               optimizeMode: optimizeMode.value,
               enableGPU: enableGPU.value,
-              enableVideoForAnimation: enableVideoForAnimation.value,
+              enableVideoForAnimation: false,  // 滤镜模式：不转换
               enableSceneDetection: enableSceneDetection.value,
               enableVMAF: enableVMAF.value,
               enableTwoPass: enableTwoPass.value
@@ -970,15 +932,17 @@ const startConvert = async () => {
           progress.value = Math.round(((i + 1) / selected.length) * 100)
           progressText.value = t('progress.videoProgress', { current: i + 1, total: selected.length, filename: file.name })
           
+          // 🔮 滤镜模式：保持原格式，只优化质量
+          const videoExt = (file.ext || file.path.split('.').pop() || '').toLowerCase()
           const result = await rustCLI.convertVideo({
             inputPath: file.path,
-            outputPath: file.path.replace(/\.[^.]+$/, `.${videoContainer.value}`),
-            codec: videoCodec.value,
-            container: videoContainer.value,
+            outputPath: file.path,  // 滤镜模式：原地优化
+            codec: null,  // 滤镜模式：保持原编码
+            container: videoExt,  // 滤镜模式：保持原容器
             useAI: enableAIPrediction.value,
             optimizeMode: optimizeMode.value,
             enableGPU: enableGPU.value,
-            enableVideoForAnimation: enableVideoForAnimation.value,
+            enableVideoForAnimation: false,  // 滤镜模式：不转换
             enableSceneDetection: enableSceneDetection.value,
             enableVMAF: enableVMAF.value,
             enableTwoPass: enableTwoPass.value
@@ -993,11 +957,12 @@ const startConvert = async () => {
     // 🖼️ 纯图像模式
     else if (isImageMode.value) {
       logger.info(LOG_KEYS.CONVERT_START, 'Image conversion mode', {})
+      // 🔮 滤镜模式：保持原格式，只优化质量
       results = await rustCLI.batchConvert(
         selected,
         {
-          format: outputFormat.value === 'auto' ? null : (outputFormat.value === 'disabled' ? null : outputFormat.value),
-          disableFormatChange: outputFormat.value === 'disabled',
+          format: null,  // 滤镜模式：不改变格式
+          disableFormatChange: true,  // 🔮 滤镜模式核心：禁用格式转换
           useAI: enableAIPrediction.value,
           optimizeMode: optimizeMode.value,
           enableFileValidation: enableFileValidation.value,
@@ -1005,7 +970,7 @@ const startConvert = async () => {
           enableGPU: enableGPU.value,
           enablePreprocess: enablePreprocess.value,
           enableFormatCorrection: enableFormatCorrection.value,
-          enableVideoForAnimation: enableVideoForAnimation.value
+          enableVideoForAnimation: false  // 滤镜模式：不转换动画为视频
         },
         (info) => {
           progress.value = info.percentage
@@ -1045,10 +1010,9 @@ const startConvert = async () => {
       }
     })
     
-    // AI决策信息
+    // 🔮 滤镜模式信息
     addLog('─────────────────────────', 'info', '')
-    const targetFormat = outputFormat.value === 'auto' ? 'AVIF' : outputFormat.value.toUpperCase()
-    addLog(t('log.targetFormat', { format: targetFormat }), 'info', '🎯')
+    addLog(t('filter.modeActive'), 'info', '🔮')
     addLog(t('log.optimizeMode', { mode: optimizeMode.value }), 'info', '⚙️')
     addLog(t('log.aiPrediction', { status: enableAIPrediction.value ? '✅ ' + t('log.enabled') : '❌ ' + t('log.disabled') }), 'info', '🤖')
     
@@ -2328,6 +2292,54 @@ onMounted(() => {
 .badge-warning {
   background: rgba(245, 158, 11, 0.2);
   color: #fbbf24;
+}
+
+/* 🔮 Filter Mode Notice */
+.filter-mode-notice {
+  padding: 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(168, 85, 247, 0.1));
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.filter-mode-notice::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(50%); }
+}
+
+.filter-mode-notice .notice-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+}
+
+.filter-mode-notice .notice-icon {
+  font-size: 20px;
+  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.6));
+}
+
+.filter-mode-notice .notice-body p {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
 }
 
 /* 🔥 XMP Auto-Merge Notice */
