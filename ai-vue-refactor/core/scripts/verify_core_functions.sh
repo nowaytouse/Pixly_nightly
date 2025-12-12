@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # 核心功能验证脚本 - FC-001
 # 遵循PROJECT_QUALITY_MANIFESTO.md原则：真实性 > 模拟
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # PIXLY 一键环境配置脚本 (macOS/Linux)
 # 自动检测并安装所需依赖
 

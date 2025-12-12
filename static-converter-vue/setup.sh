@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # Setup script for JPEG to JXL Eagle Plugin
 # This script helps download and setup cjxl binaries for all platforms
 

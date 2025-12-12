@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # Comprehensive Code Quality Verification
 # Based on PROJECT_QUALITY_MANIFESTO.md requirements
 

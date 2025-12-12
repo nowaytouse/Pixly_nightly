@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # 全面格式支持测试 - 基于实际测试结果
 
 echo "🧪 Pixly 全面格式支持测试"

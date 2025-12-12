@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # 🎬 完整视频功能测试脚本
 # 遵循 PROJECT_QUALITY_MANIFESTO.md - 真实性原则
 # 测试所有声称的视频功能

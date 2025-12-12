@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # 测试真实特征提取效果
 # 验证架构重构是否成功
 

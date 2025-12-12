@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # Validation script for JPEG to JXL Eagle Plugin
 
 set -e

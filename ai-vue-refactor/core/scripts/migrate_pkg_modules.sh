@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # 🔥 Phase 40.8: PKG模块迁移脚本
 # 根据PROJECT_QUALITY_MANIFESTO.md原则，清理重复代码
 

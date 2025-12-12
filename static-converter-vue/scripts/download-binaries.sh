@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # Download and prepare cjxl + avifenc binaries for all platforms
 # Usage: ./scripts/download-binaries.sh
 

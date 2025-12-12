@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # PIXLY Eagle插件环境配置
 # 专为Eagle插件用户设计的一键配置脚本
 

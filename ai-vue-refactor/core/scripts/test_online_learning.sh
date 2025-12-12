@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # 🎓 在线学习功能完整测试
 # 遵循 PROJECT_QUALITY_MANIFESTO.md - 真实性原则
 

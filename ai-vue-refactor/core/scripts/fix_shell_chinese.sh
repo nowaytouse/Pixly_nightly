@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # Fix Chinese output in shell scripts
 # PROJECT_QUALITY_MANIFESTO.md compliance
 

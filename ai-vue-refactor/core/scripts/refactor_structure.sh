@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # 🔥 Phase 40.8: 文件夹结构重构脚本
 # 根据PROJECT_QUALITY_MANIFESTO.md原则，整理项目结构
 

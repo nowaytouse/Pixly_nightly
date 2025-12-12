@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # 批量为 ui-handlers.js 的纯 console 调用添加 pixlyLog
 # Phase 1: Lines 829-1100
 

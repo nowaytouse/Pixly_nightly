@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # 🏥 Pixly项目健康检查脚本
 # 快速验证项目状态
 

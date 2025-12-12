@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # ai-vue-refactor: 设置开发环境 - 创建符号链接到共享二进制
 
 set -e

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 
 # 自动部署 pixly-converter 到 Eagle 插件
 # 在编译完 Rust 项目后运行此脚本

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # 🎯 CLI-001: 测试批量转换和进度显示
 
 set -e

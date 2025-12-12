@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 
 # 🔍 完整参数验证脚本
 # 验证前端传递的所有CLI参数在Rust后端是否都有实现

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 
 # 🔧 PIXLY Automatic Dependency Installer
 # Purpose: Install all required tools and dependencies

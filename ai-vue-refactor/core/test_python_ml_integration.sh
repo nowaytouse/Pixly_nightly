@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # 🧪 Python ML集成测试脚本
 
 set -e

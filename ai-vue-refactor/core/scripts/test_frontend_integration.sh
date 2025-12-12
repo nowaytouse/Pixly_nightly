@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 
 # 前端-后端集成验证测试
 # 验证Vue插件UI与Rust CLI后端的真实连接

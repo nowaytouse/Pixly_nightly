@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 
 # 🔥 PIXLY AI Service Startup Script
 # Purpose: Automatically start GO AI service for video processing

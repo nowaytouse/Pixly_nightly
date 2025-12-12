@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 
 # 🔍 PIXLY Environment Check Script
 # Purpose: Verify all required tools and dependencies

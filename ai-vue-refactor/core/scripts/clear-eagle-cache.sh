@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 
 echo "🔧 PIXLY - Eagle 缓存清理脚本"
 echo "================================"

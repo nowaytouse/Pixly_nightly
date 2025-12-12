@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # 测试不同RUST_LOG级别的日志输出
 # 
 # 用法: ./test_logging.sh
