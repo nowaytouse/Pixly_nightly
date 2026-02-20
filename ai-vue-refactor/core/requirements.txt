@@ -1,11 +1,13 @@
 # Pixly AI Optimizer Python Dependencies
 
 # Core dependencies (required)
-numpy>=1.26.0
-Pillow>=11.0.0
+# 🔥 v2026-02-20: Security updates - Fixed Dependabot alerts
+numpy>=1.26.0,<3.0.0
+Pillow>=11.1.0  # Security fix: Out-of-bounds write in PSD processing
 PyWavelets>=1.7.0
 lightgbm>=4.5.0
 ffmpeg-python>=0.2.0
+filelock>=3.17.0  # Security fix: TOCTOU symlink vulnerability
 
 # PPO reinforcement learning (recommended, +5-10% accuracy)
 torch>=2.5.0
